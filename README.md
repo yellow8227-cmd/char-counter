@@ -26,6 +26,15 @@ python counter.py
 줄: 5
 ```
 
+## 테스트
+
+프로젝트 폴더에서 아래 명령을 실행하면 됩니다. 별도 설치 없이 파이썬 표준
+라이브러리의 `unittest`만 사용합니다.
+
+```bash
+python -m unittest
+```
+
 ## 요구 사항
 
 - Python 3.9 이상

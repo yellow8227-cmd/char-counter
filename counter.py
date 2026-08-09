@@ -9,18 +9,18 @@ def count_chars(text):
 
 
 def count_chars_no_space(text):
-    """공백을 제외한 글자수를 센다."""
-    return len(text.replace(" ", ""))
+    """공백을 제외한 글자수를 센다. 띄어쓰기뿐 아니라 줄바꿈과 탭도 뺀다."""
+    return len("".join(text.split()))
 
 
 def count_words(text):
-    """단어 개수를 센다."""
-    return len(text.split(" "))
+    """단어 개수를 센다. 연속된 공백이나 줄바꿈은 구분자 하나로 본다."""
+    return len(text.split())
 
 
 def count_lines(text):
-    """줄 수를 센다."""
-    return len(text.split("\n"))
+    """줄 수를 센다. 맨 끝의 줄바꿈은 새로운 줄로 세지 않는다."""
+    return len(text.splitlines())
 
 
 def summarize(text):
