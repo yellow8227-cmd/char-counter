@@ -232,6 +232,11 @@ input::placeholder,textarea::placeholder{color:var(--ph)}
 .prog i{height:3px;flex:1;background:var(--line);border-radius:2px;transition:background .2s}
 .prog i.on{background:var(--acc)}
 
+/* 프롬프트 탭 — 빠른 입력일 땐 결과를 입력칸 바로 아래로 끌어올린다 */
+#t-prompt.on{display:flex;flex-direction:column}
+#t-prompt>*{order:2}
+#t-prompt.quick>#lookcard{order:8}
+
 /* 컷 빠른 선택 바 */
 .cutnav{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px}
 .cutnav button{font-family:var(--mono);font-size:11px;padding:5px 10px;border-radius:6px;
@@ -439,8 +444,8 @@ footer{border-top:1px solid var(--line);background:var(--s1);margin-top:70px}
     <div class="hero">
       <span class="badge">설치 없음 · 가입 없음 · 내 브라우저에 저장</span>
       <h1>한 줄의 로그라인에서 <br class="brw">컷 프롬프트까지, 한 화면에서</h1>
-      <p class="lead">SCENEDECK는 <b>로그라인 → 시놉시스 → 씬 → 컷 → AI 프롬프트</b>로 이어지는 작업을 한자리에서 굴리는 워크벤치입니다.
-      캐릭터 <b>외형 고정 블록</b>이 모든 컷에 토씨 하나 안 틀리고 들어가서, 컷마다 인물이 딴 사람이 되는 사고를 막아줍니다.</p>
+      <p class="lead"><b>원고를 올리면 씬으로 나뉘고, 버튼 하나면 컷까지 만들어집니다.</b> 급할 땐 한 줄만 적어 프롬프트만 뽑을 수도 있어요.
+      캐릭터 <b>외형 고정 블록</b>은 모든 컷에 토씨 하나 안 틀리고 들어가서, 컷마다 인물이 딴 사람이 되는 사고를 막아줍니다.</p>
       <div class="cta">
         <button class="btn pri lg" data-go="story">▶ 새 작품 시작하기</button>
         <button class="btn lg" data-go="script">📄 이미 쓴 원고 올리기</button>
@@ -458,13 +463,14 @@ footer{border-top:1px solid var(--line);background:var(--s1);margin-top:70px}
       </div>
       <div class="stepbox">
         <div class="n">2</div>
-        <h4>씬을 컷으로 쪼개기</h4>
-        <p>컷마다 샷 사이즈 · 앵글 · 렌즈 · 조명만 골라두면 됩니다. 영어는 몰라도 괜찮아요 — 알아서 번역됩니다.</p>
+        <h4>컷으로 쪼개기 — 버튼 하나</h4>
+        <p>「모든 씬을 컷으로 쪼개기」를 누르면 <b>전 씬이 한 번에</b> 컷으로 나뉘고, 샷·조명까지 자동으로 채워집니다.</p>
       </div>
       <div class="stepbox">
         <div class="n">3</div>
         <h4>프롬프트 뽑아 쓰기</h4>
-        <p>미드저니 · Veo(Flow) · 범용 이미지 <b>세 문법이 동시에</b> 만들어집니다. 복사해서 그대로 넣으세요.</p>
+        <p>미드저니 · Veo(Flow) · 범용 이미지 <b>세 문법이 동시에</b> 만들어집니다.
+        급하면 씬·컷 없이 <b>한 줄만 적어</b> 뽑는 「빠른 입력」도 있어요.</p>
       </div>
     </div>
 
@@ -480,7 +486,7 @@ footer{border-top:1px solid var(--line);background:var(--s1);margin-top:70px}
       </button>
       <button class="fcard" data-go="script">
         <span class="ic">📄</span><h4>대본 불러오기 · 고치기</h4>
-        <p>txt · docx · pdf · fdx 원고를 씬으로 자동 분해. 씬별로 고치고, AI가 고쳐준 대본을 되돌려 넣을 수도 있어요.</p>
+        <p>txt · docx · pdf · fdx 원고를 씬으로 자동 분해. 이어서 <b>전 씬을 컷까지 한 번에</b> 만들 수 있습니다.</p>
         <span class="go">대본 열기 →</span>
       </button>
       <button class="fcard" data-go="char">
@@ -495,7 +501,7 @@ footer{border-top:1px solid var(--line);background:var(--s1);margin-top:70px}
       </button>
       <button class="fcard" data-go="prompt">
         <span class="ic">✨</span><h4>프롬프트 빌더</h4>
-        <p>미드저니 · Veo(Flow) · 범용 이미지 3종을 동시에 출력. <kbd>←</kbd> <kbd>→</kbd> 키로 컷을 넘겨가며 뽑습니다.</p>
+        <p>미드저니 · Veo(Flow) · 범용 이미지 3종을 동시에 출력. <b>「빠른 입력」</b>을 켜면 씬·컷 없이 한 줄만 적어도 나옵니다.</p>
         <span class="go">프롬프트 열기 →</span>
       </button>
       <button class="fcard" data-go="board">
@@ -555,6 +561,14 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     <details class="faq"><summary>내가 쓴 내용이 어디로 전송되나요?</summary>
       <p class="fa">아닙니다. 모든 내용은 <b>이 브라우저 안에만</b> 저장됩니다 — 텍스트는 localStorage, 이미지는 IndexedDB.
       서버로 올라가는 것도, 계정을 만드는 것도 없습니다. 대신 <b>브라우저 데이터를 지우면 같이 날아가니</b> 「설정」에서 JSON 백업을 습관으로 만드세요.</p></details>
+    <details class="faq"><summary>씬·컷 안 만들고 프롬프트만 뽑고 싶어요</summary>
+      <p class="fa">「프롬프트」 탭 맨 위에서 <b>⚡ 빠른 입력</b>을 고르세요.
+      무슨 일이 벌어지는지 한 줄만 적으면 세 가지 프롬프트가 바로 나옵니다. 씬도 컷도 만들 필요 없어요.
+      마음에 들면 <b>「이 내용을 컷으로 저장」</b>으로 나중에 이어서 쓸 수도 있습니다.</p></details>
+    <details class="faq"><summary>원고를 올렸는데 컷을 하나하나 만들어야 하나요?</summary>
+      <p class="fa">아닙니다. 원고를 적용하면 「대본」 탭에 <b>⚡ 컷까지 한 번에</b> 카드가 나타납니다.
+      「모든 씬을 컷으로 쪼개기」 한 번이면 전 씬이 컷으로 나뉘고, <b>샷·조명 자동 배분</b>까지 켜져 있어
+      프롬프트가 곧바로 쓸 만한 문장으로 나옵니다. 이미 컷이 있는 씬은 건드리지 않아요.</p></details>
     <details class="faq"><summary>AI가 자동으로 연결되나요?</summary>
       <p class="fa">API 키를 꽂아 사이트 안에서 답을 받는 기능은 아직 없습니다.
       대신 각 단계에서 <b>질문지를 만들어 복사</b>해 주니, Claude나 ChatGPT에 붙여넣고 받은 답을 다시 붙여넣으면 됩니다. 돈이 들지 않고 어디서든 동작해요.</p></details>
@@ -672,6 +686,23 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <div class="out empty2" id="sc-preview" style="margin-top:12px;max-height:260px;overflow:auto">원고를 넣고 「분해 미리보기」를 누르세요</div>
     </div>
 
+    <div class="card" id="sc-oneshot" style="display:none">
+      <h3>⚡ 컷까지 한 번에 <span class="tagx">프롬프트 바로 쓰기</span></h3>
+      <div class="row">
+        <button class="btn pri" id="sc-allcuts">🎬 모든 씬을 컷으로 쪼개기</button>
+        <label class="chip on" id="sc-autochip"><input type="checkbox" id="sc-autoshot" checked style="width:auto;margin-right:5px">샷 · 조명 자동 배분</label>
+        <button class="btn" id="sc-tomt">🌐 영문 칸 채우기</button>
+        <button class="btn" data-go="prompt">✨ 프롬프트 뽑으러 가기</button>
+        <div class="hsp"></div>
+        <span class="mini" id="sc-allstat" style="margin:0"></span>
+      </div>
+      <p class="mini">지문 문단 하나 = 컷 하나, 대사 한 줄 = 컷 하나로 <b>전 씬을 한 번에</b> 만듭니다.
+      <b>샷 · 조명 자동 배분</b>을 켜두면 첫 컷은 장소를 보여주는 롱샷, 대사 컷은 인물 클로즈업, 조명은 씬의 시간대에 맞춰 채워져서
+      <b>프롬프트가 곧바로 쓸 만한 문장</b>으로 나옵니다. 나중에 언제든 고칠 수 있어요.</p>
+      <p class="mini">이미 컷이 있는 씬은 <b>건드리지 않습니다.</b>
+      지문이 한글이어도 프롬프트는 나오지만, <b>「영문 칸 채우기」</b>를 한 번 돌려두면 결과가 눈에 띄게 좋아집니다.</p>
+    </div>
+
     <div class="card">
       <h3>✍️ 씬별 원고 편집</h3>
       <div class="row" style="margin-bottom:12px">
@@ -687,7 +718,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
             <textarea id="sc-body" style="min-height:340px;line-height:1.9" placeholder="이 씬의 지문과 대사를 씁니다.&#10;&#10;대사는 「이름: 대사」 형태로 쓰면 자동으로 인식돼요."></textarea>
           </label>
           <div class="row">
-            <button class="btn sm" id="sc-tocuts">🎬 대사·지문을 컷으로 쪼개기</button>
+            <button class="btn sm" id="sc-tocuts">🎬 이 씬만 컷으로 쪼개기</button>
             <button class="btn sm gh" id="sc-askscene">🤖 이 씬 수정 요청문</button>
           </div>
         </div>
@@ -742,7 +773,41 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <p>컷을 고르면 <b>미드저니 · Veo(Flow) · 범용 이미지</b> 세 문법으로 동시에 만들어줍니다. 「전체 화면 룩」은 모든 컷에 공통으로 붙는 값이에요.</p>
     </div>
 
-    <div class="card">
+    <div class="row" id="pmode" style="margin-bottom:18px">
+      <label class="chip on" data-pm="cut">🎬 만들어둔 컷에서</label>
+      <label class="chip" data-pm="quick">⚡ 빠른 입력 — 씬 · 컷 없이 바로</label>
+    </div>
+
+    <div class="card" id="qcard" style="display:none">
+      <h3>⚡ 빠른 입력 <span class="tagx">저장 안 해도 바로 나옵니다</span></h3>
+      <label class="f"><span>이 장면에서 무슨 일이 벌어지나요</span>
+        <textarea id="q-desc" style="min-height:76px" placeholder="지훈이 우산도 없이 빗속 골목을 걸어 나온다"></textarea></label>
+      <div class="grid g3">
+        <label class="f"><span>장소</span><input type="text" id="q-loc" placeholder="비 내리는 뒷골목"></label>
+        <label class="f"><span>시간대</span><select id="q-time"></select></label>
+        <label class="f"><span>길이 (초)</span><input type="number" id="q-dur" min="0" max="120" value="4"></label>
+      </div>
+      <div class="grid g3">
+        <label class="f"><span>샷 사이즈</span><select id="q-shot"></select></label>
+        <label class="f"><span>앵글</span><select id="q-angle"></select></label>
+        <label class="f"><span>카메라 움직임</span><select id="q-move"></select></label>
+      </div>
+      <div class="grid g3">
+        <label class="f"><span>렌즈</span><select id="q-lens"></select></label>
+        <label class="f"><span>조명</span><select id="q-light"></select></label>
+        <label class="f"><span>분위기</span><select id="q-mood"></select></label>
+      </div>
+      <label class="f"><span>대사 (있으면)</span><input type="text" id="q-dlg" placeholder="지훈: 이제 그만하자."></label>
+      <span class="lbx">등장인물 — 켜두면 외형 고정 블록이 그대로 들어갑니다</span>
+      <div class="row" id="qchars" style="margin-bottom:14px"></div>
+      <div class="row">
+        <button class="btn pri" id="q-save">💾 이 내용을 컷으로 저장</button>
+        <button class="btn gh" id="q-clear">비우기</button>
+        <span class="mini" style="margin:0">저장해두면 보드 · 스케줄표 · 내보내기에서도 함께 쓸 수 있어요</span>
+      </div>
+    </div>
+
+    <div class="card" id="lookcard">
       <h3>🎨 전체 화면 룩 <span class="tagx">모든 컷 공통</span></h3>
       <div class="grid g3">
         <label class="f"><span>비주얼 스타일</span><select id="v-look"></select></label>
@@ -756,7 +821,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <label class="f enfield"><span>네거티브 프롬프트</span><input type="text" id="v-neg" placeholder="text, watermark, deformed hands"></label>
     </div>
 
-    <div class="card">
+    <div class="card" id="cutcard">
       <h3>🎯 컷 선택 <span class="tagx" id="curlabel">—</span></h3>
       <div class="cutnav" id="cutnav"></div>
       <div class="row">
@@ -2402,7 +2467,7 @@ $('sc-apply').addEventListener('click',()=>{
     s.summary=(p.script||'').split('\n').find(l=>l.trim())||'';
     S.scenes.push(s);
   });
-  save(); renderAll(); renderScript();
+  save(); renderAll(); renderScript(); paintOneshot();
   toast(`씬 ${scParsed.length}개를 ${mode==='replace'?'교체':'추가'}했어요 ✓`,
     {label:'되돌리기',fn:()=>{ S.scenes=before; S.title=titleBefore; save(); renderAll(); renderScript(); toast('되돌렸어요 ✓'); }});
 });
@@ -2454,12 +2519,9 @@ $('sc-prev').addEventListener('click',()=>scStep(-1));
 $('sc-next').addEventListener('click',()=>scStep(1));
 
 /* 본문을 컷으로 쪼개기 — 대사 한 줄 = 컷 하나, 지문 문단 = 컷 하나 */
-$('sc-tocuts').addEventListener('click',()=>{
-  const s=S.scenes.find(x=>x.id===scCur);
-  if(!s||!(s.script||'').trim()){ toast('본문이 비어 있어요'); return; }
-  const blocks=[];
-  let buf=[];
-  scriptLines(s.script).forEach(l=>{
+function cutBlocks(script){
+  const blocks=[]; let buf=[];
+  scriptLines(script||'').forEach(l=>{
     if(l.type==='dlg'){
       if(buf.length){ blocks.push({desc:buf.join(' ').trim(),dialogue:''}); buf=[]; }
       blocks.push({desc:'',dialogue:l.who+': '+l.text});
@@ -2468,14 +2530,100 @@ $('sc-tocuts').addEventListener('click',()=>{
     }else buf.push(l.text);
   });
   if(buf.length) blocks.push({desc:buf.join(' ').trim(),dialogue:''});
-  const made=blocks.filter(b=>b.desc||b.dialogue);
-  if(!made.length){ toast('쪼갤 내용이 없어요'); return; }
+  return blocks.filter(b=>b.desc||b.dialogue);
+}
+
+/* 씬의 시간대에서 조명·분위기를 유추한다 */
+function lightFor(time){
+  const t=String(time||'');
+  if(/심야|밤|night/i.test(t))            return {light:'로우키',      mood:'긴장'};
+  if(/새벽|dawn/i.test(t))                return {light:'블루아워',    mood:'쓸쓸함'};
+  if(/해질|노을|황혼|dusk|sunset/i.test(t)) return {light:'골든아워',    mood:'따뜻함'};
+  if(/아침|정오|오후|낮|day|morning/i.test(t)) return {light:'자연광',  mood:'평온'};
+  return {light:'소프트라이트', mood:''};
+}
+
+/* 샷·앵글·렌즈·길이를 컷 순서에 맞춰 채운다.
+   첫 컷은 장소를 보여주는 롱샷, 대사 컷은 인물 클로즈업, 마지막은 한 번 더 붙는다. */
+function autoDirect(scene,cuts){
+  const lm=lightFor(scene.time);
+  cuts.forEach((c,i)=>{
+    const last=(i===cuts.length-1), dlg=!!c.dialogue;
+    if(dlg){
+      c.shot='미디엄 클로즈업'; c.lens='85mm 인물'; c.move='고정';
+      const n=c.dialogue.replace(/^[^:]*:\s*/,'').length;
+      c.dur=Math.max(2,Math.min(8,Math.round(n/6)||3));
+    }else if(i===0){
+      c.shot='롱샷 (풀샷)'; c.lens='24mm 광각'; c.move='고정'; c.dur=5;
+    }else if(last){
+      c.shot='클로즈업'; c.lens='85mm 인물'; c.move='푸시 인'; c.dur=4;
+    }else{
+      c.shot='미디엄샷'; c.lens='35mm'; c.move='고정'; c.dur=4;
+    }
+    c.angle='아이레벨';
+    c.light=lm.light;
+    if(lm.mood) c.mood=lm.mood;
+  });
+}
+
+/* 씬 하나를 컷으로 채운다. 이미 컷이 있으면 건드리지 않는다. */
+function fillCuts(s,auto,force){
+  if(!force && s.cuts.length) return 0;
+  const made=cutBlocks(s.script);
+  if(!made.length) return 0;
+  const cuts=made.map(b=>{ const c=newCut(); c.desc=b.desc; c.dialogue=b.dialogue; c.open=false; return c; });
+  if(auto) autoDirect(s,cuts);
+  s.cuts=s.cuts.concat(cuts);
+  return cuts.length;
+}
+
+$('sc-tocuts').addEventListener('click',()=>{
+  const s=S.scenes.find(x=>x.id===scCur);
+  if(!s||!(s.script||'').trim()){ toast('본문이 비어 있어요'); return; }
   const before=s.cuts.slice();
-  made.forEach(b=>{ const c=newCut(); c.desc=b.desc; c.dialogue=b.dialogue; c.open=false; s.cuts.push(c); });
+  const n=fillCuts(s,$('sc-autoshot').checked,true);
+  if(!n){ toast('쪼갤 내용이 없어요'); return; }
   save(); renderAll();
-  toast(`컷 ${made.length}개를 만들었어요 ✓`,
+  toast(`컷 ${n}개를 만들었어요 ✓`,
     {label:'되돌리기',fn:()=>{ s.cuts=before; save(); renderAll(); toast('되돌렸어요 ✓'); }});
 });
+
+/* 전 씬을 한 번에 */
+$('sc-allcuts').addEventListener('click',()=>{
+  if(!S.scenes.length){ toast('먼저 원고를 올려 씬을 만들어주세요'); return; }
+  const auto=$('sc-autoshot').checked;
+  const before=JSON.parse(JSON.stringify(S.scenes));
+  let cuts=0, done=0, skipped=0;
+  S.scenes.forEach(s=>{
+    if(s.cuts.length){ skipped++; return; }
+    const n=fillCuts(s,auto,false);
+    if(n){ cuts+=n; done++; }
+  });
+  if(!cuts){
+    toast(skipped?'모든 씬에 이미 컷이 있어요':'쪼갤 본문이 없어요');
+    return;
+  }
+  save(); renderAll();
+  paintOneshot();
+  toast(`씬 ${done}개에서 컷 ${cuts}개를 만들었어요 ✓`,
+    {label:'되돌리기',fn:()=>{ S.scenes=before; save(); renderAll(); paintOneshot(); toast('되돌렸어요 ✓'); }});
+});
+$('sc-tomt').addEventListener('click',()=>$('openmt').click());
+$('sc-autoshot').addEventListener('change',()=>{
+  $('sc-autochip').classList.toggle('on',$('sc-autoshot').checked);
+});
+
+/* 원고를 적용한 뒤에만 보여주고, 남은 일을 알려준다 */
+function paintOneshot(){
+  const box=$('sc-oneshot'); if(!box) return;
+  box.style.display=S.scenes.length?'block':'none';
+  const todo=S.scenes.filter(s=>!s.cuts.length && (s.script||'').trim()).length;
+  const cuts=allCuts().length;
+  $('sc-allstat').innerHTML = todo
+    ? `컷이 아직 없는 씬 <b>${todo}개</b>`
+    : (cuts ? `컷 ${cuts}개 준비됨 — <b>프롬프트</b> 탭에서 뽑으세요` : '');
+  $('sc-allcuts').disabled = !todo;
+}
 $('sc-askscene').addEventListener('click',()=>{
   const s=S.scenes.find(x=>x.id===scCur);
   if(!s){ toast('씬을 선택하세요'); return; }
@@ -2540,7 +2688,13 @@ function curCut(){
 }
 function renderCutNav(){
   const list=allCuts(), nav=$('cutnav');
-  if(!list.length){ nav.innerHTML='<span class="mini" style="margin:0">「씬 · 컷」 탭에서 컷을 먼저 만들어주세요</span>'; $('curlabel').textContent='—'; return; }
+  if(!list.length){
+    nav.innerHTML='<span class="mini" style="margin:0 8px 0 0">아직 컷이 없어요 —</span>'
+      +'<button class="btn sm pri" data-pmset="quick">⚡ 빠른 입력으로 바로 뽑기</button>'
+      +'<button class="btn sm" data-go="script">📄 원고 올리기</button>'
+      +'<button class="btn sm" data-go="scene">＋ 씬 · 컷 만들기</button>';
+    $('curlabel').textContent='—'; return;
+  }
   if(!list.some(x=>x.c.id===S.sel.cut)) S.sel={scene:list[0].s.id,cut:list[0].c.id};
   // 씬 번호는 항상 전체 목록 기준으로 매긴다 (컷이 없는 씬을 건너뛰며 세면 라벨과 어긋난다)
   nav.innerHTML=list.map(x=>{
@@ -2632,18 +2786,117 @@ function buildGEN(s,c){
 }
 const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
 
+/* =========================================================
+   빠른 입력 — 씬·컷을 만들지 않고 프롬프트만 뽑는 길.
+   같은 조립기(buildMJ/VEO/GEN)를 그대로 쓰되, 임시 씬·컷을 즉석에서 만들어 넣는다.
+   ========================================================= */
+let pQuick=false;
+const QF=['desc','loc','time','dur','shot','angle','move','lens','light','mood','dlg'];
+
+function quickState(){ if(!S.quick) S.quick={chars:[]}; if(!S.quick.chars) S.quick.chars=[]; return S.quick; }
+
+function fillQuick(){
+  const q=quickState();
+  if(!$('q-time').options.length){
+    $('q-time').innerHTML=opts(TIME,q.time||'');
+    $('q-shot').innerHTML=opts(SHOT,q.shot||'');
+    $('q-angle').innerHTML=opts(ANGLE,q.angle||'');
+    $('q-move').innerHTML=opts(MOVE,q.move||'');
+    $('q-lens').innerHTML=opts(LENS,q.lens||'');
+    $('q-light').innerHTML=opts(LIGHT,q.light||'');
+    $('q-mood').innerHTML=opts(MOOD,q.mood||'');
+  }
+  QF.forEach(k=>{ const el=$('q-'+k); if(el && el.value!==(q[k]==null?'':String(q[k]))) el.value=q[k]==null?'':q[k]; });
+  if($('q-dur').value==='') $('q-dur').value=4;
+  const w=$('qchars');
+  w.innerHTML = S.chars.length
+    ? S.chars.map(c=>`<label class="chip${q.chars.indexOf(c.id)>=0?' on':''}" data-qch="${c.id}">${esc(c.name||'이름 없음')}</label>`).join('')
+    : '<span class="mini" style="margin:0">「캐릭터」 탭에서 인물을 만들면 여기에 나타납니다 — 외형이 매 컷 똑같이 유지돼요</span>';
+}
+
+function quickPair(){
+  const q=quickState();
+  const s={id:'quick',heading:'빠른 입력',loc:q.loc||'',locEn:'',time:q.time||'',summary:'',script:'',cuts:[]};
+  const c=Object.assign(newCut(),{
+    desc:q.desc||'', shot:q.shot||'', angle:q.angle||'', move:q.move||'', lens:q.lens||'',
+    light:q.light||'', mood:q.mood||'', dialogue:q.dlg||'', dur:+q.dur||0, chars:(q.chars||[]).slice()
+  });
+  return {s,c};
+}
+/* 프롬프트를 쓰는 쪽(질문지 등)은 지금 모드에 맞는 짝을 받아간다 */
+function activePair(){ return pQuick ? quickPair() : curCut(); }
+
+function setPMode(m){
+  pQuick = (m==='quick');
+  document.querySelectorAll('#pmode .chip').forEach(x=>x.classList.toggle('on',(x.dataset.pm==='quick')===pQuick));
+  renderPrompt();
+}
+$('pmode').addEventListener('click',e=>{
+  const c=e.target.closest('[data-pm]'); if(!c) return;
+  setPMode(c.dataset.pm);
+});
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-pmset]'); if(!b) return;
+  setPMode(b.dataset.pmset);
+});
+QF.forEach(k=>{
+  const el=$('q-'+k); if(!el) return;
+  const hh=()=>{ quickState()[k]=el.value; save(); renderPrompt(); };
+  el.addEventListener('input',hh); el.addEventListener('change',hh);
+});
+$('qchars').addEventListener('click',e=>{
+  const c=e.target.closest('[data-qch]'); if(!c) return;
+  const q=quickState(), id=c.dataset.qch, i=q.chars.indexOf(id);
+  if(i<0) q.chars.push(id); else q.chars.splice(i,1);
+  save(); fillQuick(); renderPrompt();
+});
+$('q-clear').addEventListener('click',()=>{
+  const before=JSON.parse(JSON.stringify(quickState()));
+  S.quick={chars:[]}; save(); fillQuick(); renderPrompt();
+  toast('비웠어요 ✓',{label:'되돌리기',fn:()=>{ S.quick=before; save(); fillQuick(); renderPrompt(); }});
+});
+$('q-save').addEventListener('click',()=>{
+  const {s,c}=quickPair();
+  if(!(c.desc||'').trim()){ toast('무슨 일이 벌어지는지부터 적어주세요'); return; }
+  const sc=newScene();
+  sc.loc=s.loc; sc.time=s.time;
+  sc.heading=`빠른 입력 — ${s.loc||c.desc.slice(0,18)}`;
+  sc.summary=c.desc;
+  c.open=false; sc.cuts=[c];
+  S.scenes.push(sc);
+  S.sel={scene:sc.id,cut:c.id};
+  save(); renderAll(); paintOneshot(); setPMode('cut');
+  toast('컷으로 저장했어요 ✓',
+    {label:'되돌리기',fn:()=>{ S.scenes=S.scenes.filter(x=>x.id!==sc.id); save(); renderAll(); paintOneshot(); toast('되돌렸어요 ✓'); }});
+});
+
 function renderPrompt(){
-  fillStyle(); renderCutNav();
-  const hit=curCut();
-  const set=(id,txt)=>{
+  fillStyle();
+  $('qcard').style.display = pQuick?'block':'none';
+  $('cutcard').style.display = pQuick?'none':'block';
+  $('t-prompt').classList.toggle('quick',pQuick);
+  const set=(id,txt,hint)=>{
     const el=$(id);
     if(txt&&txt.trim()){ el.textContent=txt; el.classList.remove('empty2'); }
-    else{ el.textContent='컷을 선택하고 내용을 채우면 여기에 나타납니다'; el.classList.add('empty2'); }
+    else{ el.textContent=hint; el.classList.add('empty2'); }
   };
-  if(!hit){ set('o-mj',''); set('o-veo',''); set('o-gen',''); return; }
-  set('o-mj',buildMJ(hit.s,hit.c));
-  set('o-veo',buildVEO(hit.s,hit.c));
-  set('o-gen',buildGEN(hit.s,hit.c));
+  if(pQuick){
+    fillQuick();
+    const {s,c}=quickPair();
+    const hint='위에 「무슨 일이 벌어지나요」를 한 줄만 적으면 바로 나옵니다';
+    const ok=(c.desc||'').trim();
+    set('o-mj', ok?buildMJ(s,c):'', hint);
+    set('o-veo',ok?buildVEO(s,c):'',hint);
+    set('o-gen',ok?buildGEN(s,c):'',hint);
+    return;
+  }
+  renderCutNav();
+  const hit=curCut();
+  const hint='컷을 선택하고 내용을 채우면 여기에 나타납니다';
+  if(!hit){ set('o-mj','',hint); set('o-veo','',hint); set('o-gen','',hint); return; }
+  set('o-mj',buildMJ(hit.s,hit.c),hint);
+  set('o-veo',buildVEO(hit.s,hit.c),hint);
+  set('o-gen',buildGEN(hit.s,hit.c),hint);
 }
 document.addEventListener('click',e=>{
   const id=e.target.dataset&&e.target.dataset.copy;
@@ -2713,7 +2966,7 @@ const ASK={
 2) 지금 가장 위험한 점 3가지 (관객이 이탈할 지점 위주로)
 3) 당장 다음에 손봐야 할 것 하나를 딱 집어서`,
   prompt:()=>{
-    const hit=curCut(); if(!hit) return '';
+    const hit=activePair(); if(!hit) return '';
     const {s,c}=hit;
     return `너는 AI 이미지·영상 생성 프롬프트 전문가야. 아래 컷의 프롬프트를 더 좋게 다듬어줘.
 
@@ -2994,7 +3247,7 @@ async function updQuota(){
 
 /* ---------- 전체 렌더 ---------- */
 function renderAll(){
-  fillStory(); fillStyle(); renderChars(); renderScenes(); renderScript(); renderPrompt(); renderBoard(); updQuota(); renderHome();
+  fillStory(); fillStyle(); renderChars(); renderScenes(); renderScript(); renderPrompt(); renderBoard(); updQuota(); renderHome(); paintOneshot();
 }
 
 /* ---------- 시작 ---------- */
