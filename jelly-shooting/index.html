@@ -322,7 +322,21 @@
 
   /* ===== 🔴 실시간 대전 ===== */
   #netBar{pointer-events:none;}
-  #foeHud{display:flex;align-items:center;gap:10px;background:rgba(138,92,255,0.92);color:#fff;
+  /* 여러 명일 때 참가자 칩 */
+  #foeHud .fp{display:inline-flex;align-items:center;gap:3px;background:rgba(255,255,255,0.22);
+    padding:2px 7px;border-radius:9px;font-size:12px;white-space:nowrap;}
+  #foeHud .fp.out{opacity:.5;text-decoration:line-through;}
+  #foeHud .fp.mine{background:rgba(255,255,255,0.36);font-weight:900;}
+  /* 여러 명 모드에서는 칩을 더 조이고 이름을 잘라 두 개가 한 줄에 들어가게 한다.
+     한 줄에 하나씩 놓이면 상자가 네 줄이 되어 젤리 떨어지는 길목을 가린다. */
+  #foeHud.mp{gap:4px;padding:5px 10px;}
+  /* 칩을 눌러 목표를 고른다 — #netBar 는 pointer-events:none 이라 여기서만 되살린다 */
+  #foeHud.mp .fp{font-size:11.5px;padding:1px 6px;gap:2px;pointer-events:auto;cursor:pointer;
+    min-height:22px;}
+  #foeHud.mp .fp.tgt{background:#ffd76a;color:#5a3a00;box-shadow:0 0 0 2px rgba(255,255,255,.6);}
+  #foeHud.mp .nm{display:inline-block;max-width:46px;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom;}
+  #foeHud{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;
+    max-width:min(94vw,420px);background:rgba(138,92,255,0.92);color:#fff;
     padding:6px 14px;border-radius:14px;box-shadow:var(--shadow);font-weight:800;font-size:14px;white-space:nowrap;}
   /* 던지기는 아이템 바(왼쪽 아래)와 반대쪽에 둔다 — 급할 때 오폭하면 안 된다 */
   #throwWrap{position:absolute;right:calc(var(--bx,0px) + 12px);bottom:calc(var(--by,0px) + 14px);
@@ -1777,7 +1791,8 @@ function gameOver(){
   $('overCoins').textContent='🪙 +'+runCoins+'  (총 '+coins+')';
   let msg=isBest?'역대 최고 점수예요! 대단해요 💗':score>=800?'우와 젤리 마스터! 🏆':score>=350?'아주 잘했어요! 👏':'조금만 더! 다시 도전해봐요 ✨';
   $('overMsg').textContent = wasNet
-    ? (gameLabel()+(netGame==='throw'?(' · '+roleLabel(myRole)):'')+' · '+MODES[mode].emoji+MODES[mode].name)
+    ? (net.mpWin ? (gameLabel()+' · 🏆 마지막 생존!')
+                 : (gameLabel()+(netGame==='throw'?(' · '+roleLabel(myRole)):'')+' · '+MODES[mode].emoji+MODES[mode].name))
     : (msg+' (Lv.'+level+' · '+MODES[mode].emoji+MODES[mode].name+')');
   renderRank(top,wasNet?-1:score);
   lastRun={seed:runSeed,mode:mode,score:score,net:wasNet};   // 결과 화면에서 이 판을 도전장으로 보낼 수 있게
@@ -2160,20 +2175,56 @@ const THROW_COST=HEX.jelly.cost, BOMB_COST=HEX.bomb.cost;
 let hexT={zig:0,fog:0,rush:0};                       // 내가 걸린 효과의 남은 프레임
 let hexSeen={};                                      // 이 판에서 이미 설명을 본 방해 종류
 let shieldT=0, revealT=0, bolt=0;                    // 🛡️ 실드 · 🔮 투시 남은 프레임 · ⚡ 충전
-let net={ch:null,room:'',host:false,foe:null,ready:false,foeReady:false,
+// ── 여러 명 대전 ──
+// 예전에는 상대가 한 명(net.foe)이라는 전제로 짜여 있었다. 참가자 목록(net.peers)을
+// 두고, net.foe는 '첫 번째 참가자'로 계속 채운다 — 던지기 게임과 기존 화면이 그대로 돌게.
+const MAX_PLAYERS=4;
+const myId=(Math.random().toString(36).slice(2,7)+Date.now().toString(36).slice(-3)).toUpperCase();
+function peerList(){ return Object.keys(net.peers||{}).map(k=>net.peers[k]).filter(p=>!p.gone); }
+function peerCount(){ return peerList().length; }
+function playerCount(){ return 1+peerCount(); }          // 나까지
+function peerUpsert(id,fields){
+  if(!net.peers) net.peers={};
+  const p=net.peers[id]||(net.peers[id]={id:id,name:'친구',char:null,score:0,lives:0,
+    combo:1,ready:false,over:false,reason:'',gone:false,seen:0});
+  Object.assign(p,fields||{}); p.seen=performance.now();
+  // 첫 참가자를 net.foe로 둔다(1:1 화면·던지기 게임이 이걸 쓴다)
+  const first=peerList()[0];
+  if(first) net.foe={id:first.id,name:first.name,char:first.char};
+  return p;
+}
+function peerDrop(id){ if(net.peers&&net.peers[id]) net.peers[id].gone=true;
+  const first=peerList()[0]; net.foe=first?{id:first.id,name:first.name,char:first.char}:null; }
+// 손님끼리 주고받은 인사가 유실되면 서로를 못 본다(3명 이상이면 흔해진다).
+// 방장은 모두가 아는 유일한 사람이므로, 방장이 명부를 뿌려 모두를 맞춘다.
+function netRoster(){ if(!net.host) return;
+  netSend({t:'roster',ps:peerList().map(p=>({id:p.id,name:p.name,char:p.char}))}); }
+function recvRoster(hostPid,ps){
+  if(net.host||!Array.isArray(ps)) return;              // 명부는 방장만 만든다
+  ps.forEach(p=>{ if(p&&p.id&&p.id!==myId) peerUpsert(p.id,{name:p.name,char:p.char,gone:false}); });
+  // 명부에 없으면 나간 사람이다. 단, 판이 도는 중에는 지우지 않는다 — 방장 화면이
+  // 한 박자 늦으면 멀쩡한 사람이 사라져 생존자 수가 틀어진다.
+  if(!netMode){
+    const keep={}; ps.forEach(p=>{ if(p&&p.id) keep[p.id]=1; }); keep[hostPid]=1;
+    peerList().forEach(p=>{ if(!keep[p.id]) peerDrop(p.id); });
+  }
+  renderLobby();
+}
+let net={ch:null,room:'',host:false,foe:null,peers:{},order:[],mp:false,ready:false,foeReady:false,
          foeStat:{score:0,lives:0,combo:1,level:1},lastFoe:0,
          myOver:false,myScore:0,myReason:'',foeOver:false,foeScore:0,foeReason:'',
          foeGone:false,watchT:null,timeLimit:120,status:'',statusMsg:''};
 
 function netSend(o){
   if(aiOn){ aiOnMsg(o); return; }        // AI 대결은 같은 경로를 그대로 쓴다
-  if(net.ch){ try{ net.ch.send({type:'broadcast',event:'msg',payload:o}); }catch(e){} } }
+  if(net.ch){ try{ o.from=myId; net.ch.send({type:'broadcast',event:'msg',payload:o}); }catch(e){} } }
 function netLeave(){
   netHelloStop(); net.park=false;
   if(net.ch){ netSend({t:'bye'}); try{ getSupa().removeChannel(net.ch); }catch(e){} net.ch=null; }
   if(net.watchT){ clearInterval(net.watchT); net.watchT=null; }
   aiStop(); hubUnadvertise();
   netMode=false; net.foe=null; net.ready=false; net.foeReady=false; net.foeGone=false;
+  net.peers={}; net.order=[]; net.mp=false; net.mpWin=false;   // 참가자 명부를 비운다 — 다음 방에 이전 사람이 남으면 안 된다
   net.room=''; net.status=''; net.statusMsg=''; sdkT0=0;   // 방을 비워야 대기 중인 재시도가 멈춘다
   lobbyStopWait();
 }
@@ -2258,6 +2309,9 @@ function nickOrPrompt(){
 }
 function netOnMsg(m){
   if(!m||!m.t) return;
+  if(m.from===myId) return;                       // 내가 보낸 것이 되돌아온 경우
+  if(m.to&&m.to!==myId) return;                   // 남에게 보낸 귓속말
+  const pid=m.from||'AI';                         // AI 대결은 보낸 사람 표시가 없다
   net.lastFoe=performance.now(); net.foeGone=false;
   // 대전이 아닌데 오는 게임 메시지는 버린다. 안 버리면 방을 열어둔 채 혼자 하는 판에
   // 상대가 던진 젤리가 날아든다.
@@ -2273,36 +2327,62 @@ function netOnMsg(m){
     });
   }
   if(m.t==='hello'||m.t==='hi'){
-    net.foe={name:m.name||'친구',char:m.char};
+    // 방이 꽉 찼으면 방장이 돌려보낸다 — 정원은 MAX_PLAYERS명
+    if(net.host&&!net.peers[pid]&&playerCount()>=MAX_PLAYERS){
+      netSend({t:'full',to:pid}); return; }
+    const isNew=!net.peers[pid];
+    peerUpsert(pid,{name:m.name||'친구',char:m.char,gone:false});
     netHelloStop();                       // 상대를 알았으니 인사를 멈춘다
     if(m.t==='hello') netSend({t:'hi',name:nick,char:character});   // 늦게 들어온 쪽에 내 정보 전달
-    if(net.host){ hubUnadvertise();      // 친구가 들어왔으니 목록에서 내린다
+    if(net.host){
+      if(playerCount()>=MAX_PLAYERS) hubUnadvertise(); else hubAdvertise();  // 정원 차면 목록에서 내린다
       netSend({t:'seed',seed:netSeed,mode:netModeName,timeLimit:net.timeLimit,
-        game:netGame,hostRole:hostRole}); }
+        game:netGame,hostRole:hostRole});
+      netRoster(); }
+    if(isNew&&netMode) toast('🙋 '+(m.name||'친구')+'님이 합류했어요!');
     renderLobby();
   }
+  else if(m.t==='roster'){ recvRoster(pid,m.ps); }
+  else if(m.t==='full'){ toast('방이 꽉 찼어요 (최대 '+MAX_PLAYERS+'명) 😢'); netLeave(); openNetMode(netGame); }
   else if(m.t==='seed'){ if(!net.host){ netSeed=m.seed>>>0; netModeName=MODES[m.mode]?m.mode:'normal';
       net.timeLimit=m.timeLimit||120;
       netGame=(m.game==='throw')?'throw':'dungeon';
       hostRole=(m.hostRole==='popper')?'popper':'thrower'; } renderLobby(); }
-  else if(m.t==='ready'){ net.foeReady=true; renderLobby(); if(net.host&&net.ready) netStartMatch(); }
+  else if(m.t==='ready'){ peerUpsert(pid,{ready:true}); net.foeReady=true;
+    renderLobby(); mpMaybeStart(); }
   else if(m.t==='start'){ if(!net.host) netBeginCountdown(); }
   else if(m.t==='throw'){ recvThrow(m.items||[]); }
   else if(m.t==='hex'){ recvHex(m.kind); }                       // 실시간 던전: 효과형 방해
   else if(m.t==='jthrow'){ recvJelly(m); }                       // 던지기 게임: 젤리 1개 도착
   else if(m.t==='jgone'){ throwerOnGone(m); }                    // 던지기 게임: 그 젤리가 어떻게 됐는지
-  else if(m.t==='tstat'){ net.foeStat={score:m.score|0,lives:0,combo:1}; updateFoeHud(); }
-  else if(m.t==='stat'){ net.foeStat=m;
+  else if(m.t==='tstat'){ peerUpsert(pid,{score:m.score|0,lives:0,combo:1});
+    net.foeStat={score:m.score|0,lives:0,combo:1}; updateFoeHud(); }
+  else if(m.t==='stat'){ peerUpsert(pid,{score:m.score|0,lives:m.lives|0,combo:m.combo||1});
+    net.foeStat=m;
     if(throwerAlive){ popStat={score:m.score|0,lives:m.lives|0,combo:m.combo||1};
       if(m.level) level=m.level|0; }   // 미러 테마를 상대 화면과 맞춘다
     else updateFoeHud(); }
   else if(m.t==='jkind'){ /* 예약 */ }
-  else if(m.t==='over'){ net.foeOver=true; net.foeScore=m.score|0; net.foeReason=m.reason||'time';
+  else if(m.t==='over'){
+    peerUpsert(pid,{over:true,reason:m.reason||'time',score:m.score|0});
+    if((m.reason||'')==='dead'&&net.order.indexOf(pid)<0) net.order.push(pid);   // 탈락 순서
+    net.foeOver=true; net.foeScore=m.score|0; net.foeReason=m.reason||'time';
     if(m.popped!=null){ net.foePopped=m.popped|0; net.foeMissed=m.missed|0; }
     if(throwerAlive){ throwerFinish(); return; }                 // 터트리는 사람이 끝났으면 나도 끝
+    if(net.mp){ updateFoeHud(); if(running){ mpCheckLast(); return; } netResolve(); return; }
     netResolve(); }
   else if(m.t==='bye'){
-    if(net.foeOver) return;                       // 이미 끝낸 상대가 화면을 닫은 것 — 무시한다
+    const wasOver=net.peers[pid]&&net.peers[pid].over;
+    peerDrop(pid);
+    // 자리가 하나 비었으니 명부를 다시 뿌리고, 목록에도 다시 올린다(정원이 차서 내렸을 수 있다)
+    if(net.host){ netRoster(); if(!netMode&&playerCount()<MAX_PLAYERS) hubAdvertise(); }
+    if(net.mp){                                   // 나가면 생존자가 줄어든다
+      updateFoeHud();
+      if(running){ mpCheckLast(); return; }
+      if(net.myOver){ netResolve(); return; }     // 이미 끝난 뒤라면 순위를 다시 계산한다
+    }
+    if(wasOver||net.foeOver) return;              // 이미 끝낸 상대가 화면을 닫은 것 — 무시한다
+    if(peerCount()>0){ renderLobby(); return; }   // 아직 다른 사람이 남아 있다
     net.foeGone=true;
     // 상대가 나갔다고 내 판을 끊지 않는다. 끝까지 하고 승리로 처리한다.
     if(netMode&&(running||throwerAlive)){ toast('상대가 나갔어요 — 끝까지 해보세요! 🏆'); }
@@ -2379,7 +2459,8 @@ function hubLeave(){ if(hubT){ clearTimeout(hubT); hubT=null; }
 // 내 방을 목록에 올린다 / 내린다
 function hubAdvertise(){
   if(!hub||!net.room||!net.host||!netPublic||aiOn) return;
-  try{ hub.track({room:net.room,name:nick||'누군가',game:netGame,mode:netModeName,role:hostRole}); }catch(e){}
+  try{ hub.track({room:net.room,name:nick||'누군가',game:netGame,mode:netModeName,role:hostRole,
+    n:playerCount(),max:MAX_PLAYERS}); }catch(e){}
 }
 function hubUnadvertise(){ if(hub){ try{ hub.untrack(); }catch(e){} } }
 function renderRoomList(){
@@ -2398,9 +2479,10 @@ function renderRoomList(){
   rooms.slice(0,8).forEach(r=>{
     const m=MODES[r.mode]||MODES.normal;
     const b=document.createElement('button'); b.className='roomrow';
+    const cnt=(r.n?(' · '+r.n+'/'+(r.max||MAX_PLAYERS)+'명'):'');
     const sub=(netGame==='throw')
       ? (m.emoji+m.name+' · 방장 '+roleLabel(r.role)+' → 나는 '+roleLabel(r.role==='thrower'?'popper':'thrower'))
-      : (m.emoji+m.name);
+      : (m.emoji+m.name+cnt);
     b.innerHTML='<span style="font-size:22px;">🚪</span><span class="who">'+
       '<span class="nm">'+escapeHtml(r.name)+'</span><span class="sub">'+sub+'</span></span>'+
       '<span class="go">입장</span>';
@@ -2700,10 +2782,16 @@ function renderLobby(){
   if(link){ $('qrWrap').classList.remove('hide'); qrDraw($('qrCanvas'),link); }
   else $('qrWrap').classList.add('hide');
   $('lobbyRole').textContent=net.host?'🏠 내가 방장 — 난이도·시간을 내가 정해요':'🚪 참가자 — 방장 설정을 따라요';
-  const foe=net.foe;
-  let h='<div class="rrow me"><span>🙋 '+escapeHtml(nick||'나')+' (나)</span><span>'+(net.ready?'✅ 준비완료':'⌛ 준비중')+'</span></div>';
-  h+='<div class="rrow"><span>'+(foe?('🙋 '+escapeHtml(foe.name)):'⌛ <span class="wait">친구를 기다려요…</span>')+'</span><span>'+
-     (foe?(net.foeReady?'✅ 준비완료':'⌛ 준비중'):'—')+'</span></div>';
+  const foe=net.foe, ps=peerList();
+  let h='<div class="rrow me"><span>🙋 '+escapeHtml(nick||'나')+' (나)'+(net.host?' 🏠':'')+'</span><span>'
+    +(net.ready?'✅ 준비완료':'⌛ 준비중')+'</span></div>';
+  ps.forEach(p=>{ h+='<div class="rrow"><span>🙋 '+escapeHtml(p.name)+'</span><span>'
+    +(p.ready?'✅ 준비완료':'⌛ 준비중')+'</span></div>'; });
+  // 빈 자리 — 최대 4명까지 들어올 수 있다는 걸 보여준다
+  for(let i=playerCount(); i<MAX_PLAYERS; i++){
+    h+='<div class="rrow"><span>'+(i===playerCount()&&!ps.length
+      ? '⌛ <span class="wait">친구를 기다려요…</span>' : '🪑 빈 자리')+'</span><span>—</span></div>';
+  }
   $('lobbyPlayers').innerHTML=h;
   const m=MODES[netModeName]||MODES.normal;
   $('lobbyInfo').textContent='난이도 '+m.emoji+m.name+' · 제한시간 '+net.timeLimit+'초 · 목숨 '+m.lives+'개';
@@ -2711,7 +2799,10 @@ function renderLobby(){
     ? (myRole==='thrower'
         ? '🎯 <b>던지는 사람</b> — 상대 화면을 보며 눌러서 던져요. 무기는 ⚡에너지로, <b>낙하 속도(🐢느리게~🚀초고속)는 공짜로</b> 바꿀 수 있어요. 상대가 놓칠수록 콤보가 쌓여요!'
         : '💥 <b>터트리는 사람</b> — 젤리가 저절로 안 나와요. 상대가 던진 것만 내려옵니다. 90초를 버티면 승리!')
-    : '젤리를 터뜨리면 게이지가 차고, 🎯 버튼으로 <b>상대 화면에 젤리를 던집니다.</b><br>둘 다 준비하면 카운트다운 후 동시에 시작해요!';
+    : '젤리를 터뜨리면 게이지가 차고, 방해 아이템으로 <b>다른 사람 화면에 젤리를 던집니다.</b>'
+      +'<br>최대 '+MAX_PLAYERS+'명까지 함께! <b>목숨을 다 잃으면 탈락</b>, 마지막까지 살아남은 사람이 우승이에요.'
+      +'<br>3명 이상이면 방해는 <b>한 사람에게만</b> 날아가요 — 기본은 🎲무작위, 위쪽 상대 칩을 누르면 🎯그 사람만 노려요.'
+      +'<br>모두 준비하면 카운트다운 후 동시에 시작해요!';
   // 코드는 이미 위에 떠 있다. 연결이 안 됐으면 그 사실만 정확히 알린다.
   const st=$('lobbyStatus');
   if(net.status==='ok') st.textContent=foe?'✅ 연결됨':'✅ 연결됨 — 친구가 코드를 넣으면 아래에 떠요';
@@ -2722,11 +2813,20 @@ function renderLobby(){
   $('lobbyNickCard').classList.toggle('hide',!!nick);
   if(foe) lobbyStopWait(); else if(!lobbyTickT) lobbyStartWait();
   const rb=$('lobbyReadyBtn'), ok=(net.status==='ok');
-  rb.disabled=!ok||!foe||net.ready||!nick;
-  rb.textContent = net.ready ? '✅ 준비 완료'
-    : !nick ? '닉네임을 먼저 정해주세요'
-    : !ok   ? '연결을 기다려요…'
-    : foe   ? '준비 완료!' : '친구를 기다려요…';
+  const others=ps.length, allReady=others>0&&ps.every(p=>p.ready);
+  // 방장은 모두 준비되면 '시작하기'가 뜬다. 참가자는 준비만 하면 된다.
+  if(net.host&&net.ready){
+    rb.disabled=!ok||!allReady;
+    rb.textContent=allReady?('▶ 시작하기 ('+playerCount()+'명)'):('⌛ 다른 사람 준비 대기 ('+others+'명)');
+    rb.onclick=()=>{ if(allReady) netStartMatch(); };
+  } else {
+    rb.disabled=!ok||!others||net.ready||!nick;
+    rb.textContent = net.ready ? '✅ 준비 완료 — 방장을 기다려요'
+      : !nick ? '닉네임을 먼저 정해주세요'
+      : !ok   ? '연결을 기다려요…'
+      : others? '준비 완료!' : '친구를 기다려요…';
+    rb.onclick=lobbyReady;
+  }
 }
 // 아무도 안 들어오는 방에 계속 앉혀두지 않는다. 시간이 지나면 알아서 홈으로 보낸다.
 const LOBBY_WAIT_MS=180000;   // 3분
@@ -2749,8 +2849,15 @@ function lobbyTick(){
 }
 function lobbyReady(){
   if(!net.foe||net.ready) return;
-  net.ready=true; netSend({t:'ready'}); renderLobby();
-  if(net.host&&net.foeReady) netStartMatch();
+  net.ready=true; netSend({t:'ready'}); renderLobby(); mpMaybeStart();
+}
+// 방장만 시작을 누른다. 1:1(던지기)은 둘 다 준비되면 바로, 실시간 던전은
+// 3명째가 올 수도 있으니 방장이 직접 누른다 — 정원(4명)이 차면 자동으로 시작.
+function mpMaybeStart(){
+  if(!net.host||!net.ready) return;
+  const ps=peerList();
+  if(!ps.length||!ps.every(p=>p.ready)) return;
+  if(netGame==='throw'||playerCount()>=MAX_PLAYERS) netStartMatch();
 }
 function netStartMatch(){ netSend({t:'start'}); netBeginCountdown(); }
 function netBeginCountdown(){
@@ -2768,9 +2875,22 @@ function netBeginCountdown(){
 
 // ---- 게임 중 ----
 function netStartSetup(){
-  if(!netMode){ $('netBar').classList.add('hide'); $('throwWrap').classList.add('hide'); return; }
+  if(!netMode){ net.mp=false;                     // 혼자 하는 판에 여러 명 규칙이 남으면 안 된다
+    $('netBar').classList.add('hide'); $('throwWrap').classList.add('hide'); return; }
   throwGauge=0;
   net.myOver=false; net.foeOver=false; net.foeScore=0; net.foeReason=''; net.foeGone=false;
+  net.order=[]; peerList().forEach(p=>{ p.over=false; p.reason=''; p.score=0;
+    p.lives=MODES[netModeName]?MODES[netModeName].lives:MODES[mode].lives; });
+  // 판이 시작될 때의 인원으로 규칙을 고정한다. 중간에 누가 나가도 1:1 승패 판정으로
+  // 되돌아가면 안 된다(그러면 net.foe 하나만 보고 엉뚱한 결과가 나온다).
+  net.mp=(netGame==='dungeon'&&playerCount()>=3); net.mpWin=false; net.target='';
+  // 상대 칩을 눌러 노릴 사람을 고른다. 다시 그릴 때마다 배선하지 않도록 위임해 둔다.
+  $('foeHud').onclick=e=>{
+    if(!net.mp) return;
+    const el=e.target&&e.target.closest?e.target.closest('.fp'):null; if(!el) return;
+    if(el.classList.contains('mine')){ net.target=''; toast('🎲 아무나 노려요'); updateFoeHud(); return; }
+    const pid=el.getAttribute('data-pid'); if(pid) mpSetTarget(pid);
+  };
   net.foeStat={score:0,lives:MODES[mode].lives,combo:1,level:1}; net.lastFoe=performance.now();
   $('netBar').classList.remove('hide');
   // 던지기 게임의 터트리는 사람은 공격은 못 하지만 방어 아이템은 쓴다
@@ -2800,7 +2920,31 @@ function updateFoeHud(){
     $('foeHud').innerHTML='<b>🎯 '+escapeHtml(nm)+'</b><span>던진 점수 ⭐ '+(f.score|0)+'</span><span>⏱ '+left+'초</span>';
     return;
   }
-  const max=MODES[mode].lives, lv=Math.max(0,Math.min(max,f.lives|0));
+  const max=MODES[mode].lives, ps=peerList();
+  // 여러 명이면 한 명씩 칩으로 — 누가 몇 등인지 한눈에 보여야 한다.
+  // 목숨을 하트 그림으로 늘어놓으면 세 명만 되어도 상자가 네 줄이 되어 판을 가린다.
+  // 그래서 숫자로 적어 한 줄에 두 명씩 들어가게 한다.
+  if(ps.length>=2){
+    const alive=mpAlive();
+    // 점수를 네 자리까지 적으면 칩이 한 줄에 하나씩 놓여 상자가 네 줄이 된다.
+    // 지금 중요한 건 '누가 살아 있고 누가 앞서는가'다 — 목숨과 👑(선두)로 줄인다.
+    // 자세한 점수는 끝나고 순위표에서 본다.
+    const lead=[{id:myId,score:score}].concat(ps.map(p=>({id:p.id,score:p.score|0})))
+      .filter(o=>alive.indexOf(o.id)>=0).sort((a,b)=>b.score-a.score)[0];
+    const crown=o=>(lead&&lead.id===o&&lead.score>0)?'👑':'';
+    $('foeHud').classList.add('mp');
+    $('foeHud').innerHTML='<span class="fp mine">'+(net.target?'🎯':'🎲')+' '+alive.length
+      +'/'+playerCount()+'명'+crown(myId)+'</span>'
+      +ps.slice(0,3).map(p=>{
+      const lv=Math.max(0,Math.min(max,p.lives|0)), out=(alive.indexOf(p.id)<0);
+      return '<span class="fp'+(out?' out':'')+(net.target===p.id?' tgt':'')+'" data-pid="'
+        +escapeHtml(p.id)+'"><span class="nm">'+escapeHtml(p.name)+'</span> '
+        +(out?'💀':('❤️'+lv))+crown(p.id)+'</span>';
+    }).join('');
+    return;
+  }
+  $('foeHud').classList.remove('mp');
+  const lv=Math.max(0,Math.min(max,f.lives|0));
   $('foeHud').innerHTML='<b>🙋 '+escapeHtml(nm)+'</b><span>⭐ '+(f.score|0)+'</span><span>'+
     '❤️'.repeat(lv)+'🤍'.repeat(max-lv)+'</span>';
 }
@@ -2901,14 +3045,18 @@ function doHex(id){
     if(!hexSeen[id]){ hexSeen[id]=1; toast(h.e+' '+h.n+' — '+h.d); }
     playLevelUp(); updateGauge(); return;
   }
-  if(id==='jelly'){ netSend({t:'throw',items:makeThrowItems(3,false)});
+  // 여러 명 판에서는 한 사람에게만 날아간다(to). 셋 모두에게 가면 받는 쪽이 3배로 맞아
+  // 시작하자마자 다 죽는다. 목표를 안 골랐으면 살아 있는 사람 중 무작위.
+  const to=mpTarget();
+  if(id==='jelly'){ netSend({t:'throw',items:makeThrowItems(3,false),to:to});
     bolt=Math.min(BOLT_NEED,bolt+1);                   // 🍡를 쓸수록 ⚡가 찬다
     if(bolt===BOLT_NEED) showCallout('⚡ 충전 완료!','#ff9c3d'); }
-  else if(id==='ghost') netSend({t:'throw',items:makeThrowItems(4,false,true)});
-  else if(id==='bomb')  netSend({t:'throw',items:makeThrowItems(5,true)});
-  else                  netSend({t:'hex',kind:id});
+  else if(id==='ghost') netSend({t:'throw',items:makeThrowItems(4,false,true),to:to});
+  else if(id==='bomb')  netSend({t:'throw',items:makeThrowItems(5,true),to:to});
+  else                  netSend({t:'hex',kind:id,to:to});
   if(h.bolt) bolt=0; else throwGauge-=h.cost;
-  floater(W/2,H*0.52,h.e+' '+h.n+'!','#8a5cff'); showCallout('THROW! '+h.e,'#8a5cff');
+  const aim=to?(' → '+mpTargetName(to)):'';
+  floater(W/2,H*0.52,h.e+' '+h.n+'!'+aim,'#8a5cff'); showCallout('THROW! '+h.e+aim,'#8a5cff');
   playLevelUp(); updateGauge();
 }
 
@@ -3184,15 +3332,81 @@ function aiPrizeLine(win){
   return '\n'+c.name+' 격파! 🪙 +'+c.prize+'코인';
 }
 
+// ═══ 여러 명 대전: 마지막 생존 ═══
+// 목숨이 0이 되면 탈락하고, 탈락 순서가 곧 순위다(먼저 죽으면 꼴등).
+// 마지막 한 명이 남으면 그 사람이 1등. 시간이 다 되면 살아남은 사람끼리 점수로 가린다.
+// ── 누구를 노릴까 ──
+// 기본은 무작위. 상대 칩을 누르면 그 사람만 계속 노린다(한 번 더 누르면 다시 무작위).
+function mpTarget(){
+  if(!net.mp) return undefined;                      // 1:1이나 AI 대결은 그대로 상대 한 명
+  const alive=mpAlive().filter(id=>id!==myId);
+  if(!alive.length) return undefined;
+  if(net.target&&alive.indexOf(net.target)>=0) return net.target;
+  return alive[(Math.random()*alive.length)|0];      // srnd()는 젤리 생성 전용이라 여기선 쓰지 않는다
+}
+function mpTargetName(id){ const p=net.peers&&net.peers[id]; return p?p.name:'상대'; }
+function mpSetTarget(id){
+  if(!net.mp) return;
+  net.target=(net.target===id)?'':id;
+  toast(net.target?('🎯 '+mpTargetName(id)+'님만 노려요 (다시 누르면 무작위)'):'🎲 아무나 노려요');
+  updateFoeHud();
+}
+function mpAlive(){
+  const out=[];
+  if(net.order.indexOf(myId)<0&&!net.myOver) out.push(myId);
+  peerList().forEach(p=>{ if(net.order.indexOf(p.id)<0&&!p.over) out.push(p.id); });
+  return out;
+}
+// 나 말고 다 탈락했으면 내가 이긴 것 — 목숨이 남았어도 내 판을 여기서 끝낸다.
+// 결과 화면·코인·기록은 gameOver가 이미 다 하므로 그걸 그대로 쓴다(따로 만들면 코인이 빠진다).
+function mpCheckLast(){
+  if(!net.mp||!running) return;
+  const alive=mpAlive();
+  if(alive.length===1&&alive[0]===myId){
+    net.mpWin=true; toast('🏆 마지막 생존! 승리했어요');
+    gameOver();
+  }
+}
+// 순위 계산 — 탈락한 사람은 탈락 순서의 역순, 살아남은 사람은 그 위에서 점수순
+function mpRanking(){
+  const all=[{id:myId,name:(nick||'나'),score:net.myScore||score,me:true,
+              dead:net.order.indexOf(myId)>=0}];
+  peerList().forEach(p=>all.push({id:p.id,name:p.name,score:p.score|0,me:false,
+              dead:net.order.indexOf(p.id)>=0}));
+  const alive=all.filter(p=>!p.dead).sort((a,b)=>b.score-a.score);
+  const dead =all.filter(p=>p.dead)
+                 .sort((a,b)=>net.order.indexOf(b.id)-net.order.indexOf(a.id)); // 늦게 죽은 사람이 위
+  return alive.concat(dead);
+}
+function mpResolve(){
+  const rank=mpRanking();
+  const mine=rank.findIndex(p=>p.me)+1;
+  const medal=['🥇','🥈','🥉','4️⃣'];
+  // 살아남은 사람이 점수와 무관하게 위다. 그래서 생존/탈락을 둘 다 적어야
+  // "2등이 점수가 더 높은데?" 하고 헷갈리지 않는다.
+  let sub=rank.map((p,i)=>(medal[i]||((i+1)+'.'))+' '+p.name+(p.me?' (나)':'')+'  '+p.score+'점'
+    +(p.dead?' 💀탈락':' ✅생존')).join('\n');
+  const title=(mine===1)?'🏆 우승! 마지막까지 살아남았어요':('😢 '+mine+'등 · '+rank.length+'명 중');
+  showBattleResult(title,sub+aiPrizeLine(mine===1),null,false,null);
+}
+
 // ---- 승패 ----
 function netFinish(){
   net.myOver=true; net.myScore=score; net.myReason=(lives<=0)?'dead':'time';
+  if(net.myReason==='dead'&&net.order.indexOf(myId)<0) net.order.push(myId);   // 내 탈락 순서
   netSend({t:'over',score:score,reason:net.myReason,popped:pPopped,missed:pMissed});
   netResolve();
 }
 function netResolve(){
   if(!net.myOver) return;
   const nm=net.foe?net.foe.name:'친구', me=nick||'나';
+  // 3명 이상으로 시작한 판은 마지막 생존 순위로 가린다
+  if(net.mp){
+    const waiting=peerList().filter(p=>!p.over&&net.order.indexOf(p.id)<0);
+    if(waiting.length>1){ showBattleResult('⏳ 남은 사람들을 기다려요…',
+      waiting.map(p=>p.name).join(', ')+'님이 아직 플레이 중',null,false,null); return; }
+    mpResolve(); return;
+  }
   if(net.foeGone){ showBattleResult('🏆 승리! (상대 연결 끊김)',me+'  '+net.myScore+'점',null,false,null); return; }
   if(!net.foeOver){ showBattleResult('⏳ 상대 결과를 기다려요…',nm+'님이 아직 플레이 중이에요',null,false,null); return; }
   if(netGame==='throw'){

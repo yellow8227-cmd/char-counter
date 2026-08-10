@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8">
+<title>네 사람 대전 검사</title>
+<style>
+  body{font:13px/1.6 ui-monospace,monospace;margin:0;padding:14px;background:#12141c;color:#e6e6ef;}
+  h1{font-size:15px;margin:0 0 10px;}
+  #log{white-space:pre-wrap;}
+  .ok{color:#7ee08a;} .no{color:#ff8a9c;} .dim{color:#8a8aa0;}
+  iframe{width:300px;height:520px;border:0;position:fixed;right:-9999px;}
+</style></head>
+<body>
+<h1>젤리슈팅 · 네 명 실시간 던전 (마지막 생존) 검사</h1>
+<div id="log">준비 중…</div>
+<iframe id="A" src="../index.html"></iframe>
+<iframe id="B" src="../index.html"></iframe>
+<iframe id="C" src="../index.html"></iframe>
+<iframe id="D" src="../index.html"></iframe>
+<script>
+// ────────────────────────────────────────────────────────────────
+// 왜 이 검사가 필요한가.
+// 1:1 검사(two-player-test.html)로는 여러 명 규칙을 전혀 못 본다. 정원 초과 반사,
+// 손님끼리 서로 보이는지, 탈락 순서가 곧 순위인지, 마지막 한 명이 남으면 자동으로
+// 이기는지는 네 명을 동시에 띄워야 드러난다. 방해 아이템이 '한 명'이 아니라
+// '나머지 전부'에게 가는지도 여기서만 확인된다.
+// ────────────────────────────────────────────────────────────────
+const LOG=document.getElementById('log'); let lines=[], fails=0;
+const say=(m,c)=>{ lines.push(c?`<span class="${c}">${m}</span>`:m); LOG.innerHTML=lines.join('\n'); };
+const ok  =m=>say('✅ '+m,'ok');
+const no  =m=>{ fails++; say('❌ '+m,'no'); };
+const dim =m=>say('   '+m,'dim');
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+// ── 가짜 서버 (broadcast + presence 공유) ──
+// drop>0 이면 그만큼의 broadcast를 삼킨다. block 은 특정 두 사람 사이만 끊는다
+// (손님끼리 인사가 안 닿는 상황 — 방장 명부가 필요한 이유를 재현한다).
+const BUS={ ch:{}, drop:0, block:[] };
+BUS.cut=(a,b)=>BUS.block.some(p=>(p[0]===a&&p[1]===b)||(p[0]===b&&p[1]===a));
+BUS.sync=name=>(BUS.ch[name]||[]).forEach(o=>o.presH.forEach(h=>h({event:'sync'})));
+function fakeClient(tag){
+  return {
+    channel(name){
+      const ch={ name, tag, msgH:[], presH:[], presence:null,
+        on(type,f,cb){ (type==='broadcast'?ch.msgH:ch.presH).push(cb); return ch; },
+        subscribe(cb){ (BUS.ch[name]=BUS.ch[name]||[]).push(ch);
+          setTimeout(()=>{ if(cb)cb('SUBSCRIBED'); BUS.sync(name); },12); return ch; },
+        send(msg){ if(BUS.drop>0){ BUS.drop--; return Promise.resolve('ok'); }
+          setTimeout(()=>{ (BUS.ch[name]||[]).forEach(o=>{
+            if(o!==ch&&!BUS.cut(ch.tag,o.tag)) o.msgH.forEach(h=>h(msg)); }); },6);
+          return Promise.resolve('ok'); },
+        track(o){ ch.presence=o; setTimeout(()=>BUS.sync(name),6); return Promise.resolve('ok'); },
+        untrack(){ ch.presence=null; setTimeout(()=>BUS.sync(name),6); return Promise.resolve('ok'); },
+        presenceState(){ const st={};
+          (BUS.ch[name]||[]).forEach((o,i)=>{ if(o.presence) st['k'+i]=[o.presence]; }); return st; },
+      };
+      return ch;
+    },
+    removeChannel(ch){ const a=BUS.ch[ch&&ch.name]||[]; const i=a.indexOf(ch);
+      if(i>=0)a.splice(i,1); if(ch&&ch.name)BUS.sync(ch.name); },
+    from(){ const q={ select:()=>q, eq:()=>q, order:()=>q,
+      limit:()=>Promise.resolve({data:[],error:null}), insert:()=>Promise.resolve({error:null}),
+      update:()=>q, maybeSingle:()=>Promise.resolve({data:null,error:null}) }; return q; },
+  };
+}
+window.__fakeClient=fakeClient;
+
+const F={A:document.getElementById('A'),B:document.getElementById('B'),
+         C:document.getElementById('C'),D:document.getElementById('D')};
+const KEYS=['A','B','C','D'];
+const w=f=>f.contentWindow;
+// 게임의 최상위 let/const 는 window 속성이 아니다 — 프레임 안에서 eval 해야 보인다.
+const ev=(k,code)=>w(F[k]).eval(code);
+const all=(code)=>KEYS.map(k=>ev(k,code));
+function install(k,nick){
+  const W=w(F[k]);
+  W.supabase={createClient:()=>window.parent.__fakeClient(k)};
+  ev(k,'_supa=null'); ev(k,'supaReady=()=>true');
+  ev(k,'hubLeave(); netLeave(); aiStop();');
+  W.saveNick(nick);
+}
+const wait=async(cond,ms=5000)=>{ const t0=Date.now();
+  while(Date.now()-t0<ms){ if(cond())return true; await sleep(60); } return false; };
+
+const NICK={A:'까미',B:'하늘',C:'초코',D:'몽이'};
+
+// 네 명이 같은 방에 모이게 한다 — A가 방장
+async function gather(){
+  KEYS.forEach(k=>install(k,NICK[k]));
+  all("openNetMode('dungeon')");
+  await sleep(80);
+  ev('A','netCreate()');
+  const code=ev('A','net.room');
+  await sleep(150);
+  for(const k of ['B','C','D']){
+    ev(k,'netEnterRoom("'+code+'",false)');
+    await sleep(220);                       // 실제 사용자도 한 명씩 들어온다
+  }
+  await wait(()=>all('playerCount()').every(n=>n===4),6000);
+  return code;
+}
+
+async function run(){
+  const ready=k=>{ try{ return typeof w(F[k]).saveNick==='function' && typeof w(F[k]).netCreate==='function'; }catch(e){ return false; } };
+  const up=await wait(()=>KEYS.every(ready),20000);
+  if(!up){ no('게임 인스턴스를 불러오지 못했습니다'); window.__done=true; window.__fails=1; return; }
+  await sleep(300);
+  lines=[]; say('네 인스턴스 로드 완료','dim');
+
+  // ── 1. 네 명이 한 방에 모인다 (손님끼리도 서로 보여야 한다) ──
+  const code=await gather();
+  const counts=all('playerCount()');
+  if(counts.every(n=>n===4)) ok('네 명이 같은 방('+code+')에 모였다 — 모두 4명으로 센다');
+  else no('인원 집계가 어긋난다: '+counts.join('/')+' (기대 4/4/4/4)');
+  // 손님 B가 손님 C·D를 아는가 (방장을 거치지 않으면 여기서 깨진다)
+  const bSees=ev('B','peerList().map(p=>p.name).sort().join(",")');
+  if(bSees==='까미,몽이,초코') ok('손님도 다른 손님을 다 본다 (B가 본 사람: '+bSees+')');
+  else no('손님이 다른 손님을 못 본다 — B가 본 사람: '+bSees);
+
+  // ── 2. 대기실에 네 명이 그려지고 빈 자리가 없다 ──
+  ev('A','renderLobby()');
+  const rows=w(F.A).document.querySelectorAll('#lobbyPlayers .rrow').length;
+  const lobbyTxt=w(F.A).document.getElementById('lobbyPlayers').textContent;
+  if(rows===4&&lobbyTxt.indexOf('빈 자리')<0) ok('대기실에 4줄이 그려지고 빈 자리가 없다');
+  else no('대기실 표시가 틀렸다: '+rows+'줄, 빈자리='+(lobbyTxt.indexOf('빈 자리')>=0));
+
+  // ── 3. 5번째는 정원 초과로 돌려보낸다 ──
+  // 다섯 번째 인스턴스를 띄우는 대신 가짜 손님이 직접 인사를 던진다.
+  const guest=fakeClient().channel('jelly:room:'+code);
+  let bounced=null;
+  guest.on('broadcast',{event:'msg'},p=>{ const m=p&&p.payload;
+    if(m&&m.t==='full') bounced=m; });
+  guest.subscribe();
+  await sleep(120);
+  guest.send({type:'broadcast',event:'msg',payload:{t:'hello',from:'XGUEST',name:'다섯째'}});
+  const gotFull=await wait(()=>!!bounced,3000);
+  if(gotFull&&bounced.to==='XGUEST') ok('정원(4명)이 차면 다섯째를 돌려보낸다 (full → XGUEST)');
+  else no('정원이 찼는데 다섯째를 안 막았다'+(bounced?(' — to='+bounced.to):''));
+  if(ev('A','playerCount()')===4) ok('돌려보낸 손님은 인원에 안 들어간다');
+  else no('돌려보낸 손님이 인원에 들어갔다: '+ev('A','playerCount()'));
+
+  // ── 4. 모두 준비 → 방장이 시작 → 네 명 모두 판이 돈다 ──
+  ['B','C','D'].forEach(k=>ev(k,'lobbyReady()'));
+  await sleep(300);
+  const startedByReady=ev('A','netMode===true');
+  if(!startedByReady) ok('모두 준비해도 방장이 누를 때까지 안 시작한다 (3명째를 기다릴 수 있게)');
+  else no('방장이 안 눌렀는데 시작해버렸다');
+  ev('A','lobbyReady()');           // 방장도 준비 → 정원이 찼으므로 자동 시작
+  const running=await wait(()=>all('running').every(r=>r===true),8000);
+  if(running) ok('카운트다운 뒤 네 명 모두 게임이 돌아간다');
+  else no('게임이 시작되지 않았다: '+all('running').join('/'));
+  const mps=all('net.mp');
+  if(mps.every(v=>v===true)) ok('네 명 모두 여러 명 규칙(net.mp)으로 고정됐다');
+  else no('여러 명 규칙이 안 걸렸다: '+mps.join('/'));
+
+  // ── 5. 방해는 한 사람에게만 간다 (셋 모두 맞으면 받는 쪽이 3배로 맞아 판이 안 된다) ──
+  ev('A','throwGauge=99; doHex("zig")');
+  await sleep(400);
+  let zig=['B','C','D'].map(k=>ev(k,'hexT.zig')>0);
+  if(zig.filter(Boolean).length===1) ok('🌀지그재그가 무작위로 한 사람에게만 갔다 ('
+    +['B','C','D'].filter((k,i)=>zig[i]).join('')+')');
+  else no('방해가 '+zig.filter(Boolean).length+'명에게 갔다 (기대 1명): '
+    +['B','C','D'].map((k,i)=>k+'='+zig[i]).join(' '));
+  ['B','C','D'].forEach(k=>ev(k,'hexT.zig=0'));
+
+  // ── 5-b. 목표를 고르면 그 사람만 계속 맞는다 ──
+  const cId=ev('C','myId');
+  ev('A','mpSetTarget('+JSON.stringify(cId)+')');
+  if(ev('A','net.target')===cId) ok('상대 칩을 눌러 🎯목표를 잠갔다 (초코)');
+  else no('목표 잠금이 안 됐다: '+ev('A','net.target'));
+  for(let i=0;i<3;i++){ ev('A','throwGauge=99; doHex("zig")'); await sleep(250); }
+  zig=['B','C','D'].map(k=>ev(k,'hexT.zig')>0);
+  if(zig[1]&&!zig[0]&&!zig[2]) ok('세 번 던져도 🎯목표(초코)만 맞았다');
+  else no('목표를 잠갔는데 다른 사람이 맞았다: '+['B','C','D'].map((k,i)=>k+'='+zig[i]).join(' '));
+  // 화면에도 표시되는가
+  ev('A','updateFoeHud()');
+  const tgtChip=w(F.A).document.querySelector('#foeHud .fp.tgt');
+  if(tgtChip&&/초코/.test(tgtChip.textContent)) ok('HUD에 🎯 표시가 초코 칩에 붙었다');
+  else no('HUD에 목표 표시가 없다');
+  ev('A','mpSetTarget('+JSON.stringify(cId)+')');   // 다시 눌러 무작위로
+  if(ev('A','net.target')==='') ok('한 번 더 누르면 🎲무작위로 돌아온다');
+  else no('목표가 안 풀렸다: '+ev('A','net.target'));
+  ['B','C','D'].forEach(k=>ev(k,'hexT.zig=0'));
+
+  // ── 6. 탈락 순서가 곧 순위 · 마지막 한 명은 자동 승리 ──
+  ev('D','lives=0; gameOver();');    // 먼저 죽은 사람이 꼴등
+  await sleep(250);
+  ev('C','lives=0; gameOver();');
+  await sleep(250);
+  if(ev('A','running')===true) ok('두 명이 탈락해도 남은 사람은 계속 플레이한다');
+  else no('두 명 탈락에 남은 사람 판까지 끝났다');
+  const aliveA=ev('A','mpAlive().length');
+  if(aliveA===2) ok('A가 센 생존자 2명 (A·B)');
+  else no('생존자 집계가 틀렸다: '+aliveA+'명');
+  // 승자는 gameOver를 안 타면 이 판에서 모은 코인이 그대로 사라진다. 실제 숫자로 확인한다.
+  const coinBefore=ev('A','coins');
+  ev('A','runCoins=37');
+  ev('B','lives=0; gameOver();');    // 이제 A만 남는다
+  const won=await wait(()=>ev('A','running')===false,4000);
+  if(won&&ev('A','net.mpWin')===true) ok('마지막 한 명이 남으면 목숨이 남았어도 자동 승리');
+  else no('마지막 생존 승리가 안 걸렸다 (running='+ev('A','running')+' mpWin='+ev('A','net.mpWin')+')');
+
+  // ── 7. 순위: 살아남은 사람이 위, 탈락은 늦게 죽은 순 ──
+  await sleep(400);
+  const rankA=ev('A','mpRanking().map(p=>p.name).join(",")');
+  if(rankA==='까미,하늘,초코,몽이') ok('A가 본 순위 1~4등: '+rankA);
+  else no('순위가 틀렸다 (A): '+rankA+' (기대 까미,하늘,초코,몽이)');
+  const rankD=ev('D','mpRanking().map(p=>p.name).join(",")');
+  if(rankD==='까미,하늘,초코,몽이') ok('먼저 죽은 D가 본 순위도 같다');
+  else no('순위가 사람마다 다르다 (D): '+rankD);
+  const myRankD=ev('D','mpRanking().findIndex(p=>p.me)+1');
+  if(myRankD===4) ok('가장 먼저 탈락한 D가 4등');
+  else no('D의 등수가 틀렸다: '+myRankD);
+  // 결과 화면에 순위표가 떴는가
+  const resA=w(F.A).document.getElementById('battleResult').textContent;
+  if(/우승/.test(resA)&&/🥇/.test(resA)) ok('A 결과 화면에 "우승"과 순위표가 떴다');
+  else no('A 결과 화면이 비었거나 순위표가 없다: '+resA.slice(0,60));
+  const resD=w(F.D).document.getElementById('battleResult').textContent;
+  if(/4등/.test(resD)) ok('D 결과 화면에 "4등"이 떴다');
+  else no('D 결과 화면이 틀렸다: '+resD.slice(0,60));
+  // 코인이 실제로 지급됐는가 (승자는 gameOver를 안 타면 코인이 빠진다)
+  const coinAfter=ev('A','coins'), coinTxt=w(F.A).document.getElementById('overCoins').textContent;
+  if(coinAfter===coinBefore+37&&coinTxt.indexOf('+37')>=0)
+    ok('승자에게도 코인이 정산됐다 ('+coinBefore+' → '+coinAfter+', 화면 "'+coinTxt.trim()+'")');
+  else no('승자 코인 정산이 빠졌다: '+coinBefore+' → '+coinAfter+' (기대 '+(coinBefore+37)+'), 화면 "'+coinTxt.trim()+'"');
+
+  // ── 8. 도중에 나가도 생존자가 줄어든다 (bye로도 마지막 생존이 성립) ──
+  await gather();
+  ['A','B','C','D'].forEach(k=>ev(k,'lobbyReady()'));
+  await wait(()=>all('running').every(r=>r===true),8000);
+  ev('D','netLeave()'); await sleep(200);
+  ev('C','netLeave()'); await sleep(200);
+  if(ev('A','running')===true&&ev('B','running')===true) ok('두 명이 나가도 남은 둘은 계속한다');
+  else no('나간 사람 때문에 남은 판이 끊겼다');
+  ev('B','netLeave()');
+  const wonByBye=await wait(()=>ev('A','running')===false,4000);
+  if(wonByBye&&ev('A','net.mpWin')===true) ok('모두 나가면 남은 한 명이 승리로 끝난다');
+  else no('다 나갔는데 혼자 계속 돌아간다 (running='+ev('A','running')+')');
+
+  // ── 9. 판이 끝나고 방을 나가면 명부가 비워진다 ──
+  ev('A','netLeave()');
+  const cleared=(ev('A','peerCount()')===0)&&(ev('A','net.mp')===false)&&(ev('A','net.order.length')===0);
+  if(cleared) ok('방을 나가면 참가자 명부·탈락 순서·여러명 규칙이 모두 초기화된다');
+  else no('나간 뒤에도 이전 방 상태가 남는다 (peers='+ev('A','peerCount()')
+    +' mp='+ev('A','net.mp')+' order='+ev('A','net.order.length')+')');
+
+  // ── 10. 손님끼리 인사가 안 닿아도 방장 명부로 서로를 안다 ──
+  // 3명 이상이 되면 손님↔손님 인사 유실이 실제로 생긴다. 모두가 아는 사람은 방장뿐이므로
+  // 방장이 명부를 뿌려 맞춘다. 그 명부가 진짜로 일하고 있는지 대조군으로 증명한다.
+  BUS.block=[['B','D'],['C','D']];
+  ev('A','__oldRoster=netRoster; netRoster=()=>{}');     // (대조군) 명부를 끊는다
+  await gather();
+  const blindD=ev('D','peerList().map(p=>p.name).sort().join(",")');
+  if(blindD==='까미') ok('(대조군) 방장 명부를 끊으면 D는 방장만 본다 — 이 검사가 명부를 확인한다는 증거');
+  else no('(대조군) 명부를 끊었는데도 D가 다 봤다: '+blindD+' — 검사가 무의미하다');
+  ev('A','netRoster=__oldRoster');                        // 원래대로
+  BUS.block=[['B','D'],['C','D']];
+  await gather();
+  const seenD=ev('D','peerList().map(p=>p.name).sort().join(",")');
+  if(seenD==='까미,초코,하늘') ok('손님끼리 인사가 끊겨도 방장 명부로 넷이 다 보인다 (D: '+seenD+')');
+  else no('명부가 있어도 D가 못 봤다: '+seenD);
+  BUS.block=[];
+  KEYS.forEach(k=>ev(k,'netLeave()'));
+
+  say('');
+  say(fails? ('총 '+fails+'건 실패') : '전부 통과', fails?'no':'ok');
+  window.__done=true; window.__fails=fails;
+}
+run().catch(e=>{ no('검사 중 오류: '+(e&&e.message||e)); window.__done=true; window.__fails=99; });
+</script>
+</body></html>
