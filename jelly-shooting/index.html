@@ -379,7 +379,7 @@
     </div>
     <!-- 모드는 전부 홈에서 한 번에 들어간다 -->
     <div class="homegrid">
-      <button class="modebtn dungeon" id="dungeonBtn"><span class="e">⚔️</span><span class="n">실시간 던전</span><span class="d">둘이 서로 던지기</span></button>
+      <button class="modebtn dungeon" id="dungeonBtn"><span class="e">⚔️</span><span class="n">실시간 던전</span><span class="d">같은 판 점수 대결</span></button>
       <button class="modebtn throwg" id="throwGameBtn"><span class="e">🎯</span><span class="n">던지기 게임</span><span class="d">역할 정해서 대결</span></button>
       <button class="modebtn rankm" id="rankBtn"><span class="e">🏆</span><span class="n">랭킹</span><span class="d">난이도별 순위</span></button>
       <button class="modebtn chalm" id="battleBtn"><span class="e">📮</span><span class="n">도전장</span><span class="d">같은 판 점수 승부</span></button>
@@ -525,6 +525,11 @@
         <button class="btn" id="netAiBtn" style="padding:13px 18px;font-size:16px;background:linear-gradient(180deg,#ffb08a,#ff8a5c);box-shadow:0 6px 0 #e0691a;">🤖 AI와 대결</button>
       </div>
       <div class="tag2" style="text-align:left;margin-top:8px;">랜덤은 기다리는 사람과 자동으로 이어줘요. AI는 혼자서도 바로 시작해요.</div>
+    </div>
+    <div class="card">
+      <div class="label">🤖 AI 실력 고르기</div>
+      <div class="opts" id="aiTierOpts"></div>
+      <div class="tag2" id="aiTierDesc" style="text-align:left;margin-top:8px;"></div>
     </div>
     <div class="card">
       <div class="label" style="display:flex;justify-content:space-between;align-items:center;">
@@ -1650,7 +1655,7 @@ function qrDraw(cv,text){
 // '상태 요약'만 주고받는다. 젤리가 위에서 아래로 내려오는 데 2~3초가 걸리므로
 // 200~300ms 지연은 체감되지 않는다 — 이 게임 구조가 지연에 관대한 덕이다.
 let netMode=false, netSeed=0, netModeName='normal', throwGauge=0;
-// 온라인 모드 두 가지 — 'dungeon'(둘 다 플레이, 서로 던지기) / 'throw'(역할 나눠 던지기 게임)
+// 온라인 모드 두 가지 — 'dungeon'(같은 판을 동시에 플레이하는 점수 대결) / 'throw'(역할을 나눈 던지기 게임)
 let netGame='dungeon', hostRole='thrower', myRole='popper';
 function computeRole(){ myRole = net.host ? hostRole : (hostRole==='thrower'?'popper':'thrower'); }
 function gameLabel(){ return netGame==='throw'?'🎯 던지기 게임':'⚔️ 실시간 던전'; }
@@ -1845,16 +1850,53 @@ function syncPublicBtn(){ const b=$('netPublicBtn'); if(!b)return;
 // ================= 🤖 AI 대결 =================
 // 네트워크 없이 같은 메시지 경로를 그대로 쓴다. netSend가 상대에게 보내는 대신
 // AI에게 전달되고, AI는 netOnMsg로 답한다. 그래서 대전 로직을 하나도 새로 안 짠다.
-const AI_SKILL={soft:0.72,normal:0.84,spicy:0.91,fire:0.96};
+// AI 실력은 게임 난이도와 따로 고른다. 순한맛으로 편히 놀면서도 센 AI와 붙을 수 있게.
+// acc      : 터뜨리는 쪽일 때 명중률
+// early    : 낙하 시간의 몇 %쯤에 터뜨리는지(작을수록 빠른 반응 — 무섭게 보인다)
+// bombErr  : 폭탄을 실수로 터뜨리는 확률
+// gap/spd  : 던지는 쪽일 때 던지는 간격(ms)과 낙하 속도 단계
+// bombRate : 던질 때 폭탄 비율
+// dps/risk : 실시간 던전에서 자기 판을 굴리는 점수 속도와 목숨을 잃는 확률
+// thr/tn   : 실시간 던전에서 내 화면으로 젤리를 뿌리는 빈도와 개수
+// prize    : 이겼을 때 받는 코인
+const AI_TIERS=[
+  {id:'baby', name:'🍼 뉴비 AI',  desc:'자주 놓쳐요. 이기는 맛 보기용',    prize:15,
+   acc:0.52,  early:[0.70,0.95], bombErr:0.22,  gap:[900,1750], spd:0, bombRate:0.10,
+   dps:[8,26],   risk:0.055, thr:0.030, tn:1, combo:2},
+  {id:'normal',name:'🙂 보통 AI',  desc:'적당히 잘해요. 기본값',            prize:40,
+   acc:0.80,  early:[0.45,0.85], bombErr:0.11,  gap:[620,1350], spd:1, bombRate:0.16,
+   dps:[20,62],  risk:0.024, thr:0.060, tn:3, combo:4},
+  {id:'smart', name:'🤓 개똑똑 AI',desc:'거의 안 놓쳐요. 각오하세요',       prize:90,
+   acc:0.94,  early:[0.26,0.55], bombErr:0.04,  gap:[430,900],  spd:2, bombRate:0.24,
+   dps:[44,100], risk:0.010, thr:0.100, tn:4, combo:5},
+  {id:'alpha', name:'🏆 알파고 AI',desc:'다 터뜨려요. 최고 난이도!',        prize:200,
+   acc:0.995, early:[0.12,0.30], bombErr:0.005, gap:[300,620],  spd:3, bombRate:0.30,
+   dps:[72,155], risk:0.003, thr:0.150, tn:5, combo:5},
+];
+const AI_LOOK={baby:{kind:'chick',color:'#ffe6a3',acc:'none',accColor:'#ff5c8a'},
+  normal:{kind:'bunny',color:'#a3d5ff',acc:'bow',accColor:'#ff5c8a'},
+  smart:{kind:'cat',color:'#c792ff',acc:'glasses',accColor:'#5a4a6a'},
+  alpha:{kind:'star',color:'#4a4450',acc:'crown',accColor:'#ffce3d'}};
+let aiTier=localStorage.getItem('jelly_aitier')||'normal';
+function aiCfg(){ return AI_TIERS.find(t=>t.id===aiTier)||AI_TIERS[1]; }
 let aiOn=false, aiT=null, aiS={};
-function aiChar(){ const K=['cat','dog','bunny','bear','chick','star'];
-  return {kind:K[Math.floor(Math.random()*K.length)],color:'#a3d5ff',acc:'crown',accColor:'#ffce3d'}; }
+function aiChar(){ return Object.assign({},AI_LOOK[aiTier]||AI_LOOK.normal); }
+function buildAiOpts(){
+  const o=$('aiTierOpts'); if(!o) return; o.innerHTML='';
+  AI_TIERS.forEach(t=>{ const b=document.createElement('button');
+    b.className='chip'+(aiTier===t.id?' on':''); b.textContent=t.name;
+    b.onclick=()=>{ aiTier=t.id; localStorage.setItem('jelly_aitier',t.id); buildAiOpts(); };
+    o.appendChild(b); });
+  const c=aiCfg(), d=$('aiTierDesc');
+  if(d) d.innerHTML=escapeHtml(c.desc)+' · 격파하면 <b>🪙 +'+c.prize+'코인</b>';
+}
 function aiStart(){
   aiOn=true;
-  net.foe={name:'젤리 AI 🤖',char:aiChar()};
+  net.foe={name:aiCfg().name,char:aiChar()};
   net.ready=true; net.foeReady=true; net.status='ok'; net.foeGone=false; net.foeOver=false;
   const md=MODES[netModeName]||MODES.normal;
-  aiS={score:0,lives:md.lives,jid:0,next:0,pop:0,miss:0,spd:1,combo:1};
+  aiS={score:0,lives:md.lives,jid:0,next:0,pop:0,miss:0,spd:aiCfg().spd,combo:1};
+  net.prized=false;
   if(aiT)clearInterval(aiT); aiT=setInterval(aiTick,100);
 }
 function aiStop(){ aiOn=false; if(aiT){ clearInterval(aiT); aiT=null; } }
@@ -1886,16 +1928,16 @@ function aiOnMsg(o){
 // AI가 젤리를 터뜨리거나 놓친다 — 낙하 시간을 계산해 그때쯤 결과를 보낸다
 function aiPopLater(m){
   const r=m.r||27, vy=Math.max(0.6,+m.vy||3), fallMs=(720+r)/vy/60*1000;
-  const skill=AI_SKILL[netModeName]||0.84;
+  const t=aiCfg(), e=t.early;
   let why,at;
   if(m.bomb){
-    if(Math.random()<0.09){ why='bomb'; at=fallMs*rand(0.35,0.8); }   // 실수로 폭탄을 터뜨린다
+    if(Math.random()<t.bombErr){ why='bomb'; at=fallMs*rand(e[0],e[1]); }  // 실수로 폭탄을 터뜨린다
     else { why='fell'; at=fallMs; }
-  } else if(Math.random()<skill){ why='pop'; at=fallMs*rand(0.3,0.8); }
+  } else if(Math.random()<t.acc){ why='pop'; at=fallMs*rand(e[0],e[1]); }
   else { why='miss'; at=fallMs; }
   setTimeout(()=>{
     if(!aiOn) return;
-    if(why==='pop'){ aiS.combo=Math.min(5,aiS.combo+1); aiS.score+=POP_BASE*aiS.combo; aiS.pop++; }
+    if(why==='pop'){ aiS.combo=Math.min(aiCfg().combo,aiS.combo+1); aiS.score+=POP_BASE*aiS.combo; aiS.pop++; }
     else { aiS.combo=1; if(why!=='fell'){ aiS.lives=Math.max(0,aiS.lives-1); aiS.miss++; } }
     netOnMsg({t:'jgone',id:m.id,why:why,pscore:aiS.score,plives:aiS.lives});
     if(aiS.lives<=0) netOnMsg({t:'over',score:aiS.score,reason:'dead',popped:aiS.pop,missed:aiS.miss});
@@ -1909,10 +1951,10 @@ function aiTick(){
   if(netGame==='throw'&&myRole==='popper'){               // AI가 던지는 쪽
     const now=performance.now();
     if(now>=aiS.next){
-      const hard=AI_SKILL[netModeName]||0.84;
-      aiS.spd=Math.min(3,Math.floor(hard*4));
-      const spd=[0.8,1.15,1.6,2.2][aiS.spd];
-      const bomb=Math.random()<0.18, ghost=!bomb&&Math.random()<0.13;
+      const t=aiCfg();
+      aiS.spd=t.spd;
+      const spd=TSPD[t.spd].m;
+      const bomb=Math.random()<t.bombRate, ghost=!bomb&&Math.random()<0.13;
       const r=bomb?27:Math.round(rand(24,32)), pal=curTheme().jelly;
       netOnMsg({t:'jthrow',id:++aiS.jid,r,bomb,ghost,
         x:Math.round(rand(r+8,480-r-8)),
@@ -1920,15 +1962,16 @@ function aiTick(){
         face:['happy','wink','star'][Math.floor(Math.random()*3)],
         shape:bomb?'round':['round','round','bean','bear'][Math.floor(Math.random()*4)],
         vy:(md.vy0+1.6)*spd+rand(0,0.4)});
-      aiS.next=now+(520+Math.random()*820);
+      aiS.next=now+rand(t.gap[0],t.gap[1]);
     }
   } else if(netGame==='dungeon'){                          // 서로 던지는 모드 — AI도 자기 판을 하는 척
-    aiS.score+=Math.round(rand(20,70));
-    if(Math.random()<0.02) aiS.lives=Math.max(0,aiS.lives-1);
+    const t=aiCfg();
+    aiS.score+=Math.round(rand(t.dps[0],t.dps[1]));
+    if(Math.random()<t.risk) aiS.lives=Math.max(0,aiS.lives-1);
     if(aiS.t=(aiS.t||0)+1, aiS.t%5===0)
       netOnMsg({t:'stat',score:aiS.score,lives:aiS.lives,combo:1,level:level,px:Math.round(rand(60,420))});
-    if(Math.random()<0.06){
-      const pal=curTheme().jelly, n=1+Math.floor(Math.random()*3), items=[];
+    if(Math.random()<t.thr){
+      const pal=curTheme().jelly, n=1+Math.floor(Math.random()*t.tn), items=[];
       for(let i=0;i<n;i++){ const r=Math.round(rand(24,32));
         items.push({x:Math.round(rand(r+12,480-r-12)),r,color:pal[Math.floor(Math.random()*pal.length)],
           face:'happy',shape:'round',bomb:Math.random()<0.2}); }
@@ -1949,9 +1992,9 @@ function openNetMode(game){
   $('netTitle').textContent=gameLabel();
   $('netDesc').textContent = netGame==='throw'
     ? '한 사람은 젤리를 던지고, 한 사람은 터뜨려요. 던지는 사람은 무기(👻유령·💣폭탄·🌧️젤리비)와 낙하 속도(🐢~🚀)를 골라 상대 화면을 보면서 조준합니다!'
-    : '둘이 동시에 플레이하면서 서로의 화면에 젤리를 던져요.';
+    : '둘이 똑같은 판을 동시에 플레이해요. 상대 점수가 실시간으로 보이고, 더 오래 버티며 많이 터뜨린 쪽이 승리! 게이지가 차면 방해 젤리를 한 번씩 보낼 수 있어요.';
   $('netRoleCard').classList.toggle('hide',netGame!=='throw');
-  buildRoleOpts(); syncPublicBtn();
+  buildRoleOpts(); syncPublicBtn(); buildAiOpts();
   renderRoomList(); hubJoin();
 }
 function buildRoleOpts(){
@@ -2409,6 +2452,16 @@ function throwerQuit(){
   netLeave(); openStart();
 }
 
+// AI를 이기면 티어별 코인을 준다. 한 판에 한 번만(netResolve가 여러 번 불릴 수 있다).
+function aiPrizeLine(win){
+  if(!aiOn) return '';
+  const c=aiCfg();
+  if(win!==true) return '\n'+c.name+' 상대 — 다시 도전!';
+  if(!net.prized){ net.prized=true; coins+=c.prize; saveEconomy();
+    const el=$('startCoins'); if(el) el.textContent='🪙 '+coins; }
+  return '\n'+c.name+' 격파! 🪙 +'+c.prize+'코인';
+}
+
 // ---- 승패 ----
 function netFinish(){
   net.myOver=true; net.myScore=score; net.myReason=(lives<=0)?'dead':'time';
@@ -2432,14 +2485,15 @@ function netResolve(){
       roleLabel(myRole)+' '+me+'  '+net.myScore+'점\nvs\n'+
       roleLabel(iAmThrower?'popper':'thrower')+' '+nm+'  '+net.foeScore+'점\n'+
       '막아낸 비율 '+rate+'%  ('+pk+'/'+tot+'개)\n'+
-      (popperDied?'목숨을 다 잃었어요':'끝까지 버텨냈어요'),null,false,null);
+      (popperDied?'목숨을 다 잃었어요':'끝까지 버텨냈어요')+aiPrizeLine(w),null,false,null);
     return;
   }
   let win=null;
   if(net.myReason!==net.foeReason) win=(net.myReason==='time');        // 살아남은 쪽 승리
   else if(net.myScore!==net.foeScore) win=(net.myScore>net.foeScore);  // 같은 조건이면 점수
   const title=(win===null)?'🤝 무승부!':(win?'🏆 승리! 🎉':'😢 아쉽게 패배...');
-  showBattleResult(title,me+'  '+net.myScore+'점\nvs\n'+nm+'  '+net.foeScore+'점',null,false,null);
+  showBattleResult(title,me+'  '+net.myScore+'점\nvs\n'+nm+'  '+net.foeScore+'점'
+    +aiPrizeLine(win),null,false,null);
 }
 
 // ================= 대전: 도전장 (같은 판 점수 승부) =================
