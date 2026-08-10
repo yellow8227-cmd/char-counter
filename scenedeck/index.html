@@ -53,52 +53,55 @@
 
   --r:2px; --rs:2px;
 
-  /* --- 기본: 밝은 화면. 검정 · 흰색 · 그 사이의 회색만 쓴다 ---
-     --ground = 페이지 바닥(옅은 종이) / --bg = 그 위에 얹히는 흰 면.
-     둘을 나눠야 카드가 떠 보이고, 화면이 허옇게 날아가지 않는다. */
-  --ground:#eeeeec;
-  --bg:#ffffff; --s1:#f7f7f5; --s2:#efefec; --s3:#e5e5e1;
-  --line:#e0e0db; --line2:#c2c2bc;
-  /* 히어로 · 푸터는 검은 블록으로 눌러 페이지 위아래를 잡는다 */
-  --herobg:#15161a; --herotx:#ffffff;
-  --heroline:rgba(255,255,255,.26); --herodim:rgba(255,255,255,.62);
-  --tx:#101011; --tx2:#4d4d4f; --tx3:#84848a;
+  /* --- 기본: 밝은 화면 ---
+     순백(#fff)도 순검정(#000)도 쓰지 않는다. 명도차 100:0은 눈이 계속
+     적응하느라 피로해진다. 바탕은 살짝 따뜻한 오프화이트, 글씨는 차콜.
+       --ground 페이지 바닥 / --bg 그 위에 얹히는 면 / --s1~3 눌린 자리
+     세 단계 모두 좁은 범위 안에 두어 「너무 밝다 / 너무 어둡다」가 안 생기게 한다. */
+  --ground:#f6f5f2;
+  --bg:#fdfcfa; --s1:#f2f1ed; --s2:#ecebe6; --s3:#e3e2dc;
+  --line:#e6e5e0; --line2:#d2d0c9;
+  /* 히어로 · 푸터는 검은 슬래브가 아니라 한 톤 눌린 면으로 구분한다 */
+  --herobg:#edece6; --herotx:#37352f;
+  --heroline:#d8d6ce; --herodim:#6b6960;
+  --tx:#37352f; --tx2:#615f58; --tx3:#757369;
   /* 강조 = 잉크 그 자체. 「선택됨」은 색이 아니라 반전으로 말한다 */
-  --acc:#101011; --acc2:#3a3a3c; --accdim:#f1f1ef; --accbd:#c5c5c0; --onacc:#ffffff;
+  --acc:#37352f; --acc2:#54514a; --accdim:#eceae4; --accbd:#d2d0c9; --onacc:#fdfcfa;
   /* 유일한 유채색 — 잉크블루. 포커스 · 링크 · 영문 필드에만 쓴다 */
-  --sig:#3a5b8c; --sigdim:#eef1f6; --sigbd:#c3cddd;
-  --teal:#2f6248; --tealdim:#eef2ef; --tealbd:#c6d5cb; --red:#8e2f26; --blue:#3a5b8c;
-  --outbg:#f4f4f2; --outtx:#26262a; --entx:#33445c; --ph:#9a9a9e;
-  --sb:#dcdcd8; --sb2:#bcbcb7;
-  --dgrbd:#e3cbc7; --dgrbg:#f9efed;
-  --warnbg:#f7f7f6; --warnbd:#c5c5c0; --warntx:#3a3a3c;
-  --herotop:#f7f7f6;
-  --hdr:rgba(238,238,236,.92); --fade0:rgba(238,238,236,0); --fade1:rgba(238,238,236,.96);
-  --mask:rgba(16,16,17,.44); --shadow:rgba(16,16,17,.13);
-  --glow:rgba(16,16,17,.08); --glow2:rgba(16,16,17,.04);
-  --focus:rgba(58,91,140,.26);
+  --sig:#3c6191; --sigdim:#eaeff6; --sigbd:#c4d0e0;
+  --teal:#3a6b52; --tealdim:#eaf0ec; --tealbd:#c5d4c9; --red:#96382d; --blue:#3c6191;
+  --outbg:#f2f1ec; --outtx:#3a3831; --entx:#3a4c66; --ph:#9b9992;
+  --sb:#dcdad3; --sb2:#c0beb6;
+  --dgrbd:#e0cac5; --dgrbg:#f7eeeb;
+  --warnbg:#f4f2ec; --warnbd:#ddd9cd; --warntx:#54514a;
+  --herotop:#f2f1ed;
+  --hdr:rgba(246,245,242,.93); --fade0:rgba(246,245,242,0); --fade1:rgba(246,245,242,.96);
+  --mask:rgba(43,41,35,.4); --shadow:rgba(43,41,35,.12);
+  --glow:rgba(43,41,35,.07); --glow2:rgba(43,41,35,.04);
+  --focus:rgba(60,97,145,.24);
 }
 
 /* --- 어둡게 (헤더의 전환 버튼으로 켠다) --- */
 :root[data-theme="dark"]{
-  --ground:#08080a;
-  --bg:#121215; --s1:#17171a; --s2:#1d1d21; --s3:#252529;
-  --line:#27272b; --line2:#3c3c41;
-  --herobg:#131316; --herotx:#f4f4f2;
-  --heroline:rgba(255,255,255,.15); --herodim:rgba(244,244,242,.6);
-  --tx:#f4f4f2; --tx2:#b2b2b0; --tx3:#83838a;
-  --acc:#f4f4f2; --acc2:#cbcbc8; --accdim:#212125; --accbd:#3c3c41; --onacc:#0b0b0c;
-  --sig:#93b2dc; --sigdim:#141a23; --sigbd:#2b3a4f;
-  --teal:#6cb691; --tealdim:#12201a; --tealbd:#27402f; --red:#d9736a; --blue:#93b2dc;
-  --outbg:#070708; --outtx:#cfcfd4; --entx:#c3cfdf; --ph:#5c5c62;
-  --sb:#2d2d33; --sb2:#3e3e45;
-  --dgrbd:#3d2523; --dgrbg:#231716;
-  --warnbg:#18181b; --warnbd:#3c3c41; --warntx:#cbcbc8;
-  --herotop:#131315;
-  --hdr:rgba(8,8,10,.92); --fade0:rgba(8,8,10,0); --fade1:rgba(8,8,10,.96);
-  --mask:rgba(4,4,5,.78); --shadow:rgba(0,0,0,.6);
-  --glow:rgba(244,244,242,.1); --glow2:rgba(244,244,242,.05);
-  --focus:rgba(147,178,220,.3);
+  /* 새까맣게 떨어뜨리지 않는다 — 바닥 #1a1a19, 글씨도 순백이 아닌 #d9d8d3 */
+  --ground:#1a1a19;
+  --bg:#211f1e; --s1:#262523; --s2:#2c2b28; --s3:#35342f;
+  --line:#312f2d; --line2:#454340;
+  --herobg:#232220; --herotx:#e2e1dc;
+  --heroline:#3b3936; --herodim:#a19f98;
+  --tx:#d9d8d3; --tx2:#a8a69f; --tx3:#8d8b84;
+  --acc:#e2e1dc; --acc2:#bab8b1; --accdim:#312f2c; --accbd:#454340; --onacc:#1a1a19;
+  --sig:#8fb0d8; --sigdim:#1e242c; --sigbd:#38434f;
+  --teal:#71b391; --tealdim:#1b2620; --tealbd:#31453a; --red:#d38076; --blue:#8fb0d8;
+  --outbg:#1b1a19; --outtx:#c9c8c2; --entx:#bfcbdb; --ph:#6b6963;
+  --sb:#3a3835; --sb2:#4c4a46;
+  --dgrbd:#4a302c; --dgrbg:#2a201e;
+  --warnbg:#26241f; --warnbd:#454340; --warntx:#c4c2ba;
+  --herotop:#262523;
+  --hdr:rgba(26,26,25,.93); --fade0:rgba(26,26,25,0); --fade1:rgba(26,26,25,.96);
+  --mask:rgba(10,10,9,.72); --shadow:rgba(0,0,0,.5);
+  --glow:rgba(226,225,220,.09); --glow2:rgba(226,225,220,.05);
+  --focus:rgba(143,176,216,.28);
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -174,7 +177,7 @@ main{max-width:1180px;margin:0 auto;padding:42px 30px 96px}
 .tab.on{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
-.pghd{margin-bottom:30px;padding-bottom:20px;border-bottom:1px solid var(--tx)}
+.pghd{margin-bottom:30px;padding-bottom:20px;border-bottom:1px solid var(--line2)}
 .pghd h2{font-family:var(--disp);font-size:32px;margin:0 0 8px;line-height:1.2;letter-spacing:.01em;text-wrap:balance}
 .pghd p{color:var(--tx2);font-size:13px;margin:0;max-width:70ch}
 .pghd p b{color:var(--tx);font-weight:600}
@@ -360,7 +363,7 @@ a.btn.gh:hover{color:var(--tx)}
 .toast .ub{background:transparent;color:var(--onacc);border:1px solid var(--onacc);border-radius:0;
   padding:5px 12px;font-weight:700;font-size:11.5px;cursor:pointer;flex:none;letter-spacing:.06em}
 
-.warn{background:var(--warnbg);border:1px solid var(--warnbd);border-left:3px solid var(--tx);
+.warn{background:var(--warnbg);border:1px solid var(--warnbd);border-left:3px solid var(--tx3);
   color:var(--warntx);border-radius:0;padding:13px 15px;font-size:12.5px;margin-bottom:16px}
 .bar{height:3px;background:var(--s3);border-radius:0;overflow:hidden;margin-top:10px}
 .bar i{display:block;height:100%;background:var(--tx);border-radius:0}
@@ -390,7 +393,7 @@ kbd{font-family:var(--mono);font-size:11px;background:transparent;border:1px sol
 .prow .ph{display:block;color:var(--tx);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .prow .pm{display:block;font-size:11px;color:var(--tx3);margin-top:2px}
 .prow .pm i{font-style:normal;color:var(--red)}
-.pwarn{background:var(--warnbg);border:1px solid var(--warnbd);border-left:3px solid var(--tx);
+.pwarn{background:var(--warnbg);border:1px solid var(--warnbd);border-left:3px solid var(--tx3);
   color:var(--warntx);border-radius:0;padding:11px 14px;font-size:12.5px;margin:0 0 10px}
 
 /* 지금 어디쯤 왔는지 · 다음에 뭘 눌러야 하는지 */
@@ -405,7 +408,7 @@ kbd{font-family:var(--mono);font-size:11px;background:transparent;border:1px sol
 .s4.now{color:var(--tx);background:var(--s2)}
 .s4.now b{background:var(--acc);color:var(--onacc)}
 .nowbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 24px;
-  padding:14px 17px;border:1px solid var(--line);border-left:3px solid var(--tx);
+  padding:14px 17px;border:1px solid var(--line);border-left:3px solid var(--tx2);
   background:var(--s1);border-radius:0}
 .nowbar .t{font-size:13px;font-weight:600;color:var(--tx)}
 .bad{color:var(--red);font-weight:700}
@@ -449,11 +452,11 @@ kbd{font-family:var(--mono);font-size:11px;background:transparent;border:1px sol
 .hero .mini,.hero .mini b{color:var(--herodim)}
 /* 검은 바탕 위에서는 버튼도 뒤집는다 */
 .hero .btn{background:transparent;border-color:var(--heroline);color:var(--herotx)}
-.hero .btn:hover{background:rgba(255,255,255,.07);border-color:var(--herotx)}
+.hero .btn:hover{background:var(--bg);border-color:var(--tx2)}
 .hero .btn.pri{background:var(--herotx);border-color:var(--herotx);color:var(--herobg)}
-.hero .btn.pri:hover{background:var(--herodim);border-color:var(--herodim)}
-.hero .btn.gh{border-color:transparent;color:var(--herodim)}
-.hero .btn.gh:hover{border-color:var(--heroline);color:var(--herotx)}
+.hero .btn.pri:hover{background:var(--acc2);border-color:var(--acc2)}
+.hero .btn.gh{border-color:transparent;color:var(--tx2)}
+.hero .btn.gh:hover{border-color:var(--line2);color:var(--tx)}
 .cta{display:flex;gap:11px;flex-wrap:wrap;margin-top:34px}
 .btn.lg{padding:14px 24px;font-size:12.5px;border-radius:0;letter-spacing:.04em}
 .herofoot{display:flex;gap:0;flex-wrap:wrap;margin-top:48px;padding-top:0;border-top:1px solid var(--heroline)}
@@ -463,7 +466,7 @@ kbd{font-family:var(--mono);font-size:11px;background:transparent;border:1px sol
   letter-spacing:0;text-transform:none;margin-bottom:6px}
 
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
-.stepbox{background:none;border:0;border-top:1px solid var(--tx);border-radius:0;padding:16px 0 0}
+.stepbox{background:none;border:0;border-top:1px solid var(--line2);border-radius:0;padding:16px 0 0}
 .stepbox .n{font-family:var(--mono);font-size:10px;color:var(--tx3);background:none;
   width:auto;height:auto;border-radius:0;display:block;margin-bottom:12px;letter-spacing:.16em}
 .stepbox h4{margin:0 0 8px;font-size:14.5px;font-family:var(--disp);letter-spacing:.01em}
@@ -492,7 +495,7 @@ kbd{font-family:var(--mono);font-size:11px;background:transparent;border:1px sol
 .tbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:340px}
 .tbl th,.tbl td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.7}
 .tbl th{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx3);
-  background:transparent;font-weight:700;white-space:nowrap;border-bottom-color:var(--tx)}
+  background:transparent;font-weight:700;white-space:nowrap;border-bottom-color:var(--line2)}
 .tbl tr:last-child td{border-bottom:none}
 .tbl td b{color:var(--tx);font-weight:600}
 .tbl .y{color:var(--teal);font-weight:700}
@@ -510,9 +513,9 @@ kbd{font-family:var(--mono);font-size:11px;background:transparent;border:1px sol
 .faq .fa{padding:0 18px 20px 42px;color:var(--tx2);font-size:12.5px;line-height:1.9;margin:0}
 .faq .fa b{color:var(--tx)}
 
-footer{border-top:0;background:var(--herobg);color:var(--herotx);margin-top:84px}
-footer .logo{color:var(--herotx)}
-footer .logo small{color:var(--herodim)}
+footer{border-top:1px solid var(--line);background:var(--herobg);color:var(--tx);margin-top:84px}
+footer .logo{color:var(--tx)}
+footer .logo small{color:var(--tx3)}
 .fin{max-width:1180px;margin:0 auto;padding:44px 30px 44px;display:flex;gap:48px;flex-wrap:wrap;align-items:flex-start}
 .fin .fl{flex:1;min-width:230px}
 .fin .fl p{color:var(--herodim);font-size:12px;margin:16px 0 0;line-height:1.8;max-width:44ch}
@@ -521,7 +524,7 @@ footer .logo small{color:var(--herodim)}
 .fnav button{background:none;border:none;padding:0;color:var(--herodim);font-size:12.5px;
   cursor:pointer;text-align:left;font-weight:500}
 .fnav button:hover{color:var(--herotx);text-decoration:underline;text-underline-offset:3px}
-.fbot{border-top:1px solid var(--heroline);padding:17px 30px;color:var(--herodim);font-size:10.5px;
+.fbot{border-top:1px solid var(--heroline);padding:17px 30px;color:var(--tx3);font-size:10.5px;
   text-align:center;letter-spacing:.1em}
 
 @media(max-width:1000px){.split{grid-template-columns:1fr}}
