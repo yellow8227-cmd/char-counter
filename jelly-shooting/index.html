@@ -188,6 +188,16 @@
   .shopbtn:disabled{opacity:.4;cursor:default;box-shadow:none;filter:grayscale(.4);}
   .flash{animation:flashUp 1s ease;}
   @keyframes flashUp{0%{color:#ffb02e;transform:scale(1.15)}100%{color:inherit;transform:scale(1)}}
+
+  /* ===== 게임 끝 화면: 실수 탭 방지 =====
+     죽는 순간 화면에 있던 손가락이 결과 화면 버튼을 눌러버리는 사고를 막는다.
+     잠깐 굳혀 두고(pointer-events:none) 남은 시간을 보여준 뒤 풀어준다. */
+  #overActions{display:flex;flex-direction:column;gap:10px;align-items:center;width:100%;}
+  #overActions.locked{opacity:.32;filter:grayscale(.55);pointer-events:none;}
+  .guard{font-size:13px;font-weight:800;color:var(--ink2);background:rgba(255,255,255,0.72);
+    padding:7px 16px;border-radius:999px;box-shadow:var(--shadow);}
+  .btn.tiny{padding:11px 22px;font-size:15px;border-radius:16px;}
+  .actgap{height:2px;}
 </style>
 </head>
 <body>
@@ -237,7 +247,10 @@
     <div class="rowbtn">
       <button class="btn lg" id="playBtn">플레이 ▶</button>
     </div>
-    <button class="btn" id="battleBtn" style="padding:14px 34px;font-size:18px;background:linear-gradient(180deg,#8fb6ff,#5c7cff);box-shadow:0 8px 0 #3e56db,0 14px 26px rgba(60,80,220,0.4);">⚔️ 대전 · 랭킹</button>
+    <div class="rowbtn">
+      <button class="btn" id="rankBtn" style="padding:14px 30px;font-size:18px;background:linear-gradient(180deg,#8fb6ff,#5c7cff);box-shadow:0 8px 0 #3e56db,0 14px 26px rgba(60,80,220,0.4);">🏆 랭킹</button>
+      <button class="btn" id="battleBtn" style="padding:14px 30px;font-size:18px;background:linear-gradient(180deg,#b28cff,#8a5cff);box-shadow:0 8px 0 #6a3edb,0 14px 26px rgba(120,80,220,0.4);">⚔️ 대전</button>
+    </div>
     <div class="rowbtn">
       <button class="btn ghost" id="shopBtn" style="padding:12px 26px;font-size:16px;">🛒 창작소</button>
       <button class="btn ghost" id="attendBtn" style="padding:12px 26px;font-size:16px;">📅 출석부</button>
@@ -313,28 +326,50 @@
     <button class="btn ghost" id="setBackBtn">← 뒤로</button>
   </div>
 
-  <!-- 대전 · 랭킹 -->
-  <div id="battleScreen" class="screen hide">
-    <div class="h2">⚔️ 대전 · 랭킹</div>
+  <!-- 🏆 랭킹 (난이도별) -->
+  <div id="rankScreen" class="screen hide">
+    <div class="h2">🏆 랭킹</div>
     <div class="card">
       <div class="label">🙋 내 닉네임</div>
       <input id="nickInput" maxlength="10" placeholder="닉네임을 입력하세요">
       <div class="tag2" style="text-align:left;margin-top:6px;">닉네임을 정하면 온라인 랭킹에 점수가 올라가요!</div>
     </div>
     <div class="card">
-      <div class="label" style="display:flex;justify-content:space-between;align-items:center;">🏆 온라인 TOP 10 <button class="chip" id="lbRefresh" style="padding:5px 10px;font-size:12px;">새로고침 🔄</button></div>
-      <div id="lbBox"></div>
+      <div class="label">🌶️ 난이도 고르기</div>
+      <div class="tag2" style="text-align:left;margin:0 0 9px;">난이도마다 순위가 따로 있어요.</div>
+      <div class="opts" id="lbModeTabs"></div>
     </div>
     <div class="card">
-      <div class="label">🎯 도전장 대결</div>
-      <div class="tag2" style="text-align:left;margin-bottom:8px;">똑같은 판을 플레이해서 점수로 승부! 링크·코드를 친구에게 보내세요.</div>
-      <button class="btn" id="createChBtn" style="width:100%;padding:13px;font-size:17px;">🎯 도전장 만들기</button>
-      <div style="display:flex;gap:6px;margin-top:9px;">
+      <div class="label" style="display:flex;justify-content:space-between;align-items:center;">
+        <span id="lbTitle">🏆 TOP 10</span>
+        <button class="chip" id="lbRefresh" style="padding:5px 10px;font-size:12px;">새로고침 🔄</button>
+      </div>
+      <div id="lbBox"></div>
+    </div>
+    <button class="btn ghost" id="rankBackBtn">← 뒤로</button>
+  </div>
+
+  <!-- ⚔️ 대전 (도전장) -->
+  <div id="battleScreen" class="screen hide">
+    <div class="h2">⚔️ 대전</div>
+    <div class="card">
+      <div class="label">🙋 내 닉네임</div>
+      <input id="nickInput3" maxlength="10" placeholder="닉네임을 입력하세요">
+    </div>
+    <div class="card">
+      <div class="label">📥 도전장 받기</div>
+      <div class="tag2" style="text-align:left;margin-bottom:8px;">친구 코드를 넣으면 <b>똑같은 판</b>에서 점수로 승부!</div>
+      <div style="display:flex;gap:6px;">
         <input id="chCodeInput" maxlength="6" placeholder="친구 코드 입력" style="flex:1;text-transform:uppercase;">
         <button class="chip" id="joinChBtn" style="padding:9px 16px;">도전!</button>
       </div>
     </div>
-    <div class="tag2">⚔️ 실시간 던지기 대전은 다음 단계에서!</div>
+    <div class="card">
+      <div class="label">📤 도전장 보내기</div>
+      <div class="tag2" style="text-align:left;margin-bottom:8px;">따로 만들지 않아요. <b>게임이 끝난 결과 화면</b>에서 방금 친 점수를 그대로 도전장으로 보냅니다!</div>
+      <button class="btn ghost" id="battlePlayBtn" style="width:100%;padding:12px;font-size:16px;">▶ 한 판 하고 보내기</button>
+    </div>
+    <div class="tag2">⚔️ 실시간 젤리 던지기 대전은 준비 중!<br>기획서: docs/실시간-대전-기획.md</div>
     <button class="btn ghost" id="battleBackBtn">← 뒤로</button>
   </div>
 
@@ -367,9 +402,26 @@
     <div class="coinbadge" id="overCoins">🪙 +0</div>
     <div class="tag2" id="overMsg"></div>
     <div class="rank" id="rankBox"></div>
-    <div class="rowbtn">
-      <button class="btn ghost" id="editBtn">🎨 캐릭터/난이도</button>
-      <button class="btn" id="againBtn">다시 하기 🔁</button>
+
+    <!-- 도전장을 보낼 때 닉네임이 없으면 여기서 바로 받는다 -->
+    <div class="card hide" id="overNickCard" style="width:min(90vw,330px);">
+      <div class="label">🙋 닉네임을 정해주세요</div>
+      <input id="nickInputO" maxlength="10" placeholder="닉네임을 입력하세요">
+      <button class="setbtn" id="overNickOk">확인하고 도전장 보내기 🎯</button>
+    </div>
+
+    <div id="overGuard" class="guard hide">👆 실수로 누르지 않게 잠깐만요…</div>
+    <div id="overActions" class="locked">
+      <div class="rowbtn">
+        <button class="btn" id="homeBtn">🏠 홈으로</button>
+        <button class="btn ghost" id="shareBtn">📤 결과 공유</button>
+      </div>
+      <button class="btn ghost" id="sendChBtn" style="padding:13px 28px;font-size:16px;">🎯 이 점수로 도전장 보내기</button>
+      <div class="actgap"></div>
+      <div class="rowbtn">
+        <button class="btn ghost tiny" id="againBtn">🔁 다시 하기</button>
+        <button class="btn ghost tiny" id="editBtn">🎨 캐릭터·난이도</button>
+      </div>
     </div>
   </div>
 </div>
@@ -444,31 +496,54 @@ const MEDALS=['🥇','🥈','🥉','4','5'];
 function renderRank(top,my){let r='<div class="t">🏆 최고 기록 TOP 5</div>';if(!top.length)r+='<div class="rrow">아직 기록이 없어요!</div>';let used=false;
   top.forEach((s,i)=>{const me=!used&&s===my;if(me)used=true;r+=`<div class="rrow${me?' me':''}"><span>${MEDALS[i]} ${me?'나':''}</span><span>⭐ ${s}</span></div>`;});$('rankBox').innerHTML=r;}
 
+// 종류마다 실루엣·눈·볼 위치를 다르게 준다.
+// 이게 없으면 귀만 바뀌고 얼굴은 똑같아서 "다 비슷비슷하다"는 느낌이 든다.
+//   sx/sy = 머리 가로·세로 비율, eyeGap = 두 눈 간격, eyeW/eyeH = 눈 크기, blush = 볼 위치
+const KIND_FX={
+  cat  :{sx:1.00,sy:0.96,eyeGap:0.34,eyeW:0.155,eyeH:0.215,blush:0.60},
+  dog  :{sx:1.08,sy:0.94,eyeGap:0.33,eyeW:0.150,eyeH:0.190,blush:0.68},
+  bunny:{sx:0.92,sy:1.06,eyeGap:0.32,eyeW:0.180,eyeH:0.250,blush:0.56},
+  bear :{sx:1.13,sy:1.00,eyeGap:0.41,eyeW:0.120,eyeH:0.160,blush:0.74},
+  chick:{sx:1.11,sy:0.91,eyeGap:0.26,eyeW:0.128,eyeH:0.172,blush:0.62},
+  star :{sx:1.00,sy:1.00,eyeGap:0.29,eyeW:0.150,eyeH:0.200,blush:0.50},
+  human:{sx:0.96,sy:1.04,eyeGap:0.31,eyeW:0.145,eyeH:0.195,blush:0.58},
+};
+function kfx(k){ return KIND_FX[k]||KIND_FX.cat; }
+
 function drawAvatar(g,cx,cy,R,cfg,mood,t){ mood=mood||'idle';t=t||0; g.save(); g.translate(cx,cy);
-  const bounce=(mood==='happy'||mood==='wow')?Math.abs(Math.sin(t*0.4))*6:0; g.translate(0,-bounce);
+  // 'calm' = 메뉴 미리보기용. 낮게, 천천히 통통.
+  const bounce = mood==='calm' ? Math.abs(Math.sin(t*0.4))*3.4
+               : (mood==='happy'||mood==='wow') ? Math.abs(Math.sin(t*0.4))*6 : 0;
+  g.translate(0,-bounce);
   const squish=1+Math.sin(t*0.15)*0.03; g.scale(1/squish,squish);
   const col=cfg.color,dark=shade(col,-28),isHuman=cfg.kind==='human',isStar=cfg.kind==='star',isChick=cfg.kind==='chick';
+  const nf=kfx(cfg.kind);   // 종류별 실루엣·눈·볼
   g.fillStyle=col;
   if(isChick){ g.strokeStyle=shade(col,-30);g.lineWidth=R*0.09;g.lineCap='round';
     g.beginPath();g.moveTo(0,-R*0.9);g.lineTo(-R*0.12,-R*1.25);g.moveTo(0,-R*0.9);g.lineTo(R*0.14,-R*1.22);g.stroke();
     g.fillStyle=col;g.beginPath();g.ellipse(-R*0.95,R*0.1,R*0.22,R*0.4,0.3,0,7);g.fill();g.beginPath();g.ellipse(R*0.95,R*0.1,R*0.22,R*0.4,-0.3,0,7);g.fill(); }
-  if(cfg.kind==='cat'){ triEar(g,-R*0.62,-R*0.72,R*0.5,col,dark,'#ffb6c9'); triEar(g,R*0.62,-R*0.72,R*0.5,col,dark,'#ffb6c9'); }
+  if(cfg.kind==='cat'){ triEar(g,-R*0.60,-R*0.86,R*0.56,col,dark,'#ff9ec0'); triEar(g,R*0.60,-R*0.86,R*0.56,col,dark,'#ff9ec0'); }
   else if(cfg.kind==='bear'){ circEar(g,-R*0.7,-R*0.7,R*0.34,col); circEar(g,R*0.7,-R*0.7,R*0.34,col); }
   else if(cfg.kind==='bunny'){ longEar(g,-R*0.4,-R*1.05,R*0.28,R*0.85,col,'#ffc2d6',-0.12); longEar(g,R*0.4,-R*1.05,R*0.28,R*0.85,col,'#ffc2d6',0.12); }
-  else if(cfg.kind==='dog'){ floppyEar(g,-R*0.82,-R*0.2,R*0.4,R*0.72,dark); floppyEar(g,R*0.82,-R*0.2,R*0.4,R*0.72,dark); }
+  else if(cfg.kind==='dog'){ floppyEar(g,-R*0.86,-R*0.04,R*0.36,R*0.92,dark,-1); floppyEar(g,R*0.86,-R*0.04,R*0.36,R*0.92,dark,1); }
   else if(isHuman){ g.fillStyle=col;g.beginPath();g.arc(0,-R*0.15,R*1.02,Math.PI*1.02,Math.PI*1.98);g.fill(); }
   g.fillStyle=isHuman?'#ffe0c8':col; g.shadowColor='rgba(0,0,0,0.1)';g.shadowBlur=10;g.shadowOffsetY=5;
-  if(isStar){starPath(g,R*1.28);g.fill();}else{g.beginPath();g.arc(0,0,R,0,7);g.fill();} g.shadowColor='transparent';
+  if(isStar){starPath(g,R*1.28);g.fill();}
+  else{g.beginPath();g.ellipse(0,0,R*nf.sx,R*nf.sy,0,0,7);g.fill();} g.shadowColor='transparent';
   if(isHuman){ g.fillStyle=col;g.beginPath();g.moveTo(-R,-R*0.15);g.quadraticCurveTo(-R*0.2,-R*1.15,R,-R*0.2);g.quadraticCurveTo(R*0.2,-R*0.5,-R*0.1,-R*0.35);g.quadraticCurveTo(-R*0.4,-R*0.5,-R,-R*0.15);g.fill(); }
-  if(cfg.kind==='dog'||cfg.kind==='bear'||cfg.kind==='bunny'){ g.fillStyle='rgba(255,255,255,0.55)';g.beginPath();g.ellipse(0,R*0.28,R*0.42,R*0.34,0,0,7);g.fill(); }
+  // 주둥이 — 크기·색이 달라야 인상이 갈린다. 강아지는 크고 하얗게, 곰은 밝은 톤, 고양이는 옅게.
+  if(cfg.kind==='dog'){ g.fillStyle='rgba(255,255,255,0.85)';g.beginPath();g.ellipse(0,R*0.30,R*0.47,R*0.33,0,0,7);g.fill(); }
+  else if(cfg.kind==='bear'){ g.fillStyle=shade(col,32);g.beginPath();g.ellipse(0,R*0.34,R*0.41,R*0.30,0,0,7);g.fill(); }
+  else if(cfg.kind==='bunny'){ g.fillStyle='rgba(255,255,255,0.62)';g.beginPath();g.ellipse(0,R*0.30,R*0.31,R*0.25,0,0,7);g.fill(); }
+  else if(cfg.kind==='cat'){ g.fillStyle='rgba(255,255,255,0.40)';g.beginPath();g.ellipse(0,R*0.32,R*0.35,R*0.22,0,0,7);g.fill(); }
   g.beginPath();g.ellipse(-R*0.32,-R*0.4,R*0.26,R*0.16,-0.5,0,7);g.fillStyle='rgba(255,255,255,0.4)';g.fill();
-  const eyeY=-R*0.05,ex=R*0.34; g.fillStyle='#3a2b34';
+  const eyeY=-R*0.05,ex=R*nf.eyeGap; g.fillStyle='#3a2b34';
   if(mood==='sad'){ g.strokeStyle='#3a2b34';g.lineWidth=R*0.09;g.lineCap='round';
     g.beginPath();g.moveTo(-ex-6,eyeY-4);g.lineTo(-ex+4,eyeY+3);g.moveTo(-ex+4,eyeY-4);g.lineTo(-ex-6,eyeY+3);g.stroke();
     g.beginPath();g.moveTo(ex+6,eyeY-4);g.lineTo(ex-4,eyeY+3);g.moveTo(ex-4,eyeY-4);g.lineTo(ex+6,eyeY+3);g.stroke();
   } else if(mood==='ouch'){ g.strokeStyle='#3a2b34';g.lineWidth=R*0.085;g.lineCap='round'; // >< 놀란 X눈
     [-ex,ex].forEach(sx=>{ g.beginPath();g.moveTo(sx-R*0.12,eyeY-R*0.12);g.lineTo(sx+R*0.12,eyeY+R*0.12);g.moveTo(sx+R*0.12,eyeY-R*0.12);g.lineTo(sx-R*0.12,eyeY+R*0.12);g.stroke(); });
-  } else { const big=mood==='wow'?1.3:1, ew=R*0.17*big,eh=R*0.225*big; // 크고 반짝이는 눈 (wow=더 큼)
+  } else { const big=mood==='wow'?1.3:1, ew=R*nf.eyeW*big,eh=R*nf.eyeH*big; // 크고 반짝이는 눈 (wow=더 큼)
     [-ex,ex].forEach(sx=>{
       const eg=g.createLinearGradient(sx,eyeY-eh,sx,eyeY+eh); eg.addColorStop(0,'#4a3d63'); eg.addColorStop(1,'#241d33');
       g.fillStyle=eg; g.beginPath(); g.ellipse(sx,eyeY,ew,eh,0,0,7); g.fill();
@@ -477,20 +552,82 @@ function drawAvatar(g,cx,cy,R,cfg,mood,t){ mood=mood||'idle';t=t||0; g.save(); g
       g.fillStyle='rgba(255,150,195,0.65)'; g.beginPath(); g.arc(sx+ew*0.02,eyeY+eh*0.5,ew*0.3,0,7); g.fill(); // 핑크 반사광
     });
     g.fillStyle='#3a2b34'; }
-  if(isChick){ g.fillStyle='#ff9d3d';g.beginPath();g.moveTo(-R*0.14,R*0.12);g.lineTo(R*0.14,R*0.12);g.lineTo(0,R*0.32);g.closePath();g.fill(); }
+  // 코 — 고양이는 분홍 하트, 강아지는 큰 젤리코, 곰은 넓적, 토끼는 작은 세모, 병아리는 두 톤 부리
+  if(isChick){ g.fillStyle='#ffb844';g.beginPath();g.moveTo(-R*0.16,R*0.09);g.lineTo(R*0.16,R*0.09);g.lineTo(0,R*0.35);g.closePath();g.fill();
+    g.fillStyle='#e07d18';g.beginPath();g.moveTo(-R*0.115,R*0.19);g.lineTo(R*0.115,R*0.19);g.lineTo(0,R*0.35);g.closePath();g.fill(); }
+  else if(cfg.kind==='cat'){ g.fillStyle='#ff7fa8';g.beginPath();g.moveTo(0,R*0.30);
+    g.quadraticCurveTo(-R*0.14,R*0.15,-R*0.06,R*0.13);g.quadraticCurveTo(0,R*0.13,0,R*0.19);
+    g.quadraticCurveTo(0,R*0.13,R*0.06,R*0.13);g.quadraticCurveTo(R*0.14,R*0.15,0,R*0.30);g.fill(); }
+  else if(cfg.kind==='dog'){ g.fillStyle='#3a2b34';g.beginPath();g.ellipse(0,R*0.20,R*0.14,R*0.105,0,0,7);g.fill();
+    g.fillStyle='rgba(255,255,255,0.5)';g.beginPath();g.ellipse(-R*0.045,R*0.17,R*0.048,R*0.03,-0.4,0,7);g.fill(); }
+  else if(cfg.kind==='bear'){ g.fillStyle='#4a3a44';g.beginPath();g.ellipse(0,R*0.25,R*0.155,R*0.095,0,0,7);g.fill(); }
+  else if(cfg.kind==='bunny'){ g.fillStyle='#ff8fb0';g.beginPath();g.moveTo(-R*0.075,R*0.17);g.lineTo(R*0.075,R*0.17);g.lineTo(0,R*0.26);g.closePath();g.fill(); }
   else if(!isHuman&&!isStar){ g.fillStyle=dark;g.beginPath();g.moveTo(-R*0.09,R*0.16);g.lineTo(R*0.09,R*0.16);g.lineTo(0,R*0.26);g.closePath();g.fill(); }
   if(mood==='wow'){ g.fillStyle='#3a2b34';g.beginPath();g.ellipse(0,R*0.34,R*0.15,R*0.19,0,0,7);g.fill(); g.fillStyle='#ff8fae';g.beginPath();g.ellipse(0,R*0.42,R*0.08,R*0.09,0,0,7);g.fill(); }
   else { g.strokeStyle='#3a2b34';g.lineWidth=R*0.07;g.lineCap='round';g.beginPath();
     if(mood==='sad')g.arc(0,R*0.55,R*0.24,Math.PI+0.5,-0.5);
     else if(mood==='ouch')g.arc(0,R*0.46,R*0.13,Math.PI+0.35,-0.35);
-    else if(mood==='happy')g.arc(0,R*0.22,R*0.3,0.1*Math.PI,0.9*Math.PI);
+    else if(mood==='happy'||mood==='calm')g.arc(0,R*0.22,R*0.3,0.1*Math.PI,0.9*Math.PI);
     else g.arc(0,R*0.24,R*0.22,0.15*Math.PI,0.85*Math.PI);
     g.stroke(); }
-  g.fillStyle='rgba(255,132,168,0.5)';g.beginPath();g.ellipse(-R*0.6,R*0.3,R*0.17,R*0.12,0,0,7);g.fill();g.beginPath();g.ellipse(R*0.6,R*0.3,R*0.17,R*0.12,0,0,7);g.fill();
-  g.fillStyle='rgba(255,255,255,0.55)';g.beginPath();g.ellipse(-R*0.63,R*0.27,R*0.055,R*0.038,0,0,7);g.fill();g.beginPath();g.ellipse(R*0.57,R*0.27,R*0.055,R*0.038,0,0,7);g.fill();
+  const bxp=R*nf.blush;   // 볼 위치도 종류마다 다르다 (곰은 넓게, 병아리는 좁게)
+  g.fillStyle='rgba(255,132,168,0.5)';g.beginPath();g.ellipse(-bxp,R*0.3,R*0.17,R*0.12,0,0,7);g.fill();g.beginPath();g.ellipse(bxp,R*0.3,R*0.17,R*0.12,0,0,7);g.fill();
+  g.fillStyle='rgba(255,255,255,0.55)';g.beginPath();g.ellipse(-bxp-R*0.03,R*0.27,R*0.055,R*0.038,0,0,7);g.fill();g.beginPath();g.ellipse(bxp-R*0.03,R*0.27,R*0.055,R*0.038,0,0,7);g.fill();
+  kindExtras(g,R,cfg,mood);
   drawAcc(g,R,cfg);
   if(mood!=='sad'){ g.fillStyle='rgba(255,255,255,0.92)'; twinkle(g,-R*0.98,-R*0.32,R*0.11); twinkle(g,R*1.0,R*0.24,R*0.07); }
   g.restore();
+}
+// 종류별 전용 장식. 여기가 "완전 다르게" 보이게 만드는 핵심이다.
+// 머리 밖으로 나가는 건 1.12R 안에서 끝낸다 — 게임 화면 아래·미리보기 캔버스에서 잘리기 때문.
+function kindExtras(g,R,cfg,mood){
+  const col=cfg.color, hurt=(mood==='sad'||mood==='ouch');
+  if(cfg.kind==='cat'){                                   // 🐱 수염 3쌍
+    g.strokeStyle='rgba(90,60,80,0.42)';g.lineWidth=Math.max(1,R*0.032);g.lineCap='round';
+    [-1,0,1].forEach(k=>{ [-1,1].forEach(s=>{
+      g.beginPath();g.moveTo(s*R*0.40,R*0.24+k*R*0.085);g.lineTo(s*R*1.02,R*0.19+k*R*0.16);g.stroke(); }); });
+  }
+  else if(cfg.kind==='dog'){                              // 🐶 혀 + 파란 목걸이
+    if(!hurt){ g.fillStyle='#ff7d9c';g.beginPath();g.ellipse(0,R*0.56,R*0.125,R*0.16,0,0,7);g.fill();
+      g.strokeStyle='#e0567c';g.lineWidth=Math.max(1,R*0.028);g.beginPath();g.moveTo(0,R*0.47);g.lineTo(0,R*0.65);g.stroke(); }
+    g.strokeStyle='#5c7cff';g.lineWidth=R*0.10;g.beginPath();g.arc(0,R*0.14,R*0.88,0.33*Math.PI,0.67*Math.PI);g.stroke();
+    g.fillStyle='#ffce3d';g.beginPath();g.arc(0,R*1.02,R*0.10,0,7);g.fill();
+  }
+  else if(cfg.kind==='bunny'){                            // 🐰 앞니 + 수염
+    g.fillStyle='#fff';g.strokeStyle='rgba(120,80,100,0.32)';g.lineWidth=Math.max(1,R*0.02);
+    g.beginPath();g.rect(-R*0.105,R*0.38,R*0.088,R*0.145);g.fill();g.stroke();
+    g.beginPath();g.rect(R*0.017,R*0.38,R*0.088,R*0.145);g.fill();g.stroke();
+    g.strokeStyle='rgba(120,80,100,0.32)';g.lineWidth=Math.max(1,R*0.028);g.lineCap='round';
+    [-1,1].forEach(s=>{ g.beginPath();g.moveTo(s*R*0.32,R*0.25);g.lineTo(s*R*0.82,R*0.19);g.stroke();
+      g.beginPath();g.moveTo(s*R*0.32,R*0.31);g.lineTo(s*R*0.80,R*0.35);g.stroke(); });
+  }
+  else if(cfg.kind==='bear'){                             // 🐻 짧고 통통한 팔
+    g.fillStyle=shade(col,-16);
+    g.beginPath();g.ellipse(-R*1.02,R*0.44,R*0.19,R*0.25,0.38,0,7);g.fill();
+    g.beginPath();g.ellipse(R*1.02,R*0.44,R*0.19,R*0.25,-0.38,0,7);g.fill();
+  }
+  else if(cfg.kind==='chick'){                            // 🐤 주황 발 + 꼬리 깃
+    g.strokeStyle='#f59a2e';g.lineWidth=Math.max(1.4,R*0.055);g.lineCap='round';
+    [-1,1].forEach(s=>{ g.beginPath();g.moveTo(s*R*0.26,R*0.86);g.lineTo(s*R*0.26,R*1.00);
+      g.moveTo(s*R*0.26,R*1.00);g.lineTo(s*R*0.10,R*1.10);
+      g.moveTo(s*R*0.26,R*1.00);g.lineTo(s*R*0.42,R*1.10);g.stroke(); });
+    g.fillStyle=shade(col,-16);
+    g.beginPath();g.moveTo(R*0.86,-R*0.10);g.lineTo(R*1.24,-R*0.34);g.lineTo(R*1.16,R*0.10);g.closePath();g.fill();
+  }
+  else if(cfg.kind==='star'){                             // ⭐ 반짝 테두리 + 짧은 팔
+    g.strokeStyle='rgba(255,255,255,0.78)';g.lineWidth=Math.max(1.2,R*0.05);
+    starPath(g,R*1.28);g.stroke();
+    g.fillStyle=shade(col,-18);
+    g.beginPath();g.ellipse(-R*0.76,R*0.36,R*0.13,R*0.085,0.5,0,7);g.fill();
+    g.beginPath();g.ellipse(R*0.76,R*0.36,R*0.13,R*0.085,-0.5,0,7);g.fill();
+  }
+  else if(cfg.kind==='human'){                            // 🧒 귀 + 앞머리 가닥
+    g.fillStyle='#ffd7b8';
+    g.beginPath();g.ellipse(-R*0.94,R*0.06,R*0.14,R*0.19,0,0,7);g.fill();
+    g.beginPath();g.ellipse(R*0.94,R*0.06,R*0.14,R*0.19,0,0,7);g.fill();
+    g.strokeStyle=shade(col,-34);g.lineWidth=Math.max(1.4,R*0.055);g.lineCap='round';
+    g.beginPath();g.moveTo(-R*0.46,-R*0.60);g.quadraticCurveTo(-R*0.14,-R*0.40,R*0.08,-R*0.64);g.stroke();
+  }
 }
 function twinkle(g,x,y,s){g.save();g.translate(x,y);g.beginPath();for(let i=0;i<8;i++){const a=i/8*Math.PI*2,rr=i%2?s*0.38:s;g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);}g.closePath();g.fill();g.restore();}
 function drawAcc(g,R,cfg){ const ac=cfg.accColor||'#ff5c8a';
@@ -508,7 +645,10 @@ function starPath(g,R){g.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*
 function triEar(g,x,y,s,col,dark,inner){g.fillStyle=col;g.beginPath();g.moveTo(x-s*0.5,y+s*0.7);g.lineTo(x,y-s*0.6);g.lineTo(x+s*0.5,y+s*0.7);g.closePath();g.fill();g.fillStyle=inner;g.beginPath();g.moveTo(x-s*0.22,y+s*0.4);g.lineTo(x,y-s*0.2);g.lineTo(x+s*0.22,y+s*0.4);g.closePath();g.fill();}
 function circEar(g,x,y,r,col){g.fillStyle=col;g.beginPath();g.arc(x,y,r,0,7);g.fill();g.fillStyle=shade(col,-18);g.beginPath();g.arc(x,y,r*0.5,0,7);g.fill();}
 function longEar(g,x,y,w,h,col,inner,rot){g.save();g.translate(x,y);g.rotate(rot);g.fillStyle=col;g.beginPath();g.ellipse(0,0,w,h,0,0,7);g.fill();g.fillStyle=inner;g.beginPath();g.ellipse(0,h*0.1,w*0.5,h*0.7,0,0,7);g.fill();g.restore();}
-function floppyEar(g,x,y,w,h,col){g.fillStyle=col;g.beginPath();g.ellipse(x,y,w,h,0,0,7);g.fill();}
+// 축 늘어진 귀 — 살짝 바깥으로 기울이고 안쪽에 그늘을 넣어 납작한 타원처럼 안 보이게
+function floppyEar(g,x,y,w,h,col,dir){ g.save();g.translate(x,y);g.rotate((dir||0)*0.20);
+  g.fillStyle=col;g.beginPath();g.ellipse(0,0,w,h,0,0,7);g.fill();
+  g.fillStyle='rgba(0,0,0,0.10)';g.beginPath();g.ellipse(0,h*0.14,w*0.56,h*0.64,0,0,7);g.fill(); g.restore(); }
 function shade(hex,amt){let c=hex.replace('#','');if(c.length===3)c=c.split('').map(x=>x+x).join('');let r=parseInt(c.slice(0,2),16),gg=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16);r=Math.max(0,Math.min(255,r+amt));gg=Math.max(0,Math.min(255,gg+amt));b=Math.max(0,Math.min(255,b+amt));return'#'+[r,gg,b].map(x=>x.toString(16).padStart(2,'0')).join('');}
 
 // ================= Difficulty modes =================
@@ -631,10 +771,12 @@ function buildSetupUI(){
     b.innerHTML=`<span class="emo">${m.emoji}</span><span class="nm">${m.name}</span><span class="ds">${m.desc}</span>`;
     b.onclick=()=>{mode=id;localStorage.setItem('jelly_mode',id);buildSetupUI();};mo.appendChild(b);});
 }
+// 메뉴에서는 천천히 통통. 프레임마다 1씩 올리면 초당 4번 튀어서 눈이 어지럽다.
+const MENU_ANIM=0.22;   // 한 번 튀는 데 약 0.6초
 let previewT=0;
-function loopPreview(){ if($('setupScreen').classList.contains('hide'))return; previewT++; pctx.clearRect(0,0,150,150); drawAvatar(pctx,75,88,50,character,'happy',previewT); requestAnimationFrame(loopPreview); }
+function loopPreview(){ if($('setupScreen').classList.contains('hide'))return; previewT+=MENU_ANIM; pctx.clearRect(0,0,150,150); drawAvatar(pctx,75,88,48,character,'calm',previewT); requestAnimationFrame(loopPreview); }
 let heroT=0;
-function loopHero(){ if($('startScreen').classList.contains('hide'))return; heroT++; hctx.clearRect(0,0,150,150); drawAvatar(hctx,75,88,48,character,'happy',heroT); requestAnimationFrame(loopHero); }
+function loopHero(){ if($('startScreen').classList.contains('hide'))return; heroT+=MENU_ANIM; hctx.clearRect(0,0,160,160); drawAvatar(hctx,80,88,46,character,'calm',heroT); requestAnimationFrame(loopHero); }
 
 // ================= Game =================
 let running=false,score=0,combo=1,comboTimer=0,lives=3,level=1;
@@ -656,7 +798,9 @@ function curTheme(){ return THEMES[themeIndex()]; }
 function rand(a,b){return a+Math.random()*(b-a);}
 // ---- 시드 기반 랜덤 (대전에서 두 사람이 '똑같은 판'을 받도록) ----
 function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
-let gspawn=null; // 대전 모드일 때만 세팅 (젤리 생성 전용 — 플레이어 조작은 이걸 소비하지 않음!)
+// 모든 판을 시드로 굴린다 → 끝난 뒤 그 판을 그대로 도전장으로 보낼 수 있다.
+// (젤리 생성 전용. 플레이어 조작·이펙트가 이걸 소비하면 판이 재현되지 않는다!)
+let gspawn=null, runSeed=0;
 function srnd(){ return gspawn?gspawn():Math.random(); }
 function srand(a,b){ return a+srnd()*(b-a); }
 function diff(){ const m=MODES[mode]; return {spawn:Math.max(m.spawnMin,m.spawn0-level*m.spawnL),vy:m.vy0+level*m.vyL,bomb:Math.min(0.42,m.bomb0+level*m.bombL)}; }
@@ -841,7 +985,9 @@ function resumeGame(){ if(!paused)return; paused=false; lastT=0; $('pauseScreen'
 function quitGame(){ paused=false; running=false; $('pauseScreen').classList.add('hide'); $('hud').classList.add('hide'); $('audioBar').classList.add('hide'); $('itemBar').classList.add('hide'); $('pauseBtn').classList.add('hide'); if(bgmGain&&bgmOn)bgmGain.gain.value=0.15; openStart(); }
 
 function startGame(){ score=0;combo=1;comboTimer=0;level=1;lives=MODES[mode].lives;
-  gspawn = (battleMode&&battleSeed) ? mulberry32(battleSeed>>>0) : null;   // 대전이면 시드 고정
+  // 도전장을 받은 판이면 그 시드를, 아니면 새 시드를 쓴다. 어느 쪽이든 재현 가능한 판.
+  runSeed = (battleMode==='accept'&&battleSeed) ? (battleSeed>>>0) : ((Math.random()*1e9)>>>0);
+  gspawn = mulberry32(runSeed);
   jellies=[];particles=[];floaters=[];rings=[];shots=[];drops=[];banner=null;callout=null;flash=0;spawnTimer=0;elapsed=0;shake=0;frame=0;
   slowTimer=0;x2Timer=0;magnetTimer=0;runCoins=0;dropTimer=Math.round(srand(8,12)*60);paused=false;
   player={x:W/2,targetX:W/2,mood:'idle',moodTimer:0,recoil:0};updateHud();
@@ -856,13 +1002,31 @@ function gameOver(){ running=false;paused=false;$('hud').classList.add('hide');$
   let msg=isBest?'역대 최고 점수예요! 대단해요 💗':score>=800?'우와 젤리 마스터! 🏆':score>=350?'아주 잘했어요! 👏':'조금만 더! 다시 도전해봐요 ✨';
   $('overMsg').textContent=msg+' (Lv.'+level+' · '+MODES[mode].emoji+MODES[mode].name+')';
   renderRank(top,score);
+  lastRun={seed:runSeed,mode:mode,score:score};   // 결과 화면에서 이 판을 도전장으로 보낼 수 있게
   const bm=battleMode; battleMode=null; gspawn=null;
-  $('battleResult').classList.add('hide');
-  if(bm==='create') finishCreate(); else if(bm==='accept') finishAccept();
-  showScreen('overScreen'); startAttract(); }
+  $('battleResult').classList.add('hide'); $('overNickCard').classList.add('hide');
+  $('sendChBtn').disabled=false; $('sendChBtn').textContent='🎯 이 점수로 도전장 보내기';
+  if(bm==='accept') finishAccept();
+  showScreen('overScreen'); lockOverActions(); startAttract(); }
 
 // ================= Screens & flow =================
-function showScreen(id){ ['startScreen','setupScreen','shopScreen','settingsScreen','attendScreen','battleScreen','acceptScreen','pauseScreen','overScreen'].forEach(s=>$(s).classList.add('hide')); if(id)$(id).classList.remove('hide'); }
+const SCREENS=['startScreen','setupScreen','shopScreen','settingsScreen','attendScreen','rankScreen','battleScreen','acceptScreen','pauseScreen','overScreen'];
+function showScreen(id){ if(id!=='overScreen')clearOverLock(); SCREENS.forEach(s=>$(s).classList.add('hide')); if(id)$(id).classList.remove('hide'); }
+// ---- 결과 화면 실수 탭 방지 ----
+// 죽는 순간 화면에 있던 손가락이 '다시 하기'를 눌러 판이 새로 시작되는 사고를 막는다.
+const OVER_LOCK_MS=1200;
+let overLockT=null;
+function clearOverLock(){ if(overLockT){clearInterval(overLockT);overLockT=null;} }
+function lockOverActions(){
+  const acts=$('overActions'), g=$('overGuard');
+  acts.classList.add('locked'); g.classList.remove('hide');
+  const t0=performance.now(); clearOverLock();
+  overLockT=setInterval(()=>{
+    const left=OVER_LOCK_MS-(performance.now()-t0);
+    if(left<=0){ clearOverLock(); acts.classList.remove('locked'); g.classList.add('hide'); return; }
+    g.textContent='👆 실수로 누르지 않게 '+(left/1000).toFixed(1)+'초…';
+  },80);
+}
 // ---- 출석부 ----
 function markAttend(){ const t=todayStr(); let a=loadJSON('jelly_attend',[]); if(!a.includes(t)){ a.push(t); if(a.length>500)a=a.slice(-500); localStorage.setItem('jelly_attend',JSON.stringify(a)); } }
 function openAttend(){ showScreen('attendScreen'); buildCalendar(); }
@@ -881,18 +1045,37 @@ function buildCalendar(){
 }
 // ================= 온라인: 닉네임 + 랭킹 =================
 let nick=localStorage.getItem('jelly_nick')||'';
-function saveNick(v){ nick=(v||'').trim().slice(0,10); localStorage.setItem('jelly_nick',nick); }
+function saveNick(v){ nick=(v||'').trim().slice(0,10); localStorage.setItem('jelly_nick',nick); syncNickInputs(); }
+// 닉네임 입력칸이 화면마다 있으니 한 곳에서 고치면 나머지도 따라간다 (입력 중인 칸은 건드리지 않음)
+function syncNickInputs(){ ['nickInput','nickInput2','nickInput3','nickInputO'].forEach(id=>{
+  const el=$(id); if(el&&el.value!==nick&&document.activeElement!==el)el.value=nick; }); }
 function escapeHtml(s){ return (s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
-function openBattle(){ showScreen('battleScreen'); $('nickInput').value=nick; loadLeaderboard(); }
+function openRank(){ showScreen('rankScreen'); syncNickInputs(); lbMode=mode; buildLbTabs(); loadLeaderboard(); }
+function openBattle(){ showScreen('battleScreen'); syncNickInputs(); }
+// 랭킹은 난이도별로 따로 본다 — 순한맛 1등과 핵불닭 1등을 같은 줄에 세우면 안 된다.
+let lbMode=mode;
+function buildLbTabs(){ const o=$('lbModeTabs'); o.innerHTML='';
+  Object.keys(MODES).forEach(id=>{ const m=MODES[id]; const b=document.createElement('button');
+    b.className='chip'+(lbMode===id?' on':''); b.textContent=m.emoji+' '+m.name;
+    b.onclick=()=>{ lbMode=id; buildLbTabs(); loadLeaderboard(); }; o.appendChild(b); }); }
 async function loadLeaderboard(){
-  const box=$('lbBox');
+  const box=$('lbBox'), want=lbMode, m=MODES[want];
+  $('lbTitle').textContent='🏆 '+m.emoji+m.name+' TOP 10';
   if(!supaReady()){ box.innerHTML='<div class="rrow">인터넷 연결이 필요해요 📡</div>'; return; }
   box.innerHTML='<div class="rrow">불러오는 중...</div>';
   try{
-    const { data, error } = await getSupa().from('scores').select('name,score').order('score',{ascending:false}).limit(10);
+    const { data, error } = await getSupa().from('scores').select('name,score')
+      .eq('mode',want).order('score',{ascending:false}).limit(200);
+    if(want!==lbMode) return;                       // 그새 탭을 바꿨으면 이 응답은 버린다
     if(error){ box.innerHTML='<div class="rrow">랭킹 준비 중이에요 (DB 설정 확인)</div>'; return; }
-    if(!data||!data.length){ box.innerHTML='<div class="rrow">1등이 되어보세요! 🥇</div>'; return; }
-    let h=''; data.forEach((r,i)=>{ const me=r.name===nick; h+='<div class="rrow'+(me?' me':'')+'"><span>'+(['🥇','🥈','🥉'][i]||((i+1)+'.'))+' '+escapeHtml(r.name)+'</span><span>⭐ '+r.score+'</span></div>'; });
+    // 한 사람이 여러 판 해도 최고점 한 줄만 남긴다 — 안 그러면 TOP 10을 혼자 채운다
+    const best=new Map();
+    (data||[]).forEach(r=>{ const n=(r.name||'').trim(); if(!n)return;
+      if(!best.has(n)||best.get(n)<r.score) best.set(n,r.score); });
+    const rows=[...best.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10);
+    if(!rows.length){ box.innerHTML='<div class="rrow">이 난이도의 1등이 되어보세요! 🥇</div>'; return; }
+    let h=''; rows.forEach((e,i)=>{ const me=e[0]===nick;
+      h+='<div class="rrow'+(me?' me':'')+'"><span>'+(['🥇','🥈','🥉'][i]||((i+1)+'.'))+' '+escapeHtml(e[0])+'</span><span>⭐ '+e[1]+'</span></div>'; });
     box.innerHTML=h;
   }catch(e){ box.innerHTML='<div class="rrow">랭킹 로드 실패 😢</div>'; }
 }
@@ -902,12 +1085,40 @@ async function submitScore(){
 }
 // ================= 대전: 도전장 (같은 판 점수 승부) =================
 let battleMode=null, battleSeed=0, battleId='', battleHostName='', battleHostScore=0, pendingChallenge=null;
-function makeCode(){ const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s=''; for(let i=0;i<6;i++)s+=c[(Math.random()*c.length)|0]; return s; }
-function startCreateChallenge(){
-  if(!nick){ toast('먼저 닉네임을 정해주세요! 🙋'); return; }
+let lastRun=null;   // 직전 판 {seed,mode,score} — 결과 화면에서 그대로 도전장이 된다
+
+// ---- 복사 / 공유 ----
+function fallbackCopy(s,okMsg){ try{ const ta=document.createElement('textarea'); ta.value=s;
+    ta.style.cssText='position:fixed;top:0;left:0;opacity:0'; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta); toast(okMsg); }catch(e){ toast('복사가 안 돼요 😢'); } }
+function copyText(s,okMsg){ if(navigator.clipboard&&navigator.clipboard.writeText)
+    navigator.clipboard.writeText(s).then(()=>toast(okMsg)).catch(()=>fallbackCopy(s,okMsg));
+  else fallbackCopy(s,okMsg); }
+function shareResult(){
+  const r=lastRun||{mode:mode,score:score}, m=MODES[r.mode]||MODES.normal;
+  const url=location.origin+location.pathname;
+  const text='🍡 젤리슈팅 '+m.emoji+m.name+' '+r.score+'점! 이겨볼래? 😎';
+  if(navigator.share){ navigator.share({title:'Jelly Shooting',text:text,url:url}).catch(()=>{}); return; }
+  copyText(text+'\n'+url,'📋 결과를 복사했어요! 붙여넣어 자랑하세요');
+}
+// ---- 결과 화면에서 바로 도전장 보내기 (따로 만드는 화면 없음) ----
+async function sendChallenge(){
+  if(!lastRun||lastRun.score<=0){ toast('0점은 도전장을 보낼 수 없어요 😅'); return; }
   if(!supaReady()){ toast('인터넷 연결이 필요해요 📡'); return; }
-  battleMode='create'; battleSeed=(Math.random()*1e9)>>>0; battleId=makeCode(); battleHostName=nick; battleHostScore=0;
-  startGame();
+  if(!nick){ $('overNickCard').classList.remove('hide'); $('nickInputO').value=nick; $('nickInputO').focus();
+    toast('닉네임만 정하면 바로 보낼 수 있어요 🙋'); return; }
+  const btn=$('sendChBtn'), code=makeCode();
+  btn.disabled=true; btn.textContent='보내는 중… ⏳';
+  try{
+    const { error } = await getSupa().from('challenges')
+      .insert({id:code,seed:lastRun.seed,mode:lastRun.mode,host_name:nick,host_score:lastRun.score});
+    if(error) throw error;
+    const link=location.origin+location.pathname+'?c='+code;
+    $('overNickCard').classList.add('hide');
+    showBattleResult('🎯 도전장 준비 완료!', nick+' '+lastRun.score+'점\n친구가 똑같은 판에 도전합니다!', link, true, code);
+    btn.textContent='🎯 도전장 새로 만들기';
+  }catch(e){ toast('도전장 저장 실패 😢'); btn.textContent='🎯 이 점수로 도전장 보내기'; }
+  btn.disabled=false;
 }
 function startAcceptChallenge(){
   if(!pendingChallenge||!nick){ toast('닉네임을 정해주세요! 🙋'); return; }
@@ -915,12 +1126,6 @@ function startAcceptChallenge(){
   battleHostName=pendingChallenge.host_name; battleHostScore=pendingChallenge.host_score;
   mode = MODES[pendingChallenge.mode] ? pendingChallenge.mode : 'normal'; localStorage.setItem('jelly_mode',mode);
   startGame();
-}
-async function finishCreate(){
-  const link=location.origin+location.pathname+'?c='+battleId;
-  showBattleResult('🎯 도전장 완성! '+score+'점','친구에게 링크를 보내 같은 판에 도전받으세요!',link,true,battleId);
-  try{ await getSupa().from('challenges').insert({id:battleId,seed:battleSeed,mode:mode,host_name:battleHostName,host_score:score}); }
-  catch(e){ toast('도전장 저장 실패 😢'); }
 }
 async function finishAccept(){
   const win=score>battleHostScore, tie=score===battleHostScore;
@@ -934,7 +1139,7 @@ function showBattleResult(title, sub, link, isCreate, code){
   if(isCreate){ h+='<div style="margin-top:10px;"><div class="tag2" style="font-size:13px;">친구 코드: <b style="color:var(--pink-d);font-size:18px;letter-spacing:2px;">'+code+'</b></div>';
     h+='<button class="btn" id="copyLinkBtn" style="margin-top:8px;padding:12px 24px;font-size:16px;">📋 도전장 링크 복사</button></div>'; }
   const box=$('battleResult'); box.innerHTML=h; box.classList.remove('hide');
-  if(isCreate){ const b=$('copyLinkBtn'); if(b) b.onclick=()=>{ try{ navigator.clipboard.writeText(link).then(()=>toast('📋 복사됨! 카톡에 붙여넣어 보내세요')).catch(()=>toast('코드를 알려주세요: '+code)); }catch(e){ toast('코드: '+code); } }; }
+  if(isCreate){ const b=$('copyLinkBtn'); if(b) b.onclick=()=>copyText(link,'📋 복사됨! 카톡에 붙여넣어 보내세요'); }
 }
 async function joinByCode(code){
   code=(code||'').trim().toUpperCase();
@@ -976,7 +1181,7 @@ function resetAll(){
   if(!kindOwned(character.kind)){character.kind='cat';saveChar();}
   resetArmed=false; toast('✨ 전체 초기화 완료!'); syncSettingsUI();
 }
-function openStart(){ showScreen('startScreen'); const b=bestScore(),el=$('startBest'); if(b>0){el.textContent='🏆 최고기록 '+b+'점';el.classList.remove('hide');}else el.classList.add('hide'); $('startCoins').textContent='🪙 '+coins; checkDaily(); loopHero(); startAttract(); }
+function openStart(){ showScreen('startScreen'); $('battleResult').classList.add('hide'); const b=bestScore(),el=$('startBest'); if(b>0){el.textContent='🏆 최고기록 '+b+'점';el.classList.remove('hide');}else el.classList.add('hide'); $('startCoins').textContent='🪙 '+coins; checkDaily(); loopHero(); startAttract(); }
 function openSetup(){ showScreen('setupScreen'); buildSetupUI(); loopPreview(); }
 $('playBtn').onclick=()=>{ensureAudio();openSetup();};
 $('shopBtn').onclick=()=>openShop();
@@ -991,15 +1196,21 @@ $('restartBtn').onclick=()=>{ resumeGame(); startGame(); };
 $('quitBtn').onclick=quitGame;
 $('attendBtn').onclick=openAttend;
 $('attendBackBtn').onclick=()=>openStart();
+$('rankBtn').onclick=openRank;
+$('rankBackBtn').onclick=()=>openStart();
 $('battleBtn').onclick=openBattle;
 $('battleBackBtn').onclick=()=>openStart();
+$('battlePlayBtn').onclick=()=>{ensureAudio();openSetup();};
 $('lbRefresh').onclick=loadLeaderboard;
-$('nickInput').addEventListener('input',e=>saveNick(e.target.value));
-$('createChBtn').onclick=startCreateChallenge;
 $('joinChBtn').onclick=()=>joinByCode($('chCodeInput').value);
 $('acceptStartBtn').onclick=startAcceptChallenge;
 $('acceptBackBtn').onclick=()=>openStart();
-$('nickInput2').addEventListener('input',e=>saveNick(e.target.value));
+['nickInput','nickInput2','nickInput3','nickInputO'].forEach(id=>$(id).addEventListener('input',e=>saveNick(e.target.value)));
+$('homeBtn').onclick=()=>openStart();
+$('shareBtn').onclick=shareResult;
+$('sendChBtn').onclick=sendChallenge;
+$('overNickOk').onclick=()=>{ saveNick($('nickInputO').value); if(!nick){toast('닉네임을 입력해주세요 🙋');return;}
+  $('overNickCard').classList.add('hide'); sendChallenge(); };
 window.addEventListener('keydown',e=>{ if(e.key==='Escape'&&running){ paused?resumeGame():pauseGame(); } });
 $('setSound').onclick=()=>{ soundOn=!soundOn; ensureAudio(); $('soundBtn').textContent=soundOn?'🔊':'🔇'; syncSettingsUI(); };
 $('setBgm').onclick=()=>{ bgmOn=!bgmOn; ensureAudio(); $('bgmBtn').textContent=bgmOn?'🎵':'🚫'; if(bgmGain)bgmGain.gain.value=bgmOn?0.15:0; syncSettingsUI(); };
