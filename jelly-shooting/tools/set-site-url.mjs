@@ -15,10 +15,16 @@ import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HTML = join(dirname(fileURLToPath(import.meta.url)), '..', 'index.html');
+// og:image 뒤에 붙는 판 번호. 그림을 바꿨는데도 예전 미리보기가 뜨면 이 숫자를 올린다.
+// 카카오·페이스북은 '같은 주소면 같은 그림'으로 보고 캐시한다. 링크에 ?v= 를 붙여
+// 페이지를 새로 읽게 해도, 그림 주소가 그대로면 그림은 예전 것을 그냥 다시 쓴다.
+// 주소 자체가 달라져야 확실히 새로 받아간다.
+const IMG_VER = 2;
+const IMG = 'og.png?v=' + IMG_VER;
 const TAGS = [
   { re: /(<meta property="og:url" content=")([^"]*)(")/,        path: '' },
-  { re: /(<meta property="og:image" content=")([^"]*)(")/,      path: 'og.png' },
-  { re: /(<meta name="twitter:image" content=")([^"]*)(")/,     path: 'og.png' },
+  { re: /(<meta property="og:image" content=")([^"]*)(")/,      path: IMG },
+  { re: /(<meta name="twitter:image" content=")([^"]*)(")/,     path: IMG },
 ];
 
 let html = readFileSync(HTML, 'utf8');
