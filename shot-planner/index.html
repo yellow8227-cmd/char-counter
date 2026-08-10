@@ -325,6 +325,17 @@
   details[open] summary{ color:var(--ink); margin-bottom:2px }
 
   /* ── 설정 창 ──────────────────────────────────────────── */
+  .urlrow{ display:flex; gap:6px; align-items:center }
+  .urlrow input{ flex:1; min-width:0; font-family:var(--mono);
+                 font-size:calc(var(--fs) - 2.5px); padding:7px 9px }
+  .drop{
+    border:2px dashed var(--line2); border-radius:var(--r); padding:26px 14px;
+    text-align:center; color:var(--sub); background:var(--panel2);
+    font-size:calc(var(--fs) - .5px); font-weight:600; transition:.14s var(--ease);
+  }
+  .drop.on{ border-color:var(--acc); background:var(--panel3); color:var(--ink) }
+  .drop span{ display:block; margin-top:6px; font-weight:400;
+              font-size:calc(var(--fs) - 2.5px); color:var(--sub) }
   .modal{
     position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center;
     padding:20px; background:rgba(8,10,14,.5); backdrop-filter:blur(5px) saturate(1.2);
@@ -1132,6 +1143,67 @@
       </div>
     </div>
     <div class="pfoot"><span id="pp-foot"></span><span>촬영 배치도 · Shot Planner</span></div>
+  </div>
+</div>
+
+<!-- 공유 창 — 「도구 주소」와 「작업이 담긴 주소」는 다른 것이다 -->
+<div class="modal" id="shareModal">
+  <div class="sheet" style="width:min(560px,100%)">
+    <h3>🔗 공유</h3>
+    <p class="sub">보내는 것이 두 가지입니다. 도구만 보낼지, 지금 이 배치도까지 보낼지 고르세요.</p>
+
+    <div class="fld">
+      <label>① 도구 주소</label>
+      <p class="desc">받는 사람은 <b>빈 배치도</b>로 시작합니다. 도구 자체를 알려 줄 때.</p>
+      <div class="urlrow">
+        <input id="shBase" spellcheck="false" placeholder="브라우저 주소창의 주소를 붙여넣어 주세요">
+        <button class="mini" id="shCopyBase">⧉ 복사</button>
+      </div>
+      <p class="desc" id="shBaseNote" style="margin:6px 0 0"></p>
+    </div>
+
+    <div class="fld">
+      <label>② 지금 이 배치도가 담긴 주소</label>
+      <p class="desc" id="shWorkDesc">작품 전체가 압축돼 주소 안에 들어갑니다. 열면 이 배치가 그대로 뜹니다.</p>
+      <div class="urlrow">
+        <input id="shWork" readonly spellcheck="false">
+        <button class="mini" id="shCopyWork">⧉ 복사</button>
+      </div>
+      <p class="desc" id="shWorkNote" style="margin:6px 0 0"></p>
+    </div>
+
+    <div class="fld">
+      <label>③ 파일로 넘기기 <span style="font-weight:400; color:var(--sub)">— 가장 확실한 길</span></label>
+      <p class="desc">주소가 안 통하는 곳에서도 됩니다. PNG 그림 안에도 작업이 통째로 들어 있어서,
+      도면 한 장만 보내도 편집본을 같이 보낸 셈입니다.</p>
+      <div class="row">
+        <button id="shPng">🖼 한 장 PNG</button>
+        <button id="shJson">📦 .json</button>
+        <button id="shCopyJson" class="mini">📋 JSON 복사</button>
+      </div>
+    </div>
+    <div class="row" style="justify-content:flex-end; margin-top:16px">
+      <button id="shClose">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 이어서 하기 — 파일 고르기 창이 막힌 곳이 있어 길을 여러 개 둔다 -->
+<div class="modal" id="openModal">
+  <div class="sheet" style="width:min(500px,100%)">
+    <h3>📥 이어서 하기</h3>
+    <p class="sub">전에 내보낸 <b>.json</b>, 또는 이 도구로 저장한 <b>PNG 그림</b>을 여세요.
+    그림 안에도 작업이 통째로 들어 있어서 배치가 그대로 살아납니다.</p>
+    <div class="drop" id="dropZone">파일을 여기에 끌어다 놓으세요
+      <span>또는 이 창에서 <b>Ctrl+V</b> · 아래 칸에 JSON 붙여넣기</span></div>
+    <textarea id="openJson" rows="4" placeholder='{ "title": … } 를 붙여넣어도 됩니다'
+      style="width:100%; box-sizing:border-box; margin-top:12px; resize:vertical;
+             font-family:var(--mono); font-size:calc(var(--fs) - 2px)"></textarea>
+    <div class="row" style="justify-content:flex-end; margin-top:14px">
+      <button id="openPick">📁 파일 고르기</button>
+      <button id="openCancel">취소</button>
+      <button id="openGo" class="on">열기</button>
+    </div>
   </div>
 </div>
 
@@ -3035,6 +3107,10 @@ planCv.addEventListener('wheel', e => {
 }, {passive:false});
 
 document.addEventListener('keydown', e => {
+  if(e.key === 'Escape' && !askDone){
+    if(openIsUp()){ closeOpen(); return; }
+    if(shareModal.classList.contains('open')){ closeShare(); return; }
+  }
   if(askDone){                       // 묻는 창이 떠 있으면 그것부터
     if(e.key === 'Escape'){ e.preventDefault(); closeAsk(null); }
     else if(e.key === 'Enter' && askInput.style.display === 'none'){ e.preventDefault(); closeAsk(true); }
@@ -3938,9 +4014,9 @@ const askOverwrite = (p2, lead) => ask(
   '「' + (p2.title || '무제') + '」 · 씬 ' + p2.scenes.length + '개\n\n' +
   '지금 작업 중인 것을 덮습니다. (열고 나서 Ctrl+Z 로 되돌릴 수 있어요)',
   '열기');
-async function pasteProjectJson(){
-  let txt = '';
-  try{ txt = await navigator.clipboard.readText(); }catch(e){}
+async function pasteProjectJson(given){
+  let txt = String(given || '');
+  if(!txt){ try{ txt = await navigator.clipboard.readText(); }catch(e){} }
   if(!txt) txt = await askText('📥 JSON 붙여넣기',
     '내보내 둔 작품 JSON 을 붙여넣고 「열기」를 누르세요.', '{ "title": …') || '';
   if(!txt.trim()) return;
@@ -4366,15 +4442,79 @@ async function unpackProject(t){
   const buf = await new Response(new Blob([data]).stream().pipeThrough(ds)).arrayBuffer();
   return JSON.parse(new TextDecoder().decode(buf));
 }
+/* ── 공유 ──────────────────────────────────────────────────
+   프레임 안에서 돌 때 location 은 바깥 페이지가 아니라 이 iframe 자체를 가리킨다.
+   그 주소는 아무도 열 수 없으므로, 바깥 주소를 알아낼 수 있으면 알아내고
+   못 알아내면 한 번만 물어서 기억해 둔다. */
+const BASE_KEY = 'shotplanner_base_v1';
+const readBase = () => { try{ return localStorage.getItem(BASE_KEY) || ''; }catch(e){ return ''; } };
+const writeBase = v => { try{ v ? localStorage.setItem(BASE_KEY, v) : localStorage.removeItem(BASE_KEY); }catch(e){} };
+const stripHash = u => String(u || '').split('#')[0].trim();
+function detectBase(){
+  if(window.top === window.self) return {url:location.origin + location.pathname, sure:true};
+  try{
+    const t = window.top.location;                 // 같은 출처면 읽힌다
+    if(t && t.origin) return {url:t.origin + t.pathname, sure:true};
+  }catch(e){}
+  return {url:'', sure:false};                     // 다른 출처 — 알 길이 없다
+}
+const shareModal = document.getElementById('shareModal');
+const shBase = document.getElementById('shBase'), shWork = document.getElementById('shWork');
+let sharePack = '';
+/* 프레임 안에서는 바깥 주소의 # 뒤가 이 앱까지 내려오지 않는다.
+   그러면 ② 주소는 받는 쪽에서 안 열릴 수 있으므로, 그 사실을 적어 준다. */
+function syncShare(){
+  const base = stripHash(shBase.value);
+  const note = document.getElementById('shBaseNote');
+  const wd = document.getElementById('shWorkDesc');
+  if(!detectBase().sure){
+    wd.innerHTML = '작품 전체가 압축돼 주소 안에 들어갑니다. ' +
+      '<b>다만 이 도구가 창 안에 끼워져 열려 있을 때는</b>, 주소 뒤의 꾸러미가 ' +
+      '도구까지 내려오지 않아 받는 쪽에서 안 열릴 수 있습니다. 그럴 땐 ③ 을 쓰세요.';
+  }
+  const wn = document.getElementById('shWorkNote');
+  if(!base){
+    shWork.value = '';
+    note.textContent = '이 도구가 열려 있는 주소를 모르겠어요. 브라우저 주소창에서 복사해 붙여넣어 주시면 기억해 둘게요.';
+    note.style.display = '';
+    wn.textContent = '';
+    return;
+  }
+  note.textContent = ''; note.style.display = 'none';
+  writeBase(base);
+  const url = base + '#p=' + sharePack;
+  shWork.value = url;
+  shWork.scrollLeft = 0;                 // 주소는 앞에서부터 보여야 주소로 보인다
+  wn.textContent = url.length > 60000
+    ? '⚠︎ 작품이 커서 이 주소는 브라우저가 자를 수 있어요 — ③ 을 쓰세요.'
+    : '주소 길이 ' + Math.round(url.length/1024) + 'KB';
+}
+async function copyTo(el, what){
+  const v = el.value;
+  if(!v) return toast('아직 주소가 없어요');
+  try{ await navigator.clipboard.writeText(v); toast('⧉ ' + what + ' 복사했어요'); }
+  catch(e){ el.focus(); el.select(); toast('복사가 막혀 있어요 — Ctrl+C 를 눌러 주세요'); }
+}
 document.getElementById('bShare').addEventListener('click', async () => {
   try{
-    const pack = await packProject();
-    const url = location.origin + location.pathname + '#p=' + pack;
-    if(url.length > 60000) return toast('작품이 너무 커서 링크로는 안 됩니다 — 「파일로 내보내기」를 쓰세요');
-    try{ await navigator.clipboard.writeText(url); toast('🔗 링크를 복사했어요 (' + Math.round(url.length/1024) + 'KB) — 붙여넣으면 이 배치도가 그대로 열립니다'); }
-    catch(e){ showText('🔗 공유 링크', '복사가 막혀 있어요. 아래 주소를 골라 복사해서 보내세요.', url); }
-  }catch(e){ toast('링크를 만들지 못했어요'); }
+    sharePack = await packProject();
+  }catch(e){ return toast('링크를 만들지 못했어요'); }
+  const saved = readBase(), got = detectBase();
+  shBase.value = saved || got.url;
+  syncShare();
+  shareModal.classList.add('open');
+  setTimeout(() => { shBase.focus(); shBase.setSelectionRange(0, 0); shWork.scrollLeft = 0; }, 40);
 });
+shBase.addEventListener('input', syncShare);
+document.getElementById('shCopyBase').addEventListener('click', () => copyTo(shBase, '도구 주소를'));
+document.getElementById('shPng').addEventListener('click', () => saveSheetPng());
+document.getElementById('shJson').addEventListener('click', () =>
+  saveFile(safeName(project.title, '.json'), JSON.stringify(project, null, 1)));
+document.getElementById('shCopyJson').addEventListener('click', copyProjectJson);
+document.getElementById('shCopyWork').addEventListener('click', () => copyTo(shWork, '배치도 주소를'));
+const closeShare = () => shareModal.classList.remove('open');
+document.getElementById('shClose').addEventListener('click', closeShare);
+shareModal.addEventListener('click', e => { if(e.target === shareModal) closeShare(); });
 /* 링크로 받은 작품 — 지금 것을 덮으므로 반드시 물어본다 */
 async function loadFromHash(){
   const m = /[#&]p=([A-Za-z0-9_-]+)/.exec(location.hash || '');
@@ -4401,9 +4541,21 @@ document.getElementById('bExport').addEventListener('click', () => {
 });
 document.getElementById('bCopyJson').addEventListener('click', copyProjectJson);
 document.getElementById('bPasteJson').addEventListener('click', pasteProjectJson);
-/* 어떤 곳에서는 파일 고르기 창 자체가 열리지 않는다. 창이 열리면 이 화면은
-   초점을 잃으므로, 잠깐 뒤에도 초점이 그대로면 막힌 것으로 보고 다른 길을 연다. */
+/* 파일 고르기 창은 어떤 곳에서는 아예 열리지 않는다. 그래서 「이어서 하기」는
+   고르기 · 끌어다 놓기 · 붙여넣기 세 길을 한 창에 같이 열어 둔다. */
+const openModal = document.getElementById('openModal');
+const dropZone = document.getElementById('dropZone');
+const openJson = document.getElementById('openJson');
+const openIsUp = () => openModal.classList.contains('open');
+const closeOpen = () => openModal.classList.remove('open');
 document.getElementById('bImport').addEventListener('click', () => {
+  openJson.value = '';
+  dropZone.classList.remove('on');
+  openModal.classList.add('open');
+});
+document.getElementById('openCancel').addEventListener('click', closeOpen);
+openModal.addEventListener('click', e => { if(e.target === openModal) closeOpen(); });
+document.getElementById('openPick').addEventListener('click', () => {
   const fi = document.getElementById('fImport');
   let left = false, picked = false;
   const onBlur = () => { left = true; };
@@ -4414,10 +4566,26 @@ document.getElementById('bImport').addEventListener('click', () => {
   setTimeout(() => {
     window.removeEventListener('blur', onBlur);
     fi.removeEventListener('change', onPick);
-    if(left || picked) return;
-    toast('파일 창이 안 열리네요 — 파일을 이 창에 끌어다 놓거나, 아래 붙여넣기를 쓰세요');
-    pasteProjectJson();
+    if(!left && !picked) toast('여기서는 파일 창이 안 열려요 — 끌어다 놓거나 붙여넣어 주세요');
   }, 1200);
+});
+document.getElementById('openGo').addEventListener('click', () => {
+  const t = openJson.value.trim();
+  if(!t) return toast('붙여넣은 것이 없어요 — 파일을 끌어다 놓아도 됩니다');
+  closeOpen(); pasteProjectJson(t);
+});
+for(const ev of ['dragenter','dragover']) dropZone.addEventListener(ev, e => {
+  e.preventDefault(); e.stopPropagation(); dropZone.classList.add('on');
+});
+for(const ev of ['dragleave','drop']) dropZone.addEventListener(ev, () => dropZone.classList.remove('on'));
+/* 붙여넣기로도 받는다 — 그림을 복사해 왔거나(파일), 글로 복사해 왔거나(JSON) */
+document.addEventListener('paste', e => {
+  const dt = e.clipboardData; if(!dt) return;
+  const f = [...(dt.files || [])][0];
+  if(f){ e.preventDefault(); closeOpen(); openProjectFile(f); return; }
+  if(!openIsUp() || e.target === openJson) return;
+  const t = (dt.getData('text') || '').trim();
+  if(t.startsWith('{')){ e.preventDefault(); closeOpen(); pasteProjectJson(t); }
 });
 async function openProjectFile(f){
   if(!f) return;
@@ -4433,7 +4601,7 @@ async function openProjectFile(f){
   }
   if(!await askOverwrite(p2, '📥 ' + f.name)) return;
   adoptProject(p2);
-  closePrefs(); resetView(); fitBird(); refreshAll();
+  closeOpen(); closePrefs(); resetView(); fitBird(); refreshAll();
   toast(png ? '🖼 그림 속 작업을 그대로 열었어요' : '📥 불러왔어요');
 }
 document.getElementById('fImport').addEventListener('change', async e => {
