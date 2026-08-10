@@ -170,6 +170,8 @@ API 키를 꽂아 사이트 안에서 바로 답을 받는 기능은 아직 없�
   `local()`을 먼저 보므로 폰트가 설치돼 있으면 폴더가 없어도 적용되고, 둘 다 없으면 시스템 고딕으로 대체
 - 저장: `localStorage['scenedeck_v1']` + IndexedDB `scenedeck` / `img` 스토어
 - 탭 상태는 주소 해시(`#prompt`)와 `localStorage['scenedeck_tab']`에 함께 기록 — 링크 공유와 새로고침 복원용
+- 화면 밝기는 `<html data-theme>` + `localStorage['scenedeck_theme']`. 색은 전부 CSS 변수로만 정의(하드코딩 색 0개)
+- 「빠른 입력」은 임시 씬·컷 객체를 즉석에서 만들어 기존 `buildMJ/buildVEO/buildGEN`에 그대로 태운다. 입력값은 `S.quick`에 보관
 - 레이아웃: 1180px 컨테이너 / 820px·720px 두 단계 반응형. 가로 스크롤 없음
 - 문법 검사:
   ```
