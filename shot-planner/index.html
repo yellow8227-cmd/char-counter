@@ -858,7 +858,15 @@
         <button class="mini" data-q="배우 1명, 침대, 창문, 카메라, 키라이트">침실</button>
         <button class="mini" data-q="배우 2명, 자동차, 카메라 2대">차량</button>
       </div>
-      <p class="hint">엔터로 배치. <b>이름 가로x세로x높이</b> 형식으로 쓰면 <b>없는 소품도 바로 만들어</b> 놓습니다 — 예) <code>화분 40x40x90</code></p>
+      <div class="row" style="margin-top:8px">
+        <div class="seg" id="segQMode" role="group" aria-label="빠른 배치 방식">
+          <button data-qmode="replace">새로 배치</button>
+          <button data-qmode="append">덧붙이기</button>
+        </div>
+      </div>
+      <p class="hint">엔터로 배치. 서로 <b>겹치지 않는 자리</b>를 찾아 놓습니다.
+        <b>이름 가로x세로x높이</b> 형식으로 쓰면 <b>없는 소품도 바로 만들어</b> 놓아요 — 예) <code>화분 40x40x90</code>.
+        잘못 눌렀으면 <kbd>Ctrl+Z</kbd>.</p>
     </section>
 
     <section class="card">
@@ -1031,7 +1039,7 @@ const ACCENTS = [
   {id:'purple', light:'#7a5ad6', dark:'#b394ff'},
   {id:'rose',   light:'#bc3c60', dark:'#ff8fb0'},
 ];
-const DEFAULT_PREFS = {theme:'auto', accent:'amber', fs:13, paper:'theme', snap:5, angle:15, wide:false};
+const DEFAULT_PREFS = {theme:'auto', accent:'amber', fs:13, paper:'theme', snap:5, angle:15, wide:false, qmode:'replace'};
 let prefs = {...DEFAULT_PREFS};
 
 /* 배치도(2D 도면)에 쓰는 색. CSS 변수와 별개로 캔버스는 여기서 가져다 쓴다. */
@@ -1129,6 +1137,7 @@ function loadPrefs(){
   }catch(e){ prefs = {...DEFAULT_PREFS}; }
   prefs.snap = [1,5,10,25].includes(+prefs.snap) ? +prefs.snap : 5;
   prefs.wide = !!prefs.wide;
+  prefs.qmode = prefs.qmode === 'append' ? 'append' : 'replace';
   prefs.angle = [5,15,45,90].includes(+prefs.angle) ? +prefs.angle : 15;
   prefs.fs = [12,13,15].includes(+prefs.fs) ? +prefs.fs : 13;
 }
@@ -3242,12 +3251,14 @@ const BASE_WORDS = {
   '배우':'actor','인물':'actor','사람':'actor',
   '카메라':'camera','캠':'camera',
   '키라이트':'light:key','키':'light:key','필라이트':'light:fill','필':'light:fill',
-  '백라이트':'light:back','백':'light:back','프랙티컬':'light:prac',
+  '백라이트':'light:back','백':'light:back','프랙티컬':'light:prac','조명':'light:key',
 };
 function quickWords(){
   const w = {...BASE_WORDS};
   for(const k in BUILTIN_PROPS) w[BUILTIN_PROPS[k].name] = 'prop:'+k;
   w['책상'] = 'prop:desk'; w['창'] = 'prop:window'; w['차'] = 'prop:car';
+  w['공원'] = 'prop:tree'; w['벤치'] = 'prop:sofa'; w['화면'] = 'prop:monitor';
+  w['티비'] = 'prop:monitor'; w['tv'] = 'prop:monitor'; w['상자'] = 'prop:box';
   for(const k in project.customProps) w[project.customProps[k].name] = 'prop:'+k;
   return w;
 }
@@ -3256,9 +3267,15 @@ const CNT = '개|명|대|장|채|그루|짝|송이|벌';
 
 function quickAdd(text){
   snapshot();
+  // '새로 배치'면 지금 씬을 비우고 처음부터 놓는다. 덧붙이면 겹치기 쉬워서 이쪽이 기본.
+  if(prefs.qmode !== 'append'){
+    state.walls = []; state.props = []; state.actors = []; state.lights = []; state.cams = [];
+    setSel([]); state.activeCam = null; state.refCam = null;
+    state.axis.a = null; state.axis.b = null; state.scrub = 0;
+  }
   const clauses = text.split(/[,，]|그리고|랑|와|과/).map(s => s.trim()).filter(Boolean);
   const W = quickWords();
-  let added = 0, made = [];
+  let added = 0, made = [], unknown = [];
   for(const cl of clauses){
     // ① "이름 60x40x120" → 없는 소품이면 즉석에서 만들어 등록
     const dim = cl.match(/([가-힣A-Za-z][가-힣A-Za-z0-9 ]*?)\s*(\d+)\s*[xX×*]\s*(\d+)\s*[xX×*]\s*(\d+)/);
@@ -3276,16 +3293,21 @@ function quickAdd(text){
     let key = null;
     for(const w of Object.keys(W).sort((a,b)=>b.length-a.length))
       if(cl.includes(w)){ key = W[w]; break; }
-    if(!key) continue;
+    if(!key){ unknown.push(cl); continue; }
     const n = countOf(cl);
     for(let i=0;i<n;i++){ placeOne(key, i, n); added++; }
   }
   if(added){
-    fitBird(); refreshAll();
-    toast('✅ ' + added + '개 배치' + (made.length ? ' · 새 소품 ' + made.join(', ') : ''));
+    resetView(); fitBird(); refreshAll();
+    toast('✅ ' + added + '개 배치' +
+          (made.length ? ' · 새 소품 ' + made.join(', ') : '') +
+          (unknown.length ? ' · 「' + unknown.join('」 「') + '」는 못 알아들었어요' : ''));
   } else {
-    undoStack.pop();
-    toast('알아듣지 못했어요 — 「이름 가로x세로x높이」로 쓰면 새 소품이 만들어져요');
+    undo();                      // 비운 것까지 되돌린다
+    redoStack.pop();
+    toast(unknown.length
+      ? '「' + unknown.join('」 「') + '」를 못 알아들었어요 — 「이름 가로x세로x높이」로 쓰면 새 소품이 만들어져요'
+      : '무엇을 놓을지 적어 주세요 — 예) 배우 2명, 소파, 카메라 2대');
   }
 }
 function countOf(cl){
@@ -3297,11 +3319,41 @@ function countOf(cl){
   if(m) return clamp(+m[1], 1, 30);
   return 1;
 }
+/* 이미 놓인 것들과 겹치지 않는 자리.
+   원하던 자리에서 시작해 조금씩 바깥으로 밀어 본다. */
+function freeSpot(proto, x, y){
+  const me = bboxOf(proto), gap = 12;
+  const clash = (px, py) => all().some(o => {
+    const ob = bboxOf(o);
+    return Math.abs(px - o.x) < (me.w + ob.w)/2 + gap &&
+           Math.abs(py - o.y) < (me.d + ob.d)/2 + gap;
+  });
+  if(!clash(x, y)) return [x, y];
+  const DIRS = [[0,1],[0,-1],[1,0],[-1,0],[1,1],[-1,1],[1,-1],[-1,-1]];
+  for(let r = 1; r <= 40; r++)
+    for(const [dx,dy] of DIRS){
+      const nx = snap(x + dx*r*60, 5), ny = snap(y + dy*r*60, 5);
+      if(!clash(nx, ny)) return [nx, ny];
+    }
+  return [x, y];
+}
+/* 자리 계산용 견본 (아직 씬에 없다) */
+function protoFor(key, kind){
+  if(key === 'actor')  return {id:0, type:'actor', pose:'stand', height:175};
+  if(key === 'camera') return {id:0, type:'cam'};
+  if(key.startsWith('light:')) return {id:0, type:'light'};
+  return {id:0, type:'prop', kind, rot:0};
+}
+
 function placeOne(key, i, n){
   const S = state.set, spread = (i - (n-1)/2);
-  if(key === 'actor'){ addActor(snap(spread*90,5), 0); return; }
+  if(key === 'actor'){
+    const [x,y] = freeSpot(protoFor(key), snap(spread*90,5), 0);
+    addActor(x, y); return;
+  }
   if(key === 'camera'){
-    const c = addCamera(snap(spread*220,5), snap(-S.d/2 - 120 - i*60,5));
+    const [x,y] = freeSpot(protoFor(key), snap(spread*220,5), snap(-S.d/2 - 120 - i*60,5));
+    const c = addCamera(x, y);
     c.pan = Math.atan2(0-c.x, 0-c.y); c.focus = Math.max(50, Math.round(Math.hypot(c.x,c.y)));
     return;
   }
@@ -3309,7 +3361,8 @@ function placeOne(key, i, n){
     const kind = key.slice(6);
     const pos = {key:[-S.w*0.3, S.d*0.28], fill:[S.w*0.32, -S.d*0.1],
                  back:[0, S.d*0.4], prac:[S.w*0.38, S.d*0.38]}[kind];
-    const l = addLight(kind, snap(pos[0] + spread*80,5), snap(pos[1],5));
+    const [x,y] = freeSpot(protoFor(key), snap(pos[0] + spread*80,5), snap(pos[1],5));
+    const l = addLight(kind, x, y);
     l.pan = Math.atan2(0-l.x, 0-l.y);
     return;
   }
@@ -3321,7 +3374,13 @@ function placeOne(key, i, n){
   else if(kind === 'bed' || kind === 'car'){ y = 60; }
   else if(kind === 'door'){ x = 0; y = -S.d/2; }
   else if(kind === 'window'){ x = -S.w/2; y = spread*180; }
-  const p = addProp(kind, snap(clamp(x,-S.w/2+20,S.w/2-20),5), snap(clamp(y,-S.d/2+20,S.d/2-20),5));
+  // 문·창문은 벽에 붙어 있어야 하므로 비켜 세우지 않는다
+  const onWall = (kind === 'door' || kind === 'window');
+  const proto = protoFor(key, kind);
+  if(kind === 'window') proto.rot = Math.PI/2;
+  let px = snap(clamp(x,-S.w/2+20,S.w/2-20),5), py = snap(clamp(y,-S.d/2+20,S.d/2-20),5);
+  if(!onWall) [px, py] = freeSpot(proto, px, py);
+  const p = addProp(kind, px, py);
   if(p && kind === 'window') p.rot = Math.PI/2;
 }
 const randColor = () => {
@@ -3375,6 +3434,18 @@ document.getElementById('cpAdd').addEventListener('click', () => {
   fitBird(); refreshAll(); toast('✅「'+nm+'」 등록 + 배치했어요');
 });
 
+/* 새로 배치 / 덧붙이기 */
+function applyQMode(){
+  document.querySelectorAll('#segQMode [data-qmode]').forEach(b =>
+    b.classList.toggle('on', b.dataset.qmode === prefs.qmode));
+}
+document.getElementById('segQMode').addEventListener('click', e => {
+  const b = e.target.closest('[data-qmode]'); if(!b) return;
+  prefs.qmode = b.dataset.qmode; savePrefs(); applyQMode();
+  toast(prefs.qmode === 'append'
+    ? '지금 배치 위에 덧붙입니다'
+    : '빠른 배치를 하면 씬을 비우고 새로 놓습니다');
+});
 document.getElementById('quick').addEventListener('keydown', e => {
   if(e.key !== 'Enter') return;
   quickAdd(e.target.value); e.target.select();
@@ -3736,7 +3807,7 @@ document.querySelectorAll('.site a[href^="#"]').forEach(a => a.addEventListener(
   t.scrollIntoView({behavior: soft ? 'smooth' : 'auto', block:'start'});
 }));
 
-loadPrefs(); applyPrefs(); applyWide();
+loadPrefs(); applyPrefs(); applyWide(); applyQMode();
 project = newProject(); syncState();
 if(!load(false)){ demo(); }
 refreshAll();
