@@ -861,7 +861,12 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     </details>
 
     <div class="card" id="cutcard">
-      <h3>🎯 컷 선택 <span class="tagx" id="curlabel">—</span></h3>
+      <h3>🎯 씬 · 컷 선택 <span class="tagx" id="curlabel">—</span></h3>
+      <div class="row" style="margin-bottom:11px">
+        <select id="p-scene" style="max-width:360px"></select>
+        <button class="btn sm pri" id="p-mkcuts" style="display:none">🎬 이 씬을 컷으로 쪼개기</button>
+        <span class="mini" id="p-scenehint" style="margin:0"></span>
+      </div>
       <div class="cutnav" id="cutnav"></div>
       <div class="row">
         <button class="btn" id="p-prev">← 이전</button>
@@ -1281,14 +1286,39 @@ function copy(text,msg){
 function opts(map,cur){
   return Object.keys(map).map(k=>`<option value="${esc(k)}"${k===cur?' selected':''}>${esc(k||'— 선택 —')}</option>`).join('');
 }
-function dl(name,content,type){
-  const b=content instanceof Blob?content:new Blob([content],{type:type||'text/plain;charset=utf-8'});
-  const u=URL.createObjectURL(b);
+function anchorSave(blob,name){
+  const u=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=u; a.download=name;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(u),1000);
 }
-const safeName=()=>(S.title||'scenedeck').replace(/[\\/:*?"<>|]/g,'_').trim()||'scenedeck';
+function dl(name,content,type){
+  anchorSave(content instanceof Blob?content:new Blob([content],{type:type||'text/plain;charset=utf-8'}),name);
+}
+/* 내보내기 파일 이름.
+   한글이 섞인 download 속성은 브라우저가 통째로 버리고 확장자도 없는 「download」로 저장해버린다
+   (대조 실험으로 확인 — ASCII 이름은 그대로 저장된다).
+   그래서 이름은 항상 ASCII로 만들고, 작품 제목은 파일 안에 남긴다. */
+const stamp=()=>{
+  const d=new Date(), z=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate());
+};
+function fileName(kind,ext){
+  const t=(S.title||'').replace(/[\\/:*?"<>|]/g,'').trim();
+  const ascii = t && /^[\x20-\x7E]+$/.test(t) ? t.replace(/\s+/g,'_') : 'scenedeck';
+  return ascii+'_'+kind+'_'+stamp()+'.'+ext;
+}
+/* 머리글에 이미 「S#1.」 같은 번호가 붙어 있으면 다시 붙이지 않는다 */
+function sceneWhere(s){
+  const hd=String(s.heading||'');
+  const bits=[s.loc,s.time].filter(Boolean).filter(x=>hd.indexOf(x)<0);
+  return bits.join(' / ');
+}
+function sceneHead(s,i){
+  const hd=String(s.heading||'').trim();
+  if(!hd) return 'S#'+(i+1)+'.';
+  return /^(s\s*#|씬\s|sc\.?\s|#|\d+\s*\.)/i.test(hd) ? hd : 'S#'+(i+1)+'. '+hd;
+}
 function dedupe(parts){
   const seen=new Set(),out=[];
   parts.filter(Boolean).forEach(chunk=>String(chunk).split(',').forEach(seg=>{
@@ -2625,13 +2655,28 @@ function cutBlocks(script){
   scriptLines(script||'').forEach(l=>{
     if(l.type==='dlg'){
       if(buf.length){ blocks.push({desc:buf.join(' ').trim(),dialogue:''}); buf=[]; }
-      blocks.push({desc:'',dialogue:l.who+': '+l.text});
+      blocks.push({desc:'',dialogue:l.who+': '+l.text,who:l.who});
     }else if(!l.text){
       if(buf.length){ blocks.push({desc:buf.join(' ').trim(),dialogue:''}); buf=[]; }
     }else buf.push(l.text);
   });
   if(buf.length) blocks.push({desc:buf.join(' ').trim(),dialogue:''});
   return blocks.filter(b=>b.desc||b.dialogue);
+}
+
+/* 받침이 있으면 '이', 없으면 '가' */
+function josa(w){
+  const c=String(w||'').charCodeAt((w||'').length-1);
+  if(!(c>=0xac00&&c<=0xd7a3)) return '';
+  return (c-0xac00)%28 ? '이' : '가';
+}
+/* 대사만 있는 컷은 「무엇을 그릴지」가 비어 프롬프트가 장소·카메라만 남는다.
+   말하는 사람을 지문으로 세워주고, 이름이 캐릭터와 맞으면 외형 고정 블록까지 연결한다. */
+function fleshOut(c,who){
+  if(!c.desc && who) c.desc = who+josa(who)+' 말하는 모습';
+  const hay=(c.desc||'')+' '+(c.dialogue||'');
+  const ids=S.chars.filter(ch=>ch.name&&hay.indexOf(ch.name)>=0).map(ch=>ch.id);
+  if(ids.length) c.chars=[...new Set(c.chars.concat(ids))];
 }
 
 /* 씬의 시간대에서 조명·분위기를 유추한다 */
@@ -2672,7 +2717,10 @@ function fillCuts(s,auto,force){
   if(!force && s.cuts.length) return 0;
   const made=cutBlocks(s.script);
   if(!made.length) return 0;
-  const cuts=made.map(b=>{ const c=newCut(); c.desc=b.desc; c.dialogue=b.dialogue; c.open=false; return c; });
+  const cuts=made.map(b=>{
+    const c=newCut(); c.desc=b.desc; c.dialogue=b.dialogue; c.open=false;
+    fleshOut(c,b.who); return c;
+  });
   if(auto) autoDirect(s,cuts);
   s.cuts=s.cuts.concat(cuts);
   return cuts.length;
@@ -2788,15 +2836,45 @@ function curCut(){
   return c?{s,c}:null;
 }
 function renderCutNav(){
-  const list=allCuts(), nav=$('cutnav');
+  const list=allCuts(), nav=$('cutnav'), sel=$('p-scene'), mk=$('p-mkcuts'), hint=$('p-scenehint');
+
+  // 씬 고르개 — 컷이 없어도 씬은 여기서 고를 수 있어야 한다
+  if(!S.scenes.length){
+    sel.innerHTML='<option>씬이 없습니다</option>'; sel.disabled=true;
+    mk.style.display='none'; hint.textContent='';
+    nav.innerHTML='<span class="mini" style="margin:0 8px 0 0">아직 씬도 컷도 없어요 —</span>'
+      +'<button class="btn sm pri" data-pmset="quick">⚡ 빠른 입력으로 바로 뽑기</button>'
+      +'<button class="btn sm" data-go="cut">📄 원고 올리기</button>';
+    $('curlabel').textContent='—'; return;
+  }
+  sel.disabled=false;
+  if(!S.scenes.some(x=>x.id===S.sel.scene)) S.sel.scene=S.scenes[0].id;
+  sel.innerHTML=S.scenes.map((s,i)=>
+    `<option value="${s.id}"${s.id===S.sel.scene?' selected':''}>S${i+1}. ${esc(s.heading||'제목 없음')} — 컷 ${s.cuts.length}개</option>`).join('');
+
+  const cur=S.scenes.find(x=>x.id===S.sel.scene);
+  const bare=cur && !cur.cuts.length;
+  mk.style.display = bare?'':'none';
+  hint.textContent = bare
+    ? ((cur.script||'').trim() ? '이 씬은 아직 컷이 없어요 — 한 번 누르면 본문이 컷으로 나뉩니다'
+                               : '이 씬엔 본문이 없어요. 「대본 · 컷」에서 원고를 넣어주세요')
+    : '';
+
+  if(bare){
+    nav.innerHTML='<span class="mini" style="margin:0">위 버튼을 누르면 이 씬의 컷이 여기에 나타납니다</span>';
+    $('curlabel').textContent='—';
+    return;
+  }
   if(!list.length){
     nav.innerHTML='<span class="mini" style="margin:0 8px 0 0">아직 컷이 없어요 —</span>'
       +'<button class="btn sm pri" data-pmset="quick">⚡ 빠른 입력으로 바로 뽑기</button>'
-      +'<button class="btn sm" data-go="cut">📄 원고 올리기</button>'
-      +'<button class="btn sm" data-go="cut">＋ 씬 · 컷 만들기</button>';
+      +'<button class="btn sm" data-go="cut">📄 원고 올리기</button>';
     $('curlabel').textContent='—'; return;
   }
-  if(!list.some(x=>x.c.id===S.sel.cut)) S.sel={scene:list[0].s.id,cut:list[0].c.id};
+  if(!list.some(x=>x.c.id===S.sel.cut)){
+    const first=(cur&&cur.cuts[0])||list[0].c, sc=(cur&&cur.cuts.length)?cur:list[0].s;
+    S.sel={scene:sc.id,cut:first.id};
+  }
   // 씬 번호는 항상 전체 목록 기준으로 매긴다 (컷이 없는 씬을 건너뛰며 세면 라벨과 어긋난다)
   nav.innerHTML=list.map(x=>{
     const si=S.scenes.indexOf(x.s)+1, ci=x.s.cuts.indexOf(x.c)+1;
@@ -2809,6 +2887,24 @@ function renderCutNav(){
     const on=nav.querySelector('button.on'); if(on) on.scrollIntoView({block:'nearest',inline:'center'});
   }
 }
+$('p-scene').addEventListener('change',()=>{
+  const s=S.scenes.find(x=>x.id===$('p-scene').value); if(!s) return;
+  S.sel.scene=s.id;
+  if(s.cuts.length) S.sel.cut=s.cuts[0].id;
+  save(); renderPrompt();
+});
+/* 씬만 있고 컷이 없을 때, 프롬프트 탭을 떠나지 않고 그 자리에서 만든다 */
+$('p-mkcuts').addEventListener('click',()=>{
+  const s=S.scenes.find(x=>x.id===$('p-scene').value); if(!s) return;
+  if(!(s.script||'').trim()){ toast('이 씬엔 쪼갤 본문이 없어요'); return; }
+  const before=s.cuts.slice();
+  const n=fillCuts(s,true,true);
+  if(!n){ toast('쪼갤 내용이 없어요'); return; }
+  S.sel={scene:s.id,cut:s.cuts[0].id};
+  save(); renderAll(); renderPrompt();
+  toast(`컷 ${n}개를 만들었어요 ✓`,
+    {label:'되돌리기',fn:()=>{ s.cuts=before; save(); renderAll(); renderPrompt(); toast('되돌렸어요 ✓'); }});
+});
 $('cutnav').addEventListener('click',e=>{
   const b=e.target.closest('[data-jump]'); if(!b) return;
   const [sid,kid]=b.dataset.jump.split('|');
@@ -3282,7 +3378,7 @@ $('d-export').addEventListener('click',async()=>{
     if(!c.hasImg) continue;
     try{ const b=await IDB.get(c.id); if(b) out.__images[c.id]=await blobToDataURL(b); }catch(e){}
   }
-  dl(safeName()+'.scenedeck.json',JSON.stringify(out,null,2),'application/json;charset=utf-8');
+  dl(fileName('backup','json'),JSON.stringify(out,null,2),'application/json;charset=utf-8');
   toast('내보냈어요 ✓');
 });
 $('d-import').addEventListener('click',()=>$('d-file').click());
@@ -3325,7 +3421,7 @@ $('d-csv').addEventListener('click',()=>{
       cutChars(c).map(x=>x.name).join(' / '),c.dialogue,c.audio,c.note,buildMJ(s,c),buildVEO(s,c).replace(/\n/g,' ')]);
   }));
   if(rows.length===1){ toast('내보낼 컷이 없어요'); return; }
-  dl(safeName()+'_컷리스트.csv','﻿'+rows.map(r=>r.map(q).join(',')).join('\r\n'),'text/csv;charset=utf-8');
+  dl(fileName('cutlist','csv'),'﻿'+rows.map(r=>r.map(q).join(',')).join('\r\n'),'text/csv;charset=utf-8');
   toast('CSV로 내보냈어요 ✓');
 });
 const csvq=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
@@ -3350,7 +3446,7 @@ $('d-sched').addEventListener('click',()=>{
       s.loc&&s.loc===lastLoc?'같은 장소 연속':'장소 이동']);
     lastLoc=s.loc;
   });
-  csvOut(safeName()+'_촬영스케줄.csv',rows);
+  csvOut(fileName('schedule','csv'),rows);
   toast('촬영 스케줄표를 내보냈어요 ✓');
 });
 
@@ -3370,7 +3466,7 @@ $('d-call').addEventListener('click',()=>{
     rows.push([ch.name||'이름없음', ch.role||'', scenes.length, cuts, secs,
       scenes.join(' '), [...locs].join(' / ')]);
   });
-  csvOut(safeName()+'_콜시트.csv',rows);
+  csvOut(fileName('callsheet','csv'),rows);
   toast('콜시트를 내보냈어요 ✓');
 });
 
@@ -3379,11 +3475,11 @@ $('d-script').addEventListener('click',()=>{
   if(!S.scenes.some(s=>(s.script||'').trim())){ toast('대본 본문이 비어 있어요'); return; }
   let out=`${S.title||'제목 없음'}\n${S.story.logline||''}\n\n`;
   S.scenes.forEach((s,i)=>{
-    out+=`\nS#${i+1}. ${s.heading||''}\n`;
-    if(s.loc||s.time) out+=`(${[s.loc,s.time].filter(Boolean).join(' / ')})\n`;
+    out+=`\n${sceneHead(s,i)}\n`;
+    const w=sceneWhere(s); if(w) out+=`(${w})\n`;
     out+='\n'+(s.script||'(본문 없음)')+'\n';
   });
-  dl(safeName()+'_대본.txt',out);
+  dl(fileName('script','txt'),out);
   toast('대본을 내보냈어요 ✓');
 });
 
@@ -3392,14 +3488,15 @@ $('d-txt').addEventListener('click',()=>{
   let out=`# ${S.title||'제목 없음'}\n${S.story.logline||''}\n\n`;
   S.scenes.forEach((s,si)=>{
     if(!s.cuts.length) return;
-    out+=`\n${'='.repeat(50)}\nS${si+1}. ${s.heading||'제목 없음'}  |  ${s.loc||''} ${s.time||''}\n${s.summary||''}\n${'='.repeat(50)}\n`;
+    const w=sceneWhere(s);
+    out+=`\n${'='.repeat(50)}\n${sceneHead(s,si)}${w?'  |  '+w:''}\n${s.summary||''}\n${'='.repeat(50)}\n`;
     s.cuts.forEach((c,ci)=>{
       out+=`\n──── 컷 ${ci+1} (${c.dur||0}초) ────\n[지문] ${c.desc||'-'}\n`;
       if(c.dialogue) out+=`[대사] ${c.dialogue}\n`;
       out+=`\n[미드저니]\n${buildMJ(s,c)}\n\n[Veo / Flow]\n${buildVEO(s,c)}\n\n[범용 이미지]\n${buildGEN(s,c)}\n`;
     });
   });
-  dl(safeName()+'_프롬프트.txt',out);
+  dl(fileName('prompts','txt'),out);
   toast('TXT로 내보냈어요 ✓');
 });
 $('d-reset').addEventListener('click',async()=>{
