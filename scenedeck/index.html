@@ -352,6 +352,7 @@ kbd{font-family:var(--mono);font-size:11px;background:var(--s3);border:1px solid
   padding:13px 16px;border:1px solid var(--accbd);background:var(--accdim);border-radius:var(--r)}
 .nowbar .t{font-size:13px;font-weight:600;color:var(--tx)}
 .bad{color:var(--red);font-weight:700}
+@media(max-width:720px){ #hshare .lb{display:none} }
 
 /* ---------- 대본 탭 ---------- */
 .drop{
@@ -491,6 +492,7 @@ footer{border-top:1px solid var(--line);background:var(--s1);margin-top:70px}
     </button>
     <label class="ptwrap"><span>작품</span><input class="ptitle" id="ptitle" placeholder="제목을 적어주세요"></label>
     <div class="hsp"></div>
+    <button class="btn sm pri" id="hshare" title="지금 상태 그대로 공유 링크 만들기">🔗<span class="lb"> 공유</span></button>
     <button class="btn sm" id="themetog" aria-label="화면 밝기 전환">🌙 어둡게</button>
     <button class="btn sm" id="openmt">🌐 번역</button>
     <span class="saveind on" id="saveind">저장됨</span>
@@ -1262,6 +1264,30 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     <h3 id="askttl">확인</h3>
     <p id="askmsg" style="margin:6px 0 0"></p>
     <div class="row" id="askbtns" style="justify-content:flex-end;margin-top:22px"></div>
+  </div>
+</div>
+
+<!-- ===== 공유 모달 ===== -->
+<div class="mask" id="shmask">
+  <div class="modal" style="max-width:640px">
+    <div class="row" style="justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+      <div>
+        <h3>🔗 지금 상태 그대로 공유</h3>
+        <p style="margin:2px 0 0">이 링크를 열면 <b>지금 이 화면 그대로</b> 보입니다.</p>
+      </div>
+      <button class="btn sm gh" data-close="shmask">✕ 닫기</button>
+    </div>
+    <div class="out empty2" id="m-url" style="font-size:11.5px;max-height:130px;overflow:auto">만드는 중…</div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn pri" id="m-copy">📋 링크 복사</button>
+      <button class="btn" id="m-open">↗ 열어보기</button>
+      <span class="mini" id="m-info" style="margin:0"></span>
+    </div>
+    <p class="mini">내용은 <b>주소 안에만</b> 담깁니다 — 서버로 올라가지 않아요.
+    <b>이미지는 빠집니다</b>(주소에 담기엔 너무 큽니다).</p>
+    <div class="row" style="margin-top:6px">
+      <button class="btn sm gh" id="m-tojson">📁 이미지까지 보내려면 — JSON 백업</button>
+    </div>
   </div>
 </div>
 
@@ -4007,26 +4033,45 @@ async function unpackState(param){
   return JSON.parse(new TextDecoder().decode(buf));
 }
 let shareURL='';
+/* 링크를 만들어 urlEl·infoEl에 채운다. 실패하면 false */
+async function makeShareLink(urlEl,infoEl){
+  const p=await packState();
+  const url=location.href.split('#')[0]+'#p='+p;
+  const kb=Math.round(url.length/1024);
+  if(url.length>60000){
+    urlEl.textContent='';urlEl.classList.add('empty2');
+    infoEl.innerHTML=`<b class="bad">작업이 너무 커서(${kb}KB) 링크로 못 담습니다</b> — JSON 백업 파일을 보내주세요.`;
+    toast('작업이 커서 링크로는 안 돼요 — JSON 백업을 쓰세요');
+    return false;
+  }
+  shareURL=url;
+  urlEl.textContent=url; urlEl.classList.remove('empty2');
+  const imgs=allCuts().filter(x=>x.c.hasImg).length;
+  infoEl.innerHTML=`${kb}KB · 씬 ${S.scenes.length} · 컷 ${allCuts().length} · 캐릭터 ${S.chars.length}`
+    +(imgs?` <b class="bad">· 이미지 ${imgs}장은 빠집니다</b>`:'');
+  return true;
+}
+/* 헤더의 🔗 공유 — 어느 탭에 있든 한 번에 */
+$('hshare').addEventListener('click',async()=>{
+  const m=$('shmask');
+  $('m-url').textContent='만드는 중…'; $('m-url').classList.add('empty2'); $('m-info').textContent='';
+  m.classList.add('on');
+  try{
+    if(await makeShareLink($('m-url'),$('m-info')))
+      copy(shareURL,'링크를 복사했어요 — 붙여넣어 보내세요');
+  }catch(e){ $('m-url').textContent='링크를 만들지 못했어요: '+e.message; }
+});
+$('m-copy').addEventListener('click',()=>copy(shareURL,'링크를 복사했어요 ✓'));
+$('m-open').addEventListener('click',()=>{ if(shareURL) window.open(shareURL,'_blank','noopener'); });
+$('m-tojson').addEventListener('click',()=>{ $('shmask').classList.remove('on'); goTab('data'); setTimeout(()=>$('d-export').click(),400); });
+
 $('sh-make').addEventListener('click',async()=>{
   try{
     toast('링크 만드는 중…');
-    const p=await packState();
-    const base=location.href.split('#')[0];
-    const url=base+'#p='+p;
-    const kb=Math.round(url.length/1024);
-    if(url.length>60000){
-      $('sh-url').textContent='';
-      $('sh-info').innerHTML=`<b class="bad">작업이 너무 커서(${kb}KB) 링크로 못 담습니다</b> — 아래 JSON 백업 파일을 보내주세요.`;
-      toast('작업이 커서 링크로는 안 돼요 — JSON 백업을 쓰세요');
-      return;
+    if(await makeShareLink($('sh-url'),$('sh-info'))){
+      $('sh-copy').style.display=''; $('sh-open').style.display='';
+      copy(shareURL,'링크를 복사했어요 — 붙여넣어 보내세요');
     }
-    shareURL=url;
-    const el=$('sh-url'); el.textContent=url; el.classList.remove('empty2');
-    $('sh-copy').style.display=''; $('sh-open').style.display='';
-    const imgs=allCuts().filter(x=>x.c.hasImg).length;
-    $('sh-info').innerHTML=`길이 ${kb}KB · 씬 ${S.scenes.length} · 컷 ${allCuts().length} · 캐릭터 ${S.chars.length}`
-      +(imgs?` <b class="bad">· 이미지 ${imgs}장은 빠집니다</b>`:'');
-    copy(url,'링크를 복사했어요 — 붙여넣어 보내세요');
   }catch(e){ toast('링크를 만들지 못했어요: '+e.message); }
 });
 $('sh-copy').addEventListener('click',()=>copy(shareURL,'링크를 복사했어요 ✓'));
