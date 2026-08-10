@@ -30,6 +30,14 @@ python counter.py
 
 - Python 3.9 이상
 
+## 같이 들어 있는 것
+
+- [`scenedeck/`](scenedeck/) — 🎬 **SCENEDECK · 씬덱**.
+  시나리오부터 AI 프롬프트까지 한 자리에서 굴리는 단일 HTML 워크벤치입니다.
+  `scenedeck/index.html`을 더블클릭하면 바로 열리고,
+  GitHub Pages를 켜면 `https://<계정>.github.io/char-counter/scenedeck/` 주소로도 열립니다.
+  자세한 설명은 [`scenedeck/README.md`](scenedeck/README.md)에 있습니다.
+
 ## 라이선스
 
 MIT

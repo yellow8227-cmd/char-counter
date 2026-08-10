@@ -1,0 +1,3050 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SCENEDECK · 씬덱</title>
+<style>
+/* =========================================================
+   타이포그래피
+   - G602 (Griun_602)  : 디스플레이 — 로고 · 제목 · 슬레이트.
+       마커로 슬레이트에 쓴 느낌. 손글씨 8종 중 작은 크기에서 가장 또렷하다.
+       '—' '·' 같은 일부 문장부호 글리프가 없어 그 글자만 Noto Sans KR로 자동 대체된다.
+   - Noto Sans KR      : 본문 · UI (가변 폰트라 굵기 전 범위 사용 가능)
+   - Consolas          : 프롬프트 출력
+   폰트 파일은 fonts/ 폴더에 함께 둔다. file:// 에서도 로딩되는 것을 확인했다.
+   ========================================================= */
+@font-face{
+  font-family:'G602';
+  src:local('Griun 602'),local('Griun_602-Rg'),url('fonts/Griun_602-Rg.ttf') format('truetype');
+  font-weight:400 700; font-display:swap;
+}
+:root{
+  --disp:'G602','Pretendard','Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --sans:'Pretendard','Pretendard Variable','Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'Consolas','D2Coding','Cascadia Mono',monospace;
+
+  --bg:#0a0a0b; --s1:#121215; --s2:#191920; --s3:#212129;
+  --line:#26262e; --line2:#34343e;
+  --tx:#ececed; --tx2:#9c9ca7; --tx3:#5e5e6a;
+  --acc:#d9a441; --acc2:#f0c470; --accdim:#392d13;
+  --teal:#5ec5b0; --tealdim:#123029; --red:#d9605a; --blue:#7aa5e8;
+  --r:12px; --rs:8px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--tx); font-family:var(--sans);
+  font-size:14px; line-height:1.65; -webkit-font-smoothing:antialiased;
+  font-feature-settings:"tnum" 1;
+}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#2c2c35;border-radius:6px;border:3px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:#3d3d49}
+
+/* ---------- 헤더 ---------- */
+.skip{position:absolute;left:-9999px;top:0;z-index:300;background:var(--acc);color:#171204;
+  padding:10px 18px;border-radius:0 0 10px 0;font-weight:700;text-decoration:none}
+.skip:focus{left:0}
+
+header{
+  position:sticky;top:0;z-index:60;background:rgba(10,10,11,.88);
+  backdrop-filter:blur(16px) saturate(1.4);border-bottom:1px solid var(--line);
+}
+.hbar{display:flex;align-items:center;gap:13px;padding:11px 26px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:11px;background:none;border:none;padding:0;
+  cursor:pointer;text-align:left;color:inherit;flex:none;border-radius:10px}
+.brand:hover .logo em{color:var(--acc2)}
+.brand .mark{width:34px;height:34px;border-radius:10px;flex:none;display:grid;place-items:center;
+  font-family:var(--disp);font-size:15px;color:#171204;letter-spacing:.02em;
+  background:linear-gradient(150deg,var(--acc2),var(--acc));box-shadow:0 4px 14px rgba(217,164,65,.22)}
+.logo{font-family:var(--disp);font-size:21px;white-space:nowrap;line-height:1.05;letter-spacing:.01em}
+.logo em{font-style:normal;color:var(--acc);transition:color .14s}
+.logo small{display:block;font-family:var(--sans);font-size:9px;letter-spacing:.17em;color:var(--tx3);font-weight:600;text-transform:uppercase;margin-top:2px}
+
+.ptwrap{display:flex;align-items:center;gap:10px;flex:1;min-width:190px;max-width:400px;
+  background:var(--s1);border:1px solid var(--line);border-radius:10px;padding:4px 13px;
+  transition:border-color .14s}
+.ptwrap:hover{border-color:var(--line2)}
+.ptwrap:focus-within{border-color:var(--acc)}
+.ptwrap>span{font-size:9px;font-weight:700;letter-spacing:.15em;color:var(--tx3);text-transform:uppercase;flex:none}
+.ptitle{background:transparent;border:none;border-radius:0;padding:3px 0;
+  font-family:var(--disp);font-size:19px;width:100%;min-width:0}
+.ptitle::placeholder{color:var(--tx3)}
+.ptitle:hover,.ptitle:focus{outline:none;background:transparent}
+.hsp{flex:1}
+.saveind{font-size:10.5px;color:var(--tx3);white-space:nowrap;letter-spacing:.06em;display:flex;align-items:center;gap:6px;font-weight:600}
+.saveind::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--tx3)}
+.saveind.on{color:var(--teal)}
+.saveind.on::before{background:var(--teal)}
+
+.navwrap{position:relative}
+.navwrap::after{content:"";position:absolute;right:0;top:0;bottom:0;width:38px;pointer-events:none;
+  background:linear-gradient(90deg,rgba(10,10,11,0),rgba(10,10,11,.92))}
+nav{display:flex;gap:6px;padding:0 22px 10px;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{height:0}
+nav button{
+  background:transparent;border:1px solid transparent;border-radius:999px;
+  padding:7px 14px;cursor:pointer;color:var(--tx3);font-size:12.5px;font-weight:600;
+  white-space:nowrap;transition:background .14s,color .14s,border-color .14s;
+}
+nav button:hover{color:var(--tx);background:var(--s1);border-color:var(--line)}
+nav button.on{color:#171204;background:var(--acc);border-color:var(--acc)}
+nav button.on:hover{background:var(--acc2);border-color:var(--acc2)}
+
+/* ---------- 레이아웃 ---------- */
+main{max-width:1180px;margin:0 auto;padding:34px 26px 80px}
+.tab{display:none;animation:fade .2s ease}
+.tab.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.pghd{margin-bottom:26px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.pghd h2{font-family:var(--disp);font-size:29px;margin:0 0 6px;line-height:1.2}
+.pghd p{color:var(--tx2);font-size:13px;margin:0;max-width:76ch}
+.pghd p b{color:var(--tx);font-weight:600}
+
+.card{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-bottom:16px}
+.card>h3{margin:0 0 16px;font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:9px}
+.step{font-family:var(--disp);font-size:14px;color:var(--acc);background:var(--accdim);
+  width:24px;height:24px;border-radius:7px;display:grid;place-items:center;flex:none}
+.tagx{font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--tx3);
+  border:1px solid var(--line2);padding:2px 8px;border-radius:20px;text-transform:uppercase}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:860px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+label.f{display:block;margin-bottom:14px}
+label.f>span{font-size:10.5px;font-weight:700;letter-spacing:.09em;color:var(--tx3);
+  text-transform:uppercase;display:block;margin-bottom:6px}
+input[type=text],input[type=number],select,textarea{
+  width:100%;background:var(--s2);border:1px solid var(--line);
+  border-radius:var(--rs);padding:9px 11px;transition:border-color .14s,background .14s;
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc);background:var(--s3)}
+input:hover:not(:focus),select:hover:not(:focus),textarea:hover:not(:focus){border-color:var(--line2)}
+textarea{resize:vertical;min-height:70px;line-height:1.7}
+select{cursor:pointer}
+input::placeholder,textarea::placeholder{color:#4b4b56}
+.enfield input,.enfield textarea{font-family:var(--mono);font-size:12.5px;color:#cdd5e4}
+.enfield>span::after{content:" ⟶ EN";color:var(--acc);letter-spacing:.04em}
+
+.btn{background:var(--s2);border:1px solid var(--line);border-radius:var(--rs);
+  padding:8px 14px;cursor:pointer;font-size:12.5px;font-weight:600;
+  transition:background .14s,border-color .14s;white-space:nowrap}
+.btn:hover{background:var(--s3);border-color:var(--line2)}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#171204}
+.btn.pri:hover{background:var(--acc2);border-color:var(--acc2)}
+.btn.gh{background:transparent}
+.btn.gh:hover{background:var(--s2)}
+.btn.dgr{color:var(--red);border-color:#3d2422;background:transparent}
+.btn.dgr:hover{background:#2a1a19}
+.btn.sm{padding:5px 10px;font-size:11.5px}
+.btn.ico{padding:5px 8px;font-size:11px;line-height:1}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.mini{font-size:11.5px;color:var(--tx3);line-height:1.6;margin:6px 0 0}
+.mini b{color:var(--tx2)}
+
+.empty{text-align:center;padding:52px 24px;color:var(--tx3);
+  border:1px dashed var(--line2);border-radius:var(--r);background:var(--s1)}
+.empty b{display:block;font-family:var(--disp);color:var(--tx);font-size:21px;margin-bottom:8px}
+.empty p{margin:0 0 18px;font-size:12.5px}
+
+.out{background:#060607;border:1px solid var(--line);border-radius:var(--rs);padding:14px 15px;
+  font-family:var(--mono);font-size:12.5px;line-height:1.8;
+  white-space:pre-wrap;word-break:break-word;color:#c8d0df}
+.out.empty2{color:var(--tx3);font-style:italic;font-family:var(--sans)}
+.outhd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.outhd b{font-size:13px;display:flex;align-items:center;gap:8px}
+.outhd .k{font-size:10.5px;color:var(--tx3);letter-spacing:.04em}
+
+.chip{display:inline-flex;align-items:center;gap:5px;background:var(--s2);
+  border:1px solid var(--line);border-radius:20px;padding:4px 12px;font-size:11.5px;
+  cursor:pointer;transition:.14s;font-weight:600}
+.chip:hover{border-color:var(--line2)}
+.chip.on{background:var(--accdim);border-color:var(--acc);color:var(--acc2)}
+
+.itemhd{display:flex;align-items:center;gap:11px;margin-bottom:16px;flex-wrap:wrap}
+.slate{font-family:var(--disp);font-size:14px;flex:none;padding:4px 10px;border-radius:7px;
+  background:var(--accdim);color:var(--acc2);border:1px solid #46370f;letter-spacing:.03em}
+.slate.cut{background:var(--tealdim);color:var(--teal);border-color:#1d4a42}
+.nmin{font-family:var(--disp);font-size:20px;flex:1;min-width:140px;
+  background:transparent;border:none;border-bottom:1px solid var(--line);border-radius:0;padding:4px 2px}
+.nmin:focus{outline:none;border-bottom-color:var(--acc);background:transparent}
+.nmin::placeholder{font-family:var(--sans);font-size:14px;color:var(--tx3)}
+.ord{display:flex;gap:3px}
+
+.cutcard{background:var(--s2);border:1px solid var(--line);border-radius:10px;margin-bottom:11px;overflow:hidden}
+.cutbar{display:flex;align-items:center;gap:11px;padding:9px 12px;cursor:pointer;transition:background .14s}
+.cutbar:hover{background:var(--s3)}
+.cutbar .sum{flex:1;min-width:0;font-size:12.5px;color:var(--tx2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cutbar .sum i{color:var(--tx3);font-style:normal}
+.cutbar .meta{font-family:var(--mono);font-size:10.5px;color:var(--tx3);white-space:nowrap}
+.cutbar .caret{color:var(--tx3);transition:transform .18s;font-size:10px}
+.cutcard.open .cutbar .caret{transform:rotate(90deg)}
+.cutbody{padding:2px 14px 14px;border-top:1px solid var(--line);display:none}
+.cutcard.open .cutbody{display:block}
+.tn{width:44px;height:26px;border-radius:4px;object-fit:cover;flex:none;background:#060607;border:1px solid var(--line)}
+
+.thumb{width:100%;aspect-ratio:16/9;background:#060607;border:1px dashed var(--line2);
+  display:grid;place-items:center;color:var(--tx3);font-size:11.5px;cursor:pointer;overflow:hidden;
+  transition:border-color .14s}
+.thumb:hover{border-color:var(--acc)}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.bcard{background:var(--s2);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.bmeta{padding:11px 12px;font-size:11.5px;color:var(--tx2);line-height:1.6}
+.bmeta b{font-family:var(--disp);color:var(--acc2);font-size:13px}
+
+.prog{display:flex;gap:5px;margin-top:12px}
+.prog i{height:3px;flex:1;background:var(--line);border-radius:2px;transition:background .2s}
+.prog i.on{background:var(--acc)}
+
+/* 컷 빠른 선택 바 */
+.cutnav{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px}
+.cutnav button{font-family:var(--mono);font-size:11px;padding:5px 10px;border-radius:6px;
+  border:1px solid var(--line);background:var(--s2);color:var(--tx2);cursor:pointer;white-space:nowrap}
+.cutnav button:hover{border-color:var(--line2);color:var(--tx)}
+.cutnav button.on{background:var(--accdim);border-color:var(--acc);color:var(--acc2)}
+
+.mask{position:fixed;inset:0;background:rgba(5,5,6,.8);backdrop-filter:blur(4px);
+  z-index:100;display:none;padding:32px 20px;overflow:auto}
+.mask.on{display:block}
+.modal{max-width:820px;margin:0 auto;background:var(--s1);border:1px solid var(--line2);
+  border-radius:14px;padding:24px;box-shadow:0 24px 70px rgba(0,0,0,.6)}
+.modal h3{font-family:var(--disp);font-size:23px;margin:0 0 4px}
+.modal>p{color:var(--tx2);font-size:12.5px;margin:0 0 18px}
+
+.status{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;
+  padding:5px 11px;border-radius:20px;border:1px solid var(--line);background:var(--s2)}
+.status::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--tx3);flex:none}
+.status.ok{color:var(--teal);border-color:#1d4a42}
+.status.ok::before{background:var(--teal)}
+.status.busy{color:var(--acc2);border-color:#46370f}
+.status.busy::before{background:var(--acc);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.25}}
+
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(22px);
+  background:var(--s3);color:var(--tx);border:1px solid var(--line2);
+  padding:11px 16px 11px 20px;border-radius:26px;font-weight:600;font-size:13px;
+  opacity:0;pointer-events:none;transition:.24s cubic-bezier(.2,.9,.3,1);z-index:200;
+  box-shadow:0 12px 36px rgba(0,0,0,.6);max-width:86vw;
+  display:flex;align-items:center;gap:14px}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.toast .ub{background:var(--acc);color:#171204;border:none;border-radius:18px;
+  padding:5px 13px;font-weight:700;font-size:12px;cursor:pointer;flex:none}
+
+.warn{background:#2a2113;border:1px solid #4a3c1c;color:#e0c68d;border-radius:var(--rs);padding:12px 14px;font-size:12.5px;margin-bottom:16px}
+.bar{height:5px;background:var(--s3);border-radius:3px;overflow:hidden;margin-top:9px}
+.bar i{display:block;height:100%;background:var(--teal);border-radius:3px}
+.divx{height:1px;background:var(--line);margin:18px 0}
+.rule{display:flex;align-items:center;gap:12px;margin:20px 0 14px;color:var(--tx3);
+  font-size:10.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase}
+.rule::after{content:"";flex:1;height:1px;background:var(--line)}
+kbd{font-family:var(--mono);font-size:11px;background:var(--s3);border:1px solid var(--line2);
+  border-bottom-width:2px;border-radius:5px;padding:1px 6px;color:var(--tx2)}
+
+/* ---------- 대본 탭 ---------- */
+.drop{
+  border:2px dashed var(--line2);border-radius:var(--r);padding:34px 20px;text-align:center;
+  color:var(--tx3);transition:.16s;background:var(--s2)
+}
+.drop b{display:block;font-family:var(--disp);font-size:19px;color:var(--tx2);margin-bottom:6px}
+.drop span{font-size:12px}
+.drop.hot{border-color:var(--acc);background:var(--accdim);color:var(--acc2)}
+.drop.hot b{color:var(--acc2)}
+.scwrap{display:grid;grid-template-columns:1.7fr 1fr;gap:16px}
+@media(max-width:900px){.scwrap{grid-template-columns:1fr}}
+.lbx{font-size:10.5px;font-weight:700;letter-spacing:.09em;color:var(--tx3);
+  text-transform:uppercase;display:block;margin-bottom:6px}
+#sc-body{font-family:var(--sans)}
+.dlg{color:var(--acc2)}
+.dir{color:var(--tx2)}
+/* =========================================================
+   홈(랜딩) · 푸터 · 반응형
+   ========================================================= */
+.hero{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:20px;
+  background:radial-gradient(125% 130% at 10% 0%,#1d1a15 0%,var(--s1) 46%,var(--bg) 100%);
+  padding:54px 46px 44px;margin-bottom:22px}
+.hero::after{content:"";position:absolute;right:-14%;bottom:-70%;width:62%;height:150%;
+  background:radial-gradient(closest-side,rgba(217,164,65,.15),transparent 72%);pointer-events:none}
+.hero>*{position:relative;z-index:1}
+.badge{display:inline-flex;align-items:center;gap:8px;font-size:10.5px;font-weight:700;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--acc2);
+  background:var(--accdim);border:1px solid #46370f;padding:5px 13px;border-radius:999px}
+.hero h1{font-family:var(--disp);font-size:clamp(32px,5vw,54px);line-height:1.12;
+  margin:20px 0 0;letter-spacing:.01em}
+.brw{display:inline}
+.hero .lead{color:var(--tx2);font-size:14.5px;line-height:1.85;max-width:60ch;margin:16px 0 0}
+.hero .lead b{color:var(--tx);font-weight:600}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}
+.btn.lg{padding:12px 22px;font-size:13.5px;border-radius:11px}
+.herofoot{display:flex;gap:34px;flex-wrap:wrap;margin-top:30px;padding-top:22px;border-top:1px solid var(--line)}
+.herofoot div{font-size:11.5px;color:var(--tx3);letter-spacing:.04em;font-weight:600;max-width:22ch;line-height:1.5}
+.herofoot b{display:block;font-family:var(--disp);font-size:26px;color:var(--tx);line-height:1.15;
+  letter-spacing:0;text-transform:none;margin-bottom:2px}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.stepbox{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:20px 20px 22px}
+.stepbox .n{font-family:var(--disp);font-size:13px;color:var(--acc);background:var(--accdim);
+  width:26px;height:26px;border-radius:8px;display:grid;place-items:center;margin-bottom:13px}
+.stepbox h4{margin:0 0 7px;font-size:14px}
+.stepbox p{margin:0;font-size:12.5px;color:var(--tx2);line-height:1.75}
+
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(252px,1fr));gap:14px}
+.fcard{display:block;text-align:left;background:var(--s1);border:1px solid var(--line);
+  border-radius:14px;padding:20px;cursor:pointer;color:inherit;font:inherit;
+  transition:border-color .16s,background .16s,transform .16s}
+.fcard:hover{border-color:var(--line2);background:var(--s2);transform:translateY(-2px)}
+.fcard .ic{font-size:19px;display:block;margin-bottom:11px}
+.fcard h4{margin:0 0 7px;font-size:14px}
+.fcard p{margin:0;font-size:12.5px;color:var(--tx2);line-height:1.75}
+.fcard .go{display:block;margin-top:13px;font-size:11.5px;font-weight:700;color:var(--acc);letter-spacing:.03em}
+.fcard:hover .go{color:var(--acc2)}
+
+.shd{margin:52px 0 18px}
+.shd h3{font-family:var(--disp);font-size:26px;margin:0 0 7px;line-height:1.25}
+.shd p{margin:0;color:var(--tx2);font-size:13px;max-width:74ch;line-height:1.75}
+.shd p b{color:var(--tx);font-weight:600}
+
+.split{display:grid;grid-template-columns:1.05fr .95fr;gap:16px;align-items:start}
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--s1)}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:340px}
+.tbl th,.tbl td{text-align:left;padding:11px 15px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.65}
+.tbl th{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);
+  background:var(--s2);font-weight:700;white-space:nowrap}
+.tbl tr:last-child td{border-bottom:none}
+.tbl td b{color:var(--tx);font-weight:600}
+.tbl .y{color:var(--teal);font-weight:700}
+.tbl .n{color:var(--red);font-weight:700}
+.tbl .w{color:var(--acc2);font-weight:700}
+
+.faq{background:var(--s1);border:1px solid var(--line);border-radius:12px;margin-bottom:9px;overflow:hidden}
+.faq summary{cursor:pointer;padding:15px 18px;font-weight:600;font-size:13.5px;
+  list-style:none;display:flex;gap:11px;align-items:center}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::before{content:"+";color:var(--acc);font-family:var(--mono);font-weight:700;flex:none;width:11px}
+.faq[open] summary::before{content:"\2212"}
+.faq summary:hover{background:var(--s2)}
+.faq .fa{padding:0 20px 17px 40px;color:var(--tx2);font-size:12.5px;line-height:1.85;margin:0}
+.faq .fa b{color:var(--tx)}
+
+footer{border-top:1px solid var(--line);background:var(--s1);margin-top:70px}
+.fin{max-width:1180px;margin:0 auto;padding:36px 26px 40px;display:flex;gap:44px;flex-wrap:wrap;align-items:flex-start}
+.fin .fl{flex:1;min-width:230px}
+.fin .fl p{color:var(--tx3);font-size:12px;margin:12px 0 0;line-height:1.75;max-width:44ch}
+.fnav{display:flex;flex-direction:column;gap:8px;min-width:120px}
+.fnav b{font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--tx3);margin-bottom:3px}
+.fnav button{background:none;border:none;padding:0;color:var(--tx2);font-size:12.5px;
+  cursor:pointer;text-align:left;font-weight:500}
+.fnav button:hover{color:var(--acc2)}
+.fbot{border-top:1px solid var(--line);padding:15px 26px;color:var(--tx3);font-size:11.5px;text-align:center}
+
+@media(max-width:1000px){.split{grid-template-columns:1fr}}
+@media(max-width:820px){
+  .steps{grid-template-columns:1fr}
+  .hero{padding:38px 24px 32px;border-radius:16px}
+  .herofoot{gap:22px}
+  .herofoot b{font-size:22px}
+}
+@media(max-width:720px){
+  body{font-size:13.5px}
+  .hbar{padding:10px 14px;gap:10px}
+  .ptwrap{order:5;max-width:none;flex-basis:100%}
+  nav{padding:0 12px 9px}
+  main{padding:22px 14px 70px}
+  .pghd h2{font-size:24px}
+  .card{padding:16px}
+  .mask{padding:14px 10px}
+  .modal{padding:18px;border-radius:12px}
+  .cta{gap:9px}
+  .cta .btn{flex:1 1 100%;white-space:normal;text-align:center}
+  .fin{gap:26px;padding:28px 16px 32px}
+  .shd{margin:40px 0 14px}
+  .shd h3{font-size:22px}
+  .brw{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  .fcard:hover{transform:none}
+}
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">본문 바로가기</a>
+
+<header>
+  <div class="hbar">
+    <button class="brand" data-go="home" title="홈으로">
+      <span class="mark">SD</span>
+      <span class="logo">SCENE<em>DECK</em><small>시나리오 · 프롬프트 워크벤치</small></span>
+    </button>
+    <label class="ptwrap"><span>작품</span><input class="ptitle" id="ptitle" placeholder="제목을 적어주세요"></label>
+    <div class="hsp"></div>
+    <button class="btn sm" id="openmt">🌐 번역</button>
+    <span class="saveind on" id="saveind">저장됨</span>
+  </div>
+  <div class="navwrap">
+    <nav id="nav" aria-label="주요 메뉴">
+      <button data-t="home" class="on">🏠 홈</button>
+      <button data-t="story">📖 스토리</button>
+      <button data-t="script">📄 대본</button>
+      <button data-t="char">👤 캐릭터</button>
+      <button data-t="scene">🎬 씬 · 컷</button>
+      <button data-t="prompt">✨ 프롬프트</button>
+      <button data-t="board">🖼️ 보드</button>
+      <button data-t="data">📦 설정</button>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ===== 홈 ===== -->
+  <section class="tab on" id="t-home">
+    <div class="hero">
+      <span class="badge">설치 없음 · 가입 없음 · 내 브라우저에 저장</span>
+      <h1>한 줄의 로그라인에서 <br class="brw">컷 프롬프트까지, 한 화면에서</h1>
+      <p class="lead">SCENEDECK는 <b>로그라인 → 시놉시스 → 씬 → 컷 → AI 프롬프트</b>로 이어지는 작업을 한자리에서 굴리는 워크벤치입니다.
+      캐릭터 <b>외형 고정 블록</b>이 모든 컷에 토씨 하나 안 틀리고 들어가서, 컷마다 인물이 딴 사람이 되는 사고를 막아줍니다.</p>
+      <div class="cta">
+        <button class="btn pri lg" data-go="story">▶ 새 작품 시작하기</button>
+        <button class="btn lg" data-go="script">📄 이미 쓴 원고 올리기</button>
+        <button class="btn gh lg" data-go="data">📦 백업 · 내보내기</button>
+      </div>
+      <div class="herofoot" id="homestat"></div>
+      <p class="mini" id="homeproj" style="margin-top:12px"></p>
+    </div>
+
+    <div class="steps">
+      <div class="stepbox">
+        <div class="n">1</div>
+        <h4>쓰거나 · 올리거나</h4>
+        <p>로그라인부터 차근차근 쓰셔도 되고, 이미 있는 원고 파일을 끌어다 놓으면 <b>씬 단위로 자동 분해</b>됩니다.</p>
+      </div>
+      <div class="stepbox">
+        <div class="n">2</div>
+        <h4>씬을 컷으로 쪼개기</h4>
+        <p>컷마다 샷 사이즈 · 앵글 · 렌즈 · 조명만 골라두면 됩니다. 영어는 몰라도 괜찮아요 — 알아서 번역됩니다.</p>
+      </div>
+      <div class="stepbox">
+        <div class="n">3</div>
+        <h4>프롬프트 뽑아 쓰기</h4>
+        <p>미드저니 · Veo(Flow) · 범용 이미지 <b>세 문법이 동시에</b> 만들어집니다. 복사해서 그대로 넣으세요.</p>
+      </div>
+    </div>
+
+    <div class="shd">
+      <h3>무엇을 할 수 있나요</h3>
+      <p>카드를 누르면 그 작업 화면으로 바로 이동합니다.</p>
+    </div>
+    <div class="fgrid">
+      <button class="fcard" data-go="story">
+        <span class="ic">📖</span><h4>스토리 디벨롭</h4>
+        <p>로그라인 · 시놉시스 · 3막 구조 · 씬 리스트. 단계마다 <b>AI 질문지</b>를 만들어 복사해 줍니다.</p>
+        <span class="go">스토리 열기 →</span>
+      </button>
+      <button class="fcard" data-go="script">
+        <span class="ic">📄</span><h4>대본 불러오기 · 고치기</h4>
+        <p>txt · docx · pdf · fdx 원고를 씬으로 자동 분해. 씬별로 고치고, AI가 고쳐준 대본을 되돌려 넣을 수도 있어요.</p>
+        <span class="go">대본 열기 →</span>
+      </button>
+      <button class="fcard" data-go="char">
+        <span class="ic">👤</span><h4>캐릭터 바이블</h4>
+        <p>나이 · 머리 · 눈 · 체형을 고르면 영문 <b>외형 고정 블록</b>이 자동 생성돼 모든 컷에 똑같이 박힙니다.</p>
+        <span class="go">캐릭터 열기 →</span>
+      </button>
+      <button class="fcard" data-go="scene">
+        <span class="ic">🎬</span><h4>씬 · 컷 분해</h4>
+        <p>씬 안에 컷을 쌓고 샷 · 앵글 · 렌즈 · 조명 · 길이를 지정합니다. 순서 이동과 복제도 한 번에.</p>
+        <span class="go">씬 · 컷 열기 →</span>
+      </button>
+      <button class="fcard" data-go="prompt">
+        <span class="ic">✨</span><h4>프롬프트 빌더</h4>
+        <p>미드저니 · Veo(Flow) · 범용 이미지 3종을 동시에 출력. <kbd>←</kbd> <kbd>→</kbd> 키로 컷을 넘겨가며 뽑습니다.</p>
+        <span class="go">프롬프트 열기 →</span>
+      </button>
+      <button class="fcard" data-go="board">
+        <span class="ic">🖼️</span><h4>스토리보드</h4>
+        <p>뽑아온 이미지를 컷에 붙여 한눈에 봅니다. 이미지는 IndexedDB에 따로 저장돼 용량 걱정이 없어요.</p>
+        <span class="go">보드 열기 →</span>
+      </button>
+      <button class="fcard" data-go="data">
+        <span class="ic">📦</span><h4>백업 · 내보내기</h4>
+        <p>JSON 백업 하나에 이미지까지 전부. 촬영 스케줄표 · 콜시트 · 컷 리스트 CSV와 대본 TXT도 뽑힙니다.</p>
+        <span class="go">설정 열기 →</span>
+      </button>
+    </div>
+
+    <div class="shd">
+      <h3>핵심 — 외형 고정 블록</h3>
+      <p>AI 영상의 최대 난관은 <b>캐릭터가 매 컷마다 딴 사람이 되는 것</b>입니다.
+      「캐릭터」 탭에서 항목을 고르면 아래 같은 영문 블록이 만들어지고, 컷에서 등장인물 칩만 켜두면 <b>모든 프롬프트에 똑같이</b> 들어갑니다.</p>
+    </div>
+    <div class="out">a man in his forties, short black hair, dark brown eyes,
+slender build, worn grey trench coat, scar through left eyebrow</div>
+
+    <div class="shd">
+      <h3>가져오기 · 내보내기</h3>
+      <p>이미 쓴 원고가 있다면 「대본」 탭에 파일을 끌어다 놓으세요. 결과물은 「설정」 탭에서 내보냅니다.</p>
+    </div>
+    <div class="split">
+      <div class="tblwrap">
+        <table class="tbl">
+          <thead><tr><th>가져올 수 있는 원고</th><th>지원</th></tr></thead>
+          <tbody>
+            <tr><td><b>.txt</b> · <b>.md</b></td><td class="y">✅ 됩니다</td></tr>
+            <tr><td><b>.docx</b> (워드)</td><td class="y">✅ 라이브러리 없이 직접 읽습니다</td></tr>
+            <tr><td><b>.fdx</b> (파이널 드래프트)</td><td class="y">✅ 인물 · 대사 구조까지</td></tr>
+            <tr><td><b>.pdf</b></td><td class="w">⚠️ 「PDF로 저장」한 건 되고, 스캔본은 안 됩니다</td></tr>
+            <tr><td><b>.hwp</b> (한글)</td><td class="n">❌ 워드나 PDF로 저장해 올려주세요</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tblwrap">
+        <table class="tbl">
+          <thead><tr><th>뽑을 수 있는 산출물</th><th>내용</th></tr></thead>
+          <tbody>
+            <tr><td><b>촬영 스케줄표 CSV</b></td><td>같은 장소끼리 묶어 정렬</td></tr>
+            <tr><td><b>콜시트 CSV</b></td><td>배우별 등장 씬 · 컷 · 총 노출초</td></tr>
+            <tr><td><b>컷 리스트 CSV</b></td><td>샷 · 앵글 · 조명 + 프롬프트</td></tr>
+            <tr><td><b>대본 TXT</b></td><td>씬 머리글 + 본문</td></tr>
+            <tr><td><b>JSON 백업</b></td><td>이미지까지 파일 하나에 전부</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="shd">
+      <h3>자주 묻는 것</h3>
+    </div>
+    <details class="faq"><summary>내가 쓴 내용이 어디로 전송되나요?</summary>
+      <p class="fa">아닙니다. 모든 내용은 <b>이 브라우저 안에만</b> 저장됩니다 — 텍스트는 localStorage, 이미지는 IndexedDB.
+      서버로 올라가는 것도, 계정을 만드는 것도 없습니다. 대신 <b>브라우저 데이터를 지우면 같이 날아가니</b> 「설정」에서 JSON 백업을 습관으로 만드세요.</p></details>
+    <details class="faq"><summary>AI가 자동으로 연결되나요?</summary>
+      <p class="fa">API 키를 꽂아 사이트 안에서 답을 받는 기능은 아직 없습니다.
+      대신 각 단계에서 <b>질문지를 만들어 복사</b>해 주니, Claude나 ChatGPT에 붙여넣고 받은 답을 다시 붙여넣으면 됩니다. 돈이 들지 않고 어디서든 동작해요.</p></details>
+    <details class="faq"><summary>이미지는 몇 장까지 넣을 수 있나요?</summary>
+      <p class="fa">브라우저가 허용하는 만큼입니다 — 보통 수 GB. 넣는 이미지는 가로 1280px JPEG로 자동 축소되고,
+      「설정」 탭에서 지금 쓰는 용량을 실시간으로 볼 수 있습니다.</p></details>
+    <details class="faq"><summary>다른 컴퓨터에서 이어서 작업하려면?</summary>
+      <p class="fa">「설정 → JSON으로 내보내기」로 파일 하나를 받아 옮긴 뒤, 그쪽에서 「JSON 불러오기」 하세요.
+      스토리 · 캐릭터 · 컷 · <b>이미지까지</b> 전부 들어 있습니다.</p></details>
+    <details class="faq"><summary>글씨체가 다르게 보여요</summary>
+      <p class="fa">제목용 손글씨체(Griun 602)는 이 PC에 설치돼 있거나 <b>fonts/ 폴더가 파일 옆에 있을 때만</b> 적용됩니다.
+      없으면 시스템 고딕으로 자동 대체되며, 기능에는 아무 영향이 없습니다.</p></details>
+  </section>
+  <!-- ===== 스토리 ===== -->
+  <section class="tab" id="t-story">
+    <div class="pghd">
+      <h2>스토리 디벨롭</h2>
+      <p>위에서 아래로 채워 내려갑니다. 각 단계의 <b>「AI 질문지 복사」</b>를 누르면 지금까지 쓴 내용을 전부 담은 질문이 복사돼요 — Claude나 ChatGPT에 붙여넣으세요.</p>
+      <div class="prog" id="storyprog"></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="step">1</span>로그라인 <span class="tagx">한 문장</span></h3>
+      <textarea id="s-logline" placeholder="누가 / 무엇을 원하는데 / 무엇이 막고 있는가 — 한 문장으로.&#10;예) 기억을 파는 브로커가, 죽은 딸의 마지막 기억을 되찾기 위해, 자신의 과거 전부를 팔아넘긴다."></textarea>
+      <div class="row" style="margin-top:11px">
+        <button class="btn sm" data-ask="logline">🤖 AI 질문지 복사</button>
+        <span class="mini" style="margin:0">문제점 3가지 + 변주안 5개를 받습니다</span>
+      </div>
+    </div>
+
+    <div class="grid g3">
+      <label class="f"><span>장르</span><input type="text" id="s-genre" placeholder="SF 느와르"></label>
+      <label class="f"><span>톤 · 분위기</span><input type="text" id="s-tone" placeholder="차갑고 건조한, 젖은 도시"></label>
+      <label class="f"><span>러닝타임 · 형식</span><input type="text" id="s-format" placeholder="단편 12분 / 장편 / 웹시리즈"></label>
+    </div>
+
+    <div class="card">
+      <h3><span class="step">2</span>시놉시스 <span class="tagx">한 문단</span></h3>
+      <textarea id="s-synopsis" style="min-height:140px" placeholder="주인공이 어떤 세계에서 무엇을 겪고, 어디로 도착하는지 한 문단으로."></textarea>
+      <div class="row" style="margin-top:11px">
+        <button class="btn sm" data-ask="synopsis">🤖 AI 질문지 복사</button>
+        <span class="mini" style="margin:0">확장 + 논리 구멍 점검</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="step">3</span>3막 구조</h3>
+      <div class="grid g3">
+        <label class="f"><span>1막 — 설정 · 발단</span><textarea id="s-act1" style="min-height:120px" placeholder="일상 → 균열이 생기는 지점"></textarea></label>
+        <label class="f"><span>2막 — 대립 · 상승</span><textarea id="s-act2" style="min-height:120px" placeholder="시도와 실패, 중간점, 가장 낮은 지점"></textarea></label>
+        <label class="f"><span>3막 — 해결</span><textarea id="s-act3" style="min-height:120px" placeholder="클라이맥스와 그 이후"></textarea></label>
+      </div>
+      <div class="row">
+        <button class="btn sm" data-ask="acts">🤖 AI 질문지 복사</button>
+        <span class="mini" style="margin:0">어디가 늘어지고 어디가 비었는지</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="step">4</span>주제 · 레퍼런스</h3>
+      <div class="grid g2">
+        <label class="f"><span>말하고 싶은 것</span><textarea id="s-theme" placeholder="기억을 지운 사람도 여전히 그 사람인가"></textarea></label>
+        <label class="f"><span>레퍼런스 작품 · 감독</span><textarea id="s-ref" placeholder="블레이드 러너 2049 / 드니 빌뇌브"></textarea></label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="step">5</span>씬 리스트 만들기</h3>
+      <p class="mini" style="margin:0 0 14px">질문지를 복사해 AI에 붙여넣고, <b>받은 표를 그대로 다시 붙여넣으면 씬이 자동으로 만들어집니다.</b> 손으로 옮겨 적을 필요 없어요.</p>
+      <div class="row">
+        <button class="btn pri" data-ask="scenelist">🤖 ① 질문지 복사</button>
+        <button class="btn" id="openpaste">📥 ② 받은 표 붙여넣기</button>
+        <button class="btn gh" data-ask="full">📋 작품 전체 브리핑</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 대본 ===== -->
+  <section class="tab" id="t-script">
+    <div class="pghd">
+      <h2>대본</h2>
+      <p>이미 쓰신 원고를 <b>파일로 올리면 씬 단위로 자동 분해</b>됩니다. 여기서 고친 내용은 씬·컷·프롬프트에 그대로 이어져요.</p>
+    </div>
+
+    <div class="card" id="dropzone">
+      <h3>📂 원고 불러오기</h3>
+      <div class="drop" id="dropbox">
+        <b>여기로 파일을 끌어다 놓으세요</b>
+        <span>또는 아래 버튼으로 고르기 · <b>.txt · .docx · .pdf · .fdx · .md</b></span>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn pri" id="sc-pick">📄 파일 고르기</button>
+        <input type="file" id="sc-file" accept=".txt,.md,.fdx,.docx,.pdf,text/plain,application/pdf" style="display:none">
+        <button class="btn" id="sc-paste">📋 원고를 직접 붙여넣기</button>
+        <span class="mini" style="margin:0" id="sc-fname"></span>
+      </div>
+      <p class="mini"><b>PDF는 종류를 탑니다.</b> 워드·한글에서 「PDF로 저장」한 건 읽히지만,
+      스캔하거나 사진 찍은 PDF는 글자가 아니라 그림이라 못 읽어요. 실패하면 알려드립니다.
+      한글 파일(<b>.hwp</b>)은 지원하지 않으니 워드나 PDF로 저장해서 올려주세요.</p>
+    </div>
+
+    <div class="card" id="sc-raw-wrap" style="display:none">
+      <h3>✂️ 씬 분해</h3>
+      <textarea id="sc-raw" style="min-height:180px;font-family:var(--mono);font-size:12.5px" placeholder="S#1. 비 내리는 뒷골목 / 밤&#10;&#10;지훈이 우산 없이 걸어 나온다.&#10;&#10;지훈: 이제 그만하자.&#10;&#10;S#2. 기억 상점 / 심야"></textarea>
+      <p class="mini" id="sc-hint">씬 머리글은 <b>S#1.</b> · <b>씬 1</b> · <b>1.</b> · <b>INT./EXT.</b> 형태를 모두 알아봅니다. 시간대(낮·밤·새벽…)도 자동으로 잡아요.</p>
+      <div class="row" style="margin-top:10px">
+        <button class="btn pri" id="sc-parse">🔍 분해 미리보기</button>
+        <select id="sc-mode" style="max-width:230px">
+          <option value="replace">기존 씬을 모두 교체</option>
+          <option value="append">뒤에 이어 붙이기</option>
+        </select>
+        <button class="btn" id="sc-apply" disabled>✓ 적용</button>
+        <span class="mini" id="sc-count" style="margin:0"></span>
+      </div>
+      <div class="out empty2" id="sc-preview" style="margin-top:12px;max-height:260px;overflow:auto">원고를 넣고 「분해 미리보기」를 누르세요</div>
+    </div>
+
+    <div class="card">
+      <h3>✍️ 씬별 원고 편집</h3>
+      <div class="row" style="margin-bottom:12px">
+        <select id="sc-sel" style="max-width:380px"></select>
+        <button class="btn sm" id="sc-prev">← 이전</button>
+        <button class="btn sm" id="sc-next">다음 →</button>
+        <div class="hsp"></div>
+        <span class="mini" id="sc-stat" style="margin:0"></span>
+      </div>
+      <div class="scwrap">
+        <div>
+          <label class="f"><span>원고 본문</span>
+            <textarea id="sc-body" style="min-height:340px;line-height:1.9" placeholder="이 씬의 지문과 대사를 씁니다.&#10;&#10;대사는 「이름: 대사」 형태로 쓰면 자동으로 인식돼요."></textarea>
+          </label>
+          <div class="row">
+            <button class="btn sm" id="sc-tocuts">🎬 대사·지문을 컷으로 쪼개기</button>
+            <button class="btn sm gh" id="sc-askscene">🤖 이 씬 수정 요청문</button>
+          </div>
+        </div>
+        <div>
+          <span class="lbx">이 씬 요약</span>
+          <div class="out" id="sc-side" style="max-height:400px;overflow:auto;font-size:12px">씬을 선택하세요</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🤖 대본 수정 작업</h3>
+      <div class="row">
+        <button class="btn" data-ask="rewrite">📋 전체 대본 검토 요청문</button>
+        <button class="btn" data-ask="dialogue">📋 대사 살리기 요청문</button>
+        <button class="btn" id="sc-openrep">📥 고친 대본 붙여넣기</button>
+      </div>
+      <p class="mini">요청문을 AI에 붙여넣고, 받은 수정본을 「고친 대본 붙여넣기」로 되돌려 넣으면 씬이 갱신됩니다.</p>
+    </div>
+  </section>
+
+  <!-- ===== 캐릭터 ===== -->
+  <section class="tab" id="t-char">
+    <div class="pghd">
+      <h2>캐릭터 바이블</h2>
+      <p>AI 영상의 최대 난관은 <b>캐릭터가 매 컷마다 딴 사람이 되는 것</b>입니다. 아래를 채우면 <b>외형 고정 블록</b>이 자동으로 만들어지고, 모든 프롬프트에 토씨 하나 안 틀리고 삽입돼요.</p>
+    </div>
+    <div class="row" style="margin-bottom:18px"><button class="btn pri" id="addchar">＋ 캐릭터 추가</button></div>
+    <div id="charlist"></div>
+  </section>
+
+  <!-- ===== 씬 · 컷 ===== -->
+  <section class="tab" id="t-scene">
+    <div class="pghd">
+      <h2>씬 · 컷 분해</h2>
+      <p>씬을 만들고 그 안에 컷을 쌓습니다. 컷마다 샷 사이즈 · 앵글 · 렌즈 · 조명을 지정해두면 「프롬프트」 탭에서 문장이 자동으로 조립돼요.</p>
+    </div>
+    <div class="row" style="margin-bottom:18px">
+      <button class="btn pri" id="addscene">＋ 씬 추가</button>
+      <button class="btn" id="openpaste2">📥 표로 한 번에 넣기</button>
+      <button class="btn gh" id="expandall">모두 펼치기 / 접기</button>
+      <div class="hsp"></div>
+      <span class="mini" id="cutstat" style="margin:0"></span>
+    </div>
+    <div id="scenelist"></div>
+  </section>
+
+  <!-- ===== 프롬프트 ===== -->
+  <section class="tab" id="t-prompt">
+    <div class="pghd">
+      <h2>프롬프트 빌더</h2>
+      <p>컷을 고르면 <b>미드저니 · Veo(Flow) · 범용 이미지</b> 세 문법으로 동시에 만들어줍니다. 「전체 화면 룩」은 모든 컷에 공통으로 붙는 값이에요.</p>
+    </div>
+
+    <div class="card">
+      <h3>🎨 전체 화면 룩 <span class="tagx">모든 컷 공통</span></h3>
+      <div class="grid g3">
+        <label class="f"><span>비주얼 스타일</span><select id="v-look"></select></label>
+        <label class="f"><span>화면비</span><select id="v-ar"></select></label>
+        <label class="f enfield"><span>색감 · 팔레트</span><input type="text" id="v-palette" placeholder="teal and amber, desaturated"></label>
+      </div>
+      <div class="grid g2">
+        <label class="f enfield"><span>추가 스타일 태그</span><input type="text" id="v-extra" placeholder="fine grain, shallow depth of field"></label>
+        <label class="f enfield"><span>미드저니 파라미터</span><input type="text" id="v-mj" placeholder="--ar 16:9 --style raw"></label>
+      </div>
+      <label class="f enfield"><span>네거티브 프롬프트</span><input type="text" id="v-neg" placeholder="text, watermark, deformed hands"></label>
+    </div>
+
+    <div class="card">
+      <h3>🎯 컷 선택 <span class="tagx" id="curlabel">—</span></h3>
+      <div class="cutnav" id="cutnav"></div>
+      <div class="row">
+        <button class="btn" id="p-prev">← 이전</button>
+        <button class="btn" id="p-next">다음 →</button>
+        <span class="mini" style="margin:0"><kbd>←</kbd> <kbd>→</kbd> 키로도 이동</span>
+        <div class="hsp"></div>
+        <button class="btn" id="p-allcopy">📋 이 씬 전체 복사</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="outhd"><b>🖼️ 미드저니</b><span class="k">키워드 나열형 · 스틸</span></div>
+      <div class="out empty2" id="o-mj">컷을 선택하세요</div>
+      <div class="row" style="margin-top:11px"><button class="btn sm" data-copy="o-mj">📋 복사</button></div>
+    </div>
+
+    <div class="card">
+      <div class="outhd"><b>🎬 Veo / Flow</b><span class="k">서술형 · 움직임과 소리 포함</span></div>
+      <div class="out empty2" id="o-veo">컷을 선택하세요</div>
+      <div class="row" style="margin-top:11px">
+        <button class="btn sm" data-copy="o-veo">📋 복사</button>
+        <span class="mini" style="margin:0">Flow에선 캐릭터 이미지를 <b>Ingredients</b>로 함께 넣으세요</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="outhd"><b>🎨 범용 이미지</b><span class="k">Nano Banana · ImageFX · SD 계열</span></div>
+      <div class="out empty2" id="o-gen">컷을 선택하세요</div>
+      <div class="row" style="margin-top:11px"><button class="btn sm" data-copy="o-gen">📋 복사</button></div>
+    </div>
+
+    <div class="card">
+      <div class="outhd"><b>🤖 AI 다듬기</b><span class="k">프롬프트를 더 좋게</span></div>
+      <div class="row"><button class="btn" data-ask="prompt">📋 이 컷 개선 요청문 복사</button></div>
+      <p class="mini">AI에 붙여넣으면 이 컷의 맥락을 이해한 상태로 프롬프트를 손봐줍니다.</p>
+    </div>
+  </section>
+
+  <!-- ===== 보드 ===== -->
+  <section class="tab" id="t-board">
+    <div class="pghd">
+      <h2>스토리보드</h2>
+      <p>AI로 뽑은 이미지를 컷에 붙여 한눈에 봅니다. 이미지는 <b>IndexedDB</b>에 따로 저장돼서 용량 걱정 없이 넣을 수 있어요.</p>
+    </div>
+    <div id="boardwrap"></div>
+  </section>
+
+  <!-- ===== 설정 ===== -->
+  <section class="tab" id="t-data">
+    <div class="pghd">
+      <h2>설정 · 내보내기</h2>
+      <p>작업 내용은 자동 저장됩니다. <b>브라우저 데이터를 지우면 같이 날아가요</b> — 중요한 작업은 꼭 JSON으로 백업하세요.</p>
+    </div>
+
+    <div class="card">
+      <h3>💾 저장 용량</h3>
+      <div id="quota"></div>
+    </div>
+
+    <div class="card">
+      <h3>📁 백업 · 복원</h3>
+      <div class="row">
+        <button class="btn pri" id="d-export">⬇️ JSON으로 내보내기</button>
+        <button class="btn" id="d-import">⬆️ JSON 불러오기</button>
+        <input type="file" id="d-file" accept=".json,application/json" style="display:none">
+      </div>
+      <p class="mini">JSON 하나에 스토리 · 캐릭터 · 컷 · <b>이미지까지</b> 전부 들어갑니다. 다른 컴퓨터로 옮길 때도 이 파일만 가져가면 돼요.</p>
+    </div>
+
+    <div class="card">
+      <h3>📊 내보내기</h3>
+      <div class="row">
+        <button class="btn" id="d-csv">⬇️ 컷 리스트 CSV</button>
+        <button class="btn" id="d-sched">📅 촬영 스케줄표 CSV</button>
+        <button class="btn" id="d-call">👥 캐릭터 콜시트 CSV</button>
+        <button class="btn" id="d-script">📄 대본 TXT</button>
+        <button class="btn" id="d-txt">✨ 프롬프트 전량 TXT</button>
+      </div>
+      <p class="mini">CSV는 엑셀·구글시트에서 바로 열립니다.
+      <b>촬영 스케줄표</b>는 같은 장소끼리 묶어 정렬해줘요 — 실제 촬영은 씬 순서가 아니라 장소 단위로 몰아 찍으니까요.
+      <b>콜시트</b>는 배우별로 어느 씬에 나오는지 정리합니다.</p>
+    </div>
+
+    <div class="card">
+      <h3>🌐 번역 엔진</h3>
+      <div class="row"><span class="status" id="mtstat">확인 전</span><button class="btn sm" id="mtcheck">다시 확인</button></div>
+      <p class="mini">크롬 내장 번역(온디바이스)을 쓰면 인터넷 전송도 요금도 없이 즉시 번역됩니다. 안 되는 환경이면 「번역」의 <b>일괄 방식</b>을 쓰세요 — 어디서든 동작합니다.</p>
+    </div>
+
+    <div class="card">
+      <h3>🗑️ 초기화</h3>
+      <div class="row"><button class="btn dgr" id="d-reset">전체 삭제하고 새로 시작</button></div>
+      <p class="mini">되돌릴 수 없습니다. 먼저 JSON으로 백업하세요.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="fin">
+    <div class="fl">
+      <span class="logo">SCENE<em>DECK</em><small>시나리오 · 프롬프트 워크벤치</small></span>
+      <p>단일 HTML 파일로 동작하는 무설치 워크벤치입니다. 외부 라이브러리도, 서버도, 계정도 없습니다.</p>
+    </div>
+    <div class="fnav">
+      <b>만들기</b>
+      <button data-go="story">스토리 디벨롭</button>
+      <button data-go="script">대본 불러오기</button>
+      <button data-go="char">캐릭터 바이블</button>
+    </div>
+    <div class="fnav">
+      <b>연출</b>
+      <button data-go="scene">씬 · 컷 분해</button>
+      <button data-go="prompt">프롬프트 빌더</button>
+      <button data-go="board">스토리보드</button>
+    </div>
+    <div class="fnav">
+      <b>관리</b>
+      <button data-go="data">백업 · 내보내기</button>
+      <button data-go="data">저장 용량</button>
+      <button data-go="home">홈으로</button>
+    </div>
+  </div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.</div>
+</footer>
+
+<!-- ===== 번역 모달 ===== -->
+<div class="mask" id="mtmask">
+  <div class="modal">
+    <div class="row" style="justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+      <div>
+        <h3>🌐 번역</h3>
+        <p style="margin:2px 0 0">한글로 쓴 내용을 프롬프트용 영어로 바꿔 <b>비어 있는 영문 칸에 한 번에 채웁니다.</b></p>
+      </div>
+      <button class="btn sm gh" data-close="mtmask">✕ 닫기</button>
+    </div>
+    <div class="row" style="margin-bottom:16px">
+      <span class="status" id="mtstat2">확인 전</span>
+      <button class="btn pri" id="mtauto">⚡ 자동 번역 실행</button>
+      <span class="mini" style="margin:0">크롬 내장 번역이 되는 환경에서만</span>
+    </div>
+    <div class="rule">되지 않을 때 — 붙여넣기 방식</div>
+    <p class="mini" style="margin:0 0 12px">①을 복사해 AI에 붙여넣고, 받은 답을 ②에 그대로 붙여넣은 뒤 「적용」을 누르세요. 항상 동작합니다.</p>
+    <div class="grid g2">
+      <div>
+        <label class="f"><span>① 번역 요청문</span></label>
+        <div class="out" id="mtreq" style="max-height:200px;overflow:auto;font-size:11.5px">—</div>
+        <div class="row" style="margin-top:9px"><button class="btn sm" id="mtreqcopy">📋 요청문 복사</button></div>
+      </div>
+      <div>
+        <label class="f"><span>② AI가 준 답 붙여넣기</span></label>
+        <textarea id="mtres" style="min-height:200px;font-family:var(--mono);font-size:12px" placeholder="1 → worn grey trench coat&#10;2 → rain-soaked back alley"></textarea>
+        <div class="row" style="margin-top:9px">
+          <button class="btn pri" id="mtapply">✓ 영문 칸에 적용</button>
+          <span class="mini" id="mtcount" style="margin:0"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 표 붙여넣기 모달 ===== -->
+<div class="mask" id="pmask">
+  <div class="modal">
+    <div class="row" style="justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+      <div>
+        <h3>📥 표로 한 번에 넣기</h3>
+        <p style="margin:2px 0 0">AI가 준 씬 리스트 표를 <b>그대로 붙여넣으면</b> 씬이 자동으로 만들어집니다.</p>
+      </div>
+      <button class="btn sm gh" data-close="pmask">✕ 닫기</button>
+    </div>
+    <div class="row" style="margin-bottom:12px">
+      <label class="chip"><input type="radio" name="pmode" value="scene" checked style="width:auto;margin-right:5px">씬 리스트</label>
+      <label class="chip"><input type="radio" name="pmode" value="cut" style="width:auto;margin-right:5px">컷 리스트</label>
+      <select id="ptarget" style="max-width:280px;display:none"></select>
+    </div>
+    <p class="mini" id="phint" style="margin:0 0 10px"></p>
+    <textarea id="ptext" style="min-height:230px;font-family:var(--mono);font-size:12px" placeholder="1 | 비 내리는 뒷골목 | 밤 | 지훈이 추적자를 따돌린다 | 지훈의 정체가 드러난다&#10;2 | 기억 상점 내부 | 심야 | 브로커와 거래한다 | 딸의 기억이 존재함을 알게 된다"></textarea>
+    <div class="row" style="margin-top:12px">
+      <button class="btn pri" id="pparse">미리보기</button>
+      <button class="btn" id="papply" disabled>✓ 추가하기</button>
+      <span class="mini" id="pcount" style="margin:0"></span>
+    </div>
+    <div class="out empty2" id="ppreview" style="margin-top:12px;max-height:220px;overflow:auto">붙여넣고 「미리보기」를 누르세요</div>
+  </div>
+</div>
+
+<!-- ===== 고친 대본 되돌려 넣기 모달 ===== -->
+<div class="mask" id="rmask">
+  <div class="modal">
+    <div class="row" style="justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+      <div>
+        <h3>📥 고친 대본 붙여넣기</h3>
+        <p style="margin:2px 0 0">AI가 고쳐준 대본을 붙여넣으면 <b>씬 머리글을 기준으로 해당 씬 본문만 갈아끼웁니다.</b></p>
+      </div>
+      <button class="btn sm gh" data-close="rmask">✕ 닫기</button>
+    </div>
+    <p class="mini" style="margin:0 0 10px">씬 머리글(<b>S#3.</b> 같은)이 있으면 번호로 찾아 그 씬만 바꿉니다. 없으면 지금 열어둔 씬의 본문을 통째로 교체해요.</p>
+    <textarea id="rtext" style="min-height:280px;font-family:var(--mono);font-size:12px" placeholder="S#3. 폐병원 로비 / 새벽&#10;&#10;지훈이 문을 밀고 들어온다. 먼지가 빛기둥 속에서 돈다.&#10;&#10;지훈: 여기 있을 줄 알았어."></textarea>
+    <div class="row" style="margin-top:12px">
+      <button class="btn pri" id="rapply">✓ 반영하기</button>
+      <span class="mini" id="rcount" style="margin:0"></span>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toastmsg"></span></div>
+
+<script>
+/* =========================================================
+   SCENEDECK — 시나리오 · 프롬프트 워크벤치
+   단일 파일 / 무의존성
+   저장: 텍스트는 localStorage, 이미지는 IndexedDB (수 GB 사용 가능)
+   ========================================================= */
+
+/* ---------- 어휘표: 한글 라벨 → 영문 프롬프트 구문 ---------- */
+const SHOT = {
+  '':'', '익스트림 롱샷':'extreme wide shot','롱샷 (풀샷)':'wide shot','풀샷':'full body shot',
+  '미디엄 롱샷':'medium long shot','미디엄샷':'medium shot','미디엄 클로즈업':'medium close-up',
+  '클로즈업':'close-up shot','익스트림 클로즈업':'extreme close-up','오버 더 숄더':'over-the-shoulder shot',
+  '투샷':'two shot','POV (주관)':'point-of-view shot','인서트':'insert shot, tight detail'
+};
+const ANGLE = {
+  '':'', '아이레벨':'eye-level angle','하이앵글':'high angle looking down','로우앵글':'low angle looking up',
+  '버드아이 (부감)':"bird's-eye view","웜즈아이 (앙각)":"worm's-eye view",'더치앵글':'dutch angle, tilted horizon',
+  '오버헤드 (직부감)':'overhead top-down shot','프로파일 (측면)':'profile side view'
+};
+const MOVE = {
+  '':'', '고정':'static locked-off camera','팬':'slow horizontal pan','틸트':'vertical tilt',
+  '달리 인':'slow dolly in toward the subject','달리 아웃':'slow dolly out away from the subject',
+  '트래킹':'tracking shot following the subject','크레인 업':'crane shot rising upward',
+  '핸드헬드':'handheld camera, subtle shake','스테디캠':'smooth steadicam glide',
+  '줌 인':'slow zoom in','아크 (회전)':'arc shot orbiting the subject','푸시 인':'gentle push in'
+};
+const LENS = {
+  '':'', '14mm 초광각':'14mm ultra-wide lens, heavy perspective','24mm 광각':'24mm wide-angle lens',
+  '35mm':'35mm lens','50mm 표준':'50mm standard lens','85mm 인물':'85mm portrait lens, creamy bokeh',
+  '135mm 망원':'135mm telephoto, compressed background','마크로':'macro lens, extreme detail',
+  '아나모픽':'anamorphic lens, horizontal flares, oval bokeh'
+};
+const LIGHT = {
+  '':'', '자연광':'natural daylight','골든아워':'golden hour, warm low sunlight',
+  '블루아워':'blue hour twilight, cool ambient','하드라이트':'hard directional light, sharp shadows',
+  '소프트라이트':'soft diffused light','렘브란트':'Rembrandt lighting','역광 (백라이트)':'strong backlight, glowing rim light',
+  '실루엣':'silhouette against a bright background','로우키':'low-key lighting, deep shadows, high contrast',
+  '하이키':'high-key lighting, bright and airy','네온':'neon practical lights, cyan and magenta glow',
+  '촛불':'warm flickering candlelight','형광등':'cold fluorescent overhead light','달빛':'cool blue moonlight',
+  '자동차 헤드라이트':'harsh headlights cutting through darkness'
+};
+const TIME = {
+  '':'', '새벽':'at dawn','아침':'in the morning','정오':'at midday','오후':'in the afternoon',
+  '해질녘':'at dusk','밤':'at night','심야':'late at night','실내 (시간불명)':'indoors'
+};
+const MOOD = {
+  '':'', '긴장':'tense, suspenseful atmosphere','평온':'calm, serene mood','쓸쓸함':'lonely, melancholic mood',
+  '불안':'uneasy, anxious atmosphere','따뜻함':'warm, intimate mood','경이':'awe-inspiring, majestic',
+  '공포':'dread, horror atmosphere','희망':'hopeful, uplifting','분노':'furious, aggressive energy',
+  '유머':'light, playful tone','몽환':'dreamlike, surreal atmosphere','장엄':'epic, grand scale'
+};
+const LOOK = {
+  '실사 시네마틱':'photorealistic cinematic film still, shot on 35mm film',
+  '다큐멘터리':'documentary photography, natural and unposed',
+  '필름 누아르':'film noir, high contrast black and white',
+  '빈티지 필름':'vintage 16mm film look, visible grain, faded colors',
+  '하이퍼리얼':'hyperrealistic, ultra detailed, 8k',
+  '콘셉트 아트':'cinematic concept art, digital matte painting',
+  '일본 애니메이션':'anime style, cel shaded, detailed background art',
+  '한국 웹툰':'korean webtoon illustration style, clean linework',
+  '3D 애니메이션':'3D animated film still, stylized character render',
+  '스톱모션':'stop-motion claymation, tactile handmade textures',
+  '수채화':'soft watercolor illustration',
+  '유화':'thick oil painting, visible brushstrokes'
+};
+const AR = {'16:9 (가로)':'16:9','2.39:1 (시네마스코프)':'2.39:1','1.85:1 (극장)':'1.85:1','4:3 (클래식)':'4:3','1:1 (정사각)':'1:1','9:16 (세로/숏폼)':'9:16'};
+
+/* 나이와 성별을 그냥 이어붙이면 "a person in their forties man" 같은 비문이 된다.
+   값만 갖고 있고 문장 조립은 whoPhrase()가 전담한다. */
+const AGE = {
+  '':null,
+  '유아 (3~6세)':{kind:'kid', pre:'a small'},
+  '어린이 (7~12세)':{kind:'kid', pre:'a', extra:'around ten years old'},
+  '10대 초반':{kind:'teen', tag:'early'},
+  '10대 후반':{kind:'teen', tag:'late'},
+  '20대 초반':{dec:'early twenties'},
+  '20대 후반':{dec:'late twenties'},
+  '30대':{dec:'thirties'}, '40대':{dec:'forties'},
+  '50대':{dec:'fifties'},  '60대':{dec:'sixties'},
+  '70대 이상':{kind:'old', pre:'an elderly'}
+};
+const SEX  = {'':'','남성':'남성','여성':'여성','논바이너리':'논바이너리','불특정':'불특정'};
+const NOUN = {'':'person','남성':'man','여성':'woman','논바이너리':'androgynous person','불특정':'person'};
+const KID  = {'':'child','남성':'boy','여성':'girl','논바이너리':'child','불특정':'child'};
+const TEEN = {'':'teenager','남성':'teenage boy','여성':'teenage girl','논바이너리':'teenager','불특정':'teenager'};
+const PRON = {'':'their','남성':'his','여성':'her','논바이너리':'their','불특정':'their'};
+const HAIRL = {'':'','삭발':'shaved head','아주 짧은':'very short hair','짧은':'short hair','단발':'chin-length bob',
+  '어깨 길이':'shoulder-length hair','긴':'long hair','아주 긴':'very long hair'};
+const HAIRC = {'':'','검정':'black','짙은 갈색':'dark brown','갈색':'brown','밝은 갈색':'light brown','금발':'blonde',
+  '붉은':'red','은발':'silver','백발':'white','탈색':'bleached platinum','염색 (파랑)':'blue-dyed','염색 (분홍)':'pink-dyed'};
+const EYEC = {'':'','검정':'dark','짙은 갈색':'dark brown','갈색':'brown','회색':'grey','파랑':'blue','초록':'green','호박색':'amber'};
+const BUILD = {'':'','마른':'slender build','호리호리한':'lean build','보통':'average build','탄탄한':'athletic build',
+  '건장한':'broad, muscular build','통통한':'stocky build','왜소한':'small, frail build'};
+
+function whoPhrase(c){
+  const sx=c.sex||'', a=AGE[c.age];
+  if(!a) return c.sex ? 'a '+NOUN[sx] : '';
+  if(a.kind==='kid')  return [(a.pre||'a')+' '+KID[sx], a.extra].filter(Boolean).join(', ');
+  if(a.kind==='old')  return (a.pre||'an elderly')+' '+NOUN[sx];
+  if(a.kind==='teen') return 'a '+(a.tag==='early'?'young ':'')+TEEN[sx];
+  return 'a '+NOUN[sx]+' in '+PRON[sx]+' '+a.dec;
+}
+
+/* ---------- 상태 ---------- */
+const KEY='scenedeck_v1';
+let uid=Date.now()%100000;
+const nid=p=>p+'_'+(++uid).toString(36);
+function blank(){
+  return {title:'',
+    story:{logline:'',genre:'',tone:'',format:'',synopsis:'',act1:'',act2:'',act3:'',theme:'',ref:''},
+    style:{look:'실사 시네마틱',ar:'16:9 (가로)',palette:'',extra:'',mj:'--ar 16:9 --style raw',
+           neg:'text, watermark, extra fingers, deformed hands, blurry, lowres'},
+    chars:[],scenes:[],sel:{scene:'',cut:''}};
+}
+let S=blank();
+
+/* ---------- 유틸 ---------- */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let toastT=null;
+/* action = {label, fn} 이면 되돌리기 버튼이 붙는다 */
+function toast(m,action){
+  const t=$('toast');
+  $('toastmsg').textContent=m;
+  const old=t.querySelector('.ub'); if(old) old.remove();
+  if(action){
+    const b=document.createElement('button');
+    b.className='ub'; b.textContent=action.label;
+    b.onclick=()=>{ action.fn(); t.classList.remove('on'); };
+    t.appendChild(b);
+  }
+  t.classList.add('on');
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove('on'), action?6000:2200);
+}
+function copy(text,msg){
+  if(!text||!text.trim()){ toast('복사할 내용이 없어요'); return; }
+  const done=()=>toast(msg||'복사했어요 ✓');
+  const fb=()=>{
+    const ta=document.createElement('textarea');
+    ta.value=text; ta.style.cssText='position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); done(); }catch(e){ toast('복사 실패 — 직접 선택해 주세요'); }
+    document.body.removeChild(ta);
+  };
+  if(navigator.clipboard&&window.isSecureContext) navigator.clipboard.writeText(text).then(done,fb); else fb();
+}
+function opts(map,cur){
+  return Object.keys(map).map(k=>`<option value="${esc(k)}"${k===cur?' selected':''}>${esc(k||'— 선택 —')}</option>`).join('');
+}
+function dl(name,content,type){
+  const b=content instanceof Blob?content:new Blob([content],{type:type||'text/plain;charset=utf-8'});
+  const u=URL.createObjectURL(b);
+  const a=document.createElement('a'); a.href=u; a.download=name;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(u),1000);
+}
+const safeName=()=>(S.title||'scenedeck').replace(/[\\/:*?"<>|]/g,'_').trim()||'scenedeck';
+function dedupe(parts){
+  const seen=new Set(),out=[];
+  parts.filter(Boolean).forEach(chunk=>String(chunk).split(',').forEach(seg=>{
+    const s=seg.trim(); if(!s) return;
+    const k=s.toLowerCase().replace(/\s+/g,' ');
+    if(seen.has(k)) return; seen.add(k); out.push(s);
+  }));
+  return out;
+}
+
+/* =========================================================
+   저장소
+   텍스트(S)는 localStorage — 작품 하나가 수백 KB 수준이라 넉넉하다.
+   이미지는 IndexedDB에 Blob으로 — localStorage의 약 5MB 제약을 받지 않고
+   브라우저가 허용하는 용량(이 PC 기준 약 4.9GB)까지 쓴다.
+   ========================================================= */
+const IDB={
+  db:null,
+  open(){
+    if(this.db) return Promise.resolve(this.db);
+    return new Promise((res,rej)=>{
+      const r=indexedDB.open('scenedeck',1);
+      r.onupgradeneeded=()=>{ if(!r.result.objectStoreNames.contains('img')) r.result.createObjectStore('img'); };
+      r.onsuccess=()=>{ this.db=r.result; res(this.db); };
+      r.onerror=()=>rej(r.error||new Error('IndexedDB를 열 수 없습니다'));
+    });
+  },
+  async tx(mode,fn){
+    const db=await this.open();
+    return new Promise((res,rej)=>{
+      const t=db.transaction('img',mode), st=t.objectStore('img');
+      let req; try{ req=fn(st); }catch(e){ rej(e); return; }
+      // 값이 없으면 req.result 가 undefined 다. 요청 객체 자체를 돌려주면 안 된다.
+      t.oncomplete=()=>res(req&&'result' in req ? req.result : undefined);
+      t.onerror=()=>rej(t.error);
+    });
+  },
+  put(k,blob){ return this.tx('readwrite',st=>st.put(blob,k)); },
+  get(k){ return this.tx('readonly',st=>st.get(k)); },
+  del(k){ return this.tx('readwrite',st=>st.delete(k)); },
+  keys(){ return this.tx('readonly',st=>st.getAllKeys()); }
+};
+/* 컷 id → objectURL 캐시 (렌더할 때마다 새로 만들지 않도록) */
+const urlCache=new Map();
+async function imgURL(id){
+  if(urlCache.has(id)) return urlCache.get(id);
+  let b=null; try{ b=await IDB.get(id); }catch(e){}
+  if(!(b instanceof Blob)) return null;
+  const u=URL.createObjectURL(b); urlCache.set(id,u); return u;
+}
+function dropURL(id){
+  const u=urlCache.get(id);
+  if(u){ URL.revokeObjectURL(u); urlCache.delete(id); }
+}
+/* data-imgof 를 가진 요소들에 비동기로 이미지를 채워 넣는다 */
+async function hydrateImages(root){
+  const els=(root||document).querySelectorAll('[data-imgof]');
+  for(const el of els){
+    const u=await imgURL(el.dataset.imgof);
+    if(!u) continue;
+    if(el.tagName==='IMG') el.src=u;
+    else el.innerHTML=`<img src="${u}" alt="">`;
+  }
+}
+/* 이미지 파일 → 가로 최대 1280px JPEG Blob (보드용으로 충분하고 용량도 합리적) */
+function shrink(file,maxW){
+  return new Promise((res,rej)=>{
+    const rd=new FileReader();
+    rd.onload=()=>{
+      const im=new Image();
+      im.onload=()=>{
+        const sc=Math.min(1,(maxW||1280)/im.width);
+        const cv=document.createElement('canvas');
+        cv.width=Math.round(im.width*sc); cv.height=Math.round(im.height*sc);
+        cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+        cv.toBlob(b=>b?res(b):rej(new Error('변환 실패')),'image/jpeg',0.85);
+      };
+      im.onerror=()=>rej(new Error('이미지를 읽지 못했어요'));
+      im.src=rd.result;
+    };
+    rd.onerror=()=>rej(new Error('파일을 읽지 못했어요'));
+    rd.readAsDataURL(file);
+  });
+}
+const blobToDataURL=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b);});
+const dataURLToBlob=async d=>(await fetch(d)).blob();
+
+let saveT=null;
+function save(){
+  clearTimeout(saveT); setInd('저장 중',false);
+  saveT=setTimeout(()=>{
+    try{ localStorage.setItem(KEY,JSON.stringify(S)); setInd('저장됨',true); updQuota(); }
+    catch(e){ setInd('저장 실패',false); toast('텍스트 저장에 실패했어요 — JSON으로 백업하세요'); }
+  },350);
+}
+function setInd(t,ok){const e=$('saveind');e.textContent=t;e.className='saveind'+(ok?' on':'');}
+async function load(){
+  let raw=null;
+  try{ raw=localStorage.getItem(KEY); }catch(e){}
+  if(!raw) return false;
+  try{
+    const d=JSON.parse(raw);
+    S=Object.assign(blank(),d);
+    S.story=Object.assign(blank().story,d.story||{});
+    S.style=Object.assign(blank().style,d.style||{});
+    S.sel=Object.assign({scene:'',cut:''},d.sel||{});
+    S.chars=d.chars||[]; S.scenes=d.scenes||[];
+    // 예전 버전: 이미지가 dataURL로 컷 안에 들어 있던 것을 IndexedDB로 옮긴다
+    for(const s of S.scenes) for(const c of s.cuts){
+      if(c.img && String(c.img).startsWith('data:')){
+        try{ await IDB.put(c.id, await dataURLToBlob(c.img)); c.hasImg=true; }catch(e){}
+        delete c.img;
+      }
+    }
+    save();
+    return true;
+  }catch(e){ return false; }
+}
+
+/* =========================================================
+   번역 — 크롬 내장 Translator API (온디바이스)
+   되면 즉시 번역, 안 되면 일괄 붙여넣기로 자동 전환.
+   availability()가 영영 응답하지 않는 환경이 있어 반드시 타임아웃을 건다.
+   ========================================================= */
+const MT={state:'unknown',reason:'',tr:null};
+const race=(p,ms)=>Promise.race([p,new Promise(r=>setTimeout(()=>r('__TO__'),ms))]);
+async function mtProbe(force){
+  if(MT.state!=='unknown'&&!force) return MT.state==='ok';
+  MT.state='checking'; paintMT();
+  if(!('Translator' in self)){ MT.state='no'; MT.reason='이 브라우저에 내장 번역이 없습니다 (크롬 138 이상)'; paintMT(); return false; }
+  try{
+    const a=await race(Translator.availability({sourceLanguage:'ko',targetLanguage:'en'}),6000);
+    if(a==='__TO__'){ MT.state='no'; MT.reason='내장 번역이 응답하지 않습니다'; }
+    else if(a==='unavailable'){ MT.state='no'; MT.reason='한→영 번역을 지원하지 않습니다'; }
+    else { MT.state='ok'; MT.reason=a==='available'?'바로 사용 가능':'첫 실행 때 언어팩을 받습니다'; }
+  }catch(e){ MT.state='no'; MT.reason='확인 실패: '+e.name; }
+  paintMT(); return MT.state==='ok';
+}
+async function mtTranslate(text){
+  if(!MT.tr){
+    const t=await race(Translator.create({sourceLanguage:'ko',targetLanguage:'en',
+      monitor(m){ m.addEventListener('downloadprogress',e=>toast('언어팩 받는 중 '+Math.round(e.loaded*100)+'%')); }}),120000);
+    if(t==='__TO__') throw new Error('언어팩 준비 시간 초과');
+    MT.tr=t;
+  }
+  const r=await race(MT.tr.translate(text),30000);
+  if(r==='__TO__') throw new Error('번역 시간 초과');
+  return r;
+}
+function paintMT(){
+  const map={unknown:['확인 전',''],checking:['확인 중…','busy'],ok:['자동 번역 사용 가능','ok'],no:['자동 번역 불가 — 붙여넣기 방식 사용','']};
+  const [t,cls]=map[MT.state]||map.unknown;
+  ['mtstat','mtstat2'].forEach(id=>{
+    const el=$(id); if(!el) return;
+    el.textContent=t+(MT.reason&&MT.state!=='checking'?' · '+MT.reason:'');
+    el.className='status'+(cls?' '+cls:'');
+  });
+  const b=$('mtauto'); if(b) b.disabled=MT.state==='no'||MT.state==='checking';
+}
+function mtTargets(){
+  const T=[];
+  S.chars.forEach(c=>{
+    if(c.outfit&&!c.outfitEn) T.push({ko:c.outfit,set:v=>c.outfitEn=v,label:`캐릭터 「${c.name||'?'}」 의상`});
+    if(c.mark&&!c.markEn)     T.push({ko:c.mark,set:v=>c.markEn=v,label:`캐릭터 「${c.name||'?'}」 특징`});
+  });
+  S.scenes.forEach((s,si)=>{
+    if(s.loc&&!s.locEn) T.push({ko:s.loc,set:v=>s.locEn=v,label:`S${si+1} 장소`});
+    s.cuts.forEach((c,ci)=>{ if(c.desc&&!c.descEn) T.push({ko:c.desc,set:v=>c.descEn=v,label:`S${si+1} 컷${ci+1} 지문`}); });
+  });
+  return T;
+}
+function mtRefresh(){
+  const T=mtTargets(), box=$('mtreq');
+  if(!T.length){ box.textContent='번역할 한글 항목이 없습니다 (영문 칸이 이미 찼거나 한글을 아직 안 쓰셨어요)'; box.classList.add('empty2'); }
+  else{
+    box.classList.remove('empty2');
+    box.textContent=`아래 한국어 항목들을 AI 이미지·영상 생성 프롬프트에 바로 넣을 수 있는 영어로 바꿔줘.
+
+규칙:
+- 문장이 아니라 "무엇이 화면에 보이는가"를 담은 시각적 구(phrase)로.
+- 카메라 용어(샷 사이즈·앵글·렌즈)나 화풍은 넣지 마. 그건 따로 붙일 거야.
+- 번호를 그대로 유지하고 아래 형식으로만 답해줘. 설명은 붙이지 마.
+
+${T.map((t,i)=>`${i+1}. [${t.label}] ${t.ko}`).join('\n')}
+
+답변 형식:
+${T.map((t,i)=>`${i+1} → (영어)`).join('\n')}`;
+  }
+  $('mtcount').textContent=T.length?`번역 대기 ${T.length}개`:'';
+  return T;
+}
+$('openmt').addEventListener('click',()=>{ $('mtmask').classList.add('on'); mtRefresh(); mtProbe(); });
+$('mtreqcopy').addEventListener('click',()=>copy($('mtreq').textContent,'요청문 복사 ✓ — AI에 붙여넣으세요'));
+$('mtcheck').addEventListener('click',()=>mtProbe(true));
+$('mtauto').addEventListener('click',async()=>{
+  const T=mtRefresh();
+  if(!T.length){ toast('번역할 항목이 없어요'); return; }
+  if(!await mtProbe()){ toast('자동 번역을 쓸 수 없어요 — 아래 붙여넣기 방식을 이용하세요'); return; }
+  const btn=$('mtauto'); btn.disabled=true; let ok=0;
+  try{
+    for(const t of T){ t.set((await mtTranslate(t.ko)).trim()); ok++; btn.textContent=`번역 중… ${ok}/${T.length}`; }
+    toast(`${ok}개 번역해서 채웠어요 ✓`);
+  }catch(e){ toast((ok?ok+'개까지 채웠어요. ':'')+'중단: '+e.message); }
+  save(); renderAll(); mtRefresh();
+  btn.disabled=false; btn.textContent='⚡ 자동 번역 실행';
+});
+$('mtapply').addEventListener('click',()=>{
+  const T=mtTargets();
+  if(!T.length){ toast('적용할 대상이 없어요'); return; }
+  const raw=$('mtres').value;
+  if(!raw.trim()){ toast('②에 AI가 준 답을 붙여넣어 주세요'); return; }
+  const map={};
+  raw.split(/\r?\n/).forEach(line=>{
+    const m=line.match(/^\s*(\d+)\s*(?:→|->|[.)\]:])\s*(.+?)\s*$/);
+    if(m) map[+m[1]]=m[2].replace(/^\(|\)$/g,'').trim();
+  });
+  let n=0;
+  T.forEach((t,i)=>{ const v=map[i+1]; if(v&&v!=='(영어)'){ t.set(v); n++; } });
+  if(!n){ toast('번호를 못 찾았어요 — "1 → 영어" 형식인지 확인해 주세요'); return; }
+  save(); renderAll(); $('mtres').value=''; mtRefresh();
+  toast(`${n}개 영문 칸에 채웠어요 ✓`);
+});
+async function quickTranslate(ko,apply,fallbackText,after){
+  if(!ko||!ko.trim()){ toast('먼저 한글로 내용을 써주세요'); return; }
+  if(await mtProbe()){
+    toast('번역 중…');
+    try{ apply((await mtTranslate(ko)).trim()); save(); (after||renderAll)(); toast('번역해서 채웠어요 ✓'); return; }
+    catch(e){ toast('자동 번역 실패 — 요청문을 복사합니다'); }
+  }
+  copy(fallbackText,'요청문 복사 ✓ — AI에 붙여넣으세요');
+}
+
+/* ---------- 모달 공통 ---------- */
+document.addEventListener('click',e=>{
+  const c=e.target.dataset&&e.target.dataset.close;
+  if(c) $(c).classList.remove('on');
+  if(e.target.classList&&e.target.classList.contains('mask')) e.target.classList.remove('on');
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') document.querySelectorAll('.mask.on').forEach(m=>m.classList.remove('on'));
+});
+
+/* ---------- 탭 ---------- */
+$('nav').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-t]'); if(!b) return;
+  document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  $('t-'+b.dataset.t).classList.add('on');
+  if(b.dataset.t==='prompt') renderPrompt();
+  if(b.dataset.t==='script') renderScript();
+  if(b.dataset.t==='board') renderBoard();
+  if(b.dataset.t==='data'){ updQuota(); mtProbe(); }
+  window.scrollTo(0,0);
+});
+const curTab=()=>{const b=document.querySelector('#nav button.on');return b?b.dataset.t:'';};
+
+/* ---------- 스토리 ---------- */
+const STORY_FIELDS=['logline','genre','tone','format','synopsis','act1','act2','act3','theme','ref'];
+STORY_FIELDS.forEach(k=>{
+  const el=$('s-'+k); if(!el) return;
+  el.addEventListener('input',()=>{ S.story[k]=el.value; save(); paintProg(); });
+});
+$('ptitle').addEventListener('input',()=>{ S.title=$('ptitle').value; save(); });
+function fillStory(){
+  $('ptitle').value=S.title||'';
+  STORY_FIELDS.forEach(k=>{ const el=$('s-'+k); if(el) el.value=S.story[k]||''; });
+  paintProg();
+}
+function paintProg(){
+  const t=S.story;
+  const steps=[!!t.logline,!!t.synopsis,!!(t.act1||t.act2||t.act3),!!(t.theme||t.ref),S.scenes.some(s=>s.heading)];
+  $('storyprog').innerHTML=steps.map(v=>`<i class="${v?'on':''}"></i>`).join('');
+}
+
+/* ---------- 되돌리기 ---------- */
+function delWithUndo(msg,removeFn,restoreFn){
+  removeFn(); save(); renderAll();
+  toast(msg,{label:'되돌리기',fn:()=>{ restoreFn(); save(); renderAll(); toast('되돌렸어요 ✓'); }});
+}
+
+/* ---------- 캐릭터 ---------- */
+function newChar(){
+  return {id:nid('c'),name:'',role:'',age:'',sex:'',hairL:'',hairC:'',eye:'',build:'',
+    outfit:'',outfitEn:'',mark:'',markEn:'',lockManual:'',personality:'',speech:'',arc:''};
+}
+function charLock(c){
+  if(c.lockManual&&c.lockManual.trim()) return c.lockManual.trim();
+  const p=[], who=whoPhrase(c);
+  if(who) p.push(who); else if(c.name) p.push('a person');
+  const len=HAIRL[c.hairL]||'', col=HAIRC[c.hairC]||'';
+  if(len&&col) p.push(len.replace(/\bhair\b/,col+' hair'));
+  else if(len) p.push(len);
+  else if(col) p.push(col+' hair');
+  if(EYEC[c.eye]) p.push(EYEC[c.eye]+' eyes');
+  if(BUILD[c.build]) p.push(BUILD[c.build]);
+  if(c.outfitEn) p.push(c.outfitEn);
+  if(c.markEn) p.push(c.markEn);
+  return dedupe(p).join(', ');
+}
+function renderChars(){
+  const w=$('charlist');
+  if(!S.chars.length){
+    w.innerHTML=`<div class="empty"><b>아직 캐릭터가 없어요</b><p>주인공부터 만들어보세요. 나이·머리·눈만 골라도 고정 블록이 만들어집니다.</p><button class="btn pri" data-newchar>＋ 첫 캐릭터 만들기</button></div>`;
+    return;
+  }
+  w.innerHTML=S.chars.map((c,i)=>`
+    <div class="card" data-cid="${c.id}">
+      <div class="itemhd">
+        <div class="slate">CHAR ${String(i+1).padStart(2,'0')}</div>
+        <input class="nmin" data-cf="name" value="${esc(c.name)}" placeholder="캐릭터 이름">
+        <input type="text" data-cf="role" value="${esc(c.role)}" placeholder="역할 (주인공 / 대립자 …)" style="max-width:200px">
+        <div class="ord">
+          <button class="btn ico gh" data-cmove="${c.id}|-1" title="위로"${i===0?' disabled':''}>▲</button>
+          <button class="btn ico gh" data-cmove="${c.id}|1" title="아래로"${i===S.chars.length-1?' disabled':''}>▼</button>
+        </div>
+        <button class="btn sm gh" data-cdup="${c.id}" title="복제">⧉</button>
+        <button class="btn sm dgr" data-cdel="${c.id}">삭제</button>
+      </div>
+
+      <div class="rule">외형</div>
+      <div class="grid g4">
+        <label class="f"><span>나이대</span><select data-cf="age">${opts(AGE,c.age)}</select></label>
+        <label class="f"><span>성별</span><select data-cf="sex">${opts(SEX,c.sex)}</select></label>
+        <label class="f"><span>머리 길이</span><select data-cf="hairL">${opts(HAIRL,c.hairL)}</select></label>
+        <label class="f"><span>머리 색</span><select data-cf="hairC">${opts(HAIRC,c.hairC)}</select></label>
+      </div>
+      <div class="grid g2">
+        <label class="f"><span>눈 색</span><select data-cf="eye">${opts(EYEC,c.eye)}</select></label>
+        <label class="f"><span>체형</span><select data-cf="build">${opts(BUILD,c.build)}</select></label>
+      </div>
+      <div class="grid g2">
+        <label class="f"><span>의상 (한글)</span><input type="text" data-cf="outfit" value="${esc(c.outfit)}" placeholder="낡은 회색 트렌치코트"></label>
+        <label class="f enfield"><span>의상</span><input type="text" data-cf="outfitEn" value="${esc(c.outfitEn)}" placeholder="worn grey trench coat"></label>
+      </div>
+      <div class="grid g2">
+        <label class="f"><span>특징 (한글)</span><input type="text" data-cf="mark" value="${esc(c.mark)}" placeholder="왼쪽 눈썹 흉터"></label>
+        <label class="f enfield"><span>특징</span><input type="text" data-cf="markEn" value="${esc(c.markEn)}" placeholder="scar through left eyebrow"></label>
+      </div>
+      <div class="row" style="margin:-6px 0 4px">
+        <button class="btn sm" data-ctrans="${c.id}">🌐 한글 → 영문 번역</button>
+        <span class="mini" style="margin:0">빈 영문 칸을 채웁니다</span>
+      </div>
+
+      <div class="divx"></div>
+      <div class="outhd"><b>🔒 외형 고정 블록</b><span class="k">모든 프롬프트에 그대로 삽입</span></div>
+      <div class="out" data-clock="${c.id}">${esc(charLock(c))||'<i>위 항목을 채우면 여기에 자동으로 만들어집니다</i>'}</div>
+      <div class="row" style="margin:11px 0 0">
+        <button class="btn sm" data-clockcopy="${c.id}">📋 복사</button>
+        <button class="btn sm gh" data-clockedit="${c.id}">✏️ 직접 쓰기</button>
+        <button class="btn sm gh" data-csheet="${c.id}">🎨 캐릭터 시트 프롬프트</button>
+      </div>
+      <label class="f enfield" data-clockwrap="${c.id}" style="display:${c.lockManual?'block':'none'};margin-top:12px">
+        <span>직접 작성 (비우면 자동 생성으로 돌아갑니다)</span>
+        <textarea data-cf="lockManual" placeholder="영문으로 직접 쓰고 싶다면 여기에">${esc(c.lockManual)}</textarea>
+      </label>
+
+      <div class="rule">성격 · 서사</div>
+      <div class="grid g3">
+        <label class="f"><span>성격</span><textarea data-cf="personality" placeholder="겉으로는 무심하지만…"></textarea></label>
+        <label class="f"><span>말투 · 화법</span><textarea data-cf="speech" placeholder="짧게 끊어 말한다"></textarea></label>
+        <label class="f"><span>캐릭터 아크</span><textarea data-cf="arc" placeholder="어디서 시작해 어디로 변하는가"></textarea></label>
+      </div>
+      <div class="row"><button class="btn sm" data-cask="${c.id}">🤖 캐릭터 심화 질문지 복사</button></div>
+    </div>`).join('');
+
+  S.chars.forEach(c=>{
+    const card=w.querySelector(`[data-cid="${c.id}"]`);
+    ['personality','speech','arc'].forEach(k=>{
+      const el=card.querySelector(`[data-cf="${k}"]`); if(el) el.value=c[k]||'';
+    });
+  });
+}
+$('addchar').addEventListener('click',()=>{ S.chars.push(newChar()); save(); renderChars(); });
+function onCharEdit(e){
+  const f=e.target.dataset.cf; if(!f) return;
+  const card=e.target.closest('[data-cid]'); if(!card) return;
+  const c=S.chars.find(x=>x.id===card.dataset.cid); if(!c) return;
+  c[f]=e.target.value;
+  const lk=card.querySelector('[data-clock]');
+  if(lk) lk.innerHTML=esc(charLock(c))||'<i>위 항목을 채우면 여기에 자동으로 만들어집니다</i>';
+  save();
+}
+$('charlist').addEventListener('input',onCharEdit);
+$('charlist').addEventListener('change',onCharEdit);
+$('charlist').addEventListener('click',e=>{
+  const t=e.target;
+  if(t.dataset.newchar!==undefined){ $('addchar').click(); return; }
+  if(t.dataset.cmove){
+    const [id,d]=t.dataset.cmove.split('|');
+    const i=S.chars.findIndex(x=>x.id===id), j=i+ +d;
+    if(i<0||j<0||j>=S.chars.length) return;
+    [S.chars[i],S.chars[j]]=[S.chars[j],S.chars[i]]; save(); renderChars();
+  }
+  if(t.dataset.cdup){
+    const i=S.chars.findIndex(x=>x.id===t.dataset.cdup);
+    const cp=Object.assign({},S.chars[i],{id:nid('c'),name:(S.chars[i].name||'')+' 복제'});
+    S.chars.splice(i+1,0,cp); save(); renderChars(); toast('복제했어요 ✓');
+  }
+  if(t.dataset.cdel){
+    const i=S.chars.findIndex(x=>x.id===t.dataset.cdel), c=S.chars[i];
+    delWithUndo(`「${c.name||'이름 없는 캐릭터'}」 삭제`,()=>S.chars.splice(i,1),()=>S.chars.splice(i,0,c));
+  }
+  if(t.dataset.clockcopy) copy(charLock(S.chars.find(x=>x.id===t.dataset.clockcopy)),'외형 고정 블록 복사 ✓');
+  if(t.dataset.clockedit){
+    const wrap=$('charlist').querySelector(`[data-clockwrap="${t.dataset.clockedit}"]`);
+    if(wrap) wrap.style.display=wrap.style.display==='none'?'block':'none';
+  }
+  if(t.dataset.csheet) copy(charSheetPrompt(S.chars.find(x=>x.id===t.dataset.csheet)),'캐릭터 시트 프롬프트 복사 ✓');
+  if(t.dataset.cask) copy(askChar(S.chars.find(x=>x.id===t.dataset.cask)),'캐릭터 질문지 복사 ✓');
+  if(t.dataset.ctrans){
+    const c=S.chars.find(x=>x.id===t.dataset.ctrans);
+    const todo=[];
+    if(c.outfit&&!c.outfitEn) todo.push({ko:c.outfit,set:v=>c.outfitEn=v});
+    if(c.mark&&!c.markEn)     todo.push({ko:c.mark,set:v=>c.markEn=v});
+    if(!todo.length){ toast('번역할 한글 항목이 없거나 영문이 이미 찼어요'); return; }
+    (async()=>{
+      if(await mtProbe()){
+        toast('번역 중…');
+        try{ for(const x of todo) x.set((await mtTranslate(x.ko)).trim());
+             save(); renderChars(); toast('번역해서 채웠어요 ✓'); return; }
+        catch(err){ toast('자동 번역 실패 — 요청문을 복사합니다'); }
+      }
+      copy(askTranslate(c),'요청문 복사 ✓ — AI에 붙여넣으세요');
+    })();
+  }
+});
+
+/* ---------- 씬 · 컷 ---------- */
+function newScene(){ return {id:nid('s'),heading:'',loc:'',locEn:'',time:'',summary:'',script:'',cuts:[]}; }
+function newCut(){
+  return {id:nid('k'),desc:'',descEn:'',shot:'',angle:'',move:'',lens:'',light:'',mood:'',
+    dur:4,chars:[],dialogue:'',audio:'',note:'',hasImg:false,open:true};
+}
+function allCuts(){ const r=[]; S.scenes.forEach(s=>s.cuts.forEach(c=>r.push({s,c}))); return r; }
+function statLine(){
+  if(!S.scenes.length) return '';
+  const t=allCuts().reduce((a,x)=>a+(+x.c.dur||0),0);
+  return `씬 ${S.scenes.length} · 컷 ${allCuts().length} · 예상 ${Math.floor(t/60)}분 ${t%60}초`;
+}
+function renderScenes(){
+  const w=$('scenelist');
+  $('cutstat').textContent=statLine();
+  if(!S.scenes.length){
+    w.innerHTML=`<div class="empty"><b>아직 씬이 없어요</b><p>「스토리」 탭에서 씬 리스트 질문지를 받아 표를 붙여넣으면 한 번에 만들어집니다.</p><button class="btn pri" data-newscene>＋ 첫 씬 만들기</button></div>`;
+    return;
+  }
+  w.innerHTML=S.scenes.map((s,si)=>`
+    <div class="card" data-sid="${s.id}">
+      <div class="itemhd">
+        <div class="slate">S${String(si+1).padStart(2,'0')}</div>
+        <input class="nmin" data-sf="heading" value="${esc(s.heading)}" placeholder="씬 제목 (예: 폐병원 로비 — 대치)">
+        <div class="ord">
+          <button class="btn ico gh" data-smove="${s.id}|-1" title="위로"${si===0?' disabled':''}>▲</button>
+          <button class="btn ico gh" data-smove="${s.id}|1" title="아래로"${si===S.scenes.length-1?' disabled':''}>▼</button>
+        </div>
+        <button class="btn sm dgr" data-sdel="${s.id}">씬 삭제</button>
+      </div>
+      <div class="grid g3">
+        <label class="f"><span>장소 (한글)</span><input type="text" data-sf="loc" value="${esc(s.loc)}" placeholder="비 내리는 뒷골목"></label>
+        <label class="f enfield"><span>장소</span><input type="text" data-sf="locEn" value="${esc(s.locEn)}" placeholder="rain-soaked back alley"></label>
+        <label class="f"><span>시간대</span><select data-sf="time">${opts(TIME,s.time)}</select></label>
+      </div>
+      <div class="row" style="margin:-6px 0 12px"><button class="btn sm" data-strans="${s.id}">🌐 장소 한글 → 영문</button></div>
+      <label class="f"><span>씬 요약</span><textarea data-sf="summary" placeholder="이 씬에서 무슨 일이 일어나는가"></textarea></label>
+
+      <div class="rule">컷 ${s.cuts.length}개</div>
+      ${s.cuts.map((c,ci)=>cutHTML(s,c,si,ci)).join('')||'<p class="mini" style="text-align:center;padding:14px 0;margin:0">아직 컷이 없어요</p>'}
+      <div class="row" style="margin-top:12px">
+        <button class="btn" data-cutadd="${s.id}">＋ 컷 추가</button>
+        <button class="btn gh" data-cutpaste="${s.id}">📥 컷 여러 개 붙여넣기</button>
+      </div>
+    </div>`).join('');
+
+  S.scenes.forEach(s=>{
+    const card=w.querySelector(`[data-sid="${s.id}"]`);
+    const sm=card.querySelector('[data-sf="summary"]'); if(sm) sm.value=s.summary||'';
+    s.cuts.forEach(c=>{
+      const cc=card.querySelector(`[data-kid="${c.id}"]`); if(!cc) return;
+      ['desc','descEn','dialogue','audio','note'].forEach(k=>{
+        const el=cc.querySelector(`[data-kf="${k}"]`); if(el) el.value=c[k]||'';
+      });
+    });
+  });
+  hydrateImages(w);
+  paintProg();
+}
+function cutHTML(s,c,si,ci){
+  const chips=S.chars.map(ch=>`<span class="chip${c.chars.includes(ch.id)?' on':''}" data-kchar="${c.id}|${ch.id}">${esc(ch.name||'이름없음')}</span>`).join('');
+  const meta=[c.shot,c.angle,c.move].filter(Boolean).join(' · ');
+  return `
+  <div class="cutcard${c.open?' open':''}" data-kid="${c.id}">
+    <div class="cutbar" data-ktoggle="${c.id}">
+      <span class="caret">▶</span>
+      <div class="slate cut">${si+1}-${ci+1}</div>
+      ${c.hasImg?`<img class="tn" data-imgof="${c.id}" alt="">`:''}
+      <div class="sum">${esc((c.desc||c.descEn||'').slice(0,68))||'<i>내용 없음</i>'}</div>
+      <div class="meta">${esc(meta||'—')} · ${c.dur||0}s</div>
+    </div>
+    <div class="cutbody">
+      <div class="grid g2" style="margin-top:14px">
+        <label class="f"><span>컷 내용 (한글 지문)</span><textarea data-kf="desc" placeholder="지훈이 우산 없이 골목을 걸어 나온다. 뒤를 한 번 돌아본다."></textarea></label>
+        <label class="f enfield"><span>컷 내용</span><textarea data-kf="descEn" placeholder="a man walks out of the alley without an umbrella, glancing back once"></textarea></label>
+      </div>
+      <div class="row" style="margin:-6px 0 12px">
+        <button class="btn sm" data-ktrans="${c.id}">🌐 한글 → 영문</button>
+        <button class="btn sm gh" data-kimg="${c.id}">🖼️ ${c.hasImg?'이미지 교체':'이미지 넣기'}</button>
+        ${c.hasImg?`<button class="btn sm gh" data-kimgdel="${c.id}">이미지 제거</button>`:''}
+        <div class="hsp"></div>
+        <div class="ord">
+          <button class="btn ico gh" data-kmove="${s.id}|${c.id}|-1" title="위로"${ci===0?' disabled':''}>▲</button>
+          <button class="btn ico gh" data-kmove="${s.id}|${c.id}|1" title="아래로"${ci===s.cuts.length-1?' disabled':''}>▼</button>
+        </div>
+        <label style="display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--tx3)">
+          길이 <input type="number" data-kf="dur" value="${c.dur}" min="1" max="60" style="width:70px"> 초
+        </label>
+      </div>
+      <div class="grid g3">
+        <label class="f"><span>샷 사이즈</span><select data-kf="shot">${opts(SHOT,c.shot)}</select></label>
+        <label class="f"><span>앵글</span><select data-kf="angle">${opts(ANGLE,c.angle)}</select></label>
+        <label class="f"><span>카메라 무브</span><select data-kf="move">${opts(MOVE,c.move)}</select></label>
+      </div>
+      <div class="grid g3">
+        <label class="f"><span>렌즈</span><select data-kf="lens">${opts(LENS,c.lens)}</select></label>
+        <label class="f"><span>조명</span><select data-kf="light">${opts(LIGHT,c.light)}</select></label>
+        <label class="f"><span>무드</span><select data-kf="mood">${opts(MOOD,c.mood)}</select></label>
+      </div>
+      ${S.chars.length?`<label class="f"><span>등장 캐릭터 — 클릭해서 켜고 끄기</span><div class="row">${chips}</div></label>`
+        :`<p class="mini">「캐릭터」 탭에서 인물을 먼저 만들면 여기서 골라 고정 블록을 자동으로 붙일 수 있어요</p>`}
+      <div class="grid g2">
+        <label class="f"><span>대사</span><textarea data-kf="dialogue" placeholder="지훈: 이제 그만하자."></textarea></label>
+        <label class="f"><span>사운드 (Veo용)</span><textarea data-kf="audio" placeholder="빗소리, 멀리서 지나는 차"></textarea></label>
+      </div>
+      <label class="f"><span>메모</span><input type="text" data-kf="note" placeholder="Flow에서 3번 시도 / 재생성 필요"></label>
+      <div class="row">
+        <button class="btn sm" data-kgo="${s.id}|${c.id}">✨ 이 컷 프롬프트 보기</button>
+        <button class="btn sm gh" data-kdup="${s.id}|${c.id}">⧉ 복제</button>
+        <button class="btn sm dgr" data-kdel="${s.id}|${c.id}">컷 삭제</button>
+      </div>
+    </div>
+  </div>`;
+}
+$('addscene').addEventListener('click',()=>{ S.scenes.push(newScene()); save(); renderScenes(); });
+$('expandall').addEventListener('click',()=>{
+  const anyClosed=allCuts().some(x=>!x.c.open);
+  allCuts().forEach(x=>x.c.open=anyClosed); save(); renderScenes();
+});
+function onSceneEdit(e){
+  const card=e.target.closest('[data-sid]'); if(!card) return;
+  const s=S.scenes.find(x=>x.id===card.dataset.sid); if(!s) return;
+  if(e.target.dataset.sf){ s[e.target.dataset.sf]=e.target.value; save(); return; }
+  if(e.target.dataset.kf){
+    const cc=e.target.closest('[data-kid]'); if(!cc) return;
+    const c=s.cuts.find(x=>x.id===cc.dataset.kid); if(!c) return;
+    const f=e.target.dataset.kf;
+    c[f]= f==='dur' ? (parseInt(e.target.value,10)||0) : e.target.value;
+    save();
+    const bar=cc.querySelector('.cutbar');
+    if(bar){
+      bar.querySelector('.sum').innerHTML=esc((c.desc||c.descEn||'').slice(0,68))||'<i>내용 없음</i>';
+      bar.querySelector('.meta').textContent=([c.shot,c.angle,c.move].filter(Boolean).join(' · ')||'—')+' · '+(c.dur||0)+'s';
+    }
+    $('cutstat').textContent=statLine();
+  }
+}
+$('scenelist').addEventListener('input',onSceneEdit);
+$('scenelist').addEventListener('change',onSceneEdit);
+$('scenelist').addEventListener('click',async e=>{
+  const t=e.target;
+  if(t.dataset.newscene!==undefined){ $('addscene').click(); return; }
+  const tog=t.closest('[data-ktoggle]');
+  if(tog && !t.closest('button')){
+    const hit=allCuts().find(x=>x.c.id===tog.dataset.ktoggle);
+    if(hit){ hit.c.open=!hit.c.open; tog.closest('.cutcard').classList.toggle('open',hit.c.open); save(); }
+    return;
+  }
+  if(t.dataset.smove){
+    const [id,d]=t.dataset.smove.split('|');
+    const i=S.scenes.findIndex(x=>x.id===id), j=i+ +d;
+    if(i<0||j<0||j>=S.scenes.length) return;
+    [S.scenes[i],S.scenes[j]]=[S.scenes[j],S.scenes[i]]; save(); renderScenes();
+  }
+  if(t.dataset.sdel){
+    const i=S.scenes.findIndex(x=>x.id===t.dataset.sdel), s=S.scenes[i];
+    delWithUndo(`「${s.heading||'제목 없는 씬'}」 삭제 (컷 ${s.cuts.length}개 포함)`,
+      ()=>S.scenes.splice(i,1),()=>S.scenes.splice(i,0,s));
+  }
+  if(t.dataset.cutadd){
+    const s=S.scenes.find(x=>x.id===t.dataset.cutadd);
+    s.cuts.push(newCut()); save(); renderScenes();
+  }
+  if(t.dataset.cutpaste){ openPaste('cut',t.dataset.cutpaste); }
+  if(t.dataset.kmove){
+    const [sid,kid,d]=t.dataset.kmove.split('|');
+    const s=S.scenes.find(x=>x.id===sid);
+    const i=s.cuts.findIndex(x=>x.id===kid), j=i+ +d;
+    if(i<0||j<0||j>=s.cuts.length) return;
+    [s.cuts[i],s.cuts[j]]=[s.cuts[j],s.cuts[i]]; save(); renderScenes();
+  }
+  if(t.dataset.kdup){
+    const [sid,kid]=t.dataset.kdup.split('|');
+    const s=S.scenes.find(x=>x.id===sid);
+    const i=s.cuts.findIndex(x=>x.id===kid);
+    const cp=Object.assign({},s.cuts[i],{id:nid('k'),hasImg:false});
+    s.cuts.splice(i+1,0,cp); save(); renderScenes(); toast('복제했어요 ✓');
+  }
+  if(t.dataset.kdel){
+    const [sid,kid]=t.dataset.kdel.split('|');
+    const s=S.scenes.find(x=>x.id===sid);
+    const i=s.cuts.findIndex(x=>x.id===kid), c=s.cuts[i];
+    delWithUndo('컷 삭제',()=>s.cuts.splice(i,1),()=>s.cuts.splice(i,0,c));
+  }
+  if(t.dataset.kchar){
+    const [kid,cid]=t.dataset.kchar.split('|');
+    const hit=allCuts().find(x=>x.c.id===kid); if(!hit) return;
+    const arr=hit.c.chars, i=arr.indexOf(cid);
+    if(i<0) arr.push(cid); else arr.splice(i,1);
+    t.classList.toggle('on'); save();
+  }
+  if(t.dataset.ktrans){
+    const hit=allCuts().find(x=>x.c.id===t.dataset.ktrans); if(!hit) return;
+    quickTranslate(hit.c.desc,v=>hit.c.descEn=v,askTranslateCut(hit.s,hit.c),renderScenes);
+  }
+  if(t.dataset.strans){
+    const s=S.scenes.find(x=>x.id===t.dataset.strans);
+    quickTranslate(s.loc,v=>s.locEn=v,
+      `아래 한국어 장소 묘사를 AI 이미지·영상 프롬프트용 영어 구문으로 바꿔줘. 설명 없이 영어 한 줄만.\n\n"${s.loc||'(비어 있음)'}"`,renderScenes);
+  }
+  if(t.dataset.kimg) pickImage(t.dataset.kimg,renderScenes);
+  if(t.dataset.kimgdel){
+    const hit=allCuts().find(x=>x.c.id===t.dataset.kimgdel);
+    if(hit){ await IDB.del(hit.c.id); dropURL(hit.c.id); hit.c.hasImg=false; save(); renderScenes(); }
+  }
+  if(t.dataset.kgo){
+    const [sid,kid]=t.dataset.kgo.split('|');
+    S.sel={scene:sid,cut:kid}; save();
+    document.querySelector('#nav button[data-t="prompt"]').click();
+  }
+});
+
+function pickImage(cutId,after){
+  const inp=document.createElement('input');
+  inp.type='file'; inp.accept='image/*';
+  inp.onchange=async()=>{
+    const f=inp.files&&inp.files[0]; if(!f) return;
+    try{
+      const blob=await shrink(f,1280);
+      await IDB.put(cutId,blob);
+      dropURL(cutId);
+      const hit=allCuts().find(x=>x.c.id===cutId);
+      if(hit) hit.c.hasImg=true;
+      save(); (after||renderAll)(); toast('이미지를 넣었어요 ✓');
+    }catch(err){ toast('실패: '+err.message); }
+  };
+  inp.click();
+}
+
+/* ---------- 표 붙여넣기 ---------- */
+let pasteParsed=[];
+function openPaste(mode,sceneId){
+  $('pmask').classList.add('on');
+  document.querySelector(`input[name=pmode][value=${mode}]`).checked=true;
+  const sel=$('ptarget');
+  sel.innerHTML=S.scenes.map((s,i)=>`<option value="${s.id}">S${i+1}. ${esc(s.heading||'제목 없음')}</option>`).join('');
+  if(sceneId) sel.value=sceneId;
+  paintPasteMode();
+  $('ptext').value=''; $('ppreview').textContent='붙여넣고 「미리보기」를 누르세요';
+  $('ppreview').classList.add('empty2'); $('papply').disabled=true; $('pcount').textContent='';
+}
+function paintPasteMode(){
+  const mode=document.querySelector('input[name=pmode]:checked').value;
+  $('ptarget').style.display = mode==='cut'?'block':'none';
+  $('phint').innerHTML = mode==='scene'
+    ? '형식: <b>번호 | 장소 | 시간대 | 요약 | 목적</b> — AI가 준 표를 그대로 붙여넣으세요. 「|」가 없으면 한 줄이 씬 하나가 됩니다.'
+    : '한 줄이 컷 하나가 됩니다. <b>번호 | 내용</b> 형태도, 그냥 줄바꿈만 있어도 됩니다.';
+}
+document.querySelectorAll('input[name=pmode]').forEach(r=>r.addEventListener('change',()=>{ paintPasteMode(); $('papply').disabled=true; }));
+$('openpaste').addEventListener('click',()=>openPaste('scene'));
+$('openpaste2').addEventListener('click',()=>openPaste('scene'));
+
+/* 마크다운 표 구분선 · 헤더 행 · 번호만 있는 줄을 걸러낸다 */
+function parseTable(text,mode){
+  const rows=[];
+  text.split(/\r?\n/).forEach(raw=>{
+    let line=raw.trim();
+    if(!line) return;
+    if(/^[\s|:\-–—+]+$/.test(line)) return;                 // ---|---|--- 구분선
+    line=line.replace(/^\||\|$/g,'').trim();                 // 양끝 파이프 제거
+    const cells=line.split('|').map(c=>c.trim());
+    if(cells.length>1 && /씬\s*번호|장소/.test(cells[0]+cells[1])) return;  // 헤더 행
+    if(mode==='scene'){
+      if(cells.length>=2){
+        let i=0;
+        if(/^\d+$/.test(cells[0])) i=1;                      // 첫 칸이 번호면 건너뛴다
+        const loc=cells[i]||'', time=cells[i+1]||'', sum=cells[i+2]||'', purpose=cells[i+3]||'';
+        rows.push({loc,time,summary:[sum,purpose].filter(Boolean).join(' / '),
+                   heading:(loc||'제목 없음')+(sum?' — '+sum.slice(0,18):'')});
+      }else{
+        const txt=cells[0].replace(/^\d+[.)]\s*/,'');
+        rows.push({loc:'',time:'',summary:txt,heading:txt.slice(0,32)});
+      }
+    }else{
+      const txt=(cells.length>1?cells.slice(/^\d+$/.test(cells[0])?1:0).join(' — '):cells[0])
+                  .replace(/^\d+[.)]\s*/,'');
+      if(txt) rows.push({desc:txt});
+    }
+  });
+  return rows;
+}
+$('pparse').addEventListener('click',()=>{
+  const mode=document.querySelector('input[name=pmode]:checked').value;
+  pasteParsed=parseTable($('ptext').value,mode);
+  const pv=$('ppreview');
+  if(!pasteParsed.length){
+    pv.textContent='읽어낸 항목이 없습니다. 형식을 확인해 주세요.'; pv.classList.add('empty2');
+    $('papply').disabled=true; $('pcount').textContent=''; return;
+  }
+  pv.classList.remove('empty2');
+  pv.textContent=pasteParsed.map((r,i)=>mode==='scene'
+    ? `${i+1}. [${r.loc||'장소 미정'}] ${r.time||'시간 미정'} — ${r.summary||'(요약 없음)'}`
+    : `${i+1}. ${r.desc}`).join('\n');
+  $('pcount').textContent=`${pasteParsed.length}개 인식`;
+  $('papply').disabled=false;
+});
+$('papply').addEventListener('click',()=>{
+  const mode=document.querySelector('input[name=pmode]:checked').value;
+  if(!pasteParsed.length) return;
+  const timeKeys=Object.keys(TIME);
+  if(mode==='scene'){
+    pasteParsed.forEach(r=>{
+      const s=newScene();
+      s.heading=r.heading; s.loc=r.loc; s.summary=r.summary;
+      s.time=timeKeys.find(k=>k&&r.time&&(r.time.includes(k)||k.includes(r.time)))||'';
+      S.scenes.push(s);
+    });
+    toast(`씬 ${pasteParsed.length}개를 추가했어요 ✓`);
+  }else{
+    const s=S.scenes.find(x=>x.id===$('ptarget').value);
+    if(!s){ toast('대상 씬을 고르세요'); return; }
+    pasteParsed.forEach(r=>{ const c=newCut(); c.desc=r.desc; c.open=false; s.cuts.push(c); });
+    toast(`컷 ${pasteParsed.length}개를 추가했어요 ✓`);
+  }
+  save(); renderAll(); $('pmask').classList.remove('on');
+  document.querySelector('#nav button[data-t="scene"]').click();
+});
+
+/* =========================================================
+   대본 — 원고 파일 불러오기 · 씬 자동 분해 · 씬별 편집
+   외부 라이브러리 없이 .txt/.md/.fdx/.docx 를 읽는다.
+   ========================================================= */
+
+/* --- .docx = ZIP 컨테이너. 중앙 디렉터리를 직접 훑어 word/document.xml만 꺼내
+       DecompressionStream('deflate-raw')로 푼다. (라이브러리 없이 가능) --- */
+async function readDocx(buf){
+  const dv=new DataView(buf), u8=new Uint8Array(buf);
+  // EOCD(끝 중앙 디렉터리 레코드)를 뒤에서부터 찾는다
+  let eocd=-1;
+  for(let i=u8.length-22;i>=Math.max(0,u8.length-66000);i--){
+    if(dv.getUint32(i,true)===0x06054b50){ eocd=i; break; }
+  }
+  if(eocd<0) throw new Error('워드 파일 구조를 읽지 못했습니다');
+  const count=dv.getUint16(eocd+10,true);
+  let p=dv.getUint32(eocd+16,true);
+  let target=null;
+  for(let i=0;i<count;i++){
+    if(dv.getUint32(p,true)!==0x02014b50) break;
+    const method=dv.getUint16(p+10,true);
+    const csize=dv.getUint32(p+20,true);
+    const nlen=dv.getUint16(p+28,true), elen=dv.getUint16(p+30,true), clen=dv.getUint16(p+32,true);
+    const lho=dv.getUint32(p+42,true);
+    const name=new TextDecoder().decode(u8.subarray(p+46,p+46+nlen));
+    if(name==='word/document.xml'){ target={method,csize,lho}; break; }
+    p+=46+nlen+elen+clen;
+  }
+  if(!target) throw new Error('워드 파일 안에서 본문을 찾지 못했습니다');
+  // 로컬 헤더를 건너뛰고 압축 데이터 위치를 계산
+  const lh=target.lho;
+  if(dv.getUint32(lh,true)!==0x04034b50) throw new Error('워드 파일이 손상된 것 같습니다');
+  const start=lh+30+dv.getUint16(lh+26,true)+dv.getUint16(lh+28,true);
+  const raw=u8.subarray(start,start+target.csize);
+  let xmlBytes;
+  if(target.method===0) xmlBytes=raw;
+  else{
+    const ds=new DecompressionStream('deflate-raw');
+    const blob=await new Response(new Blob([raw]).stream().pipeThrough(ds)).arrayBuffer();
+    xmlBytes=new Uint8Array(blob);
+  }
+  const xml=new TextDecoder('utf-8').decode(xmlBytes);
+  const doc=new DOMParser().parseFromString(xml,'application/xml');
+  const paras=doc.getElementsByTagName('w:p');
+  const out=[];
+  for(const para of paras){
+    let line='';
+    // w:t = 글자, w:tab = 탭, w:br = 줄바꿈
+    for(const n of para.getElementsByTagName('*')){
+      const tag=n.tagName;
+      if(tag==='w:t') line+=n.textContent;
+      else if(tag==='w:tab') line+='\t';
+      else if(tag==='w:br') line+='\n';
+    }
+    out.push(line);
+  }
+  return out.join('\n');
+}
+/* =========================================================
+   .pdf 텍스트 추출 (라이브러리 없이)
+   글자가 데이터로 들어 있는 PDF만 읽을 수 있다. 스캔·사진 PDF는 이미지라 불가능.
+   한글 PDF는 글자를 코드번호로 저장하고 /ToUnicode CMap이라는 변환표를 따로 들고 있어서,
+   그 표까지 해석해야 사람이 읽는 글자가 나온다.
+   ========================================================= */
+const latin1 = u8 => { let s=''; for(let i=0;i<u8.length;i+=8192) s+=String.fromCharCode.apply(null,u8.subarray(i,i+8192)); return s; };
+async function inflate(bytes){
+  for(const fmt of ['deflate','deflate-raw']){
+    try{
+      const ds=new DecompressionStream(fmt);
+      const ab=await new Response(new Blob([bytes]).stream().pipeThrough(ds)).arrayBuffer();
+      return new Uint8Array(ab);
+    }catch(e){}
+  }
+  return null;
+}
+/* PDF 스트림은 필터를 여러 겹 두를 수 있다 (예: [/ASCII85Decode /FlateDecode]).
+   바깥쪽부터 순서대로 벗겨야 한다. */
+function ascii85(str){
+  let s=str.replace(/\s/g,'');
+  if(s.startsWith('<~')) s=s.slice(2);
+  const e=s.indexOf('~>'); if(e>=0) s=s.slice(0,e);
+  const out=[];
+  for(let i=0;i<s.length;){
+    if(s[i]==='z'){ out.push(0,0,0,0); i++; continue; }
+    let chunk=s.substr(i,5); i+=5;
+    const pad=5-chunk.length;
+    chunk=chunk.padEnd(5,'u');
+    let v=0;
+    for(const c of chunk) v=v*85+(c.charCodeAt(0)-33);
+    const b=[(v/16777216)&255,(v/65536)&255,(v/256)&255,v&255];
+    for(let k=0;k<4-pad;k++) out.push(b[k]);
+  }
+  return new Uint8Array(out);
+}
+function asciiHex(str){
+  const h=str.replace(/[^0-9A-Fa-f]/g,'');
+  const out=[];
+  for(let i=0;i+1<h.length;i+=2) out.push(parseInt(h.substr(i,2),16));
+  return new Uint8Array(out);
+}
+async function applyFilters(raw,head){
+  const fm=/\/Filter\s*(\[[^\]]*\]|\/[A-Za-z0-9]+)/.exec(head);
+  if(!fm) return raw;
+  const names=(fm[1].match(/\/([A-Za-z0-9]+)/g)||[]).map(s=>s.slice(1));
+  let data=raw;
+  for(const f of names){
+    if(f==='FlateDecode'){ const r=await inflate(data); if(!r) return null; data=r; }
+    else if(f==='ASCII85Decode') data=ascii85(latin1(data));
+    else if(f==='ASCIIHexDecode') data=asciiHex(latin1(data));
+    else return null;   // LZW · 이미지 코덱 등은 지원하지 않는다
+  }
+  return data;
+}
+const hexToStr = h => {
+  let s='';
+  for(let i=0;i+3<h.length||i<h.length;i+=4){
+    const part=h.substr(i,4); if(!part) break;
+    s+=String.fromCharCode(parseInt(part.padEnd(4,'0'),16));
+  }
+  return s;
+};
+/* /ToUnicode CMap → {코드번호: 글자} 와 코드 길이(1바이트/2바이트) */
+function parseCMap(txt){
+  const map={}; let width=1, m;
+  const bf=/beginbfchar([\s\S]*?)endbfchar/g;
+  while((m=bf.exec(txt))){
+    const pr=/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>/g; let x;
+    while((x=pr.exec(m[1]))){
+      if(x[1].length>2) width=2;
+      map[parseInt(x[1],16)]=hexToStr(x[2]);
+    }
+  }
+  const br=/beginbfrange([\s\S]*?)endbfrange/g;
+  while((m=br.exec(txt))){
+    const rr=/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*(?:<([0-9A-Fa-f]+)>|\[([\s\S]*?)\])/g; let x;
+    while((x=rr.exec(m[1]))){
+      const lo=parseInt(x[1],16), hi=parseInt(x[2],16);
+      if(x[1].length>2) width=2;
+      if(x[3]!==undefined){
+        const base=hexToStr(x[3]);
+        for(let i=lo;i<=hi&&i-lo<20000;i++){
+          const u=base.split('');
+          u[u.length-1]=String.fromCharCode(u[u.length-1].charCodeAt(0)+(i-lo));
+          map[i]=u.join('');
+        }
+      }else{
+        const items=x[4].match(/<([0-9A-Fa-f]+)>/g)||[];
+        items.forEach((it,k)=>{ map[lo+k]=hexToStr(it.slice(1,-1)); });
+      }
+    }
+  }
+  return {map,width};
+}
+function unescapePdf(s){
+  return s.replace(/\\(\d{1,3}|.)/g,(_,c)=>{
+    if(/^\d+$/.test(c)) return String.fromCharCode(parseInt(c,8));
+    return {n:'\n',r:'\r',t:'\t',b:'\b',f:'\f'}[c] !== undefined ? {n:'\n',r:'\r',t:'\t',b:'\b',f:'\f'}[c] : c;
+  });
+}
+/* 콘텐츠 스트림에서 글자와 줄바꿈을 뽑아낸다.
+   폰트 지정(Tf) · 글자 출력(Tj, TJ) · 위치 이동(Td, TD, Tm) 연산자만 본다.
+   주의: 주석 안에 연산자를 슬래시로 이어 쓰면 별표-슬래시가 만들어져 주석이 끊긴다. */
+function pdfContentText(str, fontMap){
+  const out=[]; let line='', cur=null, lastY=null;
+  const flush=()=>{ if(line.trim()) out.push(line.replace(/\s+$/,'')); line=''; };
+  const decode=(bytes)=>{
+    if(!cur||!cur.width) return bytes.map(b=>String.fromCharCode(b)).join('');
+    let s='';
+    if(cur.width===2){
+      for(let i=0;i+1<bytes.length;i+=2){
+        const code=(bytes[i]<<8)|bytes[i+1];
+        s += cur.map[code] !== undefined ? cur.map[code] : '';
+      }
+    }else{
+      for(const b of bytes) s += cur.map[b]!==undefined ? cur.map[b] : String.fromCharCode(b);
+    }
+    return s;
+  };
+  const bytesOfLiteral = t => { const r=[]; for(let i=0;i<t.length;i++) r.push(t.charCodeAt(i)&0xff); return r; };
+  const bytesOfHex = h => { const c=h.replace(/[^0-9A-Fa-f]/g,''); const r=[]; for(let i=0;i+1<c.length;i+=2) r.push(parseInt(c.substr(i,2),16)); return r; };
+
+  let i=0; const N=str.length; let stack=[];
+  while(i<N){
+    const ch=str[i];
+    if(ch==='('){
+      let d=1,j=i+1,s='';
+      while(j<N&&d>0){
+        const c=str[j];
+        if(c==='\\'){ s+=c+(str[j+1]||''); j+=2; continue; }
+        if(c==='(') d++;
+        else if(c===')'){ d--; if(!d){ j++; break; } }
+        s+=c; j++;
+      }
+      stack.push({t:'s',v:bytesOfLiteral(unescapePdf(s))}); i=j; continue;
+    }
+    if(ch==='<'&&str[i+1]!=='<'){
+      const j=str.indexOf('>',i);
+      if(j<0) break;
+      stack.push({t:'s',v:bytesOfHex(str.slice(i+1,j))}); i=j+1; continue;
+    }
+    if(ch==='<'&&str[i+1]==='<'){ // 딕셔너리는 건너뛴다
+      let d=0,j=i;
+      while(j<N){ if(str[j]==='<'&&str[j+1]==='<'){d++;j+=2;continue;} if(str[j]==='>'&&str[j+1]==='>'){d--;j+=2;if(!d)break;continue;} j++; }
+      i=j; continue;
+    }
+    if(ch==='['){
+      const items=[]; let j=i+1;
+      while(j<N&&str[j]!==']'){
+        if(str[j]==='('){
+          let d=1,k=j+1,s='';
+          while(k<N&&d>0){ const c=str[k];
+            if(c==='\\'){ s+=c+(str[k+1]||''); k+=2; continue; }
+            if(c==='(')d++; else if(c===')'){d--; if(!d){k++;break;}}
+            s+=c;k++; }
+          items.push({t:'s',v:bytesOfLiteral(unescapePdf(s))}); j=k; continue;
+        }
+        if(str[j]==='<'){ const k=str.indexOf('>',j); items.push({t:'s',v:bytesOfHex(str.slice(j+1,k))}); j=k+1; continue; }
+        const num=/^-?[\d.]+/.exec(str.slice(j));
+        if(num){ items.push({t:'n',v:parseFloat(num[0])}); j+=num[0].length; continue; }
+        j++;
+      }
+      stack.push({t:'a',v:items}); i=j+1; continue;
+    }
+    if(ch==='/'){
+      const m=/^\/([^\s/<>\[\]()]+)/.exec(str.slice(i));
+      stack.push({t:'name',v:m?m[1]:''}); i+=m?m[0].length:1; continue;
+    }
+    if(/[-+.\d]/.test(ch)){
+      const m=/^[-+]?[\d.]+/.exec(str.slice(i));
+      if(m){ stack.push({t:'n',v:parseFloat(m[0])}); i+=m[0].length; continue; }
+      i++; continue;
+    }
+    if(/[A-Za-z'"*]/.test(ch)){
+      const m=/^[A-Za-z'"*\d]+/.exec(str.slice(i));
+      const op=m?m[0]:ch; i+=op.length;
+      if(op==='Tf'){
+        const nm=stack.filter(x=>x.t==='name').pop();
+        if(nm) cur=fontMap[nm.v]||null;
+      }else if(op==='Tj'||op==="'"||op==='"'){
+        const s=stack.filter(x=>x.t==='s').pop();
+        if(op!=='Tj') flush();
+        if(s) line+=decode(s.v);
+      }else if(op==='TJ'){
+        const a=stack.filter(x=>x.t==='a').pop();
+        if(a) a.v.forEach(it=>{
+          if(it.t==='s') line+=decode(it.v);
+          else if(it.t==='n'&&it.v<-180) line+=' ';   // 큰 음수 커닝은 띄어쓰기로
+        });
+      }else if(op==='Td'||op==='TD'||op==='Tm'||op==='T*'){
+        const ns=stack.filter(x=>x.t==='n');
+        const y = op==='Tm' ? (ns.length>=6?ns[5].v:null) : (ns.length>=2?ns[ns.length-1].v:null);
+        if(op==='T*') flush();
+        else if(y!==null){
+          if(op==='Tm'){ if(lastY!==null&&Math.abs(y-lastY)>1.5) flush(); lastY=y; }
+          else { if(Math.abs(y)>1.5) flush(); }
+        }
+      }else if(op==='ET') flush();
+      stack=[]; continue;
+    }
+    i++;
+  }
+  flush();
+  return out.join('\n');
+}
+async function readPdf(buf){
+  const u8=new Uint8Array(buf), bin=latin1(u8);
+  if(bin.slice(0,5)!=='%PDF-') throw new Error('PDF 파일이 아닙니다');
+  // 모든 간접 객체를 훑는다 (xref가 깨진 파일도 있어서 직접 스캔한다)
+  const objs=new Map();
+  const re=/(\d+)\s+(\d+)\s+obj\b/g; let m;
+  while((m=re.exec(bin))){
+    const bodyStart=m.index+m[0].length;
+    const end=bin.indexOf('endobj',bodyStart);
+    if(end<0) continue;
+    objs.set(m[1],{head:bin.slice(bodyStart,Math.min(end,bodyStart+3000)),bodyStart,end});
+  }
+  const streamOf=async o=>{
+    const sIdx=bin.indexOf('stream',o.bodyStart);
+    if(sIdx<0||sIdx>o.end) return null;
+    let d=sIdx+6;
+    if(bin[d]==='\r') d++;
+    if(bin[d]==='\n') d++;
+    let e=bin.indexOf('endstream',d);
+    if(e<0||e>o.end+64) e=o.end;
+    const lm=/\/Length\s+(\d+)/.exec(o.head);
+    if(lm){ const L=parseInt(lm[1],10); if(L>0&&d+L<=bin.length) e=d+L; }
+    return applyFilters(u8.subarray(d,e),o.head);
+  };
+  // 1) ToUnicode 표를 들고 있는 폰트들을 모은다
+  const cmapByObj={};
+  for(const [num,o] of objs){
+    if(!/beginbfchar|beginbfrange/.test(o.head)){
+      if(!/\/CMapType|\/ToUnicode/.test(o.head)&&!/\/FlateDecode/.test(o.head)) continue;
+    }
+    const data=await streamOf(o);
+    if(!data) continue;
+    const txt=latin1(data);
+    if(/beginbfchar|beginbfrange/.test(txt)) cmapByObj[num]=parseCMap(txt);
+  }
+  // 2) 리소스 이름(/F1) → ToUnicode 표 를 잇는다.
+  //    /Font << /F1 12 0 R >> 처럼 바로 들어 있기도 하고, /Font 1 0 R 처럼 참조이기도 하다.
+  const fontMap={};
+  for(const [,o] of objs){
+    let body=null;
+    const fr=/\/Font\s*<<([\s\S]*?)>>/.exec(o.head);
+    if(fr) body=fr[1];
+    else{
+      const ind=/\/Font\s+(\d+)\s+\d+\s+R/.exec(o.head);
+      if(ind){
+        const fo=objs.get(ind[1]);
+        if(fo){ const d=/<<([\s\S]*)>>/.exec(fo.head); body=d?d[1]:fo.head; }
+      }
+    }
+    if(!body) continue;
+    const pr=/\/([^\s/<>\[\]()]+)\s+(\d+)\s+\d+\s+R/g; let x;
+    while((x=pr.exec(body))){
+      const fo=objs.get(x[2]); if(!fo) continue;
+      const tu=/\/ToUnicode\s+(\d+)\s+\d+\s+R/.exec(fo.head);
+      let cm=tu?cmapByObj[tu[1]]:null;
+      if(!cm){
+        // CID 폰트는 자손 폰트에 표가 붙어 있기도 하다
+        const df=/\/DescendantFonts\s*\[\s*(\d+)\s+\d+\s+R/.exec(fo.head);
+        if(df){ const d2=objs.get(df[1]); if(d2){ const t2=/\/ToUnicode\s+(\d+)\s+\d+\s+R/.exec(d2.head); if(t2) cm=cmapByObj[t2[1]]; } }
+      }
+      if(!cm && /\/Type0|\/Identity-H/.test(fo.head)) cm={map:{},width:2};
+      if(cm) fontMap[x[1]]=cm;
+    }
+  }
+  // 3) 콘텐츠 스트림에서 글자를 뽑는다
+  const parts=[];
+  for(const [,o] of objs){
+    if(/\/ToUnicode|\/FontFile|\/Image/.test(o.head)) continue;
+    const data=await streamOf(o);
+    if(!data) continue;
+    const txt=latin1(data);
+    if(!/\bBT\b/.test(txt)||!/\bT[jJ*dDfm]/.test(txt)) continue;
+    const got=pdfContentText(txt,fontMap);
+    if(got.trim()) parts.push(got);
+  }
+  if(!parts.length) throw new Error('글자를 찾지 못했습니다 — 스캔한 PDF(이미지)일 수 있어요');
+  return parts.join('\n\n');
+}
+/* 뽑아낸 결과가 사람이 읽을 만한지 대충 판정 — 깨진 글자를 그대로 넣지 않기 위해 */
+function looksReadable(t){
+  const s=(t||'').replace(/\s/g,'');
+  if(s.length<20) return false;
+  const good=(s.match(/[가-힣A-Za-z0-9.,!?"'()\-·…:;]/g)||[]).length;
+  return good/s.length > 0.7;
+}
+
+/* --- .fdx (파이널 드래프트) = 그냥 XML --- */
+function readFdx(text){
+  const doc=new DOMParser().parseFromString(text,'application/xml');
+  const paras=doc.getElementsByTagName('Paragraph');
+  const out=[];
+  for(const p of paras){
+    const type=p.getAttribute('Type')||'';
+    const txt=[...p.getElementsByTagName('Text')].map(t=>t.textContent).join('').trim();
+    if(!txt) { out.push(''); continue; }
+    if(type==='Scene Heading') out.push('\n'+txt);
+    else if(type==='Character') out.push('\n@@'+txt);       // 다음 줄 대사와 합칠 표식
+    else if(type==='Dialogue') out.push('@@D'+txt);
+    else out.push(txt);
+  }
+  // @@이름 / @@D대사 를 "이름: 대사" 한 줄로 합친다
+  const merged=[];
+  for(let i=0;i<out.length;i++){
+    const l=out[i];
+    if(l.startsWith('@@')&&!l.startsWith('@@D')){
+      const name=l.slice(2).trim();
+      const lines=[];
+      let j=i+1;
+      while(j<out.length&&(out[j].startsWith('@@D')||out[j]==='')){
+        if(out[j].startsWith('@@D')) lines.push(out[j].slice(3));
+        j++;
+        if(lines.length&&out[j]&&!out[j].startsWith('@@D')) break;
+      }
+      merged.push(name+': '+lines.join(' ')); i=j-1;
+    } else if(l.startsWith('@@D')) merged.push(l.slice(3));
+    else merged.push(l);
+  }
+  return merged.join('\n');
+}
+async function readScriptFile(file){
+  const ext=(file.name.split('.').pop()||'').toLowerCase();
+  if(ext==='docx') return readDocx(await file.arrayBuffer());
+  if(ext==='pdf'){
+    const t=await readPdf(await file.arrayBuffer());
+    if(!looksReadable(t)) throw new Error('글자가 깨져서 나옵니다 — 이 PDF는 텍스트를 꺼낼 수 없는 형식이에요');
+    return t;
+  }
+  const text=await file.text();
+  if(ext==='fdx'||/^\s*<\?xml/.test(text)&&/FinalDraft/i.test(text.slice(0,400))) return readFdx(text);
+  return text;
+}
+
+/* --- 씬 머리글 인식 ---
+   S#1. / S #1 / 씬 1 / #1 / 1. / INT. / EXT. / 실내. 를 모두 받아준다. */
+const HEAD_RE=/^\s*(?:(?:S\s*#?\s*|씬\s*|#\s*|SCENE\s*)(\d+)|(\d{1,3}))\s*[.．)、]?\s*(.*)$/i;
+const INTEXT_RE=/^\s*(INT\.?|EXT\.?|I\/E\.?|실내|실외)[\s.．,/-]+(.*)$/i;
+const TIMEWORDS=[['새벽','새벽'],['아침','아침'],['정오','정오'],['오후','오후'],['해질녘','해질녘'],['해 질 녘','해질녘'],
+  ['노을','해질녘'],['저녁','해질녘'],['심야','심야'],['한밤','심야'],['밤','밤'],['낮','정오'],
+  ['NIGHT','밤'],['DAY','정오'],['DAWN','새벽'],['DUSK','해질녘'],['EVENING','해질녘'],['MORNING','아침']];
+function grabTime(s){
+  const up=(s||'').toUpperCase();
+  for(const [k,v] of TIMEWORDS){ if(up.includes(k.toUpperCase())) return v; }
+  return '';
+}
+function splitHeading(tail){
+  // "비 내리는 뒷골목 / 밤"  "폐병원 로비 - NIGHT"  "기억 상점 (심야)"
+  let loc=tail, time=grabTime(tail);
+  const m=tail.split(/[\/\-–—(){}[\]]|,\s/);
+  if(m.length>1){
+    const cand=m[0].trim();
+    if(cand) loc=cand;
+  }
+  loc=loc.replace(/[(){}[\]]/g,'').trim();
+  if(time) loc=loc.replace(new RegExp(time,'g'),'').trim();
+  return {loc:loc||tail.trim(), time};
+}
+function parseScript(text){
+  const lines=String(text||'').replace(/\r\n?/g,'\n').split('\n');
+  const scenes=[];
+  let cur=null;
+  const push=()=>{ if(cur){ cur.script=cur.buf.join('\n').replace(/\n{3,}/g,'\n\n').trim(); delete cur.buf; scenes.push(cur); } };
+  lines.forEach(raw=>{
+    const line=raw.trim();
+    let head=null;
+    const ie=line.match(INTEXT_RE);
+    if(ie){
+      const {loc,time}=splitHeading(ie[2]||'');
+      head={heading:line,loc,time};
+    }else{
+      const m=line.match(HEAD_RE);
+      // "1. 문장이 길게 이어지는 지문" 을 씬으로 오해하지 않도록 뒤가 짧을 때만 인정
+      if(m && (m[1]||(m[2]&&(m[3]||'').length<=40))){
+        const tail=(m[3]||'').trim();
+        const {loc,time}=splitHeading(tail);
+        head={heading:line,loc,time};
+      }
+    }
+    if(head){ push(); cur=Object.assign({buf:[]},head); }
+    else if(cur) cur.buf.push(raw);
+    else if(line){ cur={heading:'(머리글 없음)',loc:'',time:'',buf:[raw]}; }
+  });
+  push();
+  // 첫 씬 앞의 제목·작가명 같은 앞부분은 씬이 아니다 — 떼어내서 따로 알린다
+  let front='';
+  if(scenes.length>1 && scenes[0].heading==='(머리글 없음)' && scenes[0].script.length<300){
+    front=scenes.shift().script;
+  }
+  scenes.front=front;
+  return scenes;
+}
+/* 본문에서 대사 줄만 뽑는다 — "이름: 대사" */
+const DLG_RE=/^\s*([가-힣A-Za-z][가-힣A-Za-z0-9 ()]{0,14})\s*[:：]\s*(.+)$/;
+function scriptLines(txt){
+  return String(txt||'').split('\n').map(l=>{
+    const m=l.match(DLG_RE);
+    return m?{type:'dlg',who:m[1].trim(),text:m[2].trim(),raw:l}:{type:'dir',text:l.trim(),raw:l};
+  });
+}
+
+let scParsed=[];
+const scEls=id=>$(id);
+$('sc-pick').addEventListener('click',()=>$('sc-file').click());
+$('sc-paste').addEventListener('click',()=>{
+  $('sc-raw-wrap').style.display='block';
+  $('sc-raw').focus();
+  $('sc-raw').scrollIntoView({behavior:'smooth',block:'center'});
+});
+$('sc-file').addEventListener('change',()=>{
+  const f=$('sc-file').files[0]; if(f) ingestFile(f);
+  $('sc-file').value='';
+});
+async function ingestFile(f){
+  toast('읽는 중…');
+  try{
+    const text=await readScriptFile(f);
+    if(!text||!text.trim()) throw new Error('내용이 비어 있습니다');
+    $('sc-raw-wrap').style.display='block';
+    $('sc-raw').value=text;
+    $('sc-fname').textContent=`${f.name} · ${(f.size/1024).toFixed(0)}KB`;
+    $('sc-parse').click();
+    $('sc-raw-wrap').scrollIntoView({behavior:'smooth',block:'start'});
+    toast('불러왔어요 ✓ 분해 결과를 확인하세요');
+  }catch(e){
+    toast('읽지 못했어요: '+e.message);
+  }
+}
+/* 드래그 앤 드롭 */
+const dbox=$('dropbox');
+['dragenter','dragover'].forEach(ev=>dbox.addEventListener(ev,e=>{ e.preventDefault(); dbox.classList.add('hot'); }));
+['dragleave','drop'].forEach(ev=>dbox.addEventListener(ev,e=>{ e.preventDefault(); dbox.classList.remove('hot'); }));
+dbox.addEventListener('drop',e=>{ const f=e.dataTransfer.files&&e.dataTransfer.files[0]; if(f) ingestFile(f); });
+dbox.addEventListener('click',()=>$('sc-file').click());
+window.addEventListener('dragover',e=>e.preventDefault());
+window.addEventListener('drop',e=>e.preventDefault());
+
+$('sc-parse').addEventListener('click',()=>{
+  scParsed=parseScript($('sc-raw').value);
+  const pv=$('sc-preview');
+  if(!scParsed.length){
+    pv.textContent='씬을 찾지 못했습니다. 머리글 형식을 확인해 주세요.';
+    pv.classList.add('empty2'); $('sc-apply').disabled=true; $('sc-count').textContent=''; return;
+  }
+  pv.classList.remove('empty2');
+  const body=scParsed.map((s,i)=>{
+    const d=scriptLines(s.script).filter(x=>x.type==='dlg').length;
+    return `${i+1}. ${s.heading}\n     장소: ${s.loc||'—'} / 시간: ${s.time||'—'} / 대사 ${d}줄 / ${s.script.length}자`;
+  }).join('\n');
+  const front=scParsed.front
+    ? `※ 맨 앞 "${scParsed.front.replace(/\n/g,' ').slice(0,30)}" 는 제목·앞부분으로 보고 건너뜁니다.\n\n` : '';
+  pv.textContent=front+body;
+  $('sc-count').textContent=`씬 ${scParsed.length}개 인식`;
+  $('sc-apply').disabled=false;
+});
+$('sc-apply').addEventListener('click',()=>{
+  if(!scParsed.length) return;
+  const mode=$('sc-mode').value;
+  const before=JSON.parse(JSON.stringify(S.scenes));
+  const titleBefore=S.title;
+  // 앞부분 첫 줄은 대개 작품 제목이다 — 비어 있을 때만 채운다
+  if(!S.title && scParsed.front){
+    const t=scParsed.front.split('\n').map(x=>x.trim()).find(Boolean);
+    if(t && t.length<=40) S.title=t;
+  }
+  if(mode==='replace') S.scenes=[];
+  scParsed.forEach(p=>{
+    const s=newScene();
+    s.heading=p.heading; s.loc=p.loc; s.time=p.time; s.script=p.script;
+    s.summary=(p.script||'').split('\n').find(l=>l.trim())||'';
+    S.scenes.push(s);
+  });
+  save(); renderAll(); renderScript();
+  toast(`씬 ${scParsed.length}개를 ${mode==='replace'?'교체':'추가'}했어요 ✓`,
+    {label:'되돌리기',fn:()=>{ S.scenes=before; S.title=titleBefore; save(); renderAll(); renderScript(); toast('되돌렸어요 ✓'); }});
+});
+
+/* --- 씬별 편집 --- */
+let scCur='';
+function renderScript(){
+  const sel=$('sc-sel');
+  if(!S.scenes.length){
+    sel.innerHTML='<option value="">— 씬이 없습니다 —</option>';
+    $('sc-body').value=''; $('sc-side').textContent='씬이 없습니다';
+    $('sc-side').classList.add('empty2'); $('sc-stat').textContent=''; return;
+  }
+  if(!S.scenes.some(s=>s.id===scCur)) scCur=S.scenes[0].id;
+  sel.innerHTML=S.scenes.map((s,i)=>
+    `<option value="${s.id}"${s.id===scCur?' selected':''}>S${i+1}. ${esc(s.heading||'제목 없음')}</option>`).join('');
+  const s=S.scenes.find(x=>x.id===scCur);
+  $('sc-body').value=s.script||'';
+  paintSide(s);
+  const total=S.scenes.reduce((a,x)=>a+((x.script||'').length),0);
+  $('sc-stat').textContent=`전체 ${S.scenes.length}씬 · ${total.toLocaleString()}자`;
+}
+function paintSide(s){
+  const box=$('sc-side');
+  const L=scriptLines(s.script);
+  const dlg=L.filter(x=>x.type==='dlg');
+  const who={};
+  dlg.forEach(d=>who[d.who]=(who[d.who]||0)+1);
+  const names=Object.entries(who).sort((a,b)=>b[1]-a[1]);
+  if(!s.script||!s.script.trim()){ box.textContent='이 씬은 아직 본문이 비어 있습니다'; box.classList.add('empty2'); return; }
+  box.classList.remove('empty2');
+  box.innerHTML=
+    `장소  ${esc(s.loc||'—')}\n시간  ${esc(s.time||'—')}\n글자  ${(s.script||'').length}자\n대사  ${dlg.length}줄\n컷    ${s.cuts.length}개\n\n`+
+    (names.length?`— 말하는 사람 —\n${names.map(([n,c])=>`${esc(n)}  ${c}줄`).join('\n')}\n\n`:'')+
+    `— 첫 대사 —\n${dlg.slice(0,3).map(d=>`<span class="dlg">${esc(d.who)}: ${esc(d.text.slice(0,40))}</span>`).join('\n')||'(없음)'}`;
+}
+$('sc-sel').addEventListener('change',()=>{ scCur=$('sc-sel').value; renderScript(); });
+$('sc-body').addEventListener('input',()=>{
+  const s=S.scenes.find(x=>x.id===scCur); if(!s) return;
+  s.script=$('sc-body').value; save(); paintSide(s);
+});
+function scStep(d){
+  const i=S.scenes.findIndex(x=>x.id===scCur);
+  if(i<0||!S.scenes.length) return;
+  scCur=S.scenes[(i+d+S.scenes.length)%S.scenes.length].id;
+  renderScript();
+}
+$('sc-prev').addEventListener('click',()=>scStep(-1));
+$('sc-next').addEventListener('click',()=>scStep(1));
+
+/* 본문을 컷으로 쪼개기 — 대사 한 줄 = 컷 하나, 지문 문단 = 컷 하나 */
+$('sc-tocuts').addEventListener('click',()=>{
+  const s=S.scenes.find(x=>x.id===scCur);
+  if(!s||!(s.script||'').trim()){ toast('본문이 비어 있어요'); return; }
+  const blocks=[];
+  let buf=[];
+  scriptLines(s.script).forEach(l=>{
+    if(l.type==='dlg'){
+      if(buf.length){ blocks.push({desc:buf.join(' ').trim(),dialogue:''}); buf=[]; }
+      blocks.push({desc:'',dialogue:l.who+': '+l.text});
+    }else if(!l.text){
+      if(buf.length){ blocks.push({desc:buf.join(' ').trim(),dialogue:''}); buf=[]; }
+    }else buf.push(l.text);
+  });
+  if(buf.length) blocks.push({desc:buf.join(' ').trim(),dialogue:''});
+  const made=blocks.filter(b=>b.desc||b.dialogue);
+  if(!made.length){ toast('쪼갤 내용이 없어요'); return; }
+  const before=s.cuts.slice();
+  made.forEach(b=>{ const c=newCut(); c.desc=b.desc; c.dialogue=b.dialogue; c.open=false; s.cuts.push(c); });
+  save(); renderAll();
+  toast(`컷 ${made.length}개를 만들었어요 ✓`,
+    {label:'되돌리기',fn:()=>{ s.cuts=before; save(); renderAll(); toast('되돌렸어요 ✓'); }});
+});
+$('sc-askscene').addEventListener('click',()=>{
+  const s=S.scenes.find(x=>x.id===scCur);
+  if(!s){ toast('씬을 선택하세요'); return; }
+  copy(HEAD+ctx()+`\n\n=== 고칠 씬 ===
+${s.heading||'(제목 없음)'}  |  장소 ${s.loc||'-'} / 시간 ${s.time||'-'}
+
+${s.script||'(본문 없음)'}
+
+=== 요청 ===
+1) 이 씬이 지금 하는 일이 무엇인지 한 줄로 정리해줘. 없으면 없다고 말해줘.
+2) 대사에서 설명조인 부분(하지 않아도 될 말)을 찾아 지워주고, 행동으로 대체할 수 있는 곳을 짚어줘.
+3) 이 씬을 다시 써줘. 원래 형식(머리글 + 지문 + "이름: 대사")을 그대로 유지해줘.`,'씬 수정 요청문 복사 ✓');
+});
+$('sc-openrep').addEventListener('click',()=>{ $('rmask').classList.add('on'); $('rtext').value=''; $('rcount').textContent=''; });
+$('rapply').addEventListener('click',()=>{
+  const txt=$('rtext').value;
+  if(!txt.trim()){ toast('고친 대본을 붙여넣어 주세요'); return; }
+  const parsed=parseScript(txt);
+  const before=JSON.parse(JSON.stringify(S.scenes));
+  let n=0;
+  // 머리글에서 씬 번호를 뽑아 그 번호의 씬을 갈아끼운다
+  parsed.forEach(p=>{
+    const m=(p.heading||'').match(/(?:S\s*#?\s*|씬\s*|#\s*|SCENE\s*)(\d+)|^\s*(\d{1,3})\s*[.．)]/i);
+    const no=m?parseInt(m[1]||m[2],10):NaN;
+    let target=null;
+    if(!isNaN(no)&&S.scenes[no-1]) target=S.scenes[no-1];
+    else target=S.scenes.find(s=>s.heading&&p.heading&&s.heading.trim()===p.heading.trim());
+    if(target){ target.script=p.script; if(p.loc) target.loc=p.loc; if(p.time) target.time=p.time; n++; }
+  });
+  if(!n){
+    const s=S.scenes.find(x=>x.id===scCur);
+    if(!s){ toast('반영할 씬을 찾지 못했어요'); return; }
+    s.script=txt.trim(); n=1;
+  }
+  save(); renderAll(); renderScript(); $('rmask').classList.remove('on');
+  toast(`${n}개 씬을 갱신했어요 ✓`,
+    {label:'되돌리기',fn:()=>{ S.scenes=before; save(); renderAll(); renderScript(); toast('되돌렸어요 ✓'); }});
+});
+
+/* ---------- 프롬프트 ---------- */
+const STYLE_FIELDS=['look','ar','palette','extra','mj','neg'];
+function fillStyle(){
+  $('v-look').innerHTML=opts(LOOK,S.style.look);
+  $('v-ar').innerHTML=opts(AR,S.style.ar);
+  ['palette','extra','mj','neg'].forEach(k=>$('v-'+k).value=S.style[k]||'');
+}
+STYLE_FIELDS.forEach(k=>{
+  const el=$('v-'+k); if(!el) return;
+  const h=()=>{ S.style[k]=el.value; if(k==='ar') syncAR(); save(); renderPrompt(); };
+  el.addEventListener('input',h); el.addEventListener('change',h);
+});
+function syncAR(){
+  const r=AR[S.style.ar]||'16:9';
+  S.style.mj=(S.style.mj||'').replace(/--ar\s+[\d.:]+/,'--ar '+r);
+  if(!/--ar/.test(S.style.mj)) S.style.mj=('--ar '+r+' '+(S.style.mj||'')).trim();
+  $('v-mj').value=S.style.mj;
+}
+function curCut(){
+  const s=S.scenes.find(x=>x.id===S.sel.scene); if(!s) return null;
+  const c=s.cuts.find(x=>x.id===S.sel.cut);
+  return c?{s,c}:null;
+}
+function renderCutNav(){
+  const list=allCuts(), nav=$('cutnav');
+  if(!list.length){ nav.innerHTML='<span class="mini" style="margin:0">「씬 · 컷」 탭에서 컷을 먼저 만들어주세요</span>'; $('curlabel').textContent='—'; return; }
+  if(!list.some(x=>x.c.id===S.sel.cut)) S.sel={scene:list[0].s.id,cut:list[0].c.id};
+  // 씬 번호는 항상 전체 목록 기준으로 매긴다 (컷이 없는 씬을 건너뛰며 세면 라벨과 어긋난다)
+  nav.innerHTML=list.map(x=>{
+    const si=S.scenes.indexOf(x.s)+1, ci=x.s.cuts.indexOf(x.c)+1;
+    return `<button data-jump="${x.s.id}|${x.c.id}" class="${x.c.id===S.sel.cut?'on':''}">${si}-${ci}</button>`;
+  }).join('');
+  const hit=curCut();
+  if(hit){
+    const idx=S.scenes.indexOf(hit.s)+1, ci=hit.s.cuts.indexOf(hit.c)+1;
+    $('curlabel').textContent=`S${idx} 컷${ci} · ${hit.s.heading||'제목 없음'}`;
+    const on=nav.querySelector('button.on'); if(on) on.scrollIntoView({block:'nearest',inline:'center'});
+  }
+}
+$('cutnav').addEventListener('click',e=>{
+  const b=e.target.closest('[data-jump]'); if(!b) return;
+  const [sid,kid]=b.dataset.jump.split('|');
+  S.sel={scene:sid,cut:kid}; save(); renderPrompt();
+});
+$('p-prev').addEventListener('click',()=>step(-1));
+$('p-next').addEventListener('click',()=>step(1));
+function step(d){
+  const list=allCuts(); if(!list.length) return;
+  let i=list.findIndex(x=>x.c.id===S.sel.cut);
+  i = i<0 ? 0 : (i+d+list.length)%list.length;
+  S.sel={scene:list[i].s.id,cut:list[i].c.id}; save(); renderPrompt();
+}
+document.addEventListener('keydown',e=>{
+  if(curTab()!=='prompt') return;
+  if(document.querySelector('.mask.on')) return;
+  const tag=(e.target.tagName||'').toLowerCase();
+  if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if(e.key==='ArrowLeft'){ step(-1); e.preventDefault(); }
+  if(e.key==='ArrowRight'){ step(1); e.preventDefault(); }
+});
+function cutChars(c){ return c.chars.map(id=>S.chars.find(x=>x.id===id)).filter(Boolean); }
+function styleBits(){ return [LOOK[S.style.look]||'',S.style.palette,S.style.extra].filter(Boolean); }
+
+function buildMJ(s,c){
+  const p=[];
+  p.push(c.descEn||c.desc||'');
+  cutChars(c).forEach(ch=>{ const l=charLock(ch); if(l) p.push(l); });
+  if(s.locEn||s.loc) p.push(s.locEn||s.loc);
+  if(TIME[s.time]) p.push(TIME[s.time]);
+  [SHOT[c.shot],ANGLE[c.angle],LENS[c.lens],LIGHT[c.light],MOOD[c.mood]].forEach(x=>{ if(x) p.push(x); });
+  styleBits().forEach(x=>p.push(x));
+  return (dedupe(p).join(', ')+' '+(S.style.mj||'')).trim();
+}
+function buildVEO(s,c){
+  const chs=cutChars(c), L=[];
+  if(MOVE[c.move]) L.push(cap(MOVE[c.move])+'.');
+  if(chs.length){
+    // 한글 이름을 넣으면 Veo가 화면에 글자로 그려버릴 수 있어 이름은 빼고,
+    // 인물이 둘 이상일 때만 Character A / B 로 구분한다.
+    const who=chs.map((ch,i)=>{
+      const l=charLock(ch); if(!l) return '';
+      return chs.length>1?'Character '+String.fromCharCode(65+i)+': '+l:l;
+    }).filter(Boolean).join('; ');
+    if(who) L.push('Subject: '+who+'.');
+  }
+  const subj=c.descEn||c.desc||'';
+  if(subj) L.push('Action: '+subj+'.');
+  const setting=[s.locEn||s.loc,TIME[s.time]].filter(Boolean).join(' ');
+  if(setting) L.push('Setting: '+setting+'.');
+  const cam=[SHOT[c.shot],ANGLE[c.angle],LENS[c.lens]].filter(Boolean).join(', ');
+  if(cam) L.push('Camera: '+cam+'.');
+  if(LIGHT[c.light]) L.push('Lighting: '+LIGHT[c.light]+'.');
+  if(MOOD[c.mood]) L.push('Mood: '+MOOD[c.mood]+'.');
+  const st=dedupe(styleBits()).join(', ');
+  if(st) L.push('Style: '+st+'.');
+  const au=[];
+  if(c.audio) au.push(c.audio);
+  if(c.dialogue) au.push('dialogue: "'+c.dialogue.replace(/"/g,"'")+'"');
+  if(au.length) L.push('Audio: '+au.join('; ')+'.');
+  if(c.dur) L.push('Duration: about '+c.dur+' seconds.');
+  return L.join('\n');
+}
+function buildGEN(s,c){
+  const p=[];
+  p.push(c.descEn||c.desc||'');
+  cutChars(c).forEach(ch=>{ const l=charLock(ch); if(l) p.push(l); });
+  if(s.locEn||s.loc) p.push(s.locEn||s.loc);
+  if(TIME[s.time]) p.push(TIME[s.time]);
+  [SHOT[c.shot],ANGLE[c.angle],LENS[c.lens],LIGHT[c.light],MOOD[c.mood]].forEach(x=>{ if(x) p.push(x); });
+  styleBits().forEach(x=>p.push(x));
+  let out=dedupe(p).join(', ');
+  out+='\n\n[화면비] '+(AR[S.style.ar]||'16:9');
+  if(S.style.neg) out+='\n[네거티브] '+S.style.neg;
+  return out;
+}
+const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
+
+function renderPrompt(){
+  fillStyle(); renderCutNav();
+  const hit=curCut();
+  const set=(id,txt)=>{
+    const el=$(id);
+    if(txt&&txt.trim()){ el.textContent=txt; el.classList.remove('empty2'); }
+    else{ el.textContent='컷을 선택하고 내용을 채우면 여기에 나타납니다'; el.classList.add('empty2'); }
+  };
+  if(!hit){ set('o-mj',''); set('o-veo',''); set('o-gen',''); return; }
+  set('o-mj',buildMJ(hit.s,hit.c));
+  set('o-veo',buildVEO(hit.s,hit.c));
+  set('o-gen',buildGEN(hit.s,hit.c));
+}
+document.addEventListener('click',e=>{
+  const id=e.target.dataset&&e.target.dataset.copy;
+  if(id) copy($(id).classList.contains('empty2')?'':$(id).textContent);
+});
+$('p-allcopy').addEventListener('click',()=>{
+  const s=S.scenes.find(x=>x.id===S.sel.scene);
+  if(!s||!s.cuts.length){ toast('복사할 컷이 없어요'); return; }
+  const out=s.cuts.map((c,i)=>
+    `━━━ 컷 ${i+1} (${c.dur||0}초) ━━━\n[한글] ${c.desc||'-'}\n\n[미드저니]\n${buildMJ(s,c)}\n\n[Veo / Flow]\n${buildVEO(s,c)}\n`).join('\n');
+  copy(`# ${S.title||'제목 없음'} — ${s.heading||'씬'}\n\n${out}`,'씬 전체 프롬프트 복사 ✓');
+});
+
+/* ---------- AI 질문지 ---------- */
+function ctx(){
+  const t=S.story,L=[];
+  if(S.title) L.push('제목: '+S.title);
+  if(t.genre) L.push('장르: '+t.genre);
+  if(t.tone) L.push('톤: '+t.tone);
+  if(t.format) L.push('형식: '+t.format);
+  if(t.logline) L.push('로그라인: '+t.logline);
+  if(t.synopsis) L.push('시놉시스: '+t.synopsis);
+  if(t.theme) L.push('주제: '+t.theme);
+  if(t.ref) L.push('레퍼런스: '+t.ref);
+  if(t.act1||t.act2||t.act3) L.push(`3막 구조:\n- 1막: ${t.act1||'(미작성)'}\n- 2막: ${t.act2||'(미작성)'}\n- 3막: ${t.act3||'(미작성)'}`);
+  if(S.chars.length) L.push('등장인물:\n'+S.chars.map(c=>
+    `- ${c.name||'이름미정'}(${c.role||'역할미정'}): ${[c.personality,c.speech,c.arc].filter(Boolean).join(' / ')||'설정 미작성'}`).join('\n'));
+  return L.join('\n')||'(아직 작성된 내용이 거의 없습니다)';
+}
+const HEAD='너는 노련한 영화 시나리오 작가이자 스크립트 닥터야. 아래 작품 정보를 읽고 요청에 답해줘.\n답변은 한국어로, 군더더기 없이.\n\n=== 작품 정보 ===\n';
+const ASK={
+  logline:()=>HEAD+ctx()+`\n\n=== 요청 ===
+1) 지금 로그라인의 문제점을 3가지만 짚어줘. (주인공의 욕망이 선명한가 / 장애물이 구체적인가 / 아이러니가 있는가)
+2) 더 강한 로그라인 5개를 각각 다른 각도로 제안해줘. 각 안마다 "무엇을 바꿨는지" 한 줄 설명을 붙여줘.`,
+  synopsis:()=>HEAD+ctx()+`\n\n=== 요청 ===
+1) 로그라인을 바탕으로 한 문단짜리 시놉시스를 써줘. (일상 → 사건 → 대립 → 도착점)
+2) 지금 설정에서 논리적으로 비어 있거나 관객이 "왜?"라고 물을 지점 3가지를 짚어줘.`,
+  acts:()=>HEAD+ctx()+`\n\n=== 요청 ===
+3막 구조를 점검해줘.
+1) 각 막의 분량 배분이 적절한가? 어디가 늘어지고 어디가 급한가?
+2) 다음 지점들이 명확히 존재하는지 확인하고, 없으면 제안해줘 — 사건의 발단 / 1막 전환점 / 중간점 / 가장 낮은 지점 / 클라이맥스
+3) 2막이 지루해지지 않게 할 서브플롯 또는 압박 요소를 2개 제안해줘.`,
+  scenelist:()=>HEAD+ctx()+`\n\n=== 요청 ===
+이 작품의 씬 리스트를 만들어줘.
+아래 형식을 정확히 지켜서, 표만 출력하고 다른 말은 붙이지 마.
+
+씬번호 | 장소 | 시간대 | 씬 요약(한 줄) | 이 씬의 목적(무엇이 바뀌는가)
+
+- 시간대는 반드시 다음 중 하나로: 새벽 / 아침 / 정오 / 오후 / 해질녘 / 밤 / 심야 / 실내
+- 러닝타임을 고려해 적정 개수로.
+- 각 씬은 반드시 "무언가가 바뀌는" 씬이어야 해. 정보 전달만 하는 씬은 빼줘.`,
+  rewrite:()=>HEAD+ctx()+`\n\n=== 현재 대본 ===\n`+scriptDump()+`\n\n=== 요청 ===
+스크립트 닥터로서 이 대본을 검토해줘.
+1) 씬별로 "이 씬이 없어도 되는가"를 판정해줘. 빼도 되는 씬은 그 이유와 함께.
+2) 순서를 바꾸면 좋아지는 지점이 있으면 짚어줘.
+3) 가장 약한 씬 3개를 골라, 각각 무엇을 고쳐야 하는지 구체적으로.
+4) 지문이 너무 길어 촬영이 막막한 곳이 있으면 알려줘.`,
+  dialogue:()=>HEAD+ctx()+`\n\n=== 현재 대본 ===\n`+scriptDump()+`\n\n=== 요청 ===
+대사만 집중해서 봐줘.
+1) 설명조 대사(관객에게 정보를 떠먹이는 말)를 전부 찾아내 줘. 씬 번호와 함께.
+2) 인물별로 말투가 구분되는지 판정해줘. 이름을 가려도 누가 한 말인지 알 수 있어야 해.
+3) 대사를 빼고 행동·표정으로 대체할 수 있는 곳을 3군데 제안해줘.
+4) 가장 좋은 대사 3줄과 그 이유도 알려줘.`,
+  full:()=>HEAD+ctx()+`\n\n=== 요청 ===
+이 작품에 대해 스크립트 닥터로서 총평을 해줘.
+1) 지금 가장 강한 점 2가지
+2) 지금 가장 위험한 점 3가지 (관객이 이탈할 지점 위주로)
+3) 당장 다음에 손봐야 할 것 하나를 딱 집어서`,
+  prompt:()=>{
+    const hit=curCut(); if(!hit) return '';
+    const {s,c}=hit;
+    return `너는 AI 이미지·영상 생성 프롬프트 전문가야. 아래 컷의 프롬프트를 더 좋게 다듬어줘.
+
+=== 작품 맥락 ===
+${ctx()}
+
+=== 이 컷 ===
+씬: ${s.heading||'-'} / 장소: ${s.loc||'-'} / 시간: ${s.time||'-'}
+컷 내용(한글): ${c.desc||'-'}
+샷: ${c.shot||'-'} / 앵글: ${c.angle||'-'} / 무브: ${c.move||'-'} / 렌즈: ${c.lens||'-'} / 조명: ${c.light||'-'} / 무드: ${c.mood||'-'}
+
+=== 현재 프롬프트 ===
+[미드저니]
+${buildMJ(s,c)}
+
+[Veo / Flow]
+${buildVEO(s,c)}
+
+=== 요청 ===
+1) 미드저니용 프롬프트를 개선해줘. 모호한 표현은 구체적인 시각 언어로 바꾸고 중복은 빼줘.
+2) Veo(구글 Flow)용 프롬프트를 개선해줘. 8초 안에 담기는 하나의 동작으로 정리하고 카메라 움직임과 사운드를 분명히 해줘.
+3) 이 컷을 AI로 뽑을 때 실패하기 쉬운 지점과 대응책을 알려줘.`;
+  }
+};
+function askChar(c){
+  return HEAD+ctx()+`\n\n=== 요청 ===
+「${c.name||'이 인물'}」(${c.role||'역할 미정'})을 깊게 파고들어줘.
+현재 설정 — 성격: ${c.personality||'미작성'} / 말투: ${c.speech||'미작성'} / 아크: ${c.arc||'미작성'}
+
+1) 이 인물이 절대 하지 않을 행동 3가지 (경계선이 곧 성격이다)
+2) 겉으로 원하는 것 vs 진짜 필요한 것
+3) 말투를 살릴 수 있는 대사 5줄 예시
+4) 이 인물의 아크를 드러낼 결정적 장면 하나`;
+}
+function askTranslate(c){
+  return `아래 한국어 캐릭터 묘사를 AI 이미지·영상 생성 프롬프트에 바로 넣을 수 있는 간결한 영어 구문으로 바꿔줘.
+쉼표로 구분된 시각적 묘사만, 문장이 아닌 구(phrase) 형태로. 설명 없이 결과만.
+
+[의상] ${c.outfit||'(비어 있음)'}
+[특징] ${c.mark||'(비어 있음)'}
+
+이 형식으로 답해줘:
+의상 → (영어)
+특징 → (영어)`;
+}
+function askTranslateCut(s,c){
+  return `아래 한국어 컷 정보를 AI 이미지·영상 생성 프롬프트용 영어로 바꿔줘.
+카메라 용어나 화풍은 빼고 "무엇이 화면에 보이고 들리는가"만. 설명 없이 결과만.
+
+[장소] ${s.loc||'(비어 있음)'}
+[컷 지문] ${c.desc||'(비어 있음)'}
+[사운드] ${c.audio||'(비어 있음)'}
+
+이 형식으로 답해줘:
+컷 지문 → (영어 한 줄)
+사운드 → (영어 한 줄)`;
+}
+/* 대본 전체를 하나의 문자열로 — 너무 길면 AI가 못 받으므로 잘라내고 알린다 */
+function scriptDump(limit){
+  const LIM=limit||24000;
+  let out='', cut=false;
+  for(let i=0;i<S.scenes.length;i++){
+    const s=S.scenes[i];
+    const block=`\nS#${i+1}. ${s.heading||''}  |  ${s.loc||'-'} / ${s.time||'-'}\n${s.script||'(본문 없음)'}\n`;
+    if(out.length+block.length>LIM){ cut=true; break; }
+    out+=block;
+  }
+  if(!out.trim()) return '(아직 대본 본문이 없습니다)';
+  return out+(cut?'\n\n…(길어서 여기까지만 실었습니다. 나머지는 나눠서 물어봐 주세요)':'');
+}
+function charSheetPrompt(c){
+  const lock=charLock(c);
+  return `character reference sheet, same character in all views, ${lock||'(외형 정보를 먼저 채워주세요)'}, ${LOOK[S.style.look]||''}, neutral grey background, even soft studio lighting, full body turnaround: front view, three-quarter view, side view, back view, plus a row of facial expression studies (neutral, angry, sad, smiling, surprised), consistent proportions, model sheet layout --ar 16:9`;
+}
+document.addEventListener('click',e=>{
+  const k=e.target.dataset&&e.target.dataset.ask;
+  if(!k||!ASK[k]) return;
+  const txt=ASK[k]();
+  if(!txt){ toast('먼저 컷을 선택하세요'); return; }
+  copy(txt,'질문지 복사 ✓ — AI에 붙여넣으세요');
+});
+
+/* ---------- 스토리보드 ---------- */
+function renderBoard(){
+  const w=$('boardwrap');
+  if(!allCuts().length){
+    w.innerHTML=`<div class="empty"><b>보드에 올릴 컷이 없어요</b><p>「씬 · 컷」 탭에서 컷을 먼저 만들어주세요.</p></div>`; return;
+  }
+  w.innerHTML=S.scenes.filter(s=>s.cuts.length).map((s,si)=>`
+    <div class="card">
+      <h3><span class="slate">S${String(si+1).padStart(2,'0')}</span>${esc(s.heading||'제목 없음')} <span class="tagx">${s.cuts.length}컷</span></h3>
+      <div class="board">
+        ${s.cuts.map((c,ci)=>`
+          <div class="bcard">
+            <div class="thumb" data-bimg="${c.id}" ${c.hasImg?`data-imgof="${c.id}"`:''}>${c.hasImg?'':'＋ 이미지 넣기'}</div>
+            <div class="bmeta">
+              <b>${si+1}-${ci+1}</b> · ${c.dur||0}초<br>
+              ${esc((c.desc||'').slice(0,62))||'<span style="color:var(--tx3)">내용 없음</span>'}<br>
+              <span style="color:var(--tx3)">${esc([c.shot,c.angle,c.move].filter(Boolean).join(' · ')||'샷 정보 없음')}</span>
+              ${c.hasImg?`<br><button class="btn sm gh" data-bdel="${c.id}" style="margin-top:8px">이미지 제거</button>`:''}
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+  hydrateImages(w);
+}
+$('boardwrap').addEventListener('click',async e=>{
+  if(e.target.dataset.bdel){
+    const id=e.target.dataset.bdel;
+    await IDB.del(id); dropURL(id);
+    const hit=allCuts().find(x=>x.c.id===id);
+    if(hit) hit.c.hasImg=false;
+    save(); renderBoard(); return;
+  }
+  const th=e.target.closest('[data-bimg]'); if(!th) return;
+  pickImage(th.dataset.bimg,renderBoard);
+});
+
+/* ---------- 내보내기 ---------- */
+$('d-export').addEventListener('click',async()=>{
+  toast('내보내는 중…');
+  const out=JSON.parse(JSON.stringify(S));
+  out.__images={};
+  for(const {c} of allCuts()){
+    if(!c.hasImg) continue;
+    try{ const b=await IDB.get(c.id); if(b) out.__images[c.id]=await blobToDataURL(b); }catch(e){}
+  }
+  dl(safeName()+'.scenedeck.json',JSON.stringify(out,null,2),'application/json;charset=utf-8');
+  toast('내보냈어요 ✓');
+});
+$('d-import').addEventListener('click',()=>$('d-file').click());
+$('d-file').addEventListener('change',()=>{
+  const f=$('d-file').files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=async()=>{
+    try{
+      const d=JSON.parse(rd.result);
+      if(!d||typeof d!=='object'||!('story' in d)) throw new Error('형식이 다릅니다');
+      if(!confirm('지금 작업 내용을 덮어씁니다. 계속할까요?')) return;
+      const imgs=d.__images||{}; delete d.__images;
+      S=Object.assign(blank(),d);
+      S.story=Object.assign(blank().story,d.story||{});
+      S.style=Object.assign(blank().style,d.style||{});
+      S.chars=d.chars||[]; S.scenes=d.scenes||[];
+      S.sel=Object.assign({scene:'',cut:''},d.sel||{});
+      urlCache.forEach((u,k)=>URL.revokeObjectURL(u)); urlCache.clear();
+      for(const [id,dataUrl] of Object.entries(imgs)){
+        try{ await IDB.put(id,await dataURLToBlob(dataUrl)); }catch(e){}
+      }
+      // 예전 형식(컷 안에 dataURL)도 받아준다
+      for(const s of S.scenes) for(const c of s.cuts){
+        if(c.img&&String(c.img).startsWith('data:')){
+          try{ await IDB.put(c.id,await dataURLToBlob(c.img)); c.hasImg=true; }catch(e){}
+          delete c.img;
+        }
+      }
+      save(); renderAll(); toast('불러왔어요 ✓');
+    }catch(err){ alert('불러오지 못했습니다: '+err.message); }
+    $('d-file').value='';
+  };
+  rd.readAsText(f);
+});
+$('d-csv').addEventListener('click',()=>{
+  const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const rows=[['씬번호','씬제목','장소','시간대','컷번호','초','컷내용','샷사이즈','앵글','카메라무브','렌즈','조명','무드','등장인물','대사','사운드','메모','미드저니 프롬프트','Veo 프롬프트']];
+  S.scenes.forEach((s,si)=>s.cuts.forEach((c,ci)=>{
+    rows.push([si+1,s.heading,s.loc,s.time,ci+1,c.dur,c.desc,c.shot,c.angle,c.move,c.lens,c.light,c.mood,
+      cutChars(c).map(x=>x.name).join(' / '),c.dialogue,c.audio,c.note,buildMJ(s,c),buildVEO(s,c).replace(/\n/g,' ')]);
+  }));
+  if(rows.length===1){ toast('내보낼 컷이 없어요'); return; }
+  dl(safeName()+'_컷리스트.csv','﻿'+rows.map(r=>r.map(q).join(',')).join('\r\n'),'text/csv;charset=utf-8');
+  toast('CSV로 내보냈어요 ✓');
+});
+const csvq=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+const csvOut=(name,rows)=>dl(name,'﻿'+rows.map(r=>r.map(csvq).join(',')).join('\r\n'),'text/csv;charset=utf-8');
+
+/* 촬영 스케줄표 — 실제 촬영은 씬 순서가 아니라 "같은 장소를 몰아서" 찍는다.
+   그래서 장소 → 시간대 순으로 묶어 정렬한다. */
+$('d-sched').addEventListener('click',()=>{
+  if(!S.scenes.length){ toast('내보낼 씬이 없어요'); return; }
+  const rows=[['촬영순번','장소','시간대','씬번호','씬제목','컷수','예상초','등장인물','비고']];
+  const idx=new Map(S.scenes.map((s,i)=>[s.id,i+1]));
+  const sorted=S.scenes.slice().sort((a,b)=>
+    (a.loc||'힣').localeCompare(b.loc||'힣','ko') ||
+    Object.keys(TIME).indexOf(a.time)-Object.keys(TIME).indexOf(b.time) ||
+    idx.get(a.id)-idx.get(b.id));
+  let n=0, lastLoc=null;
+  sorted.forEach(s=>{
+    n++;
+    const who=[...new Set(s.cuts.flatMap(c=>cutChars(c).map(x=>x.name||'이름없음')))].join(' / ');
+    rows.push([n, s.loc||'(장소 미정)', s.time||'', 'S'+idx.get(s.id), s.heading||'',
+      s.cuts.length, s.cuts.reduce((a,c)=>a+(+c.dur||0),0), who,
+      s.loc&&s.loc===lastLoc?'같은 장소 연속':'장소 이동']);
+    lastLoc=s.loc;
+  });
+  csvOut(safeName()+'_촬영스케줄.csv',rows);
+  toast('촬영 스케줄표를 내보냈어요 ✓');
+});
+
+/* 캐릭터 콜시트 — 배우별로 어느 씬에 나오는지 */
+$('d-call').addEventListener('click',()=>{
+  if(!S.chars.length){ toast('먼저 캐릭터를 만들어주세요'); return; }
+  const rows=[['캐릭터','역할','등장 씬 수','등장 컷 수','총 노출초','등장 씬 목록','촬영 장소']];
+  S.chars.forEach(ch=>{
+    const scenes=[], locs=new Set();
+    let cuts=0, secs=0;
+    S.scenes.forEach((s,i)=>{
+      const hit=s.cuts.filter(c=>c.chars.includes(ch.id));
+      if(!hit.length) return;
+      scenes.push('S'+(i+1)); if(s.loc) locs.add(s.loc);
+      cuts+=hit.length; secs+=hit.reduce((a,c)=>a+(+c.dur||0),0);
+    });
+    rows.push([ch.name||'이름없음', ch.role||'', scenes.length, cuts, secs,
+      scenes.join(' '), [...locs].join(' / ')]);
+  });
+  csvOut(safeName()+'_콜시트.csv',rows);
+  toast('콜시트를 내보냈어요 ✓');
+});
+
+/* 대본 TXT — 씬 머리글 + 본문 */
+$('d-script').addEventListener('click',()=>{
+  if(!S.scenes.some(s=>(s.script||'').trim())){ toast('대본 본문이 비어 있어요'); return; }
+  let out=`${S.title||'제목 없음'}\n${S.story.logline||''}\n\n`;
+  S.scenes.forEach((s,i)=>{
+    out+=`\nS#${i+1}. ${s.heading||''}\n`;
+    if(s.loc||s.time) out+=`(${[s.loc,s.time].filter(Boolean).join(' / ')})\n`;
+    out+='\n'+(s.script||'(본문 없음)')+'\n';
+  });
+  dl(safeName()+'_대본.txt',out);
+  toast('대본을 내보냈어요 ✓');
+});
+
+$('d-txt').addEventListener('click',()=>{
+  if(!allCuts().length){ toast('내보낼 컷이 없어요'); return; }
+  let out=`# ${S.title||'제목 없음'}\n${S.story.logline||''}\n\n`;
+  S.scenes.forEach((s,si)=>{
+    if(!s.cuts.length) return;
+    out+=`\n${'='.repeat(50)}\nS${si+1}. ${s.heading||'제목 없음'}  |  ${s.loc||''} ${s.time||''}\n${s.summary||''}\n${'='.repeat(50)}\n`;
+    s.cuts.forEach((c,ci)=>{
+      out+=`\n──── 컷 ${ci+1} (${c.dur||0}초) ────\n[지문] ${c.desc||'-'}\n`;
+      if(c.dialogue) out+=`[대사] ${c.dialogue}\n`;
+      out+=`\n[미드저니]\n${buildMJ(s,c)}\n\n[Veo / Flow]\n${buildVEO(s,c)}\n\n[범용 이미지]\n${buildGEN(s,c)}\n`;
+    });
+  });
+  dl(safeName()+'_프롬프트.txt',out);
+  toast('TXT로 내보냈어요 ✓');
+});
+$('d-reset').addEventListener('click',async()=>{
+  if(!confirm('정말 전부 삭제할까요? 되돌릴 수 없습니다.')) return;
+  if(!confirm('마지막 확인입니다. JSON 백업은 하셨나요?')) return;
+  try{ localStorage.removeItem(KEY); }catch(e){}
+  try{ for(const k of (await IDB.keys())||[]) await IDB.del(k); }catch(e){}
+  urlCache.forEach(u=>URL.revokeObjectURL(u)); urlCache.clear();
+  S=blank(); save(); renderAll(); toast('초기화했습니다');
+});
+async function updQuota(){
+  const el=$('quota'); if(!el) return;
+  let txt=0;
+  try{ txt=new Blob([JSON.stringify(S)]).size; }catch(e){ txt=JSON.stringify(S).length; }
+  let q=null,u=null;
+  try{ const e2=await navigator.storage.estimate(); q=e2.quota; u=e2.usage; }catch(e){}
+  const imgs=allCuts().filter(x=>x.c.hasImg).length;
+  const mb=n=>(n/1048576).toFixed(n<10485760?2:0);
+  if(q){
+    const pct=Math.min(100,(u/q)*100);
+    el.innerHTML=`
+      <div class="row" style="justify-content:space-between">
+        <b style="font-family:var(--mono);font-size:15px">${mb(u)} MB <span style="color:var(--tx3);font-weight:400">/ ${(q/1073741824).toFixed(1)} GB</span></b>
+        <span class="mini" style="margin:0">텍스트 ${(txt/1024).toFixed(0)} KB · 이미지 ${imgs}장</span>
+      </div>
+      <div class="bar"><i style="width:${Math.max(pct,0.4)}%"></i></div>
+      <p class="mini">이미지는 <b>IndexedDB</b>에, 텍스트는 localStorage에 저장됩니다.
+      예전의 5MB 제한은 이미지를 텍스트로 밀어넣던 방식 때문이었고, 지금은 브라우저가 허용하는 <b>${(q/1073741824).toFixed(1)} GB</b>까지 씁니다.</p>`;
+  }else{
+    el.innerHTML=`<p class="mini">텍스트 ${(txt/1024).toFixed(0)} KB · 이미지 ${imgs}장 (용량 조회를 지원하지 않는 브라우저)</p>`;
+  }
+}
+
+/* ---------- 전체 렌더 ---------- */
+function renderAll(){
+  fillStory(); fillStyle(); renderChars(); renderScenes(); renderScript(); renderPrompt(); renderBoard(); updQuota(); renderHome();
+}
+
+/* ---------- 시작 ---------- */
+(async function init(){
+  if(!await load()){
+    const s=newScene(); s.cuts.push(newCut());
+    S.scenes.push(s); S.sel={scene:s.id,cut:s.cuts[0].id};
+  }
+  renderAll(); setInd('저장됨',true); paintMT(); bootRoute();
+  window.addEventListener('beforeunload',()=>{
+    try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){}
+  });
+})();
+/* =========================================================
+   홈 · 라우팅 — 탭이 주소(#해시)에 남아 링크로 공유되고,
+   다시 열었을 때 마지막으로 보던 화면으로 돌아온다.
+   ========================================================= */
+const TABKEY='scenedeck_tab';
+
+function goTab(t){
+  const b=document.querySelector('#nav button[data-t="'+t+'"]');
+  if(b) b.click();
+}
+
+/* 홈 카드 · 푸터 · 로고 등 어디서든 [data-go]로 탭 이동 */
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(!g) return;
+  goTab(g.dataset.go);
+});
+
+/* 탭이 바뀔 때마다 해시와 마지막 위치를 기록 (원래 핸들러 뒤에 이어 붙는다) */
+$('nav').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-t]'); if(!b) return;
+  const t=b.dataset.t;
+  if(t==='home') renderHome();
+  try{ localStorage.setItem(TABKEY,t); }catch(err){}
+  if(location.hash!=='#'+t){ try{ history.replaceState(null,'','#'+t); }catch(err){} }
+});
+
+function bootRoute(){
+  let t=(location.hash||'').replace(/^#/,'');
+  if(!t){ try{ t=localStorage.getItem(TABKEY)||''; }catch(e){} }
+  if(t && t!=='home' && document.querySelector('#nav button[data-t="'+t+'"]')) goTab(t);
+  else renderHome();
+  window.addEventListener('hashchange',()=>{
+    const hh=(location.hash||'').replace(/^#/,'');
+    if(hh && hh!==curTab()) goTab(hh);
+  });
+}
+
+/* 홈 상단의 현재 작업 요약 */
+function renderHome(){
+  const el=$('homestat'); if(!el) return;
+  const cuts=allCuts();
+  const secs=cuts.reduce((a,x)=>a+(+x.c.dur||0),0);
+  const started = !!(S.title || S.chars.length || S.scenes.length>1 || cuts.length>1
+                     || Object.values(S.story).some(v=>String(v||'').trim()));
+  if(!started){
+    el.innerHTML=[
+      ['1분','설치도 가입도 없이 바로 시작'],
+      ['3종','미드저니 · Veo · 범용 이미지'],
+      ['0원','내 브라우저에서만 돌아갑니다']
+    ].map(r=>'<div><b>'+r[0]+'</b>'+r[1]+'</div>').join('');
+  }else{
+    el.innerHTML=[
+      ['씬', S.scenes.length],
+      ['컷', cuts.length],
+      ['캐릭터', S.chars.length],
+      ['이미지', cuts.filter(x=>x.c.hasImg).length],
+      ['예상 길이', Math.floor(secs/60)+'분 '+(secs%60)+'초']
+    ].map(r=>'<div><b>'+esc(r[1])+'</b>'+esc(r[0])+'</div>').join('');
+  }
+  const p=$('homeproj'); if(!p) return;
+  p.innerHTML = S.title
+    ? '이어서 작업 중 — <b>'+esc(S.title)+'</b> · 마지막으로 보던 화면으로 돌아옵니다.'
+    : !started
+      ? '아래 카드를 눌러 원하는 작업으로 바로 갈 수 있어요.'
+      : '아직 제목이 없습니다. 위쪽 <b>작품</b> 칸에 제목을 적어보세요.';
+}
+</script>
+</body>
+</html>
