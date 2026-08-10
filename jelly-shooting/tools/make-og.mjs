@@ -291,10 +291,16 @@ FLY.forEach(f=>{ const p=place(f.a,f.t), r=R0*p.s, col=PAL[(f.c||0)%PAL.length];
     else if(f.k==='i') item3d(g,p.x,p.y,r*0.80,f.e,col);
     else { ball(g,p.x,p.y,r,col,{}); jellyFace(g,p.x,p.y,r,f.t>0.8?'o':''); } }); });
 heroCat(g,HERO.x,HERO.y,HERO.r);
-return c.toDataURL('image/png').split(',')[1];
+return { png:c.toDataURL('image/png').split(',')[1],
+         jpg:c.toDataURL('image/jpeg',0.92).split(',')[1] };
 })()`;
-const b64=await evl(CODE);
-const buf=Buffer.from(b64,'base64');
-writeFileSync(OUT,buf);
-console.log('✅ '+OUT+'  1200x630  '+Math.round(buf.length/1024)+'KB');
+const r=await evl(CODE);
+const png=Buffer.from(r.png,'base64'), jpg=Buffer.from(r.jpg,'base64');
+writeFileSync(OUT,png);
+console.log('✅ '+OUT+'  1200x630  '+Math.round(png.length/1024)+'KB');
+// 미리보기에 실제로 쓰는 것은 이 JPEG 다. PNG(1MB 넘음)는 크롤러가 받다가
+// 시간 초과되면 예전 그림을 계속 쓰는 일이 있어서, 가벼운 쪽을 og:image 로 둔다.
+const JPG=OUT.replace(/\.png$/,'.jpg');
+writeFileSync(JPG,jpg);
+console.log('✅ '+JPG+'  1200x630  '+Math.round(jpg.length/1024)+'KB  ← og:image 는 이걸 쓴다');
 ws.close(); proc.kill();

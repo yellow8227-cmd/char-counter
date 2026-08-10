@@ -19,8 +19,10 @@ const HTML = join(dirname(fileURLToPath(import.meta.url)), '..', 'index.html');
 // 카카오·페이스북은 '같은 주소면 같은 그림'으로 보고 캐시한다. 링크에 ?v= 를 붙여
 // 페이지를 새로 읽게 해도, 그림 주소가 그대로면 그림은 예전 것을 그냥 다시 쓴다.
 // 주소 자체가 달라져야 확실히 새로 받아간다.
-const IMG_VER = 2;
-const IMG = 'og.png?v=' + IMG_VER;
+const IMG_VER = 3;
+// 미리보기에는 가벼운 JPEG 를 쓴다. PNG 는 1MB 를 넘어서, 크롤러가 받다가 시간 초과되면
+// 예전 그림을 계속 쓰는 일이 있다(카카오에서 실제로 그랬다). 같은 그림, 114KB.
+const IMG = 'og.jpg?v=' + IMG_VER;
 const TAGS = [
   { re: /(<meta property="og:url" content=")([^"]*)(")/,        path: '' },
   { re: /(<meta property="og:image" content=")([^"]*)(")/,      path: IMG },
