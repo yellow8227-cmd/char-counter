@@ -347,6 +347,18 @@
   .throwbtn .c{position:absolute;bottom:-4px;right:-4px;background:rgba(255,255,255,0.95);color:#7a52c8;
     font-family:var(--font);font-size:10px;font-weight:900;padding:0 4px;border-radius:8px;
     box-shadow:0 2px 5px rgba(0,0,0,.2);}
+  /* 🔔 알림 — 게임 중에도 위에서 내려온다. 젤리 길목(가운데)을 피해 위쪽에 둔다. */
+  #invite{position:absolute;top:calc(var(--by,0px) + 10px);left:50%;transform:translateX(-50%);
+    z-index:28;width:min(92vw,420px);display:flex;flex-direction:column;gap:9px;align-items:center;
+    padding:13px 15px;border-radius:20px;
+    background:var(--glass);border:1.5px solid var(--edge);
+    box-shadow:var(--sh-soft),var(--sh-in);animation:dropIn .32s cubic-bezier(.2,.9,.3,1.3);}
+  #invite.hide{display:none!important;}
+  @keyframes dropIn{from{opacity:0;transform:translateX(-50%) translateY(-18px)}
+    to{opacity:1;transform:translateX(-50%) translateY(0)}}
+  #invite .itxt{font-size:14.5px;font-weight:800;color:var(--ink);text-align:center;line-height:1.45;
+    white-space:pre-line;}
+  #invite .ibtns{display:flex;gap:8px;}
   #countWrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:20;
     background:radial-gradient(120% 120% at 50% 50%,rgba(255,255,255,0.5),rgba(255,220,238,0.62));backdrop-filter:blur(6px);}
   #countNum{font-family:var(--font-title);font-size:clamp(90px,26vw,140px);color:#ff4d84;
@@ -404,6 +416,29 @@
     aspect-ratio:480/720;align-self:center;border-radius:18px;
     box-shadow:var(--shadow);cursor:crosshair;touch-action:none;}
   #myPadCanvas{width:min(100%,340px);aspect-ratio:480/170;border-radius:16px;box-shadow:var(--shadow);}
+  /* 폰에서 쓰는 얇은 정보 띠 (기본은 숨김 — PC는 캔버스가 더 보기 좋다) */
+  #tInfoBar{display:none;}
+  #tInfoBar .ti{display:inline-flex;align-items:center;gap:4px;font-weight:800;font-size:12.5px;
+    color:var(--ink);background:var(--glass);border:1px solid var(--edge);
+    padding:5px 9px;border-radius:11px;box-shadow:var(--sh-lift),inset 0 1px 0 #fff;white-space:nowrap;}
+  #tInfoBar .ti.grow{position:relative;flex:1;min-width:80px;overflow:hidden;justify-content:center;}
+  #tInfoBar .ti i{position:absolute;left:0;top:0;bottom:0;width:0%;
+    background:linear-gradient(180deg,#c8a9ff,#8a5cff);opacity:.35;transition:width .12s;}
+  #tInfoBar .ti em{position:relative;font-style:normal;color:#6a3edb;font-weight:900;}
+  /* ── 폰: 상대 화면을 최대한 크게 ──
+     예전에는 내 정보판(120px)과 속도바 두 줄(73px)이 자리를 먹어 상대 화면이 236px까지
+     쪼그라들었다. 조준하는 화면이 그만큼 작으면 게임이 안 된다. PC는 그대로 둔다. */
+  @media (max-width:600px){
+    #throwerView{padding:44px 6px 8px;gap:6px;}
+    #myPadCanvas,#tPadLabel{display:none;}
+    #tInfoBar{display:flex;gap:5px;flex-wrap:nowrap;width:100%;justify-content:center;}
+    /* 그림만 남기면 폭이 29px로 줄어 손가락으로 누르기 어렵다 — 최소 폭을 준다 */
+    .spdbtn{font-size:16px;padding:8px 0;min-height:38px;min-width:44px;line-height:1;}
+    .spdbtn .sn{display:none;}                 /* 이름은 숨기고 그림만 — 한 줄에 들어간다 */
+    .twbtn{width:54px;padding:6px 2px;}
+    .twbtn .e{font-size:19px;} .twbtn .n{font-size:9.5px;} .twbtn .c{font-size:9px;}
+    #mirrorCanvas{border-radius:14px;}
+  }
   #throwerHomeBtn{position:absolute;top:10px;left:10px;z-index:8;}
   /* 무기는 눈에 확 보여야 한다. 구석의 작은 칩으로는 아무도 못 찾는다. */
   #spdBar{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;}
@@ -467,6 +502,15 @@
   </div>
   <div id="countWrap" class="hide"><div id="countNum">3</div></div>
 
+  <!-- 🔔 알림 — 다른 걸 하고 있어도 방 소식이 뜬다 -->
+  <div id="invite" class="hide">
+    <div class="itxt" id="inviteTxt"></div>
+    <div class="ibtns">
+      <button class="btn" id="inviteOk" style="padding:11px 20px;font-size:15px;">들어가기</button>
+      <button class="btn ghost" id="inviteNo" style="padding:11px 16px;font-size:14px;">나중에</button>
+    </div>
+  </div>
+
   <!-- 🎯 던지는 사람 화면 — 상대 화면과 내 화면을 같이 본다 -->
   <div id="throwerView" class="hide">
     <button class="iconbtn" id="throwerHomeBtn" title="홈으로">🏠</button>
@@ -475,8 +519,16 @@
       <canvas id="mirrorCanvas" width="480" height="720"></canvas>
     </div>
     <div class="tpanel">
-      <div class="tlabel">🙋 내 화면</div>
+      <div class="tlabel" id="tPadLabel">🙋 내 화면</div>
       <canvas id="myPadCanvas" width="480" height="170"></canvas>
+      <!-- 폰에서는 위 캔버스(120px) 대신 이 띠를 쓴다. 그만큼 상대 화면이 커진다. -->
+      <div id="tInfoBar">
+        <span class="ti"><b id="tiScore">⭐ 0</b></span>
+        <span class="ti" id="tiCombo">🔥 x1</span>
+        <span class="ti" id="tiTime">⏱ 90초</span>
+        <span class="ti" id="tiHit">뚫음 0/0</span>
+        <span class="ti grow"><i id="tiEnergyFill"></i><em id="tiEnergyTxt">⚡ 100</em></span>
+      </div>
       <div id="spdBar"></div>
       <div id="throwBar"></div>
     </div>
@@ -528,15 +580,23 @@
     <div class="tag2">같은 아이템을 다시 사면 <b>Lv.5까지 강화</b>돼요! <b>나만의 아이템</b>도 만들 수 있어요 ✨</div>
     <div class="shopgrid" id="shopGrid"></div>
     <div class="card" id="createPanel">
-      <div class="label">🎨 나만의 아이템 만들기</div>
-      <div class="tag2" style="margin:0 0 8px;text-align:left;">효과 · 이모지 · 이름을 골라 나만의 아이템을 창작하세요!</div>
-      <div class="label" style="margin-top:2px;">효과 선택</div>
-      <div class="mini" id="ciEffects"></div>
-      <div class="label" style="margin-top:10px;">이모지</div>
-      <div class="mini" id="ciEmojis"></div>
+      <div class="label">🎀 악세서리 공방</div>
+      <div class="tag2" style="margin:0 0 10px;text-align:left;">나만의 악세서리를 만들어 캐릭터에 씌워요.
+        만들 때마다 값이 올라가니 아껴서 골라주세요!</div>
+      <div style="display:flex;justify-content:center;margin-bottom:8px;">
+        <canvas id="accPreview" width="240" height="240"></canvas>
+      </div>
+      <div class="label" style="margin-top:2px;">모양</div>
+      <div class="mini" id="caEmojis"></div>
+      <div class="label" style="margin-top:10px;">색깔</div>
+      <div class="mini" id="caColors"></div>
       <div class="label" style="margin-top:10px;">이름</div>
-      <input id="ciName" maxlength="8" placeholder="예: 번개폭풍">
-      <div style="text-align:center;margin-top:12px;"><button class="shopbtn craft" id="createBtn" style="font-size:15px;padding:12px 22px;">✨ 만들기 (150🪙)</button></div>
+      <input id="caName" maxlength="8" placeholder="예: 별하늘 리본">
+      <div class="tag2" id="caCostMsg" style="text-align:left;margin-top:8px;"></div>
+      <div style="text-align:center;margin-top:10px;">
+        <button class="shopbtn craft" id="createBtn" style="font-size:15px;padding:12px 22px;">✨ 만들기</button></div>
+      <div class="label" style="margin-top:12px;">내가 만든 악세서리</div>
+      <div class="mini" id="caList"></div>
     </div>
     <button class="btn ghost" id="shopBackBtn">← 홈으로</button>
   </div>
@@ -1079,6 +1139,20 @@ function kindExtras(g,R,cfg,mood){
 }
 function twinkle(g,x,y,s){g.save();g.translate(x,y);g.beginPath();for(let i=0;i<8;i++){const a=i/8*Math.PI*2,rr=i%2?s*0.38:s;g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);}g.closePath();g.fill();g.restore();}
 function drawAcc(g,R,cfg){ const ac=cfg.accColor||'#ff5c8a';
+  // 내가 만든 악세서리 — 머리 위에 모양을 얹고, 고른 색으로 뒤에서 빛을 준다
+  const mine=(cfg.acc==='__preview')?{emoji:cfg.accEmoji||'🎀'}:customAccs.find(a=>a.id===cfg.acc);
+  if(mine){
+    const y=-R*1.02, sz=R*0.86;
+    const gl=g.createRadialGradient(0,y,1,0,y,sz*0.9);
+    gl.addColorStop(0,hexA(ac,0.55)); gl.addColorStop(1,hexA(ac,0));
+    g.fillStyle=gl; g.beginPath(); g.ellipse(0,y,sz*0.9,sz*0.62,0,0,7); g.fill();
+    g.save(); g.textAlign='center'; g.textBaseline='middle';
+    g.font=sz+'px sans-serif';
+    g.shadowColor=hexA(ac,0.85); g.shadowBlur=R*0.22;
+    g.fillText(mine.emoji||'🎀',0,y);
+    g.restore(); g.textBaseline='alphabetic';
+    return;
+  }
   if(cfg.acc==='bow'){ const bx=R*0.62,by=-R*0.72;g.fillStyle=ac;
     g.beginPath();g.moveTo(bx,by);g.lineTo(bx-R*0.34,by-R*0.2);g.lineTo(bx-R*0.34,by+R*0.2);g.closePath();g.fill();
     g.beginPath();g.moveTo(bx,by);g.lineTo(bx+R*0.34,by-R*0.2);g.lineTo(bx+R*0.34,by+R*0.2);g.closePath();g.fill();
@@ -1117,7 +1191,8 @@ function loadJSON(k,def){try{const v=JSON.parse(localStorage.getItem(k));return 
 let coins=loadNum('jelly_coins');
 let inventory=loadJSON('jelly_inv',{});
 let crafted=loadJSON('jelly_crafted',[]);
-let customItems=loadJSON('jelly_custom',[]);
+let customItems=loadJSON('jelly_custom',[]);      // 예전에 만든 아이템 — 그대로 쓸 수 있게 남긴다
+let customAccs=loadJSON('jelly_caccs',[]);        // 내가 만든 악세서리
 let ownedKinds=loadJSON('jelly_kinds',['cat','dog','bunny']);
 // 같은 아이템을 산 횟수가 그 아이템의 레벨이 된다 (최대 5).
 // 횟수를 그대로 레벨로 쓰면 저장값이 하나라 어긋날 일이 없다.
@@ -1138,7 +1213,7 @@ function lvDesc(eff,lv){
   if(eff==='clear')  return '폭탄 제거'+(lv>1?(' + '+(lv-1)*2+'초 폭탄 차단'):'');
   return 'Lv.'+lv;
 }
-function saveEconomy(){try{localStorage.setItem('jelly_coins',coins);localStorage.setItem('jelly_inv',JSON.stringify(inventory));localStorage.setItem('jelly_crafted',JSON.stringify(crafted));localStorage.setItem('jelly_custom',JSON.stringify(customItems));localStorage.setItem('jelly_kinds',JSON.stringify(ownedKinds));localStorage.setItem('jelly_bought',JSON.stringify(bought));}catch(e){}}
+function saveEconomy(){try{localStorage.setItem('jelly_coins',coins);localStorage.setItem('jelly_inv',JSON.stringify(inventory));localStorage.setItem('jelly_crafted',JSON.stringify(crafted));localStorage.setItem('jelly_custom',JSON.stringify(customItems));localStorage.setItem('jelly_caccs',JSON.stringify(customAccs));localStorage.setItem('jelly_kinds',JSON.stringify(ownedKinds));localStorage.setItem('jelly_bought',JSON.stringify(bought));}catch(e){}}
 const ITEMS={
   heart:{name:'하트팩',emoji:'💗',desc:'목숨 +1 즉시 회복',effect:'heart',buy:35,craft:0},
   slow: {name:'슬로우',emoji:'⏱️',desc:'6초간 젤리가 느려져요',effect:'slow',buy:45,craft:0},
@@ -1148,6 +1223,7 @@ const ITEMS={
 };
 const BASE_ORDER=['heart','slow','clear','x2','magnet'];
 customItems.forEach(ci=>{ITEMS[ci.id]=ci;});
+customAccs.forEach(a=>{ ACCS.push({id:a.id,label:a.emoji+' '+a.label,custom:true}); });
 function allItemIds(){return BASE_ORDER.concat(customItems.map(c=>c.id));}
 function isAvailable(id){return ITEMS[id].craft===0||crafted.includes(id)||ITEMS[id].custom;}
 // 스킨(캐릭터) 잠금 가격 — 0이면 기본 제공
@@ -1233,24 +1309,54 @@ function buildShop(){
       } } });
 }
 // ---- 나만의 아이템 창작 ----
-const EFFECT_OPTS=[{id:'heart',label:'💗 목숨+1',buy:35},{id:'slow',label:'⏱️ 슬로우',buy:45},{id:'clear',label:'🧹 폭탄청소',buy:60},{id:'x2',label:'🌟 2배점수',buy:80},{id:'magnet',label:'🧲 자석',buy:70}];
-const EMOJI_OPTS=['⚡','🍀','🌈','💎','🔮','🎈','🍭','👾','🚀','❄️','🌸','🔥'];
-const CREATE_COST=150;
-let ciEffect='slow', ciEmoji='⚡';
+// ═══ 악세서리 공방 ═══
+// 아이템 창작은 없앴다. 대신 '입는 것'을 만든다 — 값이 비싸고, 만들 때마다 더 비싸진다.
+// 그래서 코인이 쓸 곳이 생기고, 남의 캐릭터를 보면 얼마나 모았는지 보인다.
+const ACC_COSTS=[3000,5000,8000,12000,18000];
+function accCost(){ const n=customAccs.length;
+  return n<ACC_COSTS.length ? ACC_COSTS[n] : ACC_COSTS[ACC_COSTS.length-1]+8000*(n-ACC_COSTS.length+1); }
+const CA_EMOJIS=['🎀','👑','🌸','⭐','🍓','🧢','🎩','🦋','💎','🍀','🌙','☁️','🔥','🍭','🐚','🎧'];
+const CA_COLORS=['#ff5c8a','#8a5cff','#ffce3d','#4fc65f','#4fa8ff','#ff8a5c','#ffffff','#5a5566'];
+let caEmoji='🎀', caColor='#ff5c8a';
 function buildCreator(){
-  const ef=$('ciEffects'); ef.innerHTML=''; EFFECT_OPTS.forEach(o=>{const b=document.createElement('button');b.className='minichip'+(ciEffect===o.id?' on':'');b.textContent=o.label;b.onclick=()=>{ciEffect=o.id;buildCreator();};ef.appendChild(b);});
-  const em=$('ciEmojis'); em.innerHTML=''; EMOJI_OPTS.forEach(e=>{const b=document.createElement('button');b.className='emochip'+(ciEmoji===e?' on':'');b.textContent=e;b.onclick=()=>{ciEmoji=e;buildCreator();};em.appendChild(b);});
-  const cb=$('createBtn'); cb.disabled=coins<CREATE_COST; cb.textContent='✨ 만들기 ('+CREATE_COST+'🪙)';
+  const em=$('caEmojis'); if(!em) return; em.innerHTML='';
+  CA_EMOJIS.forEach(e=>{const b=document.createElement('button');
+    b.className='emochip'+(caEmoji===e?' on':'');b.textContent=e;
+    b.onclick=()=>{caEmoji=e;buildCreator();};em.appendChild(b);});
+  const co=$('caColors'); co.innerHTML='';
+  CA_COLORS.forEach(c=>{const b=document.createElement('button');
+    b.className='sw'+(caColor===c?' on':'');b.style.background=c;b.title=c;
+    b.onclick=()=>{caColor=c;buildCreator();};co.appendChild(b);});
+  const cost=accCost();
+  $('caCostMsg').innerHTML='이번 악세서리는 <b>🪙 '+cost.toLocaleString()+'코인</b>'
+    +(customAccs.length?(' (만든 개수 '+customAccs.length+'개 — 다음은 더 비싸져요)'):' — 첫 개는 3,000코인');
+  const cb=$('createBtn'); cb.disabled=coins<cost;
+  cb.textContent='✨ 만들기 ('+cost.toLocaleString()+'🪙)';
+  // 미리보기 — 내 캐릭터에 씌워 본다
+  const cv=$('accPreview'); if(cv){ const g=cv.getContext('2d'); g.clearRect(0,0,240,240);
+    drawAvatar(g,120,132,62,{kind:character.kind,color:character.color,
+      acc:'__preview',accColor:caColor,accEmoji:caEmoji},'calm',frame*0.5); }
+  // 내가 만든 목록 — 눌러서 바로 착용
+  const li=$('caList'); li.innerHTML='';
+  if(!customAccs.length) li.innerHTML='<span class="tag2">아직 없어요. 만들면 여기에 모여요 🎀</span>';
+  customAccs.forEach(a=>{ const b=document.createElement('button');
+    b.className='minichip'+(character.acc===a.id?' on':'');
+    b.textContent=a.emoji+' '+a.label;
+    b.onclick=()=>{ character.acc=a.id; character.accColor=a.color; saveChar();
+      buildCreator(); toast('🎀 '+a.label+' 착용!'); };
+    li.appendChild(b); });
 }
 function createCustom(){
-  if(coins<CREATE_COST){toast('코인이 부족해요! ('+CREATE_COST+'🪙 필요)');return;}
-  const nm=($('ciName').value||'').trim().slice(0,8)||'나만의템';
-  const base=EFFECT_OPTS.find(o=>o.id===ciEffect);
-  const id='c'+customItems.length+'_'+ciEffect;
-  const item={id,name:nm,emoji:ciEmoji,desc:base.label.replace(/^\S+\s/,'')+' 효과',effect:ciEffect,buy:base.buy,craft:0,custom:true};
-  customItems.push(item); ITEMS[id]=item; coins-=CREATE_COST; inventory[id]=(inventory[id]||0)+1;
-  bought[id]=1;   // 창작하면 Lv.1로 시작 — 상점에서 계속 강화할 수 있다
-  saveEconomy(); playLevelUp(); $('ciName').value=''; buildShop(); buildCreator(); toast('✨ "'+nm+'" 창작 완료! (1개 증정)');
+  const cost=accCost();
+  if(coins<cost){ toast('코인이 부족해요! ('+cost.toLocaleString()+'🪙 필요)'); return; }
+  const nm=($('caName').value||'').trim().slice(0,8)||'나만의 악세서리';
+  const id='ca'+(customAccs.length+1)+'_'+Date.now().toString(36).slice(-4);
+  const acc={id,label:nm,emoji:caEmoji,color:caColor};
+  customAccs.push(acc); ACCS.push({id,label:acc.emoji+' '+nm,custom:true});
+  coins-=cost; character.acc=id; character.accColor=caColor; saveChar();
+  saveEconomy(); playLevelUp(); $('caName').value='';
+  buildCreator(); if($('kindOpts')) buildSetupUI&&0;
+  toast('🎀 "'+nm+'" 완성! 바로 착용했어요 (🪙 -'+cost.toLocaleString()+')');
 }
 // ---- toast + 일일 보너스 ----
 let toastTimer=null;
@@ -2063,7 +2169,7 @@ function netSend(o){
   if(aiOn){ aiOnMsg(o); return; }        // AI 대결은 같은 경로를 그대로 쓴다
   if(net.ch){ try{ net.ch.send({type:'broadcast',event:'msg',payload:o}); }catch(e){} } }
 function netLeave(){
-  netHelloStop();
+  netHelloStop(); net.park=false;
   if(net.ch){ netSend({t:'bye'}); try{ getSupa().removeChannel(net.ch); }catch(e){} net.ch=null; }
   if(net.watchT){ clearInterval(net.watchT); net.watchT=null; }
   aiStop(); hubUnadvertise();
@@ -2153,6 +2259,19 @@ function nickOrPrompt(){
 function netOnMsg(m){
   if(!m||!m.t) return;
   net.lastFoe=performance.now(); net.foeGone=false;
+  // 대전이 아닌데 오는 게임 메시지는 버린다. 안 버리면 방을 열어둔 채 혼자 하는 판에
+  // 상대가 던진 젤리가 날아든다.
+  if(!netMode&&!throwerAlive&&['throw','jthrow','jgone','hex','stat','tstat'].indexOf(m.t)>=0) return;
+  // 방을 열어둔 채 딴 걸 하고 있었다면, 여기서 알림을 띄운다
+  if((m.t==='hello'||m.t==='hi')&&net.park){
+    net.park=false;
+    const who=m.name||'친구';
+    showInvite('🎉 '+who+'님이 내 방에 들어왔어요!\n대전을 시작할까요?','시작하기',()=>{
+      if(running){ running=false; paused=false;
+        ['hud','audioBar','itemBar','pauseBtn','netBar','throwWrap'].forEach(id=>$(id).classList.add('hide')); }
+      openLobby(); renderLobby();
+    });
+  }
   if(m.t==='hello'||m.t==='hi'){
     net.foe={name:m.name||'친구',char:m.char};
     netHelloStop();                       // 상대를 알았으니 인사를 멈춘다
@@ -2195,6 +2314,36 @@ function netOnMsg(m){
 // 테이블을 만들지 않고 Realtime presence를 쓴다 — 방장이 끊기면 목록에서 저절로 사라지고,
 // 유령 방을 청소하는 코드도, 하트비트도 필요 없다.
 let hub=null, hubRooms=[], netPublic=true;
+// ── 🔔 알림 ──
+// "방이 열렸다 / 누가 들어왔다"를 다른 걸 하는 중에도 알려준다.
+let inviteT=null;
+function showInvite(text,okLabel,onOk){
+  const w=$('invite'); if(!w) return;
+  $('inviteTxt').textContent=text;
+  $('inviteOk').textContent=okLabel;
+  $('inviteOk').onclick=()=>{ hideInvite(); onOk&&onOk(); };
+  w.classList.remove('hide');
+  if(inviteT) clearTimeout(inviteT);
+  inviteT=setTimeout(hideInvite,14000);      // 오래 두면 화면을 가린다
+  playLevelUp();
+}
+function hideInvite(){ if(inviteT){clearTimeout(inviteT);inviteT=null;}
+  const w=$('invite'); if(w) w.classList.add('hide'); }
+// 대전 중이거나 이미 방에 들어가 있으면 알리지 않는다(방해만 된다)
+function inviteOk(){ return !netMode && !throwerAlive && !net.room; }
+
+let hubSeen={};        // 이미 알린 방 — 같은 방을 두 번 알리지 않는다
+function hubNotify(){
+  if(!inviteOk()) return;
+  const fresh=hubRooms.filter(r=>r.room&&!hubSeen[r.room]);
+  hubRooms.forEach(r=>{ if(r.room) hubSeen[r.room]=1; });
+  if(!fresh.length) return;
+  const r=fresh[0], m=MODES[r.mode]||MODES.normal;
+  const label=(r.game==='throw')?'🎯 던지기 게임':'⚔️ 실시간 던전';
+  showInvite('🔔 새로운 방이 열렸어요!\n'+r.name+'님의 '+label+' ('+m.emoji+m.name+')\n같이 하실래요?',
+    '들어가기',()=>{ if(!nickOrPrompt())return; netGame=(r.game==='throw')?'throw':'dungeon';
+      netEnterRoom(r.room,false); });
+}
 let hubT=null, hubSynced=false;
 // 로비에 붙고, 내 방이 있으면 등록까지 한다. SDK가 아직 안 왔으면 올 때까지 다시 시도한다.
 // (예전에는 SDK 전에 한 번 부르고 끝이라 목록이 영원히 비어 있었다)
@@ -2208,7 +2357,7 @@ function hubEnsure(){
   if(!hub){
     hubSynced=false;
     hub=getSupa().channel('jelly:lobby');
-    hub.on('presence',{event:'sync'},()=>{ hubSynced=true; hubRooms=hubRead(); renderRoomList(); });
+    hub.on('presence',{event:'sync'},()=>{ hubSynced=true; hubRooms=hubRead(); renderRoomList(); hubNotify(); });
     hub.subscribe(st=>{
       if(st==='SUBSCRIBED'){ hubSynced=true; hubRooms=hubRead(); renderRoomList(); hubAdvertise(); }
       else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED'){ hub=null; hubT=setTimeout(hubEnsure,1500); }
@@ -2806,7 +2955,9 @@ function foeAvatar(){ return (net.foe&&net.foe.char)?net.foe.char:character; }
 function buildSpdBar(){
   const bar=$('spdBar'); bar.innerHTML='';
   TSPD.forEach((sp,i)=>{ const b=document.createElement('button');
-    b.className='spdbtn'+(tSpd===i?' on':''); b.textContent=sp.e+sp.n+' ×'+SPD_PAY[i];
+    b.className='spdbtn'+(tSpd===i?' on':''); b.title=sp.n+' (점수 ×'+SPD_PAY[i]+')';
+    // 폰에서는 이름을 숨기고 그림만 남긴다 — 네 개가 한 줄에 들어가야 상대 화면이 커진다
+    b.innerHTML=sp.e+'<span class="sn">'+sp.n+' ×'+SPD_PAY[i]+'</span>';
     b.onclick=()=>{ tSpd=i; buildSpdBar(); toast(sp.e+' 낙하 속도: '+sp.n); };
     bar.appendChild(b); });
 }
@@ -2921,7 +3072,7 @@ function mirrorLoop(now){
   if(steps>=5) mAcc=0;
   mframe++;
   if(!throwerAlive) return;
-  drawMirror(); drawMyPad();
+  drawMirror(); drawMyPad(); updateTInfo();
   mirrorRAF=requestAnimationFrame(mirrorLoop);
 }
 function drawMirror(){
@@ -2946,6 +3097,16 @@ function drawMirror(){
     g.font="900 34px 'Nolto','Donguri',sans-serif"; g.textAlign='center';
     g.fillStyle=tMsg.color; g.shadowColor='rgba(255,255,255,0.95)'; g.shadowBlur=12;
     g.fillText(tMsg.text,240,250-(1-tMsg.life)*40); g.restore(); }
+}
+// 폰용 정보 띠. 캔버스에 있던 값을 그대로 옮긴다(점수·콤보·시간·뚫음·에너지).
+function updateTInfo(){
+  const b=$('tInfoBar'); if(!b||b.offsetParent===null) return;   // PC에서는 숨겨져 있다
+  $('tiScore').textContent='⭐ '+throwScore;
+  $('tiCombo').textContent='🔥 x'+tCombo;
+  $('tiTime').textContent='⏱ '+Math.max(0,Math.ceil((net.timeLimit*60-elapsed)/60))+'초';
+  $('tiHit').textContent='뚫음 '+tMissed+'/'+tThrown;
+  $('tiEnergyFill').style.width=Math.max(0,Math.min(100,tEnergy))+'%';
+  $('tiEnergyTxt').textContent='⚡ '+Math.floor(tEnergy);
 }
 function drawMyPad(){
   const g=pctx2, w=TW[tKind]||TW.normal;
@@ -3203,10 +3364,12 @@ $('attendBackBtn').onclick=()=>openStart();
 $('rankBtn').onclick=openRank;
 $('dungeonBtn').onclick=()=>openNetMode('dungeon');
 $('throwGameBtn').onclick=()=>openNetMode('throw');
-$('netBackBtn').onclick=()=>{ hubLeave(); openStart(); };
+// 로비 연결은 유지한다 — 그래야 혼자 하기 중에도 "새 방이 열렸어요" 알림이 온다
+$('netBackBtn').onclick=()=>{ netRandomStop(); openStart(); };
 $('netRandomBtn').onclick=netRandom;
 $('netAiBtn').onclick=aiMatch;
 $('randCancelBtn').onclick=()=>netRandomStop('랜덤 매칭을 멈췄어요 ✋');
+$('inviteNo').onclick=hideInvite;
 $('aiBtn').onclick=openAiScreen; $('aiStartBtn').onclick=aiGo; $('aiBackBtn').onclick=openStart;
 $('roomRefreshBtn').onclick=()=>{ hubEnsure(); if(hub){ hubRooms=hubRead(); } renderRoomList();
   toast('🔄 목록을 새로 읽었어요'); };
@@ -3227,7 +3390,16 @@ $('lobbyCopyBtn').onclick=()=>copyText(
   '🍡 젤리슈팅 같이 하자!\n'+location.origin+location.pathname+'?r='+net.room+
   '\n(안 열리면 방 코드 '+net.room+' 직접 입력)','🔗 복사됨! 붙여넣어 보내세요');
 $('lobbyRetryBtn').onclick=()=>{ sdkT0=0; sdkAltIdx=-1; netConnect(); };
-$('lobbyLeaveBtn').onclick=()=>{ netLeave(); openStart(); };
+// 방장이 대기실을 나갈 때: 방을 닫을지, 열어둔 채로 딴 걸 할지 고른다.
+// 열어두면 친구가 들어온 순간 알림이 뜬다("들어왔어요! 시작할까요?").
+$('lobbyLeaveBtn').onclick=()=>{
+  if(net.host&&net.ch&&!net.foe){
+    net.park=true; hubEnsure();
+    toast('🚪 방을 열어뒀어요 — 친구가 들어오면 알려줄게요');
+    openStart(); return;
+  }
+  netLeave(); openStart();
+};
 buildHexBar();
 $('lbRefresh').onclick=loadLeaderboard;
 $('joinChBtn').onclick=()=>joinByCode($('chCodeInput').value);
