@@ -677,6 +677,12 @@
              편집실에서 발견하는 것보다야 낫습니다.</p>
         </article>
         <article class="feature">
+          <h4>앉으면 눈높이가 내려갑니다</h4>
+          <p>배우를 앉히거나 눕히면 눈높이와 바닥에서 차지하는 자리가 같이 바뀝니다.
+             의자 위에서 앉히면 그 의자의 좌면을 그대로 쓰고요.
+             샷 사이즈도 키가 아니라 지금 자세로 계산됩니다.</p>
+        </article>
+        <article class="feature">
           <h4>카메라 뒤에서 보는 화면</h4>
           <p>고른 카메라가 지금 보고 있는 그림을 화면비에 맞춰 옆에 띄웁니다.
              세트가 어떻게 생겼는지 궁금하면 조감도를 돌려 보면 되고요.</p>
@@ -944,6 +950,9 @@
           <b>주황 손잡이</b>로 회전 — 기본이 <b><span id="angHint">15</span>° 단위</b>고 <kbd>Shift</kbd> 를 누르면 자유각입니다. <kbd>R</kbd> 키도 같아요.<br>
           <kbd>Ctrl+D</kbd> 복제 · <kbd>Ctrl+A</kbd> 전체 선택 · <kbd>Del</kbd> 삭제 · <kbd>←↑↓→</kbd> 미세이동 ·
           <kbd>Tab</kbd> 다음 카메라 · <kbd>Ctrl+Z</kbd> 되돌리기 · <kbd>0</kbd> 화면 맞춤<br>
+          <b>배우</b>는 자세를 고를 수 있어요 — 앉기·바닥·쪼그리기·무릎·눕기.
+          자세를 바꾸면 <b>눈높이와 샷 사이즈</b>가 함께 바뀌고, 의자 위에서 「앉기」로 바꾸면
+          그 의자의 좌면 높이를 그대로 씁니다. <b>소품</b>은 「바닥에서」를 올려 테이블 위에 얹을 수 있어요.<br>
           여러 개가 겹친 자리는 <kbd>Alt</kbd>+클릭으로 <b>아래 있는 것까지 차례로</b> 고를 수 있어요.
           <b>벽</b>은 고르면 양 끝에 파란 점이 생기고, 그걸 끌면 길이가 바뀝니다.<br>
           <b class="warnink">빨간 반투명 영역</b>은 180° 선을 넘는 쪽입니다. 그쪽 카메라는 샷 리스트에 ⚠︎ 가 붙어요.
@@ -1248,6 +1257,59 @@ function dof(c){
   return {near: near/10, far: den <= 0 ? Infinity : smm*(H-f)/den/10, hyper: H/10};
 }
 
+/* ============================================================
+   배우 자세
+   ── 자세가 바뀌면 눈높이와 바닥에서 차지하는 자리, 그리고 화면에 잡히는
+      세로 크기가 함께 바뀐다. 세 값을 여기 한곳에서만 정한다.
+      eye·top 은 선 키에 대한 비율(바닥 기준), w·d 는 위에서 본 자리(cm).
+      d 는 보는 방향 쪽 길이. 눕기는 키가 곧 길이라 따로 잡는다.
+   ============================================================ */
+const POSES = {
+  stand:  {name:'서기',      short:'',    eye:0.93, top:1.00, w:52, d:34, seat:0,  back:0.50},
+  sit:    {name:'앉기',      short:'앉음', eye:0.45, top:0.52, w:52, d:66, seat:45, back:0.35},
+  floor:  {name:'바닥에 앉기', short:'바닥', eye:0.47, top:0.54, w:62, d:74, seat:0,  back:0.50},
+  crouch: {name:'쪼그리기',   short:'쪼그림',eye:0.55, top:0.62, w:54, d:52, seat:0,  back:0.42},
+  kneel:  {name:'무릎 꿇기',  short:'무릎', eye:0.64, top:0.72, w:52, d:64, seat:0,  back:0.35},
+  // 눕기는 기준점이 머리다. 몸은 뒤로 뻗고, 보는 방향은 누운 채 바라보는 쪽.
+  lie:    {name:'눕기',      short:'누움', eye:0.08, top:0.14, w:52, d:0,  seat:0,  back:0.90},
+};
+const poseOf = a => POSES[a && a.pose] || POSES.stand;
+/* 앉는 자세의 좌면 높이 — 의자를 바꾸면 눈높이도 따라온다 */
+const seatOf = a => { const P = poseOf(a);
+  return P.seat ? clamp(a.seat != null ? +a.seat : P.seat, 0, 150) : 0; };
+/* 바닥에서 눈까지 (cm) */
+const eyeH = a => Math.round(seatOf(a) + poseOf(a).eye * a.height);
+/* 화면에 잡히는 세로 크기 — 샷 사이즈는 키가 아니라 이 값으로 재야 맞는다 */
+const visH = a => Math.max(10, Math.round(seatOf(a) + poseOf(a).top * a.height));
+/* 위에서 본 자리 */
+const footOf = a => { const P = poseOf(a);
+  return {w:P.w, d: a.pose === 'lie' ? Math.max(60, a.height) : P.d}; };
+
+/* 소품별로 '앉는 면'이 어디인가 (기본 치수 기준 cm).
+   여기 없는 것은 윗면에 걸터앉는 것으로 본다. */
+const SEAT_BASE = {chair:44, sofa:36, bed:32};
+function seatHeightOf(o){
+  const P = propOf(o), base = getProp(o.kind);
+  if(!P || !base) return null;
+  const b = SEAT_BASE[o.kind];
+  const top = (+o.z || 0);
+  return Math.round(top + (b != null ? b * (P.h / base.h) : P.h));
+}
+/* 이 배우 발밑에 앉을 만한 소품이 있나 — 작은 것부터(의자가 소파보다 먼저) */
+function seatUnder(a){
+  let best = null;
+  for(const o of state.props){
+    const P = propOf(o); if(!P) continue;
+    const ang = -o.rot, dx = a.x-o.x, dy = a.y-o.y;
+    const lx = dx*Math.cos(ang) - dy*Math.sin(ang), ly = dx*Math.sin(ang) + dy*Math.cos(ang);
+    if(Math.abs(lx) <= P.w/2 + 12 && Math.abs(ly) <= P.d/2 + 12){
+      const area = P.w*P.d;
+      if(!best || area < best.area) best = {area, h:seatHeightOf(o), name:(o.label || P.name)};
+    }
+  }
+  return best && best.h != null ? best : null;
+}
+
 /* 피사체 = 초점이 맞은 배우 (OTS에서 앞쪽 어깨를 피사체로 오인하지 않도록) */
 function subjectOf(c){
   if(!c || !state.actors.length) return null;
@@ -1402,11 +1464,57 @@ function propPrims(kind, P){
 }
 function actorPrims(a){
   const s = a.height/175, c = a.color || '#5fd08a';
-  return [
-    CY(-11*s,0,0, 15*s, 84*s, '#3d4453'), CY(11*s,0,0, 15*s, 84*s, '#3d4453'),
-    B(0,0,82*s, 40*s,22*s, a.height - 25*s - 82*s, c),   // 몸통은 머리 밑까지
+  const pant = '#3d4453', skin = '#e8be9a';
+  const H = a.height, pose = a.pose || 'stand', seat = seatOf(a);
+  const head = 25*s;                       // 머리 지름
+  const up = Math.max(6, visH(a) - head);  // 머리 밑까지의 높이
+  const px = v => Math.max(1, v);          // 도형이 뒤집히지 않게
+
+  if(pose === 'sit'){                      // 의자에 앉기 — 종아리는 아래로, 허벅지는 앞으로
+    return [
+      CY(-11*s, 40*s, 0, 14*s, px(seat), pant), CY(11*s, 40*s, 0, 14*s, px(seat), pant),
+      B(0, 21*s, seat, 36*s, 44*s, 13*s, pant),
+      B(0, 0, seat + 13*s, 40*s, 22*s, px(up - seat - 13*s), c),
+      CY(-25*s, 6*s, seat + 16*s, 11*s, px(up - seat - 22*s), c),
+      CY( 25*s, 6*s, seat + 16*s, 11*s, px(up - seat - 22*s), c),
+      SP(0, 0, up, head, head, head, skin),
+    ];
+  }
+  if(pose === 'floor'){                    // 바닥에 앉기 (책상다리)
+    return [
+      B(0, 20*s, 0, 58*s, 46*s, 15*s, pant),
+      B(0, 0, 15*s, 40*s, 22*s, px(up - 15*s), c),
+      SP(0, 0, up, head, head, head, skin),
+    ];
+  }
+  if(pose === 'crouch'){                   // 쪼그리기
+    return [
+      CY(-11*s, 8*s, 0, 14*s, 24*s, pant), CY(11*s, 8*s, 0, 14*s, 24*s, pant),
+      B(0, 15*s, 24*s, 36*s, 32*s, 13*s, pant),
+      B(0, 0, 34*s, 40*s, 22*s, px(up - 34*s), c),
+      SP(0, 0, up, head, head, head, skin),
+    ];
+  }
+  if(pose === 'kneel'){                    // 무릎 꿇기
+    return [
+      B(0, 18*s, 0, 36*s, 42*s, 13*s, pant),
+      B(0, -2*s, 0, 36*s, 22*s, 42*s, pant),
+      B(0, 0, 42*s, 40*s, 22*s, px(up - 42*s), c),
+      SP(0, 0, up, head, head, head, skin),
+    ];
+  }
+  if(pose === 'lie'){                      // 눕기 — 머리가 기준점, 몸은 뒤(-y)로 뻗는다
+    return [
+      SP(0, 0, 4*s, head, head, head, skin),
+      B(0, -H*0.28, 0, 40*s, px(H*0.36), 23*s, c),
+      B(0, -H*0.70, 0, 34*s, px(H*0.48), 19*s, pant),
+    ];
+  }
+  return [                                 // 서기
+    CY(-11*s,0,0, 15*s, 84*s, pant), CY(11*s,0,0, 15*s, 84*s, pant),
+    B(0,0,82*s, 40*s,22*s, px(up - 82*s), c),
     CY(-25*s,0,86*s, 11*s,46*s, c), CY(25*s,0,86*s, 11*s,46*s, c),
-    SP(0,0,a.height-25*s, 25*s,25*s,25*s, '#e8be9a'),
+    SP(0,0,up, head,head,head, skin),
   ];
 }
 function camPrims(c){
@@ -1441,7 +1549,11 @@ function propPrimsFor(o){
 
 function primsOf(o){
   let ps, rot = 0;
-  if(o.type === 'prop'){ ps = propPrimsFor(o); rot = o.rot; }
+  if(o.type === 'prop'){
+    ps = propPrimsFor(o); rot = o.rot;
+    const lift = +o.z || 0;               // 테이블 위에 올려놓기
+    if(lift) ps = ps.map(q => ({...q, z:q.z + lift}));
+  }
   else if(o.type === 'actor'){ ps = actorPrims(o); rot = o.rot; }
   else if(o.type === 'cam'){ ps = camPrims(o); rot = o.pan; }
   else if(o.type === 'light'){ ps = lightPrims(o); rot = o.pan; }
@@ -1576,8 +1688,8 @@ function shadowQuads(){
       const dx = a.x-l.x, dy = a.y-l.y, dist = Math.hypot(dx,dy);
       if(dist < 1) continue;
       const ux = dx/dist, uy = dy/dist, px = -uy, py = ux;
-      const drop = Math.max(12, l.z - a.height);
-      const len = clamp(a.height * dist / drop, 20, 1400);
+      const drop = Math.max(12, l.z - visH(a));
+      const len = clamp(visH(a) * dist / drop, 20, 1400);
       const Z = 1;                                   // 바닥(z=0) 살짝 위
       out.push({
         pts: [[a.x+px*26, a.y+py*26, Z], [a.x-px*26, a.y-py*26, Z],
@@ -1690,7 +1802,7 @@ function labelOf(o){
   return o.label || propName(o.kind);
 }
 function radiusOf(o){
-  if(o.type === 'actor') return 26;
+  if(o.type === 'actor'){ const F = footOf(o); return Math.max(26, Math.max(F.w, F.d)/2); }
   if(o.type === 'cam')   return 32;
   if(o.type === 'light') return 24;
   const P = propOf(o); return P ? Math.max(P.w, P.d)/2 : 30;
@@ -1903,8 +2015,8 @@ function drawShadows(g){
       const dx = a.x-l.x, dy = a.y-l.y, dist = Math.hypot(dx,dy);
       if(dist < 1) continue;
       const ux = dx/dist, uy = dy/dist;
-      const drop = Math.max(12, l.z - a.height);
-      const len = clamp(a.height * dist / drop, 20, 1400);
+      const drop = Math.max(12, l.z - visH(a));
+      const len = clamp(visH(a) * dist / drop, 20, 1400);
       const p = w2s(a.x, a.y), q = w2s(a.x + ux*len, a.y + uy*len);
       const wA = 26*PT.s, wB = 16*PT.s;
       const px = -uy, py = ux;
@@ -1983,21 +2095,35 @@ function drawProp2D(g, o){
   g.fillRect(-w/2,-d/2,w,d); g.strokeRect(-w/2,-d/2,w,d);
   g.beginPath(); g.moveTo(-w/2,-d/2); g.lineTo(w/2,d/2); g.stroke();
   g.restore();
-  if(Math.min(w,d) > 14) label(g, o.label || P.name, c[0], c[1], PAL.text);
+  if(Math.min(w,d) > 14)
+    label(g, (o.label || P.name) + (+o.z ? ' ↑' + Math.round(o.z) : ''), c[0], c[1], PAL.text);
 }
 function drawActor2D(g, o){
   const c = w2s(o.x,o.y), R = Math.max(9, 24*PT.s), isSel = state.sel === o.id;
+  const pose = o.pose || 'stand', F = footOf(o);
   g.fillStyle = PAL.actorWedge;
   g.beginPath(); g.moveTo(c[0],c[1]);
   g.arc(c[0],c[1], R*2.6, -Math.PI/2 + o.rot - 0.5, -Math.PI/2 + o.rot + 0.5);
   g.closePath(); g.fill();
+  // 바닥에서 차지하는 자리 — 앉거나 누우면 발자국이 달라진다.
+  // 화면에서는 위쪽(-y)이 보는 방향. 기준점 뒤로 back 만큼, 앞으로 나머지.
+  if(pose !== 'stand'){
+    const w = F.w*PT.s, d = F.d*PT.s, back = poseOf(o).back;
+    g.save(); g.translate(c[0],c[1]); g.rotate(o.rot);
+    g.beginPath();
+    rrect(g, -w/2, -(d - back*d), w, d, Math.min(9, d/4));
+    g.globalAlpha = .28; g.fillStyle = o.color || '#5fd08a'; g.fill(); g.globalAlpha = 1;
+    g.strokeStyle = isSel ? PAL.sel : PAL.actorRing; g.lineWidth = 1; g.stroke();
+    g.restore();
+  }
   g.beginPath(); g.arc(c[0],c[1], R, 0, Math.PI*2);
   g.fillStyle = o.color || '#5fd08a'; g.fill();
   g.strokeStyle = isSel ? PAL.sel : PAL.actorRing; g.lineWidth = isSel ? 3 : 1.5; g.stroke();
   g.beginPath(); g.moveTo(c[0],c[1]);
   g.lineTo(c[0] + Math.sin(o.rot)*R, c[1] - Math.cos(o.rot)*R);
   g.strokeStyle = PAL.actorNose; g.lineWidth = 2; g.stroke();
-  label(g, o.name, c[0], c[1] + R + 10, PAL.actorText);
+  const nm = o.name + (poseOf(o).short ? ' · ' + poseOf(o).short : '');
+  label(g, nm, c[0], c[1] + R + 10, PAL.actorText);
 }
 function drawLight2D(g, o){
   const K = LIGHTKIND[o.kind], c = w2s(o.x,o.y), R = Math.max(7, 15*PT.s);
@@ -2082,7 +2208,7 @@ function drawCamView(){
     {x:c.x, y:c.y, z:c.z, pan:c.pan, tilt:c.tilt, fovH:hFov(c)}, {skipCam:c.id});
 
   if(on_('cbNames')) for(const a of state.actors){
-    const s = prj([a.x, a.y, a.height + 14]);
+    const s = prj([a.x, a.y, visH(a) + 14]);
     if(s && s[0] > -40 && s[0] < cw+40) label(g, a.name, s[0], s[1], '#1d6b3f');
   }
   if(on_('cbGuide')){
@@ -2173,7 +2299,7 @@ function addCamera(x, y){
 function addActor(x, y){
   const names = ['지훈','수연','민재','하늘','도윤','서아','태호','유진'];
   const a = {id:uid++, type:'actor', name: names[state.actors.length % names.length],
-    x: x||0, y: y||0, rot: Math.PI, height:175, color:'#5fd08a'};
+    x: x||0, y: y||0, rot: Math.PI, height:175, color:'#5fd08a', pose:'stand'};
   state.actors.push(a); setSel([a.id], a.id); return a;
 }
 function addLight(kind, x, y){
@@ -2842,6 +2968,17 @@ function renderInsp(){
   else if(o.type === 'actor'){
     h += '<div class="grid2">' + wrap_('이름','<input id="i_name" value="'+esc(o.name)+'">') +
          num_('i_h','키(cm)', o.height, 60, 230, 1) + '</div>';
+    h += '<div class="grid2" style="margin-top:6px">' +
+         sel_('i_pose','자세', Object.keys(POSES).map(k=>[k, POSES[k].name]), o.pose || 'stand');
+    if(poseOf(o).seat) h += num_('i_seat','좌면 높이(cm)', seatOf(o), 0, 150, 5);
+    else h += wrap_('눈높이', '<input value="'+eyeH(o)+' cm" disabled>');
+    h += '</div>';
+    if(poseOf(o).seat)
+      h += '<p class="hint">눈높이 <b>'+eyeH(o)+'cm</b> · 화면에 잡히는 세로 <b>'+visH(o)+'cm</b>. ' +
+           '의자 좌면을 바꾸면 눈높이도 따라옵니다.</p>';
+    else
+      h += '<p class="hint">화면에 잡히는 세로 <b>'+visH(o)+'cm</b>. ' +
+           '샷 사이즈는 키가 아니라 이 값으로 계산됩니다.</p>';
     h += '<div class="row" style="margin-top:6px"><label>색</label><input type="color" id="i_color" value="'+esc(o.color||'#5fd08a')+'">';
     h += '<button class="mini" id="i_axA">'+(state.axis.a===o.id?'✅ 축 A':'축 A로')+'</button>';
     h += '<button class="mini" id="i_axB">'+(state.axis.b===o.id?'✅ 축 B':'축 B로')+'</button></div>';
@@ -2872,7 +3009,12 @@ function renderInsp(){
         '<label><span>세로</span><input type="number" id="i_pd" min="1" max="2000" step="5" value="'+Math.round(P.d)+'"></label>' +
         '<label><span>높이</span><input type="number" id="i_ph" min="1" max="2000" step="5" value="'+Math.round(P.h)+'"></label>' +
         '</div>';
-      h += '<p class="hint">이 소품 하나만 바뀝니다. 같은 종류의 다른 것들은 그대로예요' +
+      h += '<div class="grid2" style="margin-top:8px">' +
+        num_('i_pz','바닥에서(cm)', Math.round(+o.z || 0), 0, 1000, 5) +
+        wrap_('앉는 높이', '<input value="'+seatHeightOf(o)+' cm" disabled>') +
+        '</div>';
+      h += '<p class="hint">「바닥에서」를 올리면 <b>테이블 위에 올려놓은</b> 것이 됩니다. ' +
+           '크기는 이 소품 하나만 바뀌고, 같은 종류의 다른 것들은 그대로예요' +
            (B ? ' (' + esc(B.name) + ' 기본값 ' + B.w + '×' + B.d + '×' + B.h + ')' : '') + '.</p>';
     }
   }
@@ -2906,6 +3048,8 @@ function renderInsp(){
     on(id,'input', setSize);
   });
   on('i_sizeReset','click', S(() => { delete o.w; delete o.d; delete o.h; redraw(); }));
+  on('i_pz','focus', () => snapshot());
+  on('i_pz','input', () => { o.z = clamp(nv('i_pz'), 0, 1000); redraw(); });
   ['i_x','i_y','i_rot'].forEach(id => on(id,'focus', () => snapshot()));
   on('i_x','input', () => { o.x = nv('i_x'); redraw(); });
   on('i_y','input', () => { o.y = nv('i_y'); redraw(); });
@@ -2934,6 +3078,19 @@ function renderInsp(){
   }));
   on('i_name','input', e2 => { o.name = e2.target.value; redraw(); });
   on('i_h','input', () => { o.height = nv('i_h'); redraw(); });
+  on('i_pose','change', S(() => {
+    o.pose = document.getElementById('i_pose').value;
+    let onWhat = '';
+    if(poseOf(o).seat){
+      const u = seatUnder(o);                 // 발밑에 의자가 있으면 그 좌면을 그대로
+      if(u){ o.seat = u.h; onWhat = ' · ' + u.name + ' 위'; }
+      else if(o.seat == null) o.seat = poseOf(o).seat;
+    }
+    refreshAll();
+    toast(o.name + ' — ' + poseOf(o).name + onWhat + ' · 눈높이 ' + eyeH(o) + 'cm');
+  }));
+  on('i_seat','focus', () => snapshot());
+  on('i_seat','input', () => { o.seat = clamp(nv('i_seat'), 0, 150); redraw(); });
   on('i_color','input', e2 => { o.color = e2.target.value; redraw(); });
   on('i_kind','change', S(() => {
     o.kind = document.getElementById('i_kind').value;
@@ -2983,7 +3140,7 @@ function renderCamInfo(){
   const el = document.getElementById('camInfo'), c = liveCam();
   if(!c){ el.innerHTML = ''; return; }
   const D = dof(c), s = subjectOf(c);
-  const size = s ? shotSizeOf({...c, focus:s.d}, s.a.height) : shotSizeOf(c, 175);
+  const size = s ? shotSizeOf({...c, focus:s.d}, visH(s.a)) : shotSizeOf(c, 175);
   const bad = crossesAxis(c);
   el.innerHTML =
     kv('화각 (수평 / 수직)', toDeg(hFov(c)).toFixed(1)+'° / '+toDeg(vFov(c)).toFixed(1)+'°') +
@@ -2993,6 +3150,9 @@ function renderCamInfo(){
     kv('과초점 거리', (D.hyper/100).toFixed(2)+' m') +
     kv('초점면 프레임 폭', (2*c.focus*Math.tan(hFov(c)/2)/100).toFixed(2)+' m') +
     (s ? kv('피사체 ('+esc(s.a.name)+')', (s.d/100).toFixed(2)+' m · '+size) : '') +
+    (s ? kv('피사체 눈높이', eyeH(s.a) + ' cm' +
+            (s.a.pose && s.a.pose !== 'stand' ? ' · ' + POSES[s.a.pose].name : ''),
+            Math.abs(eyeH(s.a) - c.z) > 40 ? 'warn' : '') : '') +
     kv('180° 선', bad ? '⚠︎ 축을 넘었습니다' : '✅ 같은 쪽', bad ? 'warn' : '');
 }
 
@@ -3002,7 +3162,7 @@ function renderShots(){
   if(!state.cams.length){ el.innerHTML = '<div class="empty">셋업이 없습니다.</div>'; return; }
   el.innerHTML = state.cams.map(c => {
     const s = subjectOf(c);
-    const size = s ? shotSizeOf({...c, focus:s.d}, s.a.height) : '';
+    const size = s ? shotSizeOf({...c, focus:s.d}, visH(s.a)) : '';
     const bad = crossesAxis(c);
     return '<div class="shot'+(c.id===state.activeCam?' on':'')+'" data-cam="'+c.id+'">' +
       '<span class="sl">'+esc(c.slate)+'</span>' +
@@ -3490,7 +3650,7 @@ document.getElementById('bList').addEventListener('click', () => {
       const s = subjectOf(c);
       rows.push([state.no, c.slate, c.lens+'mm', 'T'+c.stop, Math.round(c.z),
         (c.focus/100).toFixed(2), c.move + (c.end?' (경로)':''),
-        s ? shotSizeOf({...c, focus:s.d}, s.a.height) : '-',
+        s ? shotSizeOf({...c, focus:s.d}, visH(s.a)) : '-',
         crossesAxis(c) ? '축넘김' : 'OK', c.note||'']);
     }
     project.active = prev; syncState();
