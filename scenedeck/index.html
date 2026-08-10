@@ -325,6 +325,19 @@ kbd{font-family:var(--mono);font-size:11px;background:var(--s3);border:1px solid
 .dropveil b{display:block;font-family:var(--disp);font-size:30px;color:var(--acc);margin-bottom:8px}
 .dropveil span{font-size:13px;color:var(--tx2)}
 
+/* 분해 결과 미리보기 — 잘못 잡힌 줄을 그 자리에서 뺄 수 있게 */
+.out.list{white-space:normal;font-family:var(--sans);font-size:12.5px;padding:8px}
+.prow{display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px}
+.prow+.prow{border-top:1px solid var(--line)}
+.prow:hover{background:var(--s2)}
+.prow>b{font-family:var(--mono);font-size:11px;color:var(--tx3);width:22px;flex:none;text-align:right}
+.prow .pt{flex:1;min-width:0}
+.prow .ph{display:block;color:var(--tx);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prow .pm{display:block;font-size:11px;color:var(--tx3);margin-top:2px}
+.prow .pm i{font-style:normal;color:var(--red)}
+.pwarn{background:var(--warnbg);border:1px solid var(--warnbd);color:var(--warntx);
+  border-radius:var(--rs);padding:10px 13px;font-size:12.5px;margin:0 0 10px}
+
 /* 지금 어디쯤 왔는지 · 다음에 뭘 눌러야 하는지 */
 .steps4{display:flex;gap:8px;flex-wrap:wrap;margin:-6px 0 14px}
 .s4{display:flex;align-items:center;gap:8px;padding:8px 15px;border-radius:999px;
@@ -774,6 +787,11 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
         </select>
         <button class="btn" id="sc-apply" disabled>✓ 적용</button>
         <span class="mini" id="sc-count" style="margin:0"></span>
+      </div>
+      <div class="row" id="sc-front" style="display:none;margin-top:10px">
+        <span class="mini" style="margin:0" id="sc-fronttxt"></span>
+        <button class="btn" id="sc-addchars">👤 캐릭터로 등록</button>
+        <button class="btn gh" id="sc-frontsee">앞부분 보기</button>
       </div>
       <div class="row" id="sc-fallback" style="display:none;margin-top:10px">
         <span class="mini" style="margin:0">머리글이 없어도 넣을 수 있어요 —</span>
@@ -2674,11 +2692,13 @@ async function readScriptFile(file){
 function headNorm(line){
   let s=String(line||'').trim();
   s=s.replace(/[\uFF01-\uFF5E]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)); // 전각 → 반각
-  s=s.replace(/^[>*\-–—•·\s]+/,'');          // 인용부호 · 글머리표
+  s=s.replace(/^[>*\-–—•·◆◇★☆■□▶▷●○◎\s]+/,'');  // 인용부호 · 글머리표 · 문서 기호
   s=s.replace(/^#{1,6}\s+/,'');              // 마크다운 제목 (## 뒤 공백 — 「#1」은 살린다)
   s=s.replace(/\*\*|__|~~|`/g,'');           // 굵게 · 기울임 · 코드표시
+  const wrapped=/^[\[\(<{【〔「『]/.test(s);
   s=s.replace(/^[\[\(<{【〔「『]+\s*/,'');      // 여는 괄호
-  s=s.replace(/\s*[\]\)>}】〕」』]+\s*$/,'');  // 줄 끝 닫는 괄호
+  // 감싼 경우에만 끝 괄호를 뗀다 — 「… 외관 (N)」의 시간 표기를 지워버리면 안 된다
+  if(wrapped) s=s.replace(/\s*[\]\)>}】〕」』]+\s*$/,'');
   return s.trim();
 }
 const HEAD_RE=new RegExp(
@@ -2687,8 +2707,9 @@ const HEAD_RE=new RegExp(
  + '|제\\s*(\\d{1,3})\\s*(?:씬|장면)'                        // 제1씬
  + '|#\\s*(\\d{1,3})'                                      // #7
  + '|(\\d{1,3})\\s*(?:씬|장면)'                              // 1씬
+ + '|(\\d{1,3})\\s*(?:장|화)(?![가-힣])'                     // 1장 · 3화 — 뒤가 짧을 때만
  + '|(\\d{1,3})\\s*(?=[.．)、:：])'                          // 1.  12)  — 구분자가 있어야 인정
- + ')\\s*(?:씬|장면)?\\s*[.．)、:：|\\-–—/\\]\\}>】〕」』]*\\s*(.*)$','i');
+ + ')\\s*(?:씬|장면|장|화)?\\s*[.．)、:：|\\-–—/\\]\\}>】〕」』]*\\s*(.*)$','i');
 const INTEXT_RE=/^(INT\.?|EXT\.?|I\/E\.?|실내|실외)[\s.．,/-]+(.*)$/i;
 const TIMEWORDS=[['새벽','새벽'],['아침','아침'],['정오','정오'],['오후','오후'],['해질녘','해질녘'],['해 질 녘','해질녘'],
   ['노을','해질녘'],['저녁','해질녘'],['심야','심야'],['한밤','심야'],['밤','밤'],['낮','정오'],
@@ -2698,18 +2719,53 @@ function grabTime(s){
   for(const [k,v] of TIMEWORDS){ if(up.includes(k.toUpperCase())) return v; }
   return '';
 }
+/* 「프롤로그」 「타이틀 시퀀스」는 장소가 아니라 이름표다 —
+   이런 게 앞에 오면 뒤쪽 조각을 장소로 본다. */
+const LABELS=/^(프롤로그|에필로그|타이틀|타이틀\s*시퀀스|오프닝|엔딩|인서트|몽타주|플래시백|회상|현재|과거|PROLOGUE|EPILOGUE|TITLE|INSERT|MONTAGE|FLASHBACK)$/i;
+/* 한국 대본에서 흔한 시간 약어 — (N) 밤 · (D) 낮 · (M) 아침 · (E) 저녁 */
+const TIMECODE={N:'밤',D:'정오',M:'아침',E:'해질녘',DN:'새벽'};
 function splitHeading(tail){
-  // "비 내리는 뒷골목 / 밤"  "폐병원 로비 - NIGHT"  "기억 상점 (심야)"
-  let loc=tail, time=grabTime(tail);
-  const m=tail.split(/[\/\-–—(){}[\]]|,\s/);
-  if(m.length>1){
-    const cand=m[0].trim();
-    if(cand) loc=cand;
+  // "비 내리는 뒷골목 / 밤"  "폐병원 로비 - NIGHT"  "기억 상점 (심야)"  "종문의 집 - 외관 (N)"
+  let t=String(tail||'');
+  t=t.split('\t')[0];              // 탭 뒤는 대개 다른 정보(메모·나레이션 안내)
+  t=t.split(/[■□▶●※]/)[0];          // 문서 기호 뒤도 마찬가지
+  let time=grabTime(t);
+  if(!time){
+    const tc=/\(\s*(DN|N|D|M|E)\s*\)\s*$/i.exec(t.trim());
+    if(tc) time=TIMECODE[tc[1].toUpperCase()]||'';
   }
-  loc=loc.replace(/[(){}[\]]/g,'').trim();
+  const parts=t.split(/[\/\-–—(){}\[\]]|,\s/).map(x=>x.trim()).filter(Boolean);
+  let loc=t;
+  if(parts.length>1){
+    // 시간·이름표 조각을 걷어내고, 남은 것 중 가장 구체적인(가장 긴) 것을 장소로 본다.
+    // "日本 - 종문의 집 - 외관" 에서 나라 이름이 아니라 「종문의 집」이 장소다.
+    const real=parts.filter(x=>!LABELS.test(x)&&!grabTime(x)&&!/^(DN|N|D|M|E)$/i.test(x));
+    const pick=(real.length?real:parts).reduce((a,b)=>b.length>a.length?b:a);
+    if(pick) loc=pick;
+  }
+  loc=loc.replace(/[(){}\[\]]/g,'').trim();
   if(time) loc=loc.replace(new RegExp(time,'g'),'').trim();
-  return {loc:loc||tail.trim(), time};
+  if(loc.length>30) loc=loc.slice(0,30).trim();   // 문장이 통째로 장소가 되는 것을 막는다
+  return {loc:loc||t.trim().slice(0,30), time};
 }
+/* 원고 맨 앞의 「1. 망나니 / 2. 할아버지」 같은 목록은 씬이 아니라 등장인물이다.
+   씬으로 세지 않는 데서 그치지 않고, 캐릭터로 옮겨 담을 수 있게 이름을 뽑아 준다. */
+function frontChars(front){
+  const out=[];
+  String(front||'').split('\n').forEach(l=>{
+    const m=headNorm(l).match(/^(\d{1,2})\s*[.)\]、]\s*(.{1,24})$/);
+    if(!m) return;
+    let name=m[2].trim();
+    const paren=/[(（]([^)）]{1,12})[)）]/.exec(name);   // "아들(동수)" 면 괄호 안이 진짜 이름
+    name = paren ? paren[1].trim() : name.replace(/[(（].*$/,'').trim();
+    if(!name || name.length>12) return;
+    if(/[.!?…]$/.test(name)) return;                    // 문장이면 인물이 아니다
+    if(grabTime(name)) return;
+    out.push(name);
+  });
+  return out.length>=2 ? out : [];
+}
+
 /* 머리글이 하나도 없을 때의 대안 —
    mode 'blank' 빈 줄 기준으로 토막내기 / mode 'one' 통째로 한 씬 */
 function parseLoose(text,mode){
@@ -2724,38 +2780,41 @@ function parseLoose(text,mode){
   out.front='';
   return out;
 }
+/* 한 줄이 머리글인지 본다.
+   kind:'marked' — S#1 · 씬 1 · INT. 처럼 표시가 붙은 것
+   kind:'bare'   — 그냥 「1.」 「12)」 */
+function headOf(raw){
+  const line=headNorm(raw);
+  const ie=line.match(INTEXT_RE);
+  if(ie){ const {loc,time}=splitHeading(ie[2]||''); return {kind:'marked',heading:line,loc,time}; }
+  const m=line.match(HEAD_RE);
+  if(!m) return null;
+  const tail=(m[7]||'').trim();
+  if(m[1]||m[2]||m[3]||m[4]){ const {loc,time}=splitHeading(tail); return {kind:'marked',heading:line,loc,time}; }
+  if((m[5]||m[6]) && tail.length<=40){ const {loc,time}=splitHeading(tail); return {kind:'bare',heading:line,loc,time}; }
+  return null;
+}
 function parseScript(text){
   const lines=String(text||'').replace(/\r\n?/g,'\n').split('\n');
+  const heads=lines.map(headOf);
+  /* 원고에 「S#1.」 같은 진짜 머리글이 하나라도 있으면,
+     맨 앞의 「1. 망나니 / 2. 할아버지」 같은 등장인물 목록을 씬으로 세면 안 된다.
+     표시가 붙은 머리글이 있으면 그것만 씬으로 본다. */
+  const hasMarked=heads.some(x=>x&&x.kind==='marked');
   const scenes=[];
   let cur=null;
   const push=()=>{ if(cur){ cur.script=cur.buf.join('\n').replace(/\n{3,}/g,'\n\n').trim(); delete cur.buf; scenes.push(cur); } };
-  lines.forEach(raw=>{
-    const line=headNorm(raw);
-    let head=null;
-    const ie=line.match(INTEXT_RE);
-    if(ie){
-      const {loc,time}=splitHeading(ie[2]||'');
-      head={heading:line,loc,time};
-    }else{
-      const m=line.match(HEAD_RE);
-      const tail=m?(m[6]||'').trim():'';
-      const marked=m&&(m[1]||m[2]||m[3]||m[4]);   // 앞에 S·씬·# 같은 표시가 붙은 형태
-      // "1. 문장이 길게 이어지는 지문" 을 씬으로 오해하지 않도록 맨 번호는 뒤가 짧을 때만 인정
-      if(m && (marked || (m[5] && tail.length<=40))){
-        const {loc,time}=splitHeading(tail);
-        head={heading:line,loc,time};
-      }
-    }
-    if(head){ push(); cur=Object.assign({buf:[]},head); }
+  lines.forEach((raw,i)=>{
+    const hd=heads[i];
+    const ok=hd && (!hasMarked || hd.kind==='marked');
+    if(ok){ push(); cur={heading:hd.heading,loc:hd.loc,time:hd.time,buf:[]}; }
     else if(cur) cur.buf.push(raw);
-    else if(line){ cur={heading:'(머리글 없음)',loc:'',time:'',buf:[raw]}; }
+    else if(raw.trim()) cur={heading:'(머리글 없음)',loc:'',time:'',buf:[raw]};
   });
   push();
-  // 첫 씬 앞의 제목·작가명 같은 앞부분은 씬이 아니다 — 떼어내서 따로 알린다
+  // 첫 머리글 앞에 있는 것(제목 · 등장인물 목록 · 기획의도…)은 씬이 아니다
   let front='';
-  if(scenes.length>1 && scenes[0].heading==='(머리글 없음)' && scenes[0].script.length<300){
-    front=scenes.shift().script;
-  }
+  if(scenes.length>1 && scenes[0].heading==='(머리글 없음)') front=scenes.shift().script;
   scenes.front=front;
   return scenes;
 }
@@ -2870,6 +2929,23 @@ const HOWTO={
   rtf:'워드로 열어 <b>.docx</b> 로 저장해 올려주세요.',
   pages:'페이지스에서 <b>내보내기 → Word 또는 PDF</b> 로 저장해 올려주세요.'};
 
+/* 결과가 미덥지 않으면 스스로 의심한다 — 조용히 틀린 채로 넘어가지 않게 */
+function parseDoubts(){
+  const d=[];
+  if(!scParsed.length) return d;
+  const bodies=scParsed.map(s=>(s.script||'').length);
+  const avg=bodies.reduce((a,b)=>a+b,0)/bodies.length;
+  const noLoc=scParsed.filter(s=>!s.loc).length;
+  if(scParsed.length>=3 && avg<40)
+    d.push('씬 하나당 본문이 평균 '+Math.round(avg)+'자뿐입니다 — <b>목록이나 차례를 씬으로 셌을 수 있어요.</b>');
+  if(scParsed.length===1 && /머리글 없음/.test(scParsed[0].heading||''))
+    d.push('<b>씬 머리글을 하나도 못 찾아 통째로 한 덩어리가 됐습니다.</b> 원고의 씬 제목 형태가 예상과 다른 것 같아요.');
+  else if(scParsed.length===1 && bodies[0]>2500)
+    d.push('씬이 1개인데 본문이 '+bodies[0].toLocaleString()+'자입니다 — <b>머리글을 못 찾았을 수 있어요.</b>');
+  if(scParsed.length>=3 && noLoc/scParsed.length>0.7)
+    d.push('씬 대부분에서 <b>장소를 못 뽑았습니다</b> — 머리글 형태가 예상과 다를 수 있어요.');
+  return d;
+}
 function showParsed(how){
   const pv=$('sc-preview');
   if(!scParsed.length){
@@ -2878,19 +2954,39 @@ function showParsed(how){
       +'「S#1.」 「S1」 「씬 1」 「제1씬」 「SC 1」 「#7」 「1.」 「INT.」 같은 줄을 찾습니다.\n\n'
       +'원고 첫 줄들: '+(head||'(비어 있음)')+'\n\n'
       +'그래도 넣고 싶으면 아래 「빈 줄로 나누기」나 「통째로 한 씬으로」를 쓰세요.';
-    pv.classList.add('empty2');
+    pv.classList.add('empty2'); pv.classList.remove('list');
     $('sc-apply').disabled=true; $('sc-count').textContent='';
     $('sc-fallback').style.display='';
     return;
   }
-  pv.classList.remove('empty2');
+  pv.classList.remove('empty2'); pv.classList.add('list');
+  const doubts=parseDoubts();
   const body=scParsed.map((s,i)=>{
     const d=scriptLines(s.script).filter(x=>x.type==='dlg').length;
-    return `${i+1}. ${s.heading}\n     장소: ${s.loc||'—'} / 시간: ${s.time||'—'} / 대사 ${d}줄 / ${s.script.length}자`;
-  }).join('\n');
+    const meta=[`장소 ${esc(s.loc)||'<i>못 찾음</i>'}`,`시간 ${esc(s.time)||'—'}`,`대사 ${d}줄`,`${s.script.length}자`].join(' · ');
+    return `<div class="prow"><b>${i+1}</b><div class="pt">`
+      +`<span class="ph">${esc(s.heading)}</span><span class="pm">${meta}</span></div>`
+      +`<button class="btn sm gh" data-nots="${i}" title="이 줄은 씬 제목이 아닙니다">✕ 씬 아님</button></div>`;
+  }).join('');
+  const names=frontChars(scParsed.front);
+  const fr=$('sc-front');
+  if(scParsed.front){
+    const n=scParsed.front.split('\n').filter(x=>x.trim()).length;
+    $('sc-fronttxt').innerHTML = names.length
+      ? `맨 앞 ${n}줄은 씬이 아니라 <b>등장인물 목록</b>으로 보입니다 — ${esc(names.join(' · '))}`
+      : `맨 앞 ${n}줄(제목 · 기획의도 등)은 씬으로 세지 않았습니다`;
+    $('sc-addchars').style.display=names.length?'':'none';
+    frontNames=names;
+    fr.style.display='';
+  }else fr.style.display='none';
   const front=scParsed.front
-    ? `※ 맨 앞 "${scParsed.front.replace(/\n/g,' ').slice(0,30)}" 는 제목·앞부분으로 보고 건너뜁니다.\n\n` : '';
-  pv.textContent=(how?how+'\n\n':'')+front+body;
+    ? '※ 맨 앞부분은 씬으로 세지 않았습니다 (위 「앞부분 보기」에서 확인할 수 있어요).' : '';
+  pv.innerHTML=(doubts.length?`<div class="pwarn">⚠️ ${doubts.join('<br>')}<br>
+    <span class="mini" style="margin:6px 0 0;display:block">아래에서 <b>「✕ 씬 아님」</b>으로 빼거나,
+    <b>「빈 줄로 나누기」 · 「통째로 한 씬으로」</b>를 쓰세요.</span></div>`:'')
+    +(how?`<p class="mini" style="margin:0 0 8px">${esc(how)}</p>`:'')
+    +(front?`<p class="mini" style="margin:0 0 8px">${front}</p>`:'')
+    +body;
   $('sc-count').textContent=`씬 ${scParsed.length}개 인식`;
   $('sc-apply').disabled=false;
   $('sc-fallback').style.display='';
@@ -2900,6 +2996,43 @@ $('sc-parse').addEventListener('click',()=>{
   $('sc-raw-wrap').style.display='block';
   scParsed=parseScript($('sc-raw').value);
   showParsed();
+});
+let frontNames=[], parseSnap=null;
+/* 잘못 잡힌 씬을 앞 씬에 도로 붙인다 — 어떤 포맷이 와도 사용자가 직접 고칠 수 있게 */
+$('sc-preview').addEventListener('click',e=>{
+  const b=e.target.closest('[data-nots]'); if(!b) return;
+  const i=+b.dataset.nots;
+  if(!scParsed[i]) return;
+  if(!parseSnap) parseSnap=JSON.parse(JSON.stringify(scParsed));
+  const s=scParsed[i];
+  const merged=[s.heading,s.script].filter(Boolean).join('\n');
+  if(i===0) scParsed.front=[scParsed.front,merged].filter(Boolean).join('\n');
+  else scParsed[i-1].script=[scParsed[i-1].script,merged].filter(Boolean).join('\n\n');
+  const front=scParsed.front;
+  scParsed.splice(i,1); scParsed.front=front;
+  showParsed();
+  toast('씬에서 뺐어요',{label:'처음으로',fn:()=>{
+    const f=parseSnap.front; scParsed=parseSnap.slice(); scParsed.front=f; parseSnap=null; showParsed();
+  }});
+});
+$('sc-frontsee').addEventListener('click',()=>{
+  if(!scParsed.front){ toast('앞부분이 없어요'); return; }
+  const pv=$('sc-preview');
+  pv.classList.remove('empty2');
+  pv.textContent='─ 씬으로 세지 않은 앞부분 ─\n\n'+scParsed.front;
+});
+$('sc-addchars').addEventListener('click',()=>{
+  if(!frontNames.length){ toast('찾은 이름이 없어요'); return; }
+  const before=S.chars.slice();
+  let n=0;
+  frontNames.forEach(nm=>{
+    if(S.chars.some(c=>(c.name||'').trim()===nm)) return;
+    const c=newChar(); c.name=nm; S.chars.push(c); n++;
+  });
+  if(!n){ toast('이미 모두 등록돼 있어요'); return; }
+  save(); renderAll();
+  toast(`캐릭터 ${n}명을 만들었어요 ✓ 「기획 → 캐릭터」에서 외형을 채워주세요`,
+    {label:'되돌리기',fn:()=>{ S.chars=before; save(); renderAll(); toast('되돌렸어요 ✓'); }});
 });
 $('sc-byblank').addEventListener('click',()=>{
   scParsed=parseLoose($('sc-raw').value,'blank');
