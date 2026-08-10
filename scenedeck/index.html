@@ -263,6 +263,11 @@ code{font-family:var(--mono);font-size:11.5px;background:var(--s2);border:1px so
 #t-prompt>#lookcard{order:7}
 #t-prompt>#askcard{order:8}
 .opt.off{opacity:.4}
+.chip .pay,.chip .free{font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.06em;
+  padding:1px 6px;border-radius:20px;margin-left:5px;vertical-align:1px}
+.chip .pay{background:var(--dgrbg);color:var(--red);border:1px solid var(--dgrbd)}
+.chip .free{background:var(--tealdim);color:var(--teal);border:1px solid var(--tealbd)}
+@media(max-width:720px){ #mjside{display:none} }
 
 /* 컷 빠른 선택 바 */
 .cutnav{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px}
@@ -869,9 +874,9 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
 
     <div class="row" id="tgpick" style="margin-bottom:14px">
       <span class="mini" style="margin:0 4px 0 0">어디에 쓰실 건가요</span>
-      <label class="chip on" data-tgset="mj">🖼️ 미드저니</label>
-      <label class="chip" data-tgset="veo">🎬 Veo / Flow</label>
-      <label class="chip" data-tgset="gen">🎨 그 외 이미지 AI</label>
+      <label class="chip on" data-tgset="mj">🖼️ 미드저니 <em class="pay">유료</em></label>
+      <label class="chip" data-tgset="veo">🎬 Veo / Flow <em class="pay">유료</em></label>
+      <label class="chip" data-tgset="gen">🎨 그 외 이미지 AI <em class="free">무료 있음</em></label>
     </div>
 
     <div class="card pcard" data-tg="mj">
@@ -883,7 +888,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
           <button class="btn sm" id="mjtrans" style="margin-left:8px">🌐 영문으로 바꾸기</button>
         </div>
         <div class="row" style="margin-top:13px">
-          <button class="btn pri" id="mjgo">📋 복사하고 미드저니 열기</button>
+          <button class="btn pri" data-open="mj">📋 복사하고 미드저니 열기</button>
           <button class="btn" data-copy="o-mj">📋 복사만</button>
           <button class="btn gh" id="mjside">🪟 옆에 띄워두고 작업</button>
         </div>
@@ -906,13 +911,25 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
         </div></div>
         <p class="mini">붙는 값 → <code id="mjparam">—</code></p>
 
-        <details class="faq" style="margin-top:14px">
+        <div class="warn" style="margin-top:16px">
+          <b>먼저 알아두실 것 — 미드저니는 유료입니다.</b><br>
+          무료 체험이 없어서, 계정을 만들어도 <b>구독을 해야 이미지가 나옵니다.</b>
+          공짜로 먼저 해보고 싶으면 아래 <b>「🎨 그 외 이미지 AI」</b>를 여세요 —
+          ImageFX · Bing은 계정만 있으면 무료고, <b>프롬프트는 그대로 통합니다.</b>
+        </div>
+
+        <details class="faq" style="margin-top:12px">
           <summary>미드저니가 처음이신가요? — 4단계</summary>
-          <p class="fa"><b>1.</b> 「복사하고 미드저니 열기」를 누르면 프롬프트가 복사되고 미드저니 창이 새로 열립니다. (첫 방문이면 로그인이 필요해요 — 디스코드 계정으로 됩니다)<br>
-          <b>2.</b> 미드저니의 입력창을 클릭하고 <kbd>Ctrl</kbd>+<kbd>V</kbd>(맥은 <kbd>⌘</kbd>+<kbd>V</kbd>)로 붙여넣은 뒤 <kbd>Enter</kbd>.<br>
-          <b>3.</b> 이미지 4장이 나오면 마음에 드는 것을 골라 <b>Upscale</b>로 키웁니다.<br>
-          <b>4.</b> 다시 이 창으로 와서 <kbd>←</kbd> <kbd>→</kbd> 키로 다음 컷으로 넘기고 반복하세요.
-          「🪟 옆에 띄워두고 작업」을 쓰면 두 창을 나란히 놓고 오갈 수 있습니다.</p>
+          <div class="fa">
+            <p style="margin:0 0 10px"><b>1.</b> 위 「복사하고 미드저니 열기」를 누르면 <b>프롬프트가 복사되고</b> 미드저니 창이 새로 열립니다.
+            첫 방문이면 로그인(구글 또는 디스코드 계정)과 구독 확인을 거칩니다.</p>
+            <p style="margin:0 0 10px"><b>2.</b> 미드저니의 입력창을 클릭하고 <kbd>Ctrl</kbd>+<kbd>V</kbd>(맥은 <kbd>⌘</kbd>+<kbd>V</kbd>)로 붙여넣은 뒤 <kbd>Enter</kbd>.</p>
+            <p style="margin:0 0 10px"><b>3.</b> 이미지가 여러 장 나오면 마음에 드는 것을 골라 크게 뽑습니다(Upscale).</p>
+            <p style="margin:0 0 10px"><b>4.</b> 이 창으로 돌아와 <kbd>←</kbd> <kbd>→</kbd> 키로 다음 컷으로 넘기고 <b>2번부터 반복</b>하세요.
+            컷을 넘길 때마다 프롬프트가 새로 조립되니, 「복사하고 열기」 대신 <b>「복사만」</b>을 누르고 옆 창에 붙여넣으면 더 빠릅니다.</p>
+            <p class="mini" style="margin:0">창이 안 열리면 주소창 오른쪽의 <b>팝업 차단 아이콘</b>에서 허용해 주세요.
+            「🪟 옆에 띄워두고 작업」은 창을 나란히 놓을 수 있는 <b>데스크톱에서만</b> 의미가 있습니다.</p>
+          </div>
         </details>
       </div>
     </div>
@@ -922,7 +939,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <div class="tgbody">
         <div class="out empty2" id="o-veo">컷을 선택하세요</div>
         <div class="row" style="margin-top:13px">
-          <button class="btn pri" id="veogo">📋 복사하고 Flow 열기</button>
+          <button class="btn pri" data-open="flow">📋 복사하고 Flow 열기</button>
           <button class="btn" data-copy="o-veo">📋 복사만</button>
           <span class="mini" style="margin:0">Flow에선 캐릭터 이미지를 <b>Ingredients</b>로 함께 넣으세요</span>
         </div>
@@ -933,7 +950,14 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <div class="outhd tgbar"><b>🎨 그 외 이미지 AI</b><span class="k">Nano Banana · ImageFX · SD 계열</span></div>
       <div class="tgbody">
         <div class="out empty2" id="o-gen">컷을 선택하세요</div>
-        <div class="row" style="margin-top:13px"><button class="btn" data-copy="o-gen">📋 복사</button></div>
+        <p class="mini">미드저니 구독이 없어도 <b>공짜로 바로 해볼 수 있는 곳</b>입니다. 위 프롬프트가 그대로 통해요.</p>
+        <div class="row" style="margin-top:11px">
+          <button class="btn pri" data-open="imagefx">📋 복사하고 ImageFX 열기</button>
+          <button class="btn" data-open="bing">📋 복사하고 Bing 열기</button>
+          <button class="btn gh" data-copy="o-gen">📋 복사만</button>
+        </div>
+        <p class="mini">둘 다 구글 · 마이크로소프트 계정만 있으면 무료입니다.
+        <b>「--ar」 같은 값은 붙지 않으니</b> 화면비는 그 사이트에서 직접 고르세요.</p>
       </div>
     </div>
 
@@ -2950,8 +2974,13 @@ $('q-save').addEventListener('click',()=>{
 /* =========================================================
    출력 대상 — 고른 곳 하나만 펼쳐서 헤매지 않게 한다.
    ========================================================= */
-const MJ_URL='https://www.midjourney.com/imagine';
-const FLOW_URL='https://labs.google/fx/tools/flow';
+const SITES={
+  mj     :{url:'https://www.midjourney.com/imagine',      out:'o-mj',  name:'미드저니'},
+  flow   :{url:'https://labs.google/fx/tools/flow',       out:'o-veo', name:'Flow'},
+  imagefx:{url:'https://labs.google/fx/tools/image-fx',   out:'o-gen', name:'ImageFX'},
+  bing   :{url:'https://www.bing.com/images/create',      out:'o-gen', name:'Bing 이미지 크리에이터'}
+};
+const MJ_URL=SITES.mj.url;
 
 function setTarget(t){
   S.tg=t;
@@ -2998,17 +3027,13 @@ function pickMJ(e){
 
 /* ---------- 바로 작업하러 가기 ---------- */
 function outText(id){ const el=$(id); return el.classList.contains('empty2')?'':el.textContent; }
-$('mjgo').addEventListener('click',()=>{
-  const t=outText('o-mj');
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-open]'); if(!b) return;
+  const s=SITES[b.dataset.open]; if(!s) return;
+  const t=outText(s.out);
   if(!t){ toast('먼저 컷을 고르거나 내용을 적어주세요'); return; }
-  copy(t,'복사했어요 — 미드저니 입력창에 붙여넣기(Ctrl+V)');
-  window.open(MJ_URL,'_blank','noopener');
-});
-$('veogo').addEventListener('click',()=>{
-  const t=outText('o-veo');
-  if(!t){ toast('먼저 컷을 고르거나 내용을 적어주세요'); return; }
-  copy(t,'복사했어요 — Flow 입력창에 붙여넣기(Ctrl+V)');
-  window.open(FLOW_URL,'_blank','noopener');
+  copy(t,`복사했어요 — ${s.name} 입력창에 붙여넣기(Ctrl+V)`);
+  window.open(s.url,'_blank','noopener');
 });
 $('mjside').addEventListener('click',()=>{
   const t=outText('o-mj');
