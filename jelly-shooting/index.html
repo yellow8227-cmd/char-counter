@@ -92,7 +92,7 @@
   .chip{border:none;background:#fff2f8;color:#b0567c;font-weight:800;font-size:15px;padding:9px 14px;border-radius:13px;cursor:pointer;box-shadow:0 3px 0 #f2cddd;transition:transform .06s,background .15s;}
   .chip:active{transform:translateY(3px);box-shadow:0 0 0 #f2cddd;}
   .chip.on{background:linear-gradient(180deg,#ff8ab4,#ff5c8a);color:#fff;box-shadow:0 3px 0 var(--pink-d);}
-  .sw{width:34px;height:34px;border-radius:50%;border:3px solid #fff;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.12);transition:transform .08s;}
+  .sw{width:36px;height:36px;border-radius:50%;border:3px solid #fff;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.12);transition:transform .08s;}
   .sw:active{transform:scale(.9);}
   .sw.on{outline:3px solid var(--pink);outline-offset:2px;}
   #previewCanvas{background:rgba(255,255,255,0.6);border-radius:26px;box-shadow:inset 0 0 0 3px rgba(255,255,255,0.8),var(--shadow);}
@@ -144,12 +144,17 @@
 
   /* creator form */
   .mini{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;}
-  .minichip{border:none;background:#fff2f8;color:#b0567c;font-weight:800;font-size:13px;padding:8px 11px;border-radius:11px;cursor:pointer;box-shadow:0 2px 0 #f2cddd;}
+  .minichip{border:none;background:#fff2f8;color:#b0567c;font-weight:800;font-size:13px;padding:9px 11px;border-radius:11px;cursor:pointer;box-shadow:0 2px 0 #f2cddd;min-height:35px;}
   .minichip.on{background:linear-gradient(180deg,#b28cff,#8a5cff);color:#fff;box-shadow:0 2px 0 #6a3edb;}
   .emochip{width:40px;height:40px;font-size:22px;border-radius:12px;border:none;background:#fff2f8;cursor:pointer;box-shadow:0 2px 0 #f2cddd;}
   .emochip.on{outline:3px solid #8a5cff;outline-offset:1px;}
-  #ciName,#nickInput,#nickInput2,#chCodeInput{width:100%;border:2px solid #f0cddd;border-radius:12px;padding:10px 12px;font-family:var(--font);font-size:15px;color:var(--ink);text-align:center;outline:none;background:#fff;}
-  #ciName:focus,#nickInput:focus,#nickInput2:focus,#chCodeInput:focus{border-color:var(--pink);}
+  /* id를 하나씩 나열하다가 나중에 추가한 입력칸들이 전부 빠졌다(닉네임 4개, 방 코드).
+     그 칸들만 브라우저 기본 모양으로 높이 18px짜리 작은 상자가 됐다.
+     화면 안의 입력칸을 통째로 잡아서 새로 만들어도 자동으로 적용되게 한다. */
+  .screen input{width:100%;border:2px solid #f0cddd;border-radius:12px;padding:11px 12px;
+    font-family:var(--font);font-size:15px;color:var(--ink);text-align:center;outline:none;background:#fff;}
+  .screen input:focus{border-color:var(--pink);}
+  .screen input::placeholder{color:#c9a7b8;}
   #lbBox{min-height:40px;}
   .locktag{font-size:10px;font-weight:800;color:#a06;background:#ffe6ef;padding:2px 6px;border-radius:7px;margin-left:4px;}
 
@@ -262,8 +267,8 @@
   #spdBar{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;}
   /* 4개가 한 줄에 들어가야 한다. 좁은 폰에서는 flex-wrap이 두 줄로 접어준다. */
   .spdbtn{border:none;cursor:pointer;font-family:var(--font);font-weight:900;font-size:10.5px;
-    padding:5px 8px;border-radius:11px;background:#fff2f8;color:#b0567c;box-shadow:0 3px 0 #f2cddd;
-    white-space:nowrap;}
+    padding:10px 8px;border-radius:12px;background:#fff2f8;color:#b0567c;box-shadow:0 3px 0 #f2cddd;
+    white-space:nowrap;min-height:34px;}
   .spdbtn:active{transform:translateY(3px);box-shadow:none;}
   .spdbtn.on{background:linear-gradient(180deg,#ffb08a,#ff8a5c);color:#fff;box-shadow:0 3px 0 #e0691a;}
   #throwBar{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
@@ -454,7 +459,7 @@
     <div class="card">
       <div class="label" style="display:flex;justify-content:space-between;align-items:center;">
         <span id="lbTitle">🏆 TOP 10</span>
-        <button class="chip" id="lbRefresh" style="padding:5px 10px;font-size:12px;">새로고침 🔄</button>
+        <button class="chip" id="lbRefresh" style="padding:11px 12px;font-size:12px;">새로고침 🔄</button>
       </div>
       <div id="lbBox"></div>
     </div>
@@ -2210,6 +2215,38 @@ canvas.addEventListener('mousedown',e=>{ if(performance.now()-lastTouch<600)retu
 canvas.addEventListener('touchstart',e=>{ lastTouch=performance.now(); e.preventDefault();
   for(const t of e.changedTouches){ const p=toCanvas(t.clientX,t.clientY); hit(p.x,p.y); } // 손가락마다 각각 팡!
 },{passive:false});
+
+// 시각 검사 훅 — tools/visual-audit.mjs 가 화면을 하나씩 펼쳐 보게 해준다.
+// 검사 도구가 부를 때만 실행되므로 게임 동작에는 영향이 없다.
+window.__auditEach=function(scan){
+  const prep={
+    shopScreen:()=>{openShop();}, setupScreen:()=>{buildSetupUI();},
+    rankScreen:()=>{lbMode=mode;buildLbTabs();}, netScreen:()=>{openNetMode('throw');},
+    lobbyScreen:()=>{net.room='ABC123';net.foe=null;renderLobby();},
+    attendScreen:()=>{buildCalendar();}, settingsScreen:()=>{syncSettingsUI();buildTolUI();},
+    overScreen:()=>{renderRank([32831,11224,10085],10085);
+      $('overLb').innerHTML='<div class="rrow">🥇 젤리왕 <span>⭐ 32831</span></div>';},
+    acceptScreen:()=>{pendingChallenge={host_name:'젤리왕',host_score:1234,seed:1,mode:'spicy'};openAccept();},
+  };
+  if(!nick) saveNick('카미');
+  coins=99999;
+  ['heart','slow','clear','x2','magnet'].forEach((id,k)=>{ if(!crafted.includes(id))crafted.push(id);
+    bought[id]=[5,3,2,4,1][k]; inventory[id]=[2,1,3,1,2][k]; });
+  SCREENS.forEach(n=>{ showScreen(n); if(prep[n])prep[n](); scan(n,$(n)); });
+  // 던지는 사람 화면
+  showScreen(null); netGame='throw'; net.foe={name:'젤리왕'}; net.timeLimit=90;
+  buildThrowBar(); buildSpdBar();
+  $('throwerView').classList.remove('hide');
+  scan('throwerView',$('throwerView'));
+  $('throwerView').classList.add('hide');
+  // 게임 중 오버레이
+  const ov=['hud','audioBar','itemBar','netBar','throwWrap','pauseBtn'];
+  ov.forEach(id=>$(id).classList.remove('hide'));
+  buildItemBar(); net.foeStat={score:900,lives:2}; updateFoeHud(); updateGauge();
+  ov.forEach(id=>scan('게임중 '+id,$(id)));
+  ov.forEach(id=>$(id).classList.add('hide'));
+  showScreen('startScreen');
+};
 
 // boot
 openStart();
