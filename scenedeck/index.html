@@ -316,6 +316,30 @@ a.btn.gh:hover{color:var(--tx)}
 kbd{font-family:var(--mono);font-size:11px;background:var(--s3);border:1px solid var(--line2);
   border-bottom-width:2px;border-radius:5px;padding:1px 6px;color:var(--tx2)}
 
+/* 파일을 화면 어디에 떨어뜨려도 받는다 — 작은 점선 상자를 정확히 맞출 필요가 없다 */
+.dropveil{position:fixed;inset:0;z-index:250;display:none;place-items:center;
+  background:var(--mask);backdrop-filter:blur(3px)}
+.dropveil.on{display:grid}
+.dropveil>div{border:3px dashed var(--acc);border-radius:20px;background:var(--s1);
+  padding:44px 60px;text-align:center;box-shadow:0 24px 70px var(--shadow)}
+.dropveil b{display:block;font-family:var(--disp);font-size:30px;color:var(--acc);margin-bottom:8px}
+.dropveil span{font-size:13px;color:var(--tx2)}
+
+/* 지금 어디쯤 왔는지 · 다음에 뭘 눌러야 하는지 */
+.steps4{display:flex;gap:8px;flex-wrap:wrap;margin:-6px 0 14px}
+.s4{display:flex;align-items:center;gap:8px;padding:8px 15px;border-radius:999px;
+  border:1px solid var(--line);background:var(--s1);font-size:12.5px;font-weight:600;color:var(--tx3)}
+.s4 b{width:19px;height:19px;border-radius:50%;display:grid;place-items:center;flex:none;
+  background:var(--s3);color:var(--tx3);font-size:11px}
+.s4.done{color:var(--teal);border-color:var(--tealbd);background:var(--tealdim)}
+.s4.done b{background:var(--teal);color:var(--bg)}
+.s4.now{color:var(--acc2);border-color:var(--acc);background:var(--accdim)}
+.s4.now b{background:var(--acc);color:var(--onacc)}
+.nowbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 22px;
+  padding:13px 16px;border:1px solid var(--accbd);background:var(--accdim);border-radius:var(--r)}
+.nowbar .t{font-size:13px;font-weight:600;color:var(--tx)}
+.bad{color:var(--red);font-weight:700}
+
 /* ---------- 대본 탭 ---------- */
 .drop{
   border:2px dashed var(--line2);border-radius:var(--r);padding:34px 20px;text-align:center;
@@ -691,6 +715,8 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <h2>대본 · 컷</h2>
       <p>원고를 올리면 <b>씬으로 나뉘고, 버튼 하나로 컷까지</b> 만들어집니다. 여기까지 하면 프롬프트는 자동이에요.</p>
     </div>
+    <div class="steps4" id="cutsteps"></div>
+    <div class="nowbar" id="cutnow"></div>
     <div class="subnav">
       <button data-jumpto="sec-script">📄 원고 · 씬</button>
       <button data-jumpto="sec-scene">🎬 씬 · 컷 손보기</button>
@@ -779,8 +805,11 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       지문이 한글이어도 프롬프트는 나오지만, <b>「영문 칸 채우기」</b>를 한 번 돌려두면 결과가 눈에 띄게 좋아집니다.</p>
     </div>
 
-    <div class="card">
-      <h3>✍️ 씬별 원고 편집</h3>
+    <details class="faq" id="sc-edit">
+      <summary>✍️ 씬별로 원고 고치기 <span class="tagx">필요할 때만</span></summary>
+      <div class="fa" style="padding:0 18px 18px">
+    <div class="card" style="background:transparent;border:none;padding:0;margin:0">
+      <h3 style="display:none">씬별 원고 편집</h3>
       <div class="row" style="margin-bottom:12px">
         <select id="sc-sel" style="max-width:380px"></select>
         <button class="btn sm" id="sc-prev">← 이전</button>
@@ -804,16 +833,20 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
         </div>
       </div>
     </div>
-
-    <div class="card">
-      <h3>🤖 대본 수정 작업</h3>
-      <div class="row">
-        <button class="btn" data-ask="rewrite">📋 전체 대본 검토 요청문</button>
-        <button class="btn" data-ask="dialogue">📋 대사 살리기 요청문</button>
-        <button class="btn" id="sc-openrep">📥 고친 대본 붙여넣기</button>
       </div>
-      <p class="mini">요청문을 AI에 붙여넣고, 받은 수정본을 「고친 대본 붙여넣기」로 되돌려 넣으면 씬이 갱신됩니다.</p>
-    </div>
+    </details>
+
+    <details class="faq" id="sc-aiwork">
+      <summary>🤖 AI에게 대본 다듬기 맡기기 <span class="tagx">선택</span></summary>
+      <div class="fa" style="padding:0 18px 18px">
+        <div class="row">
+          <button class="btn" data-ask="rewrite">📋 전체 대본 검토 요청문</button>
+          <button class="btn" data-ask="dialogue">📋 대사 살리기 요청문</button>
+          <button class="btn" id="sc-openrep">📥 고친 대본 붙여넣기</button>
+        </div>
+        <p class="mini">요청문을 AI에 붙여넣고, 받은 수정본을 「고친 대본 붙여넣기」로 되돌려 넣으면 씬이 갱신됩니다.</p>
+      </div>
+    </details>
     </div>
 
     <div id="sec-scene">
@@ -1194,6 +1227,10 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     <p id="askmsg" style="margin:6px 0 0"></p>
     <div class="row" id="askbtns" style="justify-content:flex-end;margin-top:22px"></div>
   </div>
+</div>
+
+<div class="dropveil" id="dropveil">
+  <div><b>여기에 놓으세요</b><span>화면 어디든 괜찮아요 · .txt · .md · .docx · .pdf · .fdx</span></div>
 </div>
 
 <div class="toast" id="toast"><span id="toastmsg"></span></div>
@@ -1894,13 +1931,16 @@ function renderScenes(){
     const sm=card.querySelector('[data-sf="summary"]'); if(sm) sm.value=s.summary||'';
     s.cuts.forEach(c=>{
       const cc=card.querySelector(`[data-kid="${c.id}"]`); if(!cc) return;
-      ['desc','descEn','dialogue','audio','note'].forEach(k=>{
-        const el=cc.querySelector(`[data-kf="${k}"]`); if(el) el.value=c[k]||'';
-      });
+      fillCutFields(cc,c);
     });
   });
   hydrateImages(w);
   paintProg();
+}
+function fillCutFields(cc,c){
+  ['desc','descEn','dialogue','audio','note'].forEach(k=>{
+    const el=cc.querySelector(`[data-kf="${k}"]`); if(el) el.value=c[k]||'';
+  });
 }
 function cutHTML(s,c,si,ci){
   const chips=S.chars.map(ch=>`<span class="chip${c.chars.includes(ch.id)?' on':''}" data-kchar="${c.id}|${ch.id}">${esc(ch.name||'이름없음')}</span>`).join('');
@@ -1914,7 +1954,15 @@ function cutHTML(s,c,si,ci){
       <div class="sum">${esc((c.desc||c.descEn||'').slice(0,68))||'<i>내용 없음</i>'}</div>
       <div class="meta">${esc(meta||'—')} · ${c.dur||0}s</div>
     </div>
-    <div class="cutbody">
+    <div class="cutbody">${c.open?cutBodyHTML(s,c):''}</div>
+  </div>`;
+}
+/* 컷 속(입력칸·선택상자 십수 개)은 펼쳤을 때만 만든다.
+   컷 300개면 선택상자만 1,800개가 되어 탭 전환이 몇 초씩 걸렸다. */
+function cutBodyHTML(s,c){
+  const ci=s.cuts.indexOf(c);
+  const chips=S.chars.map(ch=>`<span class="chip${c.chars.includes(ch.id)?' on':''}" data-kchar="${c.id}|${ch.id}">${esc(ch.name||'이름없음')}</span>`).join('');
+  return `
       <div class="grid g2" style="margin-top:14px">
         <label class="f"><span>컷 내용 (한글 지문)</span><textarea data-kf="desc" placeholder="지훈이 우산 없이 골목을 걸어 나온다. 뒤를 한 번 돌아본다."></textarea></label>
         <label class="f enfield"><span>컷 내용</span><textarea data-kf="descEn" placeholder="a man walks out of the alley without an umbrella, glancing back once"></textarea></label>
@@ -1954,9 +2002,9 @@ function cutHTML(s,c,si,ci){
         <button class="btn sm gh" data-kdup="${s.id}|${c.id}">⧉ 복제</button>
         <button class="btn sm dgr" data-kdel="${s.id}|${c.id}">컷 삭제</button>
       </div>
-    </div>
-  </div>`;
+`;
 }
+
 $('addscene').addEventListener('click',()=>{ S.scenes.push(newScene()); save(); renderScenes(); });
 $('expandall').addEventListener('click',()=>{
   const anyClosed=allCuts().some(x=>!x.c.open);
@@ -1988,7 +2036,17 @@ $('scenelist').addEventListener('click',async e=>{
   const tog=t.closest('[data-ktoggle]');
   if(tog && !t.closest('button')){
     const hit=allCuts().find(x=>x.c.id===tog.dataset.ktoggle);
-    if(hit){ hit.c.open=!hit.c.open; tog.closest('.cutcard').classList.toggle('open',hit.c.open); save(); }
+    if(hit){
+      hit.c.open=!hit.c.open;
+      const card=tog.closest('.cutcard'), bodyEl=card.querySelector('.cutbody');
+      if(hit.c.open && bodyEl && !bodyEl.firstElementChild){
+        bodyEl.innerHTML=cutBodyHTML(hit.s,hit.c);
+        fillCutFields(card,hit.c);
+        hydrateImages(card);
+      }
+      card.classList.toggle('open',hit.c.open);
+      save();
+    }
     return;
   }
   if(t.dataset.smove){
@@ -2723,21 +2781,33 @@ $('sc-file').addEventListener('change',()=>{
   $('sc-file').value='';
 });
 let scanImgs=[];
+function setFileMsg(txt,bad){
+  const el=$('sc-fname');
+  el.innerHTML=txt; el.className='mini'+(bad?' bad':''); el.style.margin='0';
+}
 async function ingestFile(f){
-  toast('읽는 중…');
-  $('sc-fname').textContent=`${f.name} · ${(f.size/1024).toFixed(0)}KB — 읽는 중…`;
   $('sc-scan').style.display='none'; scanImgs=[];
+  const ext=(f.name.split('.').pop()||'').toLowerCase();
+  if(CANT[ext]){
+    setFileMsg(`❌ <b>${esc(f.name)}</b> — ${CANT[ext]}은 읽을 수 없습니다. `
+      +(HOWTO[ext]||'<b>.txt · .docx · .pdf · .fdx</b> 중 하나로 저장해 올려주세요.'),true);
+    toast(`${CANT[ext]}은 읽을 수 없어요`);
+    paintSteps();
+    return;
+  }
+  toast('읽는 중…');
+  setFileMsg(`${esc(f.name)} · ${(f.size/1024).toFixed(0)}KB — 읽는 중…`);
   try{
     const text=await readScriptFile(f);
     if(!text||!text.trim()) throw new Error('내용이 비어 있습니다');
     $('sc-raw-wrap').style.display='block';
     $('sc-raw').value=text;
-    $('sc-fname').textContent=`${f.name} · ${(f.size/1024).toFixed(0)}KB`;
+    setFileMsg(`✅ <b>${esc(f.name)}</b> · ${(f.size/1024).toFixed(0)}KB · ${text.length.toLocaleString()}자를 읽었습니다`);
     $('sc-parse').click();
     $('sc-raw-wrap').scrollIntoView({behavior:'smooth',block:'start'});
     toast('불러왔어요 ✓ 분해 결과를 확인하세요');
   }catch(e){
-    $('sc-fname').textContent=`${f.name} — 읽지 못했습니다`;
+    setFileMsg(`❌ <b>${esc(f.name)}</b> — ${esc(e.message)}`,true);
     if(e.scan){
       scanImgs=e.images||[];
       const box=$('sc-scan');
@@ -2769,14 +2839,36 @@ $('sc-scanpaste').addEventListener('click',()=>{
   $('sc-raw').scrollIntoView({behavior:'smooth',block:'center'});
   toast('여기에 뽑은 글자를 붙여넣고 「분해 미리보기」를 누르세요');
 });
-/* 드래그 앤 드롭 */
+/* 드래그 앤 드롭 — 화면 어디에 떨어뜨려도 받는다.
+   작은 점선 상자를 정확히 맞춰야만 동작하던 탓에 「올려도 아무 일이 없다」는 일이 생겼다. */
 const dbox=$('dropbox');
-['dragenter','dragover'].forEach(ev=>dbox.addEventListener(ev,e=>{ e.preventDefault(); dbox.classList.add('hot'); }));
-['dragleave','drop'].forEach(ev=>dbox.addEventListener(ev,e=>{ e.preventDefault(); dbox.classList.remove('hot'); }));
-dbox.addEventListener('drop',e=>{ const f=e.dataTransfer.files&&e.dataTransfer.files[0]; if(f) ingestFile(f); });
 dbox.addEventListener('click',()=>$('sc-file').click());
-window.addEventListener('dragover',e=>e.preventDefault());
-window.addEventListener('drop',e=>e.preventDefault());
+const hasFiles=e=>!!(e.dataTransfer&&[...(e.dataTransfer.types||[])].includes('Files'));
+let dragDepth=0;
+function veil(on){ $('dropveil').classList.toggle('on',on); dbox.classList.toggle('hot',on); }
+window.addEventListener('dragenter',e=>{ if(!hasFiles(e))return; e.preventDefault(); dragDepth++; veil(true); });
+window.addEventListener('dragover', e=>{ if(hasFiles(e)) e.preventDefault(); });
+window.addEventListener('dragleave',e=>{ if(!hasFiles(e))return; dragDepth=Math.max(0,dragDepth-1); if(!dragDepth) veil(false); });
+window.addEventListener('drop',e=>{
+  e.preventDefault(); dragDepth=0; veil(false);
+  const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+  if(!f) return;
+  goTab('cut');
+  ingestFile(f);
+});
+
+/* 못 읽는 형식은 성공한 척하지 않는다 — 예전엔 .hwp도 「불러왔어요 ✓」가 떴다 */
+const CANT={hwp:'한글(.hwp)',hwpx:'한글(.hwpx)',doc:'옛 워드(.doc)',rtf:'서식 문서(.rtf)',
+  pages:'페이지스(.pages)',key:'키노트',ppt:'파워포인트',pptx:'파워포인트',xls:'엑셀',xlsx:'엑셀',
+  odt:'오픈오피스(.odt)',hml:'한글 문서',jpg:'그림 파일',jpeg:'그림 파일',png:'그림 파일',
+  gif:'그림 파일',webp:'그림 파일',mp4:'영상 파일',mov:'영상 파일',zip:'압축 파일'};
+const HOWTO={
+  hwp:'한글에서 <b>파일 → 다른 이름으로 저장 → PDF</b> 로 저장해 올려주세요.',
+  hwpx:'한글에서 <b>PDF로 저장</b>해 올려주세요.',
+  doc:'워드에서 <b>.docx</b> 나 PDF로 다시 저장해 올려주세요.',
+  odt:'<b>.docx</b> 나 PDF로 저장해 올려주세요.',
+  rtf:'워드로 열어 <b>.docx</b> 로 저장해 올려주세요.',
+  pages:'페이지스에서 <b>내보내기 → Word 또는 PDF</b> 로 저장해 올려주세요.'};
 
 function showParsed(how){
   const pv=$('sc-preview');
@@ -2802,6 +2894,7 @@ function showParsed(how){
   $('sc-count').textContent=`씬 ${scParsed.length}개 인식`;
   $('sc-apply').disabled=false;
   $('sc-fallback').style.display='';
+  paintSteps();
 }
 $('sc-parse').addEventListener('click',()=>{
   $('sc-raw-wrap').style.display='block';
@@ -3018,8 +3111,43 @@ $('sc-autoshot').addEventListener('change',()=>{
   $('sc-autochip').classList.toggle('on',$('sc-autoshot').checked);
 });
 
+/* 지금 어디쯤 왔고 다음에 뭘 눌러야 하는지 한 줄로 말해준다 */
+function paintSteps(){
+  const box=$('cutsteps'), bar=$('cutnow');
+  if(!box||!bar) return;
+  const raw=($('sc-raw')&&$('sc-raw').value||'').trim();
+  // 앱이 처음에 만들어 두는 빈 씬·컷은 「했음」으로 세지 않는다
+  const filled=c=>!!String(c.desc||c.dialogue||'').trim();
+  const nScene=S.scenes.filter(s=>String(s.heading||s.loc||s.script||'').trim()||s.cuts.some(filled)).length;
+  const nCut=allCuts().filter(x=>filled(x.c)).length;
+  const st=[{t:'원고 올리기',done:!!raw||nScene>0},{t:'씬으로 나누기',done:nScene>0},
+            {t:'컷 만들기',done:nCut>0},{t:'프롬프트 뽑기',done:false}];
+  const cur=st.findIndex(s=>!s.done);
+  box.innerHTML=st.map((s,i)=>
+    `<div class="s4 ${s.done?'done':(i===cur?'now':'')}"><b>${s.done?'✓':i+1}</b><span>${s.t}</span></div>`).join('');
+  const say=(m,btn)=>{ bar.innerHTML=`<span class="t">${m}</span>${btn||''}`; };
+  if(cur===0) say('① 먼저 원고를 올리세요. <b>화면 아무 데나 끌어다 놓아도</b> 됩니다.',
+      '<button class="btn pri" id="now-pick">📄 파일 고르기</button><button class="btn" id="now-paste">📋 직접 붙여넣기</button>');
+  else if(cur===1) say('② 아래에서 씬을 확인하고 <b>「✓ 적용」</b>을 누르세요.',
+      '<button class="btn pri" id="now-jump2">아래로 이동</button>');
+  else if(cur===2) say(`③ 씬 ${nScene}개가 준비됐어요. <b>「모든 씬을 컷으로 만들기」</b> 한 번이면 끝납니다.`,
+      '<button class="btn pri" id="now-cuts">🎬 컷 만들기</button>');
+  else say(`✅ 씬 ${nScene}개 · 컷 ${nCut}개 준비 완료. 이제 프롬프트를 뽑으면 됩니다.`,
+      '<button class="btn pri" data-go="prompt">✨ 프롬프트 뽑으러 →</button>');
+}
+document.addEventListener('click',e=>{
+  const t=e.target;
+  if(t.id==='now-pick')  $('sc-file').click();
+  if(t.id==='now-paste') $('sc-paste').click();
+  if(t.id==='now-jump2'){ $('sc-raw-wrap').style.display='block'; $('sc-parse').click();
+                          $('sc-preview').scrollIntoView({behavior:'smooth',block:'center'}); }
+  if(t.id==='now-cuts'){ $('sc-oneshot').scrollIntoView({behavior:'smooth',block:'center'});
+                         setTimeout(()=>$('sc-allcuts').click(),300); }
+});
+
 /* 원고를 적용한 뒤에만 보여주고, 남은 일을 알려준다 */
 function paintOneshot(){
+  paintSteps();
   const box=$('sc-oneshot'); if(!box) return;
   box.style.display=S.scenes.length?'block':'none';
   const todo=S.scenes.filter(s=>!s.cuts.length && (s.script||'').trim()).length;
