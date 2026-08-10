@@ -69,6 +69,57 @@
 탭 아래쪽에는 **「다음 →」** 버튼이 있어 기획 → 대본·컷 → 프롬프트 순서가 자연스럽게 이어집니다.
 옛 주소(`#story` `#board` …)로 들어와도 새 탭으로 알아서 보내줍니다.
 
+## 🎬 프롬프트가 만들어지는 방식
+
+수업 필기의 실제 예시 구조를 그대로 따릅니다.
+
+```
+[매체 선언] → [샷·앵글·구도] → [인물(외형 고정 블록)] → [행동]
+→ [배경] → [시대] → [시간·조명·분위기] → [카메라·렌즈] → [화질 선언] → [파라미터]
+```
+
+**맨 앞의 매체 선언이 결과를 가장 크게 바꿉니다.** 같은 장면이라도 —
+
+| 매체 | 앞에 붙는 말 | 끝에 붙는 말 |
+|---|---|---|
+| 🎬 영화 스틸 | `cinematic, film still` | `hyper-realistic` |
+| 📼 90년대 DVD 화면 | `DVD screengrab, movie still` | `hyper-realistic, detailed style` |
+| 📷 다큐 사진 | `documentary photograph` | `natural light, unposed` |
+| ✏️ 스토리보드 스케치 | `pencil sketch for storyboard` | `rough hatching, black and white` |
+| 🖍️ 콘티 마커화 | `storyboard panel, marker sketch` | `loose linework, limited color` |
+| 🎨 플랫 벡터 일러스트 | `flat vector graphic illustration` | `simple shapes and lines, flat colors` |
+| 🖼️ 콘셉트 아트 | `cinematic concept art` | `digital matte painting` |
+| 🌸 애니메이션 스틸 | `anime film still` | `cel shaded` |
+| 📺 광고 · 제품 컷 | `commercial photography still` | `studio lighting` |
+
+### 카메라 · 시대 · 구도
+
+- **카메라 · 필름** — `shot on Hasselblad` `shot on Nikon FA` `Kodak Portra 400` `ARRI Alexa` `16mm 필름` …
+  미드저니는 실제 기종의 화각 · 계조 · 입자를 알아듣습니다
+- **시대** — `in the style of 1990s` 한 줄로 의상 · 소품 · 색감이 통째로 바뀝니다 (70s / 80s / 90s / Y2K / 현재 / 근미래)
+- **구도** — 3등분 법칙 · **정중앙(중심선)** · **중심선에서 밀려남(불안)** · 대칭 · 프레임 속 프레임 · 여백 강조
+
+### 샷 · 앵글이 주는 인상
+
+컷을 고르면 그 아래에 무엇이 달라지는지 한 줄로 뜹니다.
+
+| 앵글 | 인상 |
+|---|---|
+| 아이레벨 | 자연스럽고 친숙함 · 1인칭 시점 · 인물과의 교감 · 캐릭터 소개 |
+| 로우앵글 | 고압적 · 지배적 · 위협적 · 권위 · 영웅심 · 감정 고조 |
+| 하이앵글 | 약자 · 관찰당함 · 취약함 |
+| 익스트림 롱샷 | 넓은 환경에 놓인 인물 — 취약성 · 외로움 |
+| POV | 내가 그 장면을 바라보는 듯 — 몰입 |
+
+### 같은 스타일로 계속 뽑기 — `--sref` · `--oref`
+
+| | 무엇을 붙잡나 |
+|---|---|
+| **`--sref`** | **화풍**. 코드를 적어두면 다음 컷도 같은 톤. **두 개를 섞으면** 자기만의 색이 나옵니다. `random` 버튼도 있습니다 |
+| **`--oref` + `--ow`** | **인물**. 미드저니에 올린 사진 주소를 넣습니다. 닮은 정도는 70(자유) / 100(기본) / 300(얼굴 고정) |
+
+> `--oref` 는 미드저니 **v7 이상**에서 동작합니다. 예전 `--cref` 를 대체한 방식이에요.
+
 ## 🖼️ 미드저니로 바로 작업하기
 
 「프롬프트」 탭에서 **어디에 쓸 건지 하나만 고르면** 그 카드만 펼쳐집니다 — 셋을 동시에 보며 고민할 필요가 없어요.
