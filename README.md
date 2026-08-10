@@ -23,10 +23,25 @@
 | 확인 창 | 직접 그림 (`confirm` 이 막힘) | 〃 |
 | 🔗 공유 주소 | 바깥 주소를 한 번 알려 줘야 하고, `#p=` 는 안 닿을 수 있음 | 그대로 됩니다 |
 
-**전부 되게 하려면 웹 페이지로 띄우는 편이 낫습니다.** 이 저장소에는 `shot-planner`
-폴더를 GitHub Pages 로 올리는 워크플로(`.github/workflows/pages.yml`)가 들어 있습니다.
-저장소 설정에서 **Settings → Pages → Source: GitHub Actions** 를 한 번 골라 주면,
-`main` 에 올라갈 때마다 배포됩니다.
+**전부 되게 하려면 웹 페이지로 띄우는 편이 낫습니다.** 그래서 여기에 올려 두었습니다:
+
+### 👉 https://yellow8227-cmd.github.io/char-counter/
+
+링크를 카톡·슬랙에 붙이면 미리보기 카드가 뜹니다 — `og.png` 와 `index.html` 머리말의
+Open Graph 태그가 그 카드입니다. 카드 그림은 도구에서 실제 도면을 뽑아 얹어 만듭니다.
+
+`gh-pages` 가지의 내용이 그대로 사이트가 됩니다. `shot-planner/` 를 고친 뒤
+사이트에 반영하려면 그 폴더를 `gh-pages` 뿌리로 올리면 됩니다.
+
+```bash
+git push origin $(git commit-tree $(git rev-parse main:shot-planner) \
+  -m "사이트 갱신"):refs/heads/gh-pages --force
+```
+
+> Actions 로 자동 배포하는 워크플로도 만들어 봤지만, 이 저장소의 Actions 토큰에
+> Pages 를 켤 권한이 없어(`Resource not accessible by integration`) 걷어냈습니다.
+> `Settings → Actions → General → Workflow permissions` 를 «Read and write» 로
+> 바꾸면 다시 넣을 수 있습니다.
 
 ## 실행
 
