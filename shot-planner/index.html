@@ -859,14 +859,14 @@
         <button class="mini" data-q="배우 2명, 자동차, 카메라 2대">차량</button>
       </div>
       <div class="row" style="margin-top:8px">
-        <div class="seg" id="segQMode" role="group" aria-label="빠른 배치 방식">
-          <button data-qmode="replace">새로 배치</button>
-          <button data-qmode="append">덧붙이기</button>
-        </div>
+        <button class="danger" id="bWipe">🧹 모두 삭제</button>
+        <span style="flex:1"></span>
+        <button class="mini" id="bUndo2" title="Ctrl+Z">↩ 이전</button>
+        <button class="mini" id="bRedo2" title="Ctrl+Shift+Z">↪ 이후</button>
       </div>
-      <p class="hint">엔터로 배치. 서로 <b>겹치지 않는 자리</b>를 찾아 놓습니다.
-        <b>이름 가로x세로x높이</b> 형식으로 쓰면 <b>없는 소품도 바로 만들어</b> 놓아요 — 예) <code>화분 40x40x90</code>.
-        잘못 눌렀으면 <kbd>Ctrl+Z</kbd>.</p>
+      <p class="hint">엔터로 배치. 지금 있는 것 <b>위에 더</b> 놓고, 서로 <b>겹치지 않는 자리</b>를 찾습니다.
+        처음부터 다시 짜려면 <b>모두 삭제</b>를 먼저 누르세요.<br>
+        <b>이름 가로x세로x높이</b> 형식으로 쓰면 <b>없는 소품도 바로 만들어</b> 놓아요 — 예) <code>화분 40x40x90</code>.</p>
     </section>
 
     <section class="card">
@@ -1039,7 +1039,7 @@ const ACCENTS = [
   {id:'purple', light:'#7a5ad6', dark:'#b394ff'},
   {id:'rose',   light:'#bc3c60', dark:'#ff8fb0'},
 ];
-const DEFAULT_PREFS = {theme:'auto', accent:'amber', fs:13, paper:'theme', snap:5, angle:15, wide:false, qmode:'replace'};
+const DEFAULT_PREFS = {theme:'auto', accent:'amber', fs:13, paper:'theme', snap:5, angle:15, wide:false};
 let prefs = {...DEFAULT_PREFS};
 
 /* 배치도(2D 도면)에 쓰는 색. CSS 변수와 별개로 캔버스는 여기서 가져다 쓴다. */
@@ -1137,7 +1137,6 @@ function loadPrefs(){
   }catch(e){ prefs = {...DEFAULT_PREFS}; }
   prefs.snap = [1,5,10,25].includes(+prefs.snap) ? +prefs.snap : 5;
   prefs.wide = !!prefs.wide;
-  prefs.qmode = prefs.qmode === 'append' ? 'append' : 'replace';
   prefs.angle = [5,15,45,90].includes(+prefs.angle) ? +prefs.angle : 15;
   prefs.fs = [12,13,15].includes(+prefs.fs) ? +prefs.fs : 13;
 }
@@ -3265,14 +3264,18 @@ function quickWords(){
 const HANNUM = {'한':1,'하나':1,'두':2,'둘':2,'세':3,'셋':3,'네':4,'넷':4,'다섯':5,'여섯':6,'일곱':7,'여덟':8,'아홉':9,'열':10};
 const CNT = '개|명|대|장|채|그루|짝|송이|벌';
 
+/* 씬을 통째로 비운다 — 되돌리기로 살릴 수 있다 */
+function wipeScene(loud){
+  snapshot();
+  state.walls = []; state.props = []; state.actors = []; state.lights = []; state.cams = [];
+  setSel([]); state.activeCam = null; state.refCam = null;
+  state.axis.a = null; state.axis.b = null; state.scrub = 0;
+  resetView(); fitBird(); refreshAll();
+  if(loud) toast('🧹 이 씬을 비웠어요 — 되돌리려면 ↩ 이전');
+}
+
 function quickAdd(text){
   snapshot();
-  // '새로 배치'면 지금 씬을 비우고 처음부터 놓는다. 덧붙이면 겹치기 쉬워서 이쪽이 기본.
-  if(prefs.qmode !== 'append'){
-    state.walls = []; state.props = []; state.actors = []; state.lights = []; state.cams = [];
-    setSel([]); state.activeCam = null; state.refCam = null;
-    state.axis.a = null; state.axis.b = null; state.scrub = 0;
-  }
   const clauses = text.split(/[,，]|그리고|랑|와|과/).map(s => s.trim()).filter(Boolean);
   const W = quickWords();
   let added = 0, made = [], unknown = [];
@@ -3303,8 +3306,7 @@ function quickAdd(text){
           (made.length ? ' · 새 소품 ' + made.join(', ') : '') +
           (unknown.length ? ' · 「' + unknown.join('」 「') + '」는 못 알아들었어요' : ''));
   } else {
-    undo();                      // 비운 것까지 되돌린다
-    redoStack.pop();
+    undoStack.pop();
     toast(unknown.length
       ? '「' + unknown.join('」 「') + '」를 못 알아들었어요 — 「이름 가로x세로x높이」로 쓰면 새 소품이 만들어져요'
       : '무엇을 놓을지 적어 주세요 — 예) 배우 2명, 소파, 카메라 2대');
@@ -3434,18 +3436,9 @@ document.getElementById('cpAdd').addEventListener('click', () => {
   fitBird(); refreshAll(); toast('✅「'+nm+'」 등록 + 배치했어요');
 });
 
-/* 새로 배치 / 덧붙이기 */
-function applyQMode(){
-  document.querySelectorAll('#segQMode [data-qmode]').forEach(b =>
-    b.classList.toggle('on', b.dataset.qmode === prefs.qmode));
-}
-document.getElementById('segQMode').addEventListener('click', e => {
-  const b = e.target.closest('[data-qmode]'); if(!b) return;
-  prefs.qmode = b.dataset.qmode; savePrefs(); applyQMode();
-  toast(prefs.qmode === 'append'
-    ? '지금 배치 위에 덧붙입니다'
-    : '빠른 배치를 하면 씬을 비우고 새로 놓습니다');
-});
+document.getElementById('bWipe').addEventListener('click', () => wipeScene(true));
+document.getElementById('bUndo2').addEventListener('click', undo);
+document.getElementById('bRedo2').addEventListener('click', redo);
 document.getElementById('quick').addEventListener('keydown', e => {
   if(e.key !== 'Enter') return;
   quickAdd(e.target.value); e.target.select();
@@ -3605,11 +3598,7 @@ if(window.MutationObserver){
     .observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
 }
 document.getElementById('bClear').addEventListener('click', () => {
-  snapshot();
-  state.walls = []; state.props = []; state.actors = []; state.lights = []; state.cams = [];
-  state.sel = null; state.selMulti = []; state.activeCam = null; state.refCam = null;
-  state.axis.a = null; state.axis.b = null; state.scrub = 0;
-  closePrefs(); redraw(); toast('🧹 이 씬을 비웠어요 (Ctrl+Z 로 되돌릴 수 있어요)');
+  closePrefs(); wipeScene(true);
 });
 
 ['setW','setD','setH'].forEach(id => document.getElementById(id).addEventListener('change', e => {
@@ -3807,7 +3796,7 @@ document.querySelectorAll('.site a[href^="#"]').forEach(a => a.addEventListener(
   t.scrollIntoView({behavior: soft ? 'smooth' : 'auto', block:'start'});
 }));
 
-loadPrefs(); applyPrefs(); applyWide(); applyQMode();
+loadPrefs(); applyPrefs(); applyWide();
 project = newProject(); syncState();
 if(!load(false)){ demo(); }
 refreshAll();
