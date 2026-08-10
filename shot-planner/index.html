@@ -609,8 +609,9 @@
     .pblock{ margin-left:auto; border-collapse:collapse; font-size:8pt }
     .pblock td{ border:.6pt solid #999; padding:.8mm 2.5mm }
     .pblock td:first-child{ color:#555; background:#f2f2f2 }
+    /* 도면은 늘였다 줄였다 하면 축척이 어긋난다. 209×154mm 로 못 박는다. */
     .pbody{ display:flex; gap:6mm; margin-top:4mm; flex:1; min-height:0 }
-    #pp-img{ flex:1; min-width:0; object-fit:contain; border:.6pt solid #666 }
+    #pp-img{ width:209mm; height:154mm; flex:none; object-fit:contain; border:.6pt solid #666 }
     .pside{ width:62mm; flex:none }
     .pside h4{ margin:0 0 1.5mm; font-size:8.5pt; letter-spacing:.4pt; border-bottom:.6pt solid #000; padding-bottom:.8mm }
     .pside h4+*{ margin-bottom:4mm }
@@ -3929,12 +3930,23 @@ function printBounds(m){
   }
   return b;
 }
-function buildSheet(){
-  /* A4 가로에서 도면이 차지하는 폭은 약 168mm (277mm 중 범례를 뺀 나머지).
-     그 폭에 2480px 를 쓰므로 1mm 당 px 가 정해지고, 거기서 표준 축척을 고른다. */
-  const W = 2480, H = 1400;
-  const PAPER_MM = 168;
-  const pxPerMm = W / PAPER_MM;
+const SHEET_LEGEND = [
+  ['#e08a00', 'sq',  '카메라 (슬레이트 · 렌즈)'],
+  ['#5fd08a', 'dot', '배우 (이름 · 자세)'],
+  ['#fff2c4', 'sq',  '조명 (세기 · 색온도)'],
+  ['#dcdcdc', 'sq',  '소품'],
+  ['#444444', 'bar', '벽'],
+  ['#cc3333', 'dash','180° 선 — 붉은 쪽은 넘으면 안 되는 방향'],
+];
+/* A4 가로(297×210) 에서 여백 10mm 를 빼면 277×190.
+   그 중 범례 62mm 와 사이 6mm 를 빼고 남는 209mm 가 도면 폭이고,
+   머리말·꼬리말을 빼고 남는 154mm 가 도면 높이다. 인쇄용 CSS 도 같은 값을 쓴다. */
+const SHEET_MM = {page:[297,210], m:10, plan:[209,154], side:62, gap:6};
+/* 도면만 그린 캔버스. 표준 축척으로 떨어뜨린 뒤 그린다. */
+function planSheet(){
+  /* 1mm 당 12px 로 그린다. 종이 위에서 정확히 209mm 를 차지하므로 축척이 맞는다. */
+  const pxPerMm = 12;
+  const W = Math.round(SHEET_MM.plan[0]*pxPerMm), H = Math.round(SHEET_MM.plan[1]*pxPerMm);
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const g = cv.getContext('2d');
   g.fillStyle = '#ffffff'; g.fillRect(0,0,W,H);
@@ -3955,34 +3967,196 @@ function buildSheet(){
   drawPlan(g, W, H);
   drawSheetExtras(g, W, H);
   PAL = savedPal; Object.assign(PT, savedPT);
-  document.getElementById('pp-img').src = cv.toDataURL('image/png');
-
-  const scaleDen = denom;
-  document.getElementById('pp-title').textContent = (project.title || '무제');
-  document.getElementById('pp-sub').textContent =
-    'S#' + (state.no||'1') + '. ' + (state.name||'') + (state.loc ? ' · ' + state.loc : '');
-  const d = new Date();
-  const pad = n => String(n).padStart(2,'0');
-  document.getElementById('pp-block').innerHTML = [
-    ['세트', (state.set.w/100).toFixed(2)+' × '+(state.set.d/100).toFixed(2)+' × '+(state.set.h/100).toFixed(2)+' m'],
-    ['화면비', (RATIOS.find(r=>r.id===state.ratio)||RATIOS[0]).name],
-    ['셋업', state.cams.length + '대 · 배우 ' + state.actors.length + '명 · 조명 ' + state.lights.length],
-    ['뽑은 날', d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())],
-  ].map(r => '<tr><td>'+r[0]+'</td><td>'+esc(String(r[1]))+'</td></tr>').join('');
-
-  document.getElementById('pp-shots').innerHTML = state.cams.map(c => {
-    const s2 = subjectOf(c);
-    const size = s2 ? shotSizeOf({...c, focus:s2.d}, visH(s2.a)) : '-';
-    return '<tr><td>'+esc(c.slate)+'</td><td>'+c.lens+'mm '+((project.stopMode||'T')==='T'?'T':'f/')+c.stop+'</td>'
-      + '<td>'+Math.round(c.z)+'cm</td><td>'+esc(c.move||'고정')+'</td><td>'+esc(size)+'</td></tr>';
-  }).join('') || '<tr><td colspan="5">셋업 없음</td></tr>';
-  document.getElementById('pp-foot').textContent =
-    '축척 1:' + scaleDen + ' (A4 가로 기준) · 치수는 벽 안쪽 실측(cm)';
+  return {cv, denom};
 }
+/* 도면 옆에 붙는 글자들 — 인쇄본과 PNG 가 같은 값을 쓴다. */
+function sheetData(denom){
+  const d = new Date(), pad = n => String(n).padStart(2,'0');
+  return {
+    title: project.title || '무제',
+    sub: 'S#' + (state.no||'1') + '. ' + (state.name||'') + (state.loc ? ' · ' + state.loc : ''),
+    block: [
+      ['세트', (state.set.w/100).toFixed(2)+' × '+(state.set.d/100).toFixed(2)+' × '+(state.set.h/100).toFixed(2)+' m'],
+      ['화면비', (RATIOS.find(r=>r.id===state.ratio)||RATIOS[0]).name],
+      ['셋업', state.cams.length + '대 · 배우 ' + state.actors.length + '명 · 조명 ' + state.lights.length],
+      ['뽑은 날', d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())],
+    ],
+    shots: state.cams.map(c => {
+      const s2 = subjectOf(c);
+      return [c.slate, c.lens+'mm '+((project.stopMode||'T')==='T'?'T':'f/')+c.stop,
+              Math.round(c.z)+'cm', c.move||'고정',
+              s2 ? shotSizeOf({...c, focus:s2.d}, visH(s2.a)) : '-'];
+    }),
+    foot: '축척 1:' + denom + ' (A4 가로 기준) · 치수는 벽 안쪽 실측(cm)',
+  };
+}
+function buildSheet(){
+  const {cv, denom} = planSheet();
+  const S = sheetData(denom);
+  document.getElementById('pp-img').src = cv.toDataURL('image/png');
+  document.getElementById('pp-title').textContent = S.title;
+  document.getElementById('pp-sub').textContent = S.sub;
+  document.getElementById('pp-block').innerHTML =
+    S.block.map(r => '<tr><td>'+esc(r[0])+'</td><td>'+esc(String(r[1]))+'</td></tr>').join('');
+  document.getElementById('pp-shots').innerHTML =
+    S.shots.map(r => '<tr>'+r.map(v => '<td>'+esc(String(v))+'</td>').join('')+'</tr>').join('')
+    || '<tr><td colspan="5">셋업 없음</td></tr>';
+  document.getElementById('pp-foot').textContent = S.foot;
+}
+
+/* ── 도면 한 장을 PNG 로 ──────────────────────────────────
+   인쇄가 막힌 곳(샌드박스 안)에서도 같은 종이를 손에 쥘 수 있게,
+   A4 가로 300dpi 한 장을 통째로 그린다. */
+const SHEET_FONT = '"Pretendard Variable","Pretendard",-apple-system,"Segoe UI","Malgun Gothic",system-ui,sans-serif';
+function sheetCanvas(){
+  const DPI = 300;
+  const mm = v => v*DPI/25.4;           // 자리는 mm 로
+  const pt = v => v*DPI/72;             // 글자 크기는 pt 로
+  const W = Math.round(mm(SHEET_MM.page[0])), H = Math.round(mm(SHEET_MM.page[1]));
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const g = cv.getContext('2d');
+  g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+  g.textBaseline = 'alphabetic';
+  const font = (size, weight) => { g.font = (weight||400) + ' ' + pt(size) + 'px ' + SHEET_FONT; };
+  const text = (s, x, y, size, weight, col, align) => {
+    font(size, weight); g.textAlign = align || 'left';
+    g.fillStyle = col || '#000'; g.fillText(String(s), x, y);
+  };
+  const line = (x1, y1, x2, y2, col, w) => {
+    g.strokeStyle = col; g.lineWidth = w || mm(.2);
+    g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
+  };
+  /* 칸 하나 — 배경, 테두리, 넘치면 글자를 조금 줄여서 넣는다 */
+  const cell = (x, y, w, h, txt, size, weight, bg) => {
+    if(bg){ g.fillStyle = bg; g.fillRect(x, y, w, h); }
+    g.strokeStyle = '#999'; g.lineWidth = mm(.2); g.strokeRect(x, y, w, h);
+    const pad = mm(1.2), avail = w - pad*2;
+    let s2 = size;
+    font(s2, weight);
+    while(s2 > size*0.62 && g.measureText(String(txt)).width > avail){
+      s2 -= 0.25; font(s2, weight);
+    }
+    g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip();
+    text(txt, x + pad, y + h*0.72, s2, weight, '#000');
+    g.restore();
+  };
+  const M = mm(SHEET_MM.m), L = M, R = W - M, T = M, B = H - M;
+  const plan = planSheet();
+  const S = sheetData(plan.denom);
+
+  /* 표제란 — 오른쪽 위, 글자 폭에 맞춰 뒤에서부터 잡는다 */
+  font(8, 400);
+  const bkKeyW = Math.max(...S.block.map(r => g.measureText(r[0]).width)) + mm(5);
+  const bkValW = Math.max(...S.block.map(r => g.measureText(String(r[1])).width)) + mm(5);
+  const bkH = mm(4.4), bkX = R - (bkKeyW + bkValW);
+  let by = T;
+  for(const [k, v] of S.block){
+    cell(bkX, by, bkKeyW, bkH, k, 8, 400, '#f2f2f2');
+    cell(bkX + bkKeyW, by, bkValW, bkH, v, 8, 400, null);
+    by += bkH;
+  }
+  text(S.title, L, T + mm(6), 16, 700, '#000');
+  text(S.sub,   L, T + mm(10.5), 9, 400, '#333');
+  const headY = Math.max(by, T + mm(12)) + mm(2.5);
+  line(L, headY, R, headY, '#000', mm(.42));
+
+  /* 본문 — 왼쪽 도면(209×154mm 고정), 오른쪽 범례와 셋업표 */
+  const bodyY = headY + mm(4);
+  const iw = mm(SHEET_MM.plan[0]), ih = mm(SHEET_MM.plan[1]);
+  g.drawImage(plan.cv, L, bodyY, iw, ih);
+  g.strokeStyle = '#666'; g.lineWidth = mm(.2); g.strokeRect(L, bodyY, iw, ih);
+
+  const sideW = mm(SHEET_MM.side), sx = R - sideW;
+  const bodyBot = bodyY + ih;
+  let sy = bodyY + mm(3.4);
+  const heading = t => {
+    text(t, sx, sy, 8.5, 700, '#000');
+    line(sx, sy + mm(1), R, sy + mm(1), '#000', mm(.2));
+    sy += mm(5.2);
+  };
+  heading('범례');
+  for(const [col, shape, name] of SHEET_LEGEND){
+    const s2 = mm(3.4), y0 = sy - mm(2.6);
+    g.fillStyle = col; g.strokeStyle = '#333'; g.lineWidth = mm(.2);
+    if(shape === 'dot'){
+      g.beginPath(); g.arc(sx + s2/2, y0 + s2/2, s2/2, 0, 7); g.fill(); g.stroke();
+    }else if(shape === 'bar'){
+      g.fillRect(sx, y0 + s2/2 - mm(.6), s2, mm(1.2));
+    }else if(shape === 'dash'){
+      for(let i=0;i<3;i++) g.fillRect(sx + i*mm(1.3), y0 + s2/2 - mm(.5), mm(.8), mm(1));
+    }else{
+      g.fillRect(sx, y0, s2, s2); g.strokeRect(sx, y0, s2, s2);
+    }
+    /* 「180° 선」 처럼 긴 줄은 두 줄로 접는다 */
+    const tx = sx + s2 + mm(2), avail = R - tx;
+    font(8, 400);
+    let rest = name, lines = [];
+    while(rest && lines.length < 2){
+      if(g.measureText(rest).width <= avail || lines.length === 1){ lines.push(rest); break; }
+      let cut = rest.length;
+      while(cut > 1 && g.measureText(rest.slice(0, cut)).width > avail) cut--;
+      lines.push(rest.slice(0, cut)); rest = rest.slice(cut);
+    }
+    for(const ln of lines){ text(ln, tx, sy, 8, 400, '#000'); sy += mm(3.6); }
+    sy += mm(1);
+  }
+  sy += mm(3);
+  heading('셋업');
+  const colMm = [11, 16, 9, 10, 16];    // 합 62mm
+  const rowH = mm(4.4);
+  const row = (cells, head) => {
+    let x = sx;
+    for(let i=0;i<cells.length;i++){
+      cell(x, sy, mm(colMm[i]), rowH, cells[i], 7.5, (head || i === 0) ? 700 : 400,
+           head ? '#f2f2f2' : null);
+      x += mm(colMm[i]);
+    }
+    sy += rowH;
+  };
+  if(S.shots.length){
+    row(['슬레이트','렌즈','높이','무브','샷'], true);
+    let over = 0;
+    for(const r of S.shots){
+      if(sy + rowH > bodyBot){ over++; continue; }
+      row(r);
+    }
+    if(over) text('… 외 ' + over + '대는 지면 밖', sx, sy + mm(3), 7.5, 400, '#555');
+  }else{
+    text('셋업 없음', sx, sy + mm(3), 8, 400, '#555');
+  }
+
+  const footY = B - mm(2);
+  line(L, footY - mm(3), R, footY - mm(3), '#999', mm(.2));
+  text(S.foot, L, footY, 7.5, 400, '#555');
+  text('촬영 배치도 · Shot Planner', R, footY, 7.5, 400, '#555', 'right');
+  return cv;
+}
+function sheetStem(){
+  return (project.title || 'shotplan') + '_S' + (state.no||'1') + '_도면';
+}
+async function saveSheetPng(){
+  const cv = sheetCanvas();
+  const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
+  if(!blob){ toast('도면을 만들지 못했어요'); return; }
+  await saveFile(safeName(sheetStem(), '.png'), blob);
+}
+
+/* 인쇄가 실제로 열렸는지는 beforeprint 로만 알 수 있다.
+   샌드박스 iframe 은 window.print() 를 조용히 무시하므로, 그때는 PNG 로 넘긴다. */
 document.getElementById('bPrint').addEventListener('click', () => {
   buildSheet();
-  setTimeout(() => window.print(), 120);
-  toast('🖨 인쇄 창에서 「PDF로 저장」을 고르면 도면 파일이 됩니다');
+  setTimeout(() => {
+    let opened = false;
+    const mark = () => { opened = true; };
+    window.addEventListener('beforeprint', mark);
+    try{ window.print(); }catch(e){}
+    window.removeEventListener('beforeprint', mark);
+    if(opened) toast('🖨 인쇄 창에서 「PDF로 저장」을 고르면 도면 파일이 됩니다');
+    else{
+      toast('인쇄가 막힌 곳이라 도면을 PNG 한 장으로 뽑을게요');
+      saveSheetPng();
+    }
+  }, 120);
 });
 
 /* ── 공유 ── */
