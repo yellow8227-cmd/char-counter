@@ -492,7 +492,7 @@ footer{border-top:1px solid var(--line);background:var(--s1);margin-top:70px}
     </button>
     <label class="ptwrap"><span>작품</span><input class="ptitle" id="ptitle" placeholder="제목을 적어주세요"></label>
     <div class="hsp"></div>
-    <button class="btn sm pri" id="hshare" title="지금 상태 그대로 공유 링크 만들기">🔗<span class="lb"> 공유</span></button>
+    <button class="btn sm pri" id="hshare" title="지금 상태 그대로 공유하기">🔗<span class="lb"> 공유</span></button>
     <button class="btn sm" id="themetog" aria-label="화면 밝기 전환">🌙 어둡게</button>
     <button class="btn sm" id="openmt">🌐 번역</button>
     <span class="saveind on" id="saveind">저장됨</span>
@@ -1432,17 +1432,25 @@ function toast(m,action){
   clearTimeout(toastT);
   toastT=setTimeout(()=>t.classList.remove('on'), action?6000:2200);
 }
+function copyNow(text){
+  // 클릭 한 번 안에서 동기로 끝내는 방식 — 프레임 안에서도 동작한다
+  const ta=document.createElement('textarea');
+  ta.value=text;
+  ta.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select(); ta.setSelectionRange(0,text.length);
+  let ok=false;
+  try{ ok=document.execCommand('copy'); }catch(e){}
+  document.body.removeChild(ta);
+  return ok;
+}
 function copy(text,msg){
   if(!text||!text.trim()){ toast('복사할 내용이 없어요'); return; }
   const done=()=>toast(msg||'복사했어요 ✓');
-  const fb=()=>{
-    const ta=document.createElement('textarea');
-    ta.value=text; ta.style.cssText='position:fixed;opacity:0';
-    document.body.appendChild(ta); ta.select();
-    try{ document.execCommand('copy'); done(); }catch(e){ toast('복사 실패 — 직접 선택해 주세요'); }
-    document.body.removeChild(ta);
-  };
-  if(navigator.clipboard&&window.isSecureContext) navigator.clipboard.writeText(text).then(done,fb); else fb();
+  if(copyNow(text)){ done(); return; }
+  if(navigator.clipboard&&window.isSecureContext)
+    navigator.clipboard.writeText(text).then(done,()=>toast('복사가 막혀 있어요 — 주소를 직접 선택해 복사해 주세요'));
+  else toast('복사가 막혀 있어요 — 주소를 직접 선택해 복사해 주세요');
 }
 function opts(map,cur){
   return Object.keys(map).map(k=>`<option value="${esc(k)}"${k===cur?' selected':''}>${esc(k||'— 선택 —')}</option>`).join('');
@@ -4033,8 +4041,25 @@ async function unpackState(param){
   return JSON.parse(new TextDecoder().decode(buf));
 }
 let shareURL='';
+/* 이 앱이 다른 페이지 안(iframe)에 들어가 있으면,
+   여기서 만든 주소는 「안쪽 화면의 주소」라 남에게 보내도 그 내용이 열리지 않는다.
+   만든 척하지 않고 사실대로 말하고 다른 길을 준다. */
+const EMBEDDED = (()=>{ try{ return window.top!==window.self; }catch(e){ return true; } })();
+function embedNotice(){
+  return `<b class="bad">이 화면은 다른 페이지 안에 들어 있어서 공유 링크를 만들 수 없습니다.</b><br>
+    여기서 만든 주소는 <b>바깥 페이지가 아니라 안쪽 화면의 주소</b>라, 보내도 내용이 열리지 않아요.<br><br>
+    <b>대신 이렇게 하세요</b><br>
+    ① <b>📁 JSON 백업 파일</b>을 보내면 이미지까지 전부 넘어갑니다 (받는 쪽은 「JSON 불러오기」).<br>
+    ② 이 앱을 <b>따로 열어두고</b>(내려받은 <code>index.html</code>을 더블클릭하거나 GitHub Pages 주소로)
+    쓰시면 공유 링크가 정상 동작합니다.`;
+}
 /* 링크를 만들어 urlEl·infoEl에 채운다. 실패하면 false */
 async function makeShareLink(urlEl,infoEl){
+  if(EMBEDDED){
+    urlEl.innerHTML=embedNotice(); urlEl.classList.remove('empty2');
+    infoEl.textContent='';
+    return false;
+  }
   const p=await packState();
   const url=location.href.split('#')[0]+'#p='+p;
   const kb=Math.round(url.length/1024);
@@ -4052,14 +4077,26 @@ async function makeShareLink(urlEl,infoEl){
   return true;
 }
 /* 헤더의 🔗 공유 — 어느 탭에 있든 한 번에 */
+function selectEl(el){
+  try{ const r=document.createRange(); r.selectNodeContents(el);
+       const s=getSelection(); s.removeAllRanges(); s.addRange(r); }catch(e){}
+}
+$('m-url').addEventListener('click',function(){ if(shareURL) selectEl(this); });
+$('sh-url').addEventListener('click',function(){ if(shareURL) selectEl(this); });
 $('hshare').addEventListener('click',async()=>{
-  const m=$('shmask');
-  $('m-url').textContent='만드는 중…'; $('m-url').classList.add('empty2'); $('m-info').textContent='';
+  const m=$('shmask'), u=$('m-url');
+  u.textContent='만드는 중…'; u.classList.add('empty2'); $('m-info').textContent='';
+  $('m-copy').style.display=''; $('m-open').style.display='';
   m.classList.add('on');
   try{
-    if(await makeShareLink($('m-url'),$('m-info')))
-      copy(shareURL,'링크를 복사했어요 — 붙여넣어 보내세요');
-  }catch(e){ $('m-url').textContent='링크를 만들지 못했어요: '+e.message; }
+    const ok=await makeShareLink(u,$('m-info'));
+    $('m-copy').style.display=ok?'':'none';
+    $('m-open').style.display=ok?'':'none';
+    if(ok){
+      selectEl(u);                       // 복사가 막혀도 Ctrl+C 만 누르면 되도록 미리 선택해 둔다
+      toast('링크를 만들었어요 — 「📋 링크 복사」를 눌러주세요');
+    }
+  }catch(e){ u.textContent='링크를 만들지 못했어요: '+e.message; }
 });
 $('m-copy').addEventListener('click',()=>copy(shareURL,'링크를 복사했어요 ✓'));
 $('m-open').addEventListener('click',()=>{ if(shareURL) window.open(shareURL,'_blank','noopener'); });
@@ -4068,10 +4105,10 @@ $('m-tojson').addEventListener('click',()=>{ $('shmask').classList.remove('on');
 $('sh-make').addEventListener('click',async()=>{
   try{
     toast('링크 만드는 중…');
-    if(await makeShareLink($('sh-url'),$('sh-info'))){
-      $('sh-copy').style.display=''; $('sh-open').style.display='';
-      copy(shareURL,'링크를 복사했어요 — 붙여넣어 보내세요');
-    }
+    const ok=await makeShareLink($('sh-url'),$('sh-info'));
+    $('sh-copy').style.display=ok?'':'none';
+    $('sh-open').style.display=ok?'':'none';
+    if(ok){ selectEl($('sh-url')); toast('링크를 만들었어요 — 「📋 링크 복사」를 눌러주세요'); }
   }catch(e){ toast('링크를 만들지 못했어요: '+e.message); }
 });
 $('sh-copy').addEventListener('click',()=>copy(shareURL,'링크를 복사했어요 ✓'));
