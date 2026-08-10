@@ -414,7 +414,7 @@
   <div id="lobbyScreen" class="screen hide">
     <div class="h2">🔴 대기실</div>
     <div class="card">
-      <div class="label">🚪 방 코드 — 이걸 친구에게 보내세요</div>
+      <div class="label" id="lobbyCodeLabel">🚪 방 코드</div>
       <div class="codebig" id="lobbyCode">------</div>
       <div class="tag2" id="lobbyLink" style="margin-top:4px;word-break:break-all;"></div>
       <div class="tag2" id="lobbyRole" style="margin-top:4px;"></div>
@@ -424,6 +424,11 @@
       <div class="label">🔌 연결 상태</div>
       <div class="tag2" id="lobbyStatus" style="text-align:left;white-space:pre-line;"></div>
       <button class="setbtn hide" id="lobbyRetryBtn">🔄 다시 연결하기</button>
+    </div>
+    <div class="card hide" id="lobbyNickCard">
+      <div class="label">🙋 닉네임을 정해주세요</div>
+      <div class="tag2" style="text-align:left;margin:0 0 8px;">이름이 있어야 상대 화면에 내가 보여요.</div>
+      <input id="nickInputL" maxlength="10" placeholder="닉네임을 입력하세요">
     </div>
     <div class="card">
       <div class="label">👥 참가자</div>
@@ -1151,7 +1156,7 @@ function buildCalendar(){
 let nick=localStorage.getItem('jelly_nick')||'';
 function saveNick(v){ nick=(v||'').trim().slice(0,10); localStorage.setItem('jelly_nick',nick); syncNickInputs(); }
 // 닉네임 입력칸이 화면마다 있으니 한 곳에서 고치면 나머지도 따라간다 (입력 중인 칸은 건드리지 않음)
-function syncNickInputs(){ ['nickInput','nickInput2','nickInput3','nickInputO'].forEach(id=>{
+function syncNickInputs(){ ['nickInput','nickInput2','nickInput3','nickInputO','nickInputL'].forEach(id=>{
   const el=$(id); if(el&&el.value!==nick&&document.activeElement!==el)el.value=nick; }); }
 function escapeHtml(s){ return (s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
 // "인터넷 연결이 필요해요"는 거짓말이 될 수 있다. 실제로는 SDK를 못 불러온 것
@@ -1238,7 +1243,7 @@ function netLeave(){
   if(net.ch){ netSend({t:'bye'}); try{ getSupa().removeChannel(net.ch); }catch(e){} net.ch=null; }
   if(net.watchT){ clearInterval(net.watchT); net.watchT=null; }
   netMode=false; net.foe=null; net.ready=false; net.foeReady=false; net.foeGone=false;
-  net.status=''; net.statusMsg='';
+  net.room=''; net.status=''; net.statusMsg='';   // 방을 비워야 대기 중인 재시도가 멈춘다
 }
 // 방에 들어간다 — 코드는 로컬에서 만들므로 연결을 기다리지 않고 먼저 보여준다.
 // 예전엔 연결 실패 시 대기실을 아예 열지 않아서 '방 만들기'가 아무 일도 안 한 것처럼 보였다.
@@ -1248,16 +1253,25 @@ function netEnterRoom(code,asHost){
   openLobby();      // ← 코드 먼저
   netConnect();     // ← 연결은 뒤에서
 }
+let netSdkTry=0;
 function netConnect(){
   if(!net.room) return;
   net.status='connecting'; net.statusMsg=''; renderLobby();
+  // 외부 스크립트는 늦게 올 수도, 아예 차단될 수도 있다.
+  // 잠깐 기다려보고 그래도 없으면 '사실대로' 알린다. 조용히 포기하면 안 된다.
+  if(!window.supabase){
+    if(netSdkTry++<20){ setTimeout(netConnect,400); return; }
+    net.status='fail'; net.statusMsg=netWhyOffline(); renderLobby(); return;
+  }
+  netSdkTry=0;
   if(!supaReady()){ net.status='fail'; net.statusMsg=netWhyOffline(); renderLobby(); return; }
   if(net.ch){ try{ getSupa().removeChannel(net.ch); }catch(e){} net.ch=null; }
   net.lastFoe=performance.now();
   net.ch=getSupa().channel('jelly:room:'+net.room);
   net.ch.on('broadcast',{event:'msg'},p=>netOnMsg(p&&p.payload));
   net.ch.subscribe(st=>{
-    if(st==='SUBSCRIBED'){ net.status='ok'; net.statusMsg=''; netSend({t:'hello',name:nick,char:character}); }
+    if(st==='SUBSCRIBED'){ net.status='ok'; net.statusMsg='';
+      if(nick) netSend({t:'hello',name:nick,char:character}); }
     else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED'){
       net.status='fail';
       net.statusMsg='서버에 연결하지 못했어요 (Supabase Realtime 설정을 확인하세요)';
@@ -1305,12 +1319,13 @@ function netJoinByCode(){
   if(!nickOrPrompt()) return;
   netEnterRoom(code,false);
 }
-let netUrlTry=0;
+// 초대 링크로 들어온 사람. 예전에는 supabase SDK가 없으면 조용히 포기해서
+// 친구 화면에 그냥 시작화면만 떴다. 이제 대기실을 먼저 띄우고 연결은 뒤에서 붙인다.
+// 닉네임도 대기실 안에서 받는다 — 첫 방문자는 닉네임이 없다.
 function checkRoomURL(){
   const r=new URLSearchParams(location.search).get('r'); if(!r) return;
-  if(!window.supabase){ if(netUrlTry++<20) setTimeout(checkRoomURL,300); return; }   // SDK 대기 (무한 재시도 금지)
-  const code=r.toUpperCase();
-  if(!nick){ openBattle(); $('netCodeInput').value=code; toast('닉네임을 정하고 "입장!"을 눌러주세요 🙋'); return; }
+  const code=String(r).trim().toUpperCase().slice(0,6);
+  if(code.length<4){ toast('초대 코드가 올바르지 않아요 😢'); return; }
   netEnterRoom(code,false);
 }
 
@@ -1318,6 +1333,9 @@ function checkRoomURL(){
 function openLobby(){ showScreen('lobbyScreen'); renderLobby(); }
 function renderLobby(){
   if($('lobbyScreen').classList.contains('hide')) return;
+  // 방장과 참가자에게 필요한 안내가 다르다
+  $('lobbyCodeLabel').textContent=net.host?'🚪 방 코드 — 이걸 친구에게 보내세요':'🚪 내가 들어온 방';
+  $('lobbyCopyBtn').textContent=net.host?'📋 코드·링크 복사해서 친구에게 보내기':'📋 이 방 링크 복사';
   $('lobbyCode').textContent=net.room||'------';
   $('lobbyLink').textContent=net.room?(location.origin+location.pathname+'?r='+net.room):'';
   $('lobbyRole').textContent=net.host?'🏠 내가 방장 — 난이도·시간을 내가 정해요':'🚪 참가자 — 방장 설정을 따라요';
@@ -1335,9 +1353,13 @@ function renderLobby(){
   else st.textContent='⚠️ '+(net.statusMsg||'아직 연결되지 않았어요')+
        '\n코드는 위에 있으니 먼저 친구에게 보내두세요. 연결되면 대전을 시작할 수 있어요.';
   $('lobbyRetryBtn').classList.toggle('hide',net.status==='ok'||net.status==='connecting');
+  $('lobbyNickCard').classList.toggle('hide',!!nick);
   const rb=$('lobbyReadyBtn'), ok=(net.status==='ok');
-  rb.disabled=!ok||!foe||net.ready;
-  rb.textContent=net.ready?'✅ 준비 완료':(!ok?'연결을 기다려요…':(foe?'준비 완료!':'친구를 기다려요…'));
+  rb.disabled=!ok||!foe||net.ready||!nick;
+  rb.textContent = net.ready ? '✅ 준비 완료'
+    : !nick ? '닉네임을 먼저 정해주세요'
+    : !ok   ? '연결을 기다려요…'
+    : foe   ? '준비 완료!' : '친구를 기다려요…';
 }
 function lobbyReady(){
   if(!net.foe||net.ready) return;
@@ -1566,7 +1588,7 @@ $('netCreateBtn').onclick=netCreate;
 $('netJoinBtn').onclick=netJoinByCode;
 $('lobbyReadyBtn').onclick=lobbyReady;
 $('lobbyCopyBtn').onclick=()=>copyText(location.origin+location.pathname+'?r='+net.room+'\n방 코드: '+net.room,'📋 복사됨! 친구에게 보내세요');
-$('lobbyRetryBtn').onclick=netConnect;
+$('lobbyRetryBtn').onclick=()=>{ netSdkTry=0; netConnect(); };
 $('lobbyLeaveBtn').onclick=()=>{ netLeave(); openBattle(); };
 $('throwBtn').onclick=doThrow;
 $('lbRefresh').onclick=loadLeaderboard;
@@ -1574,6 +1596,10 @@ $('joinChBtn').onclick=()=>joinByCode($('chCodeInput').value);
 $('acceptStartBtn').onclick=startAcceptChallenge;
 $('acceptBackBtn').onclick=()=>openStart();
 ['nickInput','nickInput2','nickInput3','nickInputO'].forEach(id=>$(id).addEventListener('input',e=>saveNick(e.target.value)));
+// 대기실에서 닉네임을 정하면 곧바로 상대에게 알린다
+$('nickInputL').addEventListener('input',e=>{ saveNick(e.target.value);
+  if(net.status==='ok'&&nick) netSend({t:'hello',name:nick,char:character});
+  renderLobby(); });
 $('homeBtn').onclick=()=>openStart();
 $('shareBtn').onclick=shareResult;
 $('sendChBtn').onclick=sendChallenge;
