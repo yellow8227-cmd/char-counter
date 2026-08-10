@@ -33,6 +33,12 @@
     --sh-lift:0 4px 10px -4px rgba(178,110,155,0.35);
     /* 안쪽 위 하이라이트 + 아래 살짝 고인 그늘 */
     --sh-in:inset 0 1.5px 0 rgba(255,255,255,0.95),inset 0 -12px 26px -20px rgba(150,80,130,0.55);
+    /* 젤리 세 규칙을 UI에도 그대로: 위 테두리에 빛, 아래 테두리에 그늘, 바닥으로 새는 빛 */
+    --rim:inset 0 2px 0 rgba(255,255,255,0.9),inset 0 -8px 14px -10px rgba(120,50,90,0.5);
+    --leak:0 14px 22px -12px rgba(255,92,138,0.5);
+    /* 젤리 단추 표면 — 위 34%가 밝고 그 아래로 꺾인다 */
+    --btn-gloss:linear-gradient(180deg,rgba(255,255,255,0.55) 0%,rgba(255,255,255,0.12) 33%,
+      rgba(255,255,255,0.04) 34%,rgba(255,255,255,0) 100%);
     /* 제목=Nolto(놀토탱구), 본문=Donguri(동그리) */
     --font:'Donguri','Apple SD Gothic Neo','Segoe UI',system-ui,sans-serif;
     --font-title:'Nolto','Donguri',sans-serif;
@@ -53,7 +59,8 @@
   /* 위쪽 정보는 한 스택에 담는다. ⏸️(왼쪽 58px)와 🔊🎵(오른쪽 110px) 자리는 비워 둔다.
      예전에는 HUD와 상대 바가 각자 absolute라서, 칩이 2px 넓어져 한 줄 늘어나기만 해도
      상대 바가 내 목숨 칩을 덮었다. 스택에 넣으면 구조적으로 그럴 수 없다. */
-  #topStack{position:absolute;top:14px;left:60px;right:112px;z-index:6;pointer-events:none;
+  #topStack{position:absolute;top:calc(var(--by,0px) + 14px);left:calc(var(--bx,0px) + 60px);
+    right:calc(var(--bx,0px) + 112px);z-index:6;pointer-events:none;
     display:flex;flex-direction:column;align-items:center;gap:6px;}
   #hud{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;}
   /* 양옆 버튼 자리를 비우고 남은 폭에 다섯 칩이 두 줄로 들어가도록 조금 작게 */
@@ -69,9 +76,13 @@
     #topStack{gap:5px;}
   }
   @keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.28)}100%{transform:scale(1)}}
-  #audioBar{position:absolute;top:14px;right:14px;display:flex;gap:8px;z-index:8;}
-  .iconbtn{pointer-events:auto;cursor:pointer;background:var(--card);backdrop-filter:blur(8px);border:none;
-    width:44px;height:44px;border-radius:14px;font-size:19px;box-shadow:var(--shadow);transition:transform .1s;}
+  #audioBar{position:absolute;top:calc(var(--by,0px) + 14px);right:calc(var(--bx,0px) + 14px);display:flex;gap:8px;z-index:8;}
+  .iconbtn{pointer-events:auto;cursor:pointer;backdrop-filter:blur(8px);border:none;
+    background:var(--btn-gloss),linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,240,247,0.88));
+    width:44px;height:44px;border-radius:14px;font-size:19px;
+    box-shadow:0 6px 14px -7px rgba(190,120,160,0.6),inset 0 2px 0 #fff,
+      inset 0 -8px 14px -11px rgba(150,70,110,0.45),inset 0 0 0 1px rgba(255,255,255,0.85);
+    transition:transform .1s;}
   .iconbtn:active{transform:scale(.9);}
 
   /* ===== Screens ===== */
@@ -81,7 +92,9 @@
     background:
       radial-gradient(rgba(255,255,255,0.5) 1.1px,transparent 1.2px) 0 0/22px 22px,
       radial-gradient(rgba(255,180,215,0.22) 1.1px,transparent 1.2px) 11px 11px/22px 22px,
-      radial-gradient(120% 120% at 50% 0%,rgba(255,255,255,0.35),rgba(255,220,238,0.55));
+      radial-gradient(120% 120% at 50% 0%,rgba(255,255,255,0.35),rgba(255,220,238,0.55)),
+      /* 아래쪽에 고인 빛 — 젤리를 통과한 빛이 바닥에 번지는 느낌 */
+      radial-gradient(90% 40% at 50% 104%,rgba(255,255,255,0.5),rgba(255,255,255,0) 70%);
     backdrop-filter:blur(10px);}
   /* 내용이 짧으면 중앙 정렬, 화면보다 길면 위부터 스크롤 (잘림 방지) */
   .screen::before,.screen::after{content:'';margin-block:auto;}
@@ -104,12 +117,13 @@
 
   .btn{position:relative;border:none;cursor:pointer;font-family:var(--font);font-weight:900;color:#fff;
     /* 두 겹: 위쪽 광택 띠 + 원래 분홍. 젤리를 위에서 본 느낌 */
-    background:linear-gradient(180deg,rgba(255,255,255,0.45) 0%,rgba(255,255,255,0.06) 44%,rgba(255,255,255,0) 45%),
-      linear-gradient(180deg,#ff8ab4,#ff5c8a);
+    background:var(--btn-gloss),
+      linear-gradient(180deg,#ffa8c6 0%,#ff8ab4 34%,#ff6f9d 62%,#ef4f80 100%);
     border-radius:var(--r-md);padding:17px 46px;font-size:21px;
-    box-shadow:0 8px 0 var(--pink-d),0 14px 26px rgba(230,62,114,0.4),inset 0 1.5px 0 rgba(255,255,255,0.55);
+    box-shadow:0 8px 0 var(--pink-d),var(--leak),var(--rim);
     transition:transform .08s,box-shadow .08s;}
-  .btn:active{transform:translateY(7px);box-shadow:0 1px 0 var(--pink-d),0 4px 12px rgba(230,62,114,0.4);}
+  /* 누르면 젤리가 눌린다 — 살짝 납작해지고 바닥 빛이 좁아진다 */
+  .btn:active{transform:translateY(7px) scaleY(.97);box-shadow:0 1px 0 var(--pink-d),0 4px 10px -4px rgba(230,62,114,0.45),var(--rim);}
   .btn.lg{font-size:24px;padding:19px 56px;}
   .btn.ghost{background:var(--glass);color:var(--pink-d);border:1.5px solid var(--edge);
     box-shadow:0 6px 0 #f4bcd2,0 10px 20px -4px rgba(230,62,114,0.22),var(--sh-in);}
@@ -146,9 +160,10 @@
     transition:transform .07s,box-shadow .07s,filter .15s;}
   .chip:active{transform:translateY(3px);box-shadow:0 0 0 #f4d3e1,inset 0 1px 0 #fff;}
   /* 고른 것은 '꽉 찬 젤리' — 위에 빛, 아래에 진한 테 */
-  .chip.on{background:linear-gradient(180deg,#ffa3c4 0%,#ff7aa6 38%,#ff5c8a 39%,#f4467a 100%);
+  .chip.on{background:var(--btn-gloss),
+      linear-gradient(180deg,#ffb0cd 0%,#ff8ab4 34%,#ff6f9d 64%,#ef4f80 100%);
     color:#fff;border-color:rgba(255,255,255,0.6);
-    box-shadow:0 3px 0 var(--pink-d),0 8px 18px -6px rgba(230,62,114,0.5),inset 0 1.5px 0 rgba(255,255,255,0.7);}
+    box-shadow:0 3px 0 var(--pink-d),0 10px 18px -8px rgba(230,62,114,0.55),var(--rim);}
   .sw{width:36px;height:36px;border-radius:50%;border:3px solid #fff;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.12);transition:transform .08s;}
   .sw:active{transform:scale(.9);}
   .sw.on{outline:3px solid var(--pink);outline-offset:2px;}
@@ -175,30 +190,42 @@
   /* 줄을 선으로 나누지 않고 한 알씩 담는다 — 목록이 표가 아니라 사탕 상자처럼 보이게 */
   .rrow{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:800;font-size:15px;
     padding:8px 12px;margin-bottom:5px;border-radius:var(--r-sm);
-    background:linear-gradient(180deg,rgba(255,255,255,0.92),rgba(255,246,251,0.72));
-    box-shadow:0 2px 0 rgba(244,211,225,0.8);}
+    background:var(--btn-gloss),linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,242,248,0.78));
+    box-shadow:0 2px 0 rgba(244,211,225,0.8),inset 0 1px 0 #fff,
+      inset 0 -7px 12px -10px rgba(160,90,130,0.35);}
   .rrow:last-child{margin-bottom:0;}
   .rrow.me{color:var(--pink-d);
     background:linear-gradient(180deg,#fff3f8,#ffe3ee);
     box-shadow:0 2px 0 #f2bcd4,inset 0 0 0 1.5px rgba(255,138,180,0.65);}
 
   /* coins */
-  .coinbadge{background:linear-gradient(180deg,#fff0bf 0%,#ffe08a 34%,#ffd76a 35%,#ffc24a 100%);
+  .coinbadge{background:var(--btn-gloss),
+      linear-gradient(180deg,#fff6d8 0%,#ffe08a 34%,#ffd05a 64%,#f0a91f 100%);
     color:#8a5a12;font-weight:900;padding:8px 18px;border-radius:999px;
-    box-shadow:0 6px 16px -4px rgba(230,170,40,0.5),inset 0 1.5px 0 rgba(255,255,255,0.85);
+    box-shadow:0 8px 16px -8px rgba(230,170,40,0.65),inset 0 2px 0 rgba(255,255,255,0.9),
+      inset 0 -8px 14px -10px rgba(170,110,10,0.45);
     display:inline-flex;align-items:center;gap:6px;}
   .stat.coin b{color:#c98a1e;}
 
   /* in-game item bar — 왼쪽 아래 세로 스택 (플레이어 안 가림) */
-  #itemBar{position:absolute;left:12px;bottom:14px;display:flex;flex-direction:column-reverse;gap:9px;z-index:7;}
+  #itemBar{position:absolute;left:calc(var(--bx,0px) + 12px);bottom:calc(var(--by,0px) + 14px);
+    display:flex;flex-direction:column-reverse;gap:9px;z-index:7;}
   .itembtn{pointer-events:auto;cursor:pointer;position:relative;border:none;width:54px;height:54px;border-radius:18px;font-size:25px;
-    background:linear-gradient(180deg,rgba(255,255,255,0.95),rgba(255,238,246,0.9));backdrop-filter:blur(8px);
-    box-shadow:0 5px 14px rgba(190,120,160,0.35),inset 0 0 0 2px rgba(255,255,255,0.8);transition:transform .1s;}
-  .itembtn:active{transform:scale(.88);}
+    background:var(--btn-gloss),
+      linear-gradient(180deg,rgba(255,255,255,0.98) 0%,rgba(255,244,249,0.92) 34%,rgba(255,225,238,0.88) 100%);
+    backdrop-filter:blur(8px);
+    box-shadow:0 6px 14px -6px rgba(190,120,160,0.55),0 12px 18px -14px rgba(230,62,114,0.5),
+      inset 0 0 0 1.5px rgba(255,255,255,0.9),inset 0 2px 0 #fff,
+      inset 0 -10px 16px -12px rgba(150,70,110,0.5);
+    transition:transform .1s;}
+  .itembtn:active{transform:scale(.9) scaleY(.86);}   /* 눌리면 납작 */
   .itembtn .cnt{position:absolute;top:-5px;right:-5px;background:linear-gradient(180deg,#ff8ab4,#ff5c8a);color:#fff;font-size:12px;
     min-width:21px;height:21px;border-radius:11px;display:flex;align-items:center;justify-content:center;padding:0 5px;
     box-shadow:0 2px 6px rgba(0,0,0,.25);font-family:var(--font);}
-  .itembtn .kb{position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--ink2);background:rgba(255,255,255,0.9);padding:0 4px;border-radius:6px;font-family:var(--font);}
+  .itembtn .kb{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);white-space:nowrap;
+    font-size:9.5px;font-weight:800;color:#8a5878;background:rgba(255,255,255,0.94);
+    padding:1px 6px;border-radius:7px;font-family:var(--font);
+    box-shadow:0 2px 5px -2px rgba(150,80,120,0.5);}
 
   /* gold / daily button + toast */
   .btn.gold{background:linear-gradient(180deg,#ffd76a,#ffb02e);box-shadow:0 8px 0 #e0921a,0 14px 26px rgba(230,150,40,0.4);color:#8a5410;}
@@ -232,15 +259,17 @@
   .setrow{display:flex;justify-content:space-between;align-items:center;font-weight:800;color:var(--ink);padding:11px 2px;font-size:17px;}
   .setrow+.setrow{border-top:1px dashed rgba(160,90,120,0.2);}
   .toggle{border:none;cursor:pointer;font-family:var(--font);font-weight:800;font-size:15px;padding:9px 22px;border-radius:999px;color:#fff;
-    background:linear-gradient(180deg,#8fd694,#4fc65f);box-shadow:0 3px 0 #37a04a;transition:transform .08s;}
+    background:var(--btn-gloss),linear-gradient(180deg,#a8e3ac 0%,#8fd694 34%,#6ccb78 64%,#43b755 100%);
+    box-shadow:0 3px 0 #37a04a,0 9px 14px -9px rgba(55,160,74,0.6),var(--rim);transition:transform .08s;}
   .toggle:active{transform:translateY(3px);box-shadow:none;}
   .toggle.off{background:linear-gradient(180deg,#d9d0d6,#b3a8b0);box-shadow:0 3px 0 #948a92;}
   .setbtn{width:100%;border:none;cursor:pointer;font-family:var(--font);font-weight:800;font-size:15px;padding:13px;border-radius:14px;color:#fff;margin-top:8px;
-    background:linear-gradient(180deg,#ffb08a,#ff8a5c);box-shadow:0 4px 0 #e0691a;transition:transform .08s;}
+    background:var(--btn-gloss),linear-gradient(180deg,#ffc4a3 0%,#ffb08a 34%,#ff9268 64%,#f3763f 100%);
+    box-shadow:0 4px 0 #e0691a,0 10px 16px -10px rgba(224,105,26,0.6),var(--rim);transition:transform .08s;}
   .setbtn.danger{background:linear-gradient(180deg,#ff8a9c,#ff5a6e);box-shadow:0 4px 0 #d63b50;}
   .setbtn:active{transform:translateY(4px);box-shadow:none;}
   #openSetBtn{position:absolute;top:16px;right:16px;}
-  #pauseBtn{position:absolute;top:14px;left:14px;z-index:8;}
+  #pauseBtn{position:absolute;top:calc(var(--by,0px) + 14px);left:calc(var(--bx,0px) + 14px);z-index:8;}
   /* 출석부 달력 */
   #calBox{width:min(94vw,380px);}
   .calhead{font-family:var(--font-title);font-size:20px;color:var(--pink-d);margin-bottom:10px;}
@@ -259,9 +288,12 @@
   .shopcard .ds{font-size:12px;font-weight:700;color:var(--ink2);}
   .shopcard .own{font-size:11px;font-weight:800;color:var(--pink-d);}
   .shopbtn{border:none;cursor:pointer;font-weight:900;font-size:13px;border-radius:13px;padding:10px 12px;color:#fff;
-    background:linear-gradient(180deg,#ffcf5c,#ffb02e);box-shadow:0 4px 0 #e0921a;transition:transform .08s;white-space:nowrap;flex:0 0 auto;}
-  .shopbtn.craft{background:linear-gradient(180deg,#b28cff,#8a5cff);box-shadow:0 4px 0 #6a3edb;}
-  .shopbtn:active{transform:translateY(4px);box-shadow:none;}
+    background:var(--btn-gloss),linear-gradient(180deg,#ffdc8a 0%,#ffcf5c 34%,#ffb93e 64%,#f09a14 100%);
+    box-shadow:0 4px 0 #e0921a,0 9px 14px -9px rgba(224,146,26,0.6),var(--rim);
+    transition:transform .08s;white-space:nowrap;flex:0 0 auto;}
+  .shopbtn.craft{background:var(--btn-gloss),linear-gradient(180deg,#c8a9ff 0%,#b28cff 34%,#9a6dff 64%,#7a48ef 100%);
+    box-shadow:0 4px 0 #6a3edb,0 9px 14px -9px rgba(106,62,219,0.6),var(--rim);}
+  .shopbtn:active{transform:translateY(4px) scaleY(.96);box-shadow:var(--rim);}
   .shopbtn:disabled{opacity:.4;cursor:default;box-shadow:none;filter:grayscale(.4);}
   .lvtag{font-size:11px;font-weight:900;color:#fff;background:linear-gradient(180deg,#ffcf5c,#ffb02e);
     padding:2px 7px;border-radius:8px;margin-left:4px;box-shadow:0 2px 0 #e0921a;}
@@ -269,8 +301,9 @@
   .pips i{color:#e6d6df;font-style:normal;}
   .shopcard .ds b{color:var(--ink);font-weight:900;}
   .shopcard .ds.nx{color:#3f9a4f;font-weight:800;}
-  .shopbtn.up{background:linear-gradient(180deg,#8fd694,#4fc65f);box-shadow:0 4px 0 #37a04a;}
-  .itembtn .lv{position:absolute;bottom:-4px;right:-4px;background:linear-gradient(180deg,#ffcf5c,#ffb02e);
+  .shopbtn.up{background:var(--btn-gloss),linear-gradient(180deg,#a8e3ac 0%,#8fd694 34%,#6ccb78 64%,#43b755 100%);
+    box-shadow:0 4px 0 #37a04a,0 9px 14px -9px rgba(55,160,74,0.6),var(--rim);}
+  .itembtn .lv{position:absolute;top:-5px;left:-5px;background:linear-gradient(180deg,#ffcf5c,#ffb02e);
     color:#7a4a08;font-size:10px;font-weight:900;padding:1px 5px;border-radius:8px;
     box-shadow:0 2px 5px rgba(0,0,0,.25);font-family:var(--font);}
   .flash{animation:flashUp 1s ease;}
@@ -292,18 +325,25 @@
   #foeHud{display:flex;align-items:center;gap:10px;background:rgba(138,92,255,0.92);color:#fff;
     padding:6px 14px;border-radius:14px;box-shadow:var(--shadow);font-weight:800;font-size:14px;white-space:nowrap;}
   /* 던지기는 아이템 바(왼쪽 아래)와 반대쪽에 둔다 — 급할 때 오폭하면 안 된다 */
-  #throwWrap{position:absolute;right:12px;bottom:14px;display:flex;flex-direction:column;align-items:flex-end;gap:6px;z-index:7;}
+  #throwWrap{position:absolute;right:calc(var(--bx,0px) + 12px);bottom:calc(var(--by,0px) + 14px);
+    display:flex;flex-direction:column;align-items:flex-end;gap:6px;z-index:7;}
   .gauge{width:92px;height:9px;border-radius:999px;background:rgba(255,255,255,0.75);overflow:hidden;box-shadow:var(--shadow);}
   .gauge i{display:block;height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,#b28cff,#8a5cff);transition:width .18s;}
   /* 방해 아이템 6종 — 2열로 쌓아 화면을 덜 가린다 */
   #hexGrid{display:grid;grid-template-columns:repeat(2,43px);gap:6px;}
   .throwbtn{pointer-events:auto;cursor:pointer;position:relative;border:none;width:43px;height:43px;border-radius:15px;font-size:20px;
-    background:linear-gradient(180deg,rgba(255,255,255,0.95),rgba(242,236,255,0.9));backdrop-filter:blur(8px);
-    box-shadow:0 5px 14px rgba(120,80,200,0.3),inset 0 0 0 2px rgba(255,255,255,0.8);
+    background:var(--btn-gloss),
+      linear-gradient(180deg,rgba(255,255,255,0.98) 0%,rgba(246,242,255,0.92) 34%,rgba(232,224,252,0.88) 100%);
+    backdrop-filter:blur(8px);
+    box-shadow:0 6px 14px -6px rgba(120,80,200,0.5),inset 0 0 0 1.5px rgba(255,255,255,0.9),
+      inset 0 2px 0 #fff,inset 0 -10px 16px -12px rgba(90,60,160,0.5);
     transition:transform .1s;filter:grayscale(.8);opacity:.42;}
-  .throwbtn.on{filter:none;opacity:1;box-shadow:0 5px 18px rgba(138,92,255,0.6),inset 0 0 0 2px #b28cff;
+  .throwbtn.on{filter:none;opacity:1;
+    box-shadow:0 6px 16px -6px rgba(138,92,255,0.7),0 14px 20px -14px rgba(138,92,255,0.6),
+      inset 0 0 0 1.8px #b28cff,inset 0 2px 0 rgba(255,255,255,0.9),
+      inset 0 -10px 16px -12px rgba(90,60,160,0.55);
     animation:dpulse 1s ease-in-out infinite;}
-  .throwbtn:active{transform:scale(.88);}
+  .throwbtn:active{transform:scale(.9) scaleY(.86);}
   .throwbtn .c{position:absolute;bottom:-4px;right:-4px;background:rgba(255,255,255,0.95);color:#7a52c8;
     font-family:var(--font);font-size:10px;font-weight:900;padding:0 4px;border-radius:8px;
     box-shadow:0 2px 5px rgba(0,0,0,.2);}
@@ -335,8 +375,10 @@
     border-radius:var(--r-md);padding:13px 8px;
     display:flex;flex-direction:column;align-items:center;gap:1px;transition:transform .08s;}
   /* 색은 버튼마다 다르니 광택만 덮어씌운다 — 색 규칙을 네 번 고치지 않아도 된다 */
-  .modebtn::after{content:'';position:absolute;inset:0 0 auto;height:52%;pointer-events:none;
-    background:linear-gradient(180deg,rgba(255,255,255,0.36),rgba(255,255,255,0));}
+  .modebtn::after{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+    background:linear-gradient(180deg,rgba(255,255,255,0.38) 0%,rgba(255,255,255,0.08) 33%,
+      rgba(255,255,255,0) 34%,rgba(0,0,0,0) 70%,rgba(60,20,50,0.14) 100%);
+    box-shadow:inset 0 2px 0 rgba(255,255,255,0.55);}
   .modebtn>*{position:relative;}
   .modebtn:active{transform:translateY(4px);}
   .modebtn .e{font-size:26px;line-height:1.1;}
@@ -785,6 +827,11 @@ function resize(){
   const maxW=Math.min(window.innerWidth-14,480), maxH=Math.min(window.innerHeight-14,860), ratio=480/720;
   let w=maxW,h=w/ratio; if(h>maxH){h=maxH;w=h*ratio;}
   canvas.style.width=w+'px';canvas.style.height=h+'px';canvas.width=480;canvas.height=720;W=480;H=720;
+  // 판의 네 변을 CSS 변수로 넘겨 준다 — 오버레이가 판에 붙어 다니게
+  const wrap=$('wrap'), ww=wrap.clientWidth, wh=wrap.clientHeight;
+  const padX=Math.max(0,Math.round((ww-w)/2)), padY=Math.max(0,Math.round((wh-h)/2));
+  wrap.style.setProperty('--bx',padX+'px');
+  wrap.style.setProperty('--by',padY+'px');
 }
 resize();window.addEventListener('resize',resize);
 
@@ -1343,14 +1390,60 @@ function loseLife(){ lives--; updateHud(); if(lives<=0)gameOver(); }
 function heartStr(){ const max=MODES[mode].lives; return '❤️'.repeat(Math.max(0,lives))+'🤍'.repeat(Math.max(0,max-lives)); }
 function updateHud(){ $('score').textContent=score;$('combo').textContent='x'+combo;$('level').textContent=level;$('runCoinHud').textContent=runCoins;$('lives').textContent=heartStr(); }
 
+// 젤리 실루엣. 채울 때와 속을 그릴 때(clip) 같은 길을 써야 물선·광택이 밖으로 새지 않는다.
+// arc 앞에 moveTo를 두는 이유: 안 두면 앞 도형 끝점에서 선이 이어져 얇은 실이 생긴다.
+function jShapePath(g,j,r){
+  g.beginPath();
+  const put=(x,y,rr)=>{ g.moveTo(x+rr,y); g.arc(x,y,rr,0,7); };
+  if(j.shape==='bear'){
+    put(-r*0.60,-r*0.58,r*0.30); put(r*0.60,-r*0.58,r*0.30);   // 귀
+    put(-r*0.72, r*0.58,r*0.26); put(r*0.72, r*0.58,r*0.26);   // 다리
+    put(-r*0.88, r*0.02,r*0.23); put(r*0.88, r*0.02,r*0.23);   // 팔
+    g.moveTo(r*0.92,r*0.02); g.ellipse(0,r*0.02,r*0.92,r,0,0,7);
+  } else if(j.shape==='bean'){ g.moveTo(r*1.12,0); g.ellipse(0,0,r*1.12,r*0.82,0,0,7); }
+  else put(0,0,r);
+}
+// 젤리 속을 그린다 — 캐릭터(jellyGloss)와 같은 규칙: 물선 · 고인 빛 · 위아래 테두리 · 기포
+function jellyInside(g,col,r,wyF){
+  const wy=r*(wyF==null?0.42:wyF);
+  const wg=g.createLinearGradient(0,wy-r*0.32,0,wy+r*0.20);
+  wg.addColorStop(0,hexA(shade(col,-38),0)); wg.addColorStop(1,hexA(shade(col,-38),0.26));
+  g.fillStyle=wg; g.fillRect(-r*1.5,wy-r*0.32,r*3,r*2.2);
+  g.strokeStyle='rgba(255,255,255,0.45)'; g.lineWidth=Math.max(0.6,r*0.048);
+  g.beginPath(); g.moveTo(-r*1.3,wy); g.lineTo(r*1.3,wy); g.stroke();
+  const fg=g.createRadialGradient(0,r*0.72,1,0,r*0.72,r*0.82);   // 바닥에 고인 빛
+  fg.addColorStop(0,hexA(mixHex(col,'#ffffff',0.85),0.48)); fg.addColorStop(1,hexA(mixHex(col,'#ffffff',0.85),0));
+  g.fillStyle=fg; g.beginPath(); g.ellipse(0,r*0.72,r*0.80,r*0.26,0,0,7); g.fill();
+  g.fillStyle='rgba(255,255,255,0.40)';                          // 위 테두리에 걸린 빛
+  g.beginPath(); g.ellipse(0,-r*1.02,r*0.96,r*0.34,0,0,7); g.fill();
+  g.fillStyle=hexA(shade(col,-52),0.30);                         // 아래 테두리 그늘
+  g.beginPath(); g.ellipse(0,r*1.10,r*0.96,r*0.30,0,0,7); g.fill();
+  g.fillStyle='rgba(255,255,255,0.72)';                          // 큰 스펙큘러
+  g.beginPath(); g.ellipse(-r*0.34,-r*0.44,r*0.30,r*0.16,-0.5,0,7); g.fill();
+  g.fillStyle='rgba(255,255,255,0.95)';                          // 작은 반짝임
+  g.beginPath(); g.ellipse(-r*0.45,-r*0.56,r*0.10,r*0.055,-0.45,0,7); g.fill();
+  g.fillStyle='rgba(255,255,255,0.70)';                          // 속에 뜬 기포
+  [[0.42,0.22],[-0.22,0.56]].forEach(p=>{
+    g.beginPath(); g.arc(r*p[0],r*p[1],Math.max(0.6,r*0.042),0,7); g.fill(); });
+}
 function drawJelly(j){ ctx.save();ctx.translate(j.x,j.y);
   // 👻 유령 젤리 — 눈에 잘 띄면 유령이 아니다. 🔮정화/투시 중에는 또렷하게 보인다.
   if(j.ghost)ctx.globalAlpha=(revealT>0)?0.92:0.13;   // restore()가 알파를 되돌려준다
   if(j.bomb){ const pulse=1+Math.sin(frame*0.2)*0.08;
     ctx.beginPath();ctx.arc(0,0,j.r*1.5*pulse,0,7);ctx.fillStyle='rgba(255,60,60,'+(0.18+Math.sin(frame*0.2)*0.08)+')';ctx.fill();
     ctx.fillStyle='#3a3340';const sp=10;ctx.beginPath();for(let i=0;i<sp*2;i++){const a=i/(sp*2)*Math.PI*2+j.wob*0.2,rr=i%2?j.r*1.32:j.r;ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);}ctx.closePath();ctx.fill();
-    ctx.beginPath();ctx.arc(0,0,j.r,0,7);ctx.fillStyle='#4a4450';ctx.fill();
-    ctx.beginPath();ctx.ellipse(-j.r*0.3,-j.r*0.35,j.r*0.22,j.r*0.13,-0.5,0,7);ctx.fillStyle='rgba(255,255,255,0.25)';ctx.fill();
+    // 폭탄도 젤리다 — 검은 젤리. 위는 옅고 아래로 새까매진다.
+    const bg2=ctx.createLinearGradient(0,-j.r,0,j.r);
+    bg2.addColorStop(0,'#6b6274'); bg2.addColorStop(0.4,'#4a4450'); bg2.addColorStop(1,'#2b2630');
+    ctx.beginPath();ctx.arc(0,0,j.r,0,7);ctx.fillStyle=bg2;ctx.fill();
+    ctx.save(); ctx.beginPath();ctx.arc(0,0,j.r,0,7);ctx.clip();
+    ctx.fillStyle='rgba(255,255,255,0.30)';
+    ctx.beginPath();ctx.ellipse(0,-j.r*1.02,j.r*0.95,j.r*0.32,0,0,7);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.42)';
+    ctx.beginPath();ctx.ellipse(-j.r*0.32,-j.r*0.38,j.r*0.24,j.r*0.13,-0.5,0,7);ctx.fill();
+    ctx.fillStyle='rgba(255,120,120,0.20)';
+    ctx.beginPath();ctx.ellipse(0,j.r*0.78,j.r*0.7,j.r*0.24,0,0,7);ctx.fill();
+    ctx.restore();
     ctx.strokeStyle='#ff5a5a';ctx.lineWidth=3.5;ctx.lineCap='round';
     ctx.beginPath();ctx.moveTo(-14,-9);ctx.lineTo(-6,-1);ctx.moveTo(-6,-9);ctx.lineTo(-14,-1);ctx.stroke();
     ctx.beginPath();ctx.moveTo(14,-9);ctx.lineTo(6,-1);ctx.moveTo(6,-9);ctx.lineTo(14,-1);ctx.stroke();
@@ -1359,22 +1452,17 @@ function drawJelly(j){ ctx.save();ctx.translate(j.x,j.y);
     if(j.foe)foeRing(j);
     ctx.restore();return; }
   const sq=1+Math.sin(j.wob)*0.07;ctx.scale(1/sq,sq);
-  const r=j.r, grad=ctx.createRadialGradient(-r*0.3,-r*0.42,r*0.2,0,r*0.15,r*1.3);
-  grad.addColorStop(0,shade(j.color,36)); grad.addColorStop(1,j.color);
-  ctx.fillStyle=grad; ctx.shadowColor='rgba(120,60,90,0.18)';ctx.shadowBlur=10;ctx.shadowOffsetY=6;
-  if(j.shape==='bear'){ // 곰젤리
-    ctx.beginPath();ctx.arc(-r*0.6,-r*0.58,r*0.3,0,7);ctx.arc(r*0.6,-r*0.58,r*0.3,0,7);ctx.fill(); // 귀
-    ctx.beginPath();ctx.arc(-r*0.72,r*0.58,r*0.26,0,7);ctx.arc(r*0.72,r*0.58,r*0.26,0,7);ctx.fill(); // 다리
-    ctx.beginPath();ctx.arc(-r*0.88,r*0.02,r*0.23,0,7);ctx.arc(r*0.88,r*0.02,r*0.23,0,7);ctx.fill(); // 팔
-    ctx.beginPath();ctx.ellipse(0,r*0.02,r*0.92,r,0,0,7);ctx.fill(); // 몸통
-  } else if(j.shape==='bean'){ // 젤리빈
-    ctx.beginPath();ctx.ellipse(0,0,r*1.12,r*0.82,0,0,7);ctx.fill();
-  } else {
-    ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.fill();
-  }
+  const r=j.r;
+  // 위는 빛이 통과해 밝고, 아래로 색이 고인다. 방사 그라데이션 하나로는 이 '두께'가 안 나온다.
+  const vg=ctx.createLinearGradient(0,-r*1.05,0,r*1.05);
+  vg.addColorStop(0,   mixHex(j.color,'#ffffff',0.66));
+  vg.addColorStop(0.34,mixHex(j.color,'#ffffff',0.20));
+  vg.addColorStop(0.62,j.color);
+  vg.addColorStop(1,   shade(j.color,-34));
+  ctx.fillStyle=vg; ctx.shadowColor='rgba(120,60,90,0.20)';ctx.shadowBlur=10;ctx.shadowOffsetY=6;
+  jShapePath(ctx,j,r); ctx.fill();
   ctx.shadowColor='transparent';
-  ctx.beginPath();ctx.ellipse(-r*0.3,-r*0.42,r*0.3,r*0.17,-0.5,0,7);ctx.fillStyle='rgba(255,255,255,0.62)';ctx.fill(); // 큰 광택
-  ctx.beginPath();ctx.arc(r*0.36,r*0.28,r*0.1,0,7);ctx.fillStyle='rgba(255,255,255,0.32)';ctx.fill(); // 작은 광택
+  ctx.save(); jShapePath(ctx,j,r); ctx.clip(); jellyInside(ctx,j.color,r); ctx.restore();
   ctx.fillStyle='#3a2b34';const ey=-j.r*0.1;
   if(j.face==='wink'){ ctx.beginPath();ctx.arc(-j.r*0.33,ey,4,0,7);ctx.fill();ctx.strokeStyle='#3a2b34';ctx.lineWidth=3;ctx.lineCap='round';ctx.beginPath();ctx.arc(j.r*0.33,ey,5,Math.PI+0.3,-0.3);ctx.stroke();
   } else { ctx.beginPath();ctx.arc(-j.r*0.33,ey,4.5,0,7);ctx.fill();ctx.beginPath();ctx.arc(j.r*0.33,ey,4.5,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(-j.r*0.33+1.5,ey-1.5,1.4,0,7);ctx.fill();ctx.beginPath();ctx.arc(j.r*0.33+1.5,ey-1.5,1.4,0,7);ctx.fill();ctx.fillStyle='#3a2b34'; }
@@ -1438,9 +1526,12 @@ function update(){ elapsed++; updateLevel();
 function drawDrop(dp){ ctx.save(); ctx.translate(dp.x,dp.y);
   const pulse=1+Math.sin(frame*0.18)*0.12;
   ctx.beginPath();ctx.arc(0,0,(dp.r+8)*pulse,0,7);ctx.fillStyle='rgba(255,220,90,'+(0.25+Math.sin(frame*0.18)*0.1)+')';ctx.fill();
-  const g=ctx.createLinearGradient(0,-dp.r,0,dp.r);g.addColorStop(0,'#fff6d6');g.addColorStop(1,'#ffd54a');
+  // 부스트도 젤리 캡슐 — 젤리와 같은 재질이라야 한 세계처럼 보인다
+  const g=ctx.createLinearGradient(0,-dp.r,0,dp.r);
+  g.addColorStop(0,'#fffdf0');g.addColorStop(0.34,'#fff2c4');g.addColorStop(0.62,'#ffd54a');g.addColorStop(1,'#e9a516');
   ctx.beginPath();ctx.arc(0,0,dp.r,0,7);ctx.fillStyle=g;ctx.shadowColor='rgba(200,150,20,0.4)';ctx.shadowBlur=8;ctx.fill();ctx.shadowColor='transparent';
-  ctx.beginPath();ctx.arc(0,0,dp.r,0,7);ctx.strokeStyle='#fff';ctx.lineWidth=2.5;ctx.stroke();
+  ctx.save(); ctx.beginPath();ctx.arc(0,0,dp.r,0,7);ctx.clip(); jellyInside(ctx,'#ffd54a',dp.r,0.48); ctx.restore();
+  ctx.beginPath();ctx.arc(0,0,dp.r,0,7);ctx.strokeStyle='rgba(255,255,255,0.9)';ctx.lineWidth=2.5;ctx.stroke();
   ctx.font=(dp.r*1.1)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(dp.emoji,0,1);ctx.textBaseline='alphabetic';
   ctx.restore(); }
 function render(){ ctx.clearRect(0,0,W,H);
