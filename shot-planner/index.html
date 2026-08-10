@@ -593,6 +593,41 @@
     #app.wide main{ grid-template-columns:1fr }
     #app.wide .col-setup{ display:flex }
   }
+  /* ── 인쇄용 도면 ──────────────────────────────────────
+     화면에서는 숨어 있다가 인쇄할 때만 나온다. 글자는 캔버스가 아니라
+     진짜 텍스트라서, PDF 로 저장해도 또렷하고 검색된다. */
+  #printsheet{ display:none }
+  @media print{
+    @page{ size:A4 landscape; margin:10mm }
+    #app > header, #app > .tabs, #app > main, #app > .site, .toast, .modal{ display:none !important }
+    #app{ background:#fff !important }
+    #printsheet{ display:block; color:#000; font-size:9pt; line-height:1.45 }
+    .psheet{ display:flex; flex-direction:column; height:100% }
+    .phead{ display:flex; align-items:flex-start; gap:12mm; border-bottom:1.2pt solid #000; padding-bottom:2.5mm }
+    .ptitle b{ display:block; font-size:16pt; letter-spacing:-.4pt; line-height:1.15 }
+    .ptitle span{ display:block; font-size:9pt; color:#333; margin-top:1mm }
+    .pblock{ margin-left:auto; border-collapse:collapse; font-size:8pt }
+    .pblock td{ border:.6pt solid #999; padding:.8mm 2.5mm }
+    .pblock td:first-child{ color:#555; background:#f2f2f2 }
+    .pbody{ display:flex; gap:6mm; margin-top:4mm; flex:1; min-height:0 }
+    #pp-img{ flex:1; min-width:0; object-fit:contain; border:.6pt solid #666 }
+    .pside{ width:62mm; flex:none }
+    .pside h4{ margin:0 0 1.5mm; font-size:8.5pt; letter-spacing:.4pt; border-bottom:.6pt solid #000; padding-bottom:.8mm }
+    .pside h4+*{ margin-bottom:4mm }
+    .plegend{ list-style:none; margin:0; padding:0; font-size:8pt }
+    .plegend li{ display:flex; align-items:flex-start; gap:2mm; margin-bottom:1.2mm; line-height:1.35 }
+    .plegend i{ width:3.4mm; height:3.4mm; flex:none; margin-top:.4mm; border:.6pt solid #333 }
+    .lg-cam{ background:#e08a00 } .lg-act{ background:#5fd08a; border-radius:50% }
+    .lg-lit{ background:#fff2c4 } .lg-prop{ background:#dcdcdc }
+    .lg-wall{ background:#444; height:1.2mm !important; margin-top:1.5mm !important }
+    .lg-axis{ background:repeating-linear-gradient(90deg,#c33 0 1.2mm,transparent 1.2mm 2.4mm); border:none }
+    .ptbl{ width:100%; border-collapse:collapse; font-size:7.5pt }
+    .ptbl th,.ptbl td{ border:.6pt solid #999; padding:.7mm 1.4mm; text-align:left; vertical-align:top }
+    .ptbl th{ background:#f2f2f2; font-weight:700; white-space:nowrap }
+    .ptbl td:first-child{ white-space:nowrap; font-weight:700 }
+    .pfoot{ display:flex; justify-content:space-between; border-top:.6pt solid #999;
+            margin-top:3mm; padding-top:1.5mm; font-size:7.5pt; color:#555 }
+  }
 </style>
 <div id="app">
 
@@ -749,7 +784,9 @@
   <span class="vr"></span>
   <button id="bSave">💾 저장</button>
   <button id="bLoad">📂 불러오기</button>
-  <button id="bPng">🖨 PNG</button>
+  <button id="bShare">🔗 공유</button>
+  <button id="bPrint">🖨 도면 인쇄</button>
+  <button id="bPng">🖼 PNG</button>
   <button id="bList">📋 샷리스트</button>
   <span class="vr"></span>
   <button id="bTheme" class="icon" title="밝게 / 어둡게 전환">🌗</button>
@@ -790,6 +827,17 @@
       <p class="desc">어두운 테마에서도 도면만 흰 종이처럼 볼 수 있어요.</p>
       <div class="seg" id="segPaper">
         <button data-paper="theme">테마 따름</button><button data-paper="white">항상 흰 도면</button>
+      </div>
+    </div>
+
+    <div class="fld">
+      <label>다른 사람과 나누기</label>
+      <p class="desc">작업은 이 브라우저에만 있습니다. 다른 컴퓨터나 조감독에게 넘기려면
+      <b>파일</b>로 내보내거나, 머리말의 <b>🔗 공유</b>로 링크를 만드세요.</p>
+      <div class="row">
+        <button id="bExport">📦 파일로 내보내기</button>
+        <button id="bImport">📥 파일 불러오기</button>
+        <input type="file" id="fImport" accept=".json,application/json" style="display:none">
       </div>
     </div>
 
@@ -918,11 +966,21 @@
         <div class="slot" style="width:100%"><label>렌즈</label>
           <input id="lensSet" class="wide" placeholder="12,25,35,50,85"></div>
       </div>
+      <div class="grid3 dims" style="margin-top:10px">
+        <label><span>조리개 표기</span><select id="stopMode">
+          <option value="T">T스톱 (시네)</option><option value="f">f값</option></select></label>
+        <label><span>투과율</span><input type="number" id="transmit" step="0.05" min="0.4" max="1"></label>
+        <label><span>환산</span><input id="stopHint" disabled></label>
+      </div>
       <div class="grid3 dims" style="margin-top:8px">
         <label style="grid-column:span 2"><span>센서 이름</span><input id="csName" placeholder="예) ALEV3"></label>
         <label><span>폭 mm</span><input type="number" id="csW" placeholder="24.89" step="0.01" min="1" max="200"></label>
       </div>
-      <div class="row" style="margin-top:7px"><button id="csAdd" class="mini">＋ 센서 추가</button></div>
+      <div class="grid3 dims" style="margin-top:6px">
+        <label><span>세로 mm</span><input type="number" id="csH" placeholder="18.66" step="0.01" min="1" max="200"></label>
+        <label><span>착란원 mm</span><input type="number" id="csC" placeholder="0.025" step="0.001" min="0.005" max="0.1"></label>
+        <label><span>&nbsp;</span><button id="csAdd" class="mini" style="width:100%">＋ 센서 추가</button></label>
+      </div>
       <p class="hint">쉼표로 구분한 렌즈만 목록에 나옵니다. 지금 쓰는 렌즈는 목록에 없어도 유지돼요.</p>
     </section>
   </div>
@@ -1021,6 +1079,34 @@
   <span class="sep"></span>
   <span>작업한 건 이 브라우저에 남습니다. 다른 컴퓨터에서 이어 하려면 저장해 두었다가 불러오세요.</span>
 </div></div></div>
+
+<!-- ───────── 인쇄용 도면 (평소엔 숨어 있다) ───────── -->
+<div id="printsheet" aria-hidden="true">
+  <div class="psheet">
+    <div class="phead">
+      <div class="ptitle"><b id="pp-title"></b><span id="pp-sub"></span></div>
+      <table class="pblock"><tbody id="pp-block"></tbody></table>
+    </div>
+    <div class="pbody">
+      <img id="pp-img" alt="배치도">
+      <div class="pside">
+        <h4>범례</h4>
+        <ul class="plegend">
+          <li><i class="lg-cam"></i>카메라 (슬레이트 · 렌즈)</li>
+          <li><i class="lg-act"></i>배우 (이름 · 자세)</li>
+          <li><i class="lg-lit"></i>조명 (세기 · 색온도)</li>
+          <li><i class="lg-prop"></i>소품</li>
+          <li><i class="lg-wall"></i>벽</li>
+          <li><i class="lg-axis"></i>180° 선 — 붉은 쪽은 넘으면 안 되는 방향</li>
+        </ul>
+        <h4>셋업</h4>
+        <table class="ptbl"><thead><tr><th>슬레이트</th><th>렌즈</th><th>높이</th><th>무브</th><th>샷</th></tr></thead>
+          <tbody id="pp-shots"></tbody></table>
+      </div>
+    </div>
+    <div class="pfoot"><span id="pp-foot"></span><span>촬영 배치도 · Shot Planner</span></div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 </div><!-- /#app -->
@@ -1159,11 +1245,11 @@ function loadPrefs(){
    가로폭÷1500 으로 어림하던 것을 포맷별 시네 표준값으로 바꿨다 —
    그 어림값은 슈퍼35에서 0.017mm 라, 현장에서 쓰는 표(0.025)보다 심도가 얕게 나왔다. */
 const BUILTIN_SENSORS = [
-  {id:'s35',  name:'슈퍼35',       w:24.89, coc:0.025},
-  {id:'ff',   name:'풀프레임',     w:36.00, coc:0.030},
-  {id:'lf',   name:'라지포맷',     w:41.40, coc:0.035},
-  {id:'apsc', name:'APS-C',       w:23.60, coc:0.020},
-  {id:'m43',  name:'마이크로 4/3', w:17.30, coc:0.015},
+  {id:'s35',  name:'슈퍼35',       w:24.89, h:18.66, coc:0.025},
+  {id:'ff',   name:'풀프레임',     w:36.00, h:24.00, coc:0.030},
+  {id:'lf',   name:'라지포맷',     w:41.40, h:25.70, coc:0.035},
+  {id:'apsc', name:'APS-C',       w:23.60, h:15.70, coc:0.020},
+  {id:'m43',  name:'마이크로 4/3', w:17.30, h:13.00, coc:0.015},
 ];
 /* 4K 이상으로 크게 볼 때 쓰는 엄격 기준 — 심도가 좁게 나온다 */
 const COC_MODES = {cine:{name:'시네 표준', k:1}, strict:{name:'엄격 (4K)', k:0.6}};
@@ -1180,6 +1266,15 @@ const RATIOS = [
 ];
 const DEFAULT_LENSES = [12,16,18,21,25,27,32,35,40,50,65,75,85,100,135,150];
 const STOPS = [1.3,1.4,2,2.8,4,5.6,8,11,16,22];
+/* 심도는 기하학적 조리개(f값)로 정해지는데, 시네 렌즈에 적힌 것은 T값이다.
+   T = f / √투과율 이므로 f = T × √투과율. 투과율 0.8 이면 T2.8 ≈ f/2.5.
+   T를 그대로 f로 쓰면 심도가 실제보다 깊게 나온다. */
+const TRANSMIT_DEFAULT = 0.8;
+const fStopOf = c => {
+  if((project.stopMode || 'T') !== 'T') return c.stop;
+  const t = clamp(+project.transmit || TRANSMIT_DEFAULT, 0.4, 1);
+  return c.stop * Math.sqrt(t);
+};
 const MOVES = ['고정','팬','틸트','달리 인','달리 아웃','트래킹','핸드헬드','크레인','스테디캠','줌'];
 const LIGHTKIND = {
   key:  {name:'키',       tag:'K', kelvin:5600, intensity:100},
@@ -1227,6 +1322,7 @@ function newProject(){
     title:'무제',
     lensSet: DEFAULT_LENSES.slice(),
     sensors: BUILTIN_SENSORS.map(s => ({...s})),
+    stopMode: 'T', transmit: TRANSMIT_DEFAULT,
     customProps: {},
     scenes: [newScene('거실 대화','12')],
     active: 0,
@@ -1288,12 +1384,25 @@ const ratioVal = () => (RATIOS.find(r => r.id === state.ratio) || RATIOS[0]).v;
 /* 아나모픽 렌즈는 가로를 눌러 담기 때문에, 같은 초점거리라도 스퀴즈 배율만큼 더 넓게 본다.
    (2x 아나 50mm 의 가로 화각 = 구면 25mm 와 같다) */
 const sqz = c => (SQUEEZE.includes(+c.squeeze) ? +c.squeeze : 1);
-const hFov = c => 2*Math.atan(sensorOf(c).w * sqz(c) / (2*c.lens));
-const vFov = c => 2*Math.atan(Math.tan(hFov(c)/2) / ratioVal());
+
+/* 고른 화면비에 맞춰 센서에서 실제로 쓰는 면적.
+   센서를 다 쓰는 게 아니라 위아래나 좌우가 잘린다.
+   아나모픽이면 풀어 놓은 가로가 스퀴즈 배율만큼 넓어지므로 세로를 더 쓰게 된다. */
+function activeArea(c){
+  const S = sensorOf(c);
+  const W = S.w, H = +S.h > 0 ? +S.h : S.w/1.5;
+  const q = sqz(c), want = ratioVal();
+  let uw = W, uh = W*q/want;
+  if(uh > H){ uh = H; uw = H*want/q; }
+  return {w:uw, h:uh, W, H};
+}
+/* 세로는 아나모픽의 영향을 받지 않는다 — 눌리는 건 가로뿐이다 */
+const hFov = c => 2*Math.atan(activeArea(c).w * sqz(c) / (2*c.lens));
+const vFov = c => 2*Math.atan(activeArea(c).h / (2*c.lens));
 const SQUEEZE = [1, 1.33, 1.5, 1.8, 2];
 
 function dof(c){
-  const f = c.lens, N = c.stop, s = c.focus;
+  const f = c.lens, N = fStopOf(c), s = c.focus;
   const coc = cocOf(c);
   const H = (f*f)/(N*coc) + f;
   const smm = s*10;
@@ -3283,7 +3392,7 @@ const kv = (k,v,cls) => '<div class="kv'+(cls?' '+cls:'')+'"><span>'+k+'</span><
 function renderCamInfo(){
   const el = document.getElementById('camInfo'), c = liveCam();
   if(!c){ el.innerHTML = ''; return; }
-  const D = dof(c), s = subjectOf(c);
+  const D = dof(c), s = subjectOf(c), A = activeArea(c);
   const size = s ? shotSizeOf({...c, focus:s.d}, visH(s.a)) : shotSizeOf(c, 175);
   const bad = crossesAxis(c);
   el.innerHTML =
@@ -3292,8 +3401,13 @@ function renderCamInfo(){
     kv('심도', (D.near/100).toFixed(2)+' ~ '+(isFinite(D.far)?(D.far/100).toFixed(2)+' m':'∞')) +
     kv('심도 폭', isFinite(D.far) ? ((D.far-D.near)/100).toFixed(2)+' m' : '∞') +
     kv('과초점 거리', (D.hyper/100).toFixed(2)+' m') +
-    kv('착란원 · 포맷', cocOf(c).toFixed(3)+' mm · '+esc(sensorOf(c).name)+' '+sensorOf(c).w+'mm'
+    kv('조리개', ((project.stopMode||'T')==='T'
+        ? 'T'+c.stop+' → f/'+fStopOf(c).toFixed(1)
+        : 'f/'+c.stop)) +
+    kv('센서 사용 면적', A.w.toFixed(2)+' × '+A.h.toFixed(2)+' mm / '
+       + A.W + '×' + (+sensorOf(c).h||0) + 'mm'
        + (sqz(c)!==1 ? ' · 아나 '+sqz(c)+'x' : '')) +
+    kv('착란원', cocOf(c).toFixed(3)+' mm · '+esc(sensorOf(c).name)) +
     kv('초점면 프레임 폭', (2*c.focus*Math.tan(hFov(c)/2)/100).toFixed(2)+' m') +
     (s ? kv('피사체 ('+esc(s.a.name)+')', (s.d/100).toFixed(2)+' m · '+size) : '') +
     (s ? kv('피사체 눈높이', eyeH(s.a) + ' cm' +
@@ -3597,11 +3711,31 @@ document.getElementById('lensSet').addEventListener('change', e => {
 document.getElementById('csAdd').addEventListener('click', () => {
   const nm = document.getElementById('csName').value.trim();
   const w = +document.getElementById('csW').value;
+  const hh = +document.getElementById('csH').value;
+  const cc = +document.getElementById('csC').value;
   if(!nm || !(w > 0)) return toast('센서 이름과 폭(mm)을 적어주세요');
   snapshot();
-  project.sensors.push({id:'cs'+Date.now().toString(36), name:nm, w});
-  document.getElementById('csName').value = ''; document.getElementById('csW').value = '';
+  project.sensors.push({id:'cs'+Date.now().toString(36), name:nm, w,
+    h: hh > 0 ? hh : +(w/1.5).toFixed(2),        // 세로를 안 적으면 3:2 로 어림
+    coc: cc > 0 ? cc : +(w/1300).toFixed(4)});
+  ['csName','csW','csH','csC'].forEach(id => document.getElementById(id).value = '');
   refreshAll(); toast('센서를 추가했어요');
+});
+function syncStopMode(){
+  const m = project.stopMode || 'T';
+  const el = document.getElementById('stopMode'); if(!el) return;
+  el.value = m;
+  document.getElementById('transmit').value = project.transmit || TRANSMIT_DEFAULT;
+  document.getElementById('transmit').disabled = m !== 'T';
+  document.getElementById('stopHint').value =
+    m === 'T' ? 'T2.8 ≈ f/' + (2.8*Math.sqrt(project.transmit||TRANSMIT_DEFAULT)).toFixed(1) : '적은 값 그대로';
+}
+document.getElementById('stopMode').addEventListener('change', e => {
+  snapshot(); project.stopMode = e.target.value; syncStopMode(); redraw();
+});
+document.getElementById('transmit').addEventListener('change', e => {
+  snapshot(); project.transmit = clamp(+e.target.value || TRANSMIT_DEFAULT, 0.4, 1);
+  syncStopMode(); redraw();
 });
 
 /* ============================================================
@@ -3673,6 +3807,205 @@ document.getElementById('bDupCam').addEventListener('click', () => {
              end: c.end ? {...c.end, x:c.end.x+120} : null};
   state.cams.push(n); state.activeCam = n.id; setSel([n.id], n.id); redraw();
 });
+/* ============================================================
+   인쇄용 도면 · 공유
+   ============================================================ */
+/* 브라우저가 한글·한자 파일 이름을 통째로 버려서 「download」 로 저장되는 일이 있다.
+   ASCII 로만 된 이름이면 그대로 쓰고, 아니면 날짜를 붙인 이름으로 떨어뜨린다. */
+function safeName(stem, ext){
+  const clean = String(stem||'').replace(/[\\/:*?"<>|]+/g,'').trim();
+  const d = new Date(), pad = n => String(n).padStart(2,'0');
+  const stamp = d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate());
+  const asciiOk = clean && /^[\x20-\x7E]+$/.test(clean);
+  return (asciiOk ? clean : 'shotplan_' + stamp) + ext;
+}
+function saveBlob(blob, name){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+/* 도면 위에 치수선과 방위표를 얹는다 — 인쇄본에서만 쓴다 */
+function drawSheetExtras(g, cw, ch){
+  const S = state.set;
+  const a = w2s(-S.w/2, -S.d/2), b2 = w2s(S.w/2, S.d/2);
+  g.strokeStyle = '#333'; g.fillStyle = '#333'; g.lineWidth = 1;
+  const tick = (x1,y1,x2,y2) => { g.beginPath(); g.moveTo(x1,y1); g.lineTo(x2,y2); g.stroke(); };
+  const off = 26;
+  // 가로 치수
+  tick(a[0], b2[1]+off, b2[0], b2[1]+off);
+  tick(a[0], b2[1]+off-5, a[0], b2[1]+off+5);
+  tick(b2[0], b2[1]+off-5, b2[0], b2[1]+off+5);
+  label(g, (S.w/100).toFixed(2)+' m', (a[0]+b2[0])/2, b2[1]+off, '#111', 12);
+  // 세로 치수
+  tick(b2[0]+off, a[1], b2[0]+off, b2[1]);
+  tick(b2[0]+off-5, a[1], b2[0]+off+5, a[1]);
+  tick(b2[0]+off-5, b2[1], b2[0]+off+5, b2[1]);
+  label(g, (S.d/100).toFixed(2)+' m', b2[0]+off, (a[1]+b2[1])/2, '#111', 12);
+  // 방위 (위쪽이 세트 안쪽)
+  const nx = cw-46, ny = 46;
+  g.beginPath(); g.moveTo(nx, ny-18); g.lineTo(nx-8, ny+10); g.lineTo(nx, ny+3); g.lineTo(nx+8, ny+10);
+  g.closePath(); g.fillStyle = '#222'; g.fill();
+  label(g, '세트 안쪽', nx, ny+22, '#333', 10);
+}
+const PRINT_SCALES = [10,20,25,50,100,200,500,1000];
+/* 인쇄용 범위 — 세트와 요소만, 여백은 짧게 */
+function printBounds(m){
+  const S = state.set;
+  const b = {x0:-S.w/2-m, x1:S.w/2+m, y0:-S.d/2-m, y1:S.d/2+m};
+  for(const o of all()){
+    b.x0 = Math.min(b.x0, o.x-m); b.x1 = Math.max(b.x1, o.x+m);
+    b.y0 = Math.min(b.y0, o.y-m); b.y1 = Math.max(b.y1, o.y+m);
+  }
+  for(const w of state.walls){
+    b.x0 = Math.min(b.x0, w.x1-m, w.x2-m); b.x1 = Math.max(b.x1, w.x1+m, w.x2+m);
+    b.y0 = Math.min(b.y0, w.y1-m, w.y2-m); b.y1 = Math.max(b.y1, w.y1+m, w.y2+m);
+  }
+  return b;
+}
+function buildSheet(){
+  /* A4 가로에서 도면이 차지하는 폭은 약 168mm (277mm 중 범례를 뺀 나머지).
+     그 폭에 2480px 를 쓰므로 1mm 당 px 가 정해지고, 거기서 표준 축척을 고른다. */
+  const W = 2480, H = 1400;
+  const PAPER_MM = 168;
+  const pxPerMm = W / PAPER_MM;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const g = cv.getContext('2d');
+  g.fillStyle = '#ffffff'; g.fillRect(0,0,W,H);
+  const savedPT = {...PT}, savedPal = PAL;
+  PAL = PAPER.light;
+  fitPlanTo(W, H, 90);
+  /* 1:183 같은 어중간한 값이면 인쇄본을 자로 잴 수 없다.
+     들어가는 것 중 가장 큰 표준 축척으로 떨어뜨린다. */
+  /* 인쇄본은 여백을 바짝 줄여 잰다 — 화면용 여백(120cm)을 그대로 두면
+     한 단계 작은 축척으로 떨어져 도면이 쓸데없이 작아진다. */
+  const b = printBounds(40);
+  const sFit = Math.min((W-180)/(b.x1-b.x0), (H-180)/(b.y1-b.y0));
+  const need = 10*pxPerMm / sFit;
+  const denom = PRINT_SCALES.find(v => v >= need) || PRINT_SCALES[PRINT_SCALES.length-1];
+  PT.s = 10*pxPerMm / denom;
+  PT.ox = W/2 - (b.x0+b.x1)/2*PT.s;
+  PT.oy = H/2 + (b.y0+b.y1)/2*PT.s;
+  drawPlan(g, W, H);
+  drawSheetExtras(g, W, H);
+  PAL = savedPal; Object.assign(PT, savedPT);
+  document.getElementById('pp-img').src = cv.toDataURL('image/png');
+
+  const scaleDen = denom;
+  document.getElementById('pp-title').textContent = (project.title || '무제');
+  document.getElementById('pp-sub').textContent =
+    'S#' + (state.no||'1') + '. ' + (state.name||'') + (state.loc ? ' · ' + state.loc : '');
+  const d = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('pp-block').innerHTML = [
+    ['세트', (state.set.w/100).toFixed(2)+' × '+(state.set.d/100).toFixed(2)+' × '+(state.set.h/100).toFixed(2)+' m'],
+    ['화면비', (RATIOS.find(r=>r.id===state.ratio)||RATIOS[0]).name],
+    ['셋업', state.cams.length + '대 · 배우 ' + state.actors.length + '명 · 조명 ' + state.lights.length],
+    ['뽑은 날', d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())],
+  ].map(r => '<tr><td>'+r[0]+'</td><td>'+esc(String(r[1]))+'</td></tr>').join('');
+
+  document.getElementById('pp-shots').innerHTML = state.cams.map(c => {
+    const s2 = subjectOf(c);
+    const size = s2 ? shotSizeOf({...c, focus:s2.d}, visH(s2.a)) : '-';
+    return '<tr><td>'+esc(c.slate)+'</td><td>'+c.lens+'mm '+((project.stopMode||'T')==='T'?'T':'f/')+c.stop+'</td>'
+      + '<td>'+Math.round(c.z)+'cm</td><td>'+esc(c.move||'고정')+'</td><td>'+esc(size)+'</td></tr>';
+  }).join('') || '<tr><td colspan="5">셋업 없음</td></tr>';
+  document.getElementById('pp-foot').textContent =
+    '축척 1:' + scaleDen + ' (A4 가로 기준) · 치수는 벽 안쪽 실측(cm)';
+}
+document.getElementById('bPrint').addEventListener('click', () => {
+  buildSheet();
+  setTimeout(() => window.print(), 120);
+  toast('🖨 인쇄 창에서 「PDF로 저장」을 고르면 도면 파일이 됩니다');
+});
+
+/* ── 공유 ── */
+const b64url = u8 => {
+  let s2 = '';
+  for(let i=0;i<u8.length;i+=0x8000) s2 += String.fromCharCode.apply(null, u8.subarray(i, i+0x8000));
+  return btoa(s2).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+};
+const unb64url = t => {
+  const b = atob(t.replace(/-/g,'+').replace(/_/g,'/'));
+  const u = new Uint8Array(b.length);
+  for(let i=0;i<b.length;i++) u[i] = b.charCodeAt(i);
+  return u;
+};
+async function packProject(){
+  const json = new TextEncoder().encode(JSON.stringify(project));
+  if(typeof CompressionStream === 'undefined') return 'r' + b64url(json);
+  const cs = new CompressionStream('deflate-raw');
+  const buf = await new Response(new Blob([json]).stream().pipeThrough(cs)).arrayBuffer();
+  return 'z' + b64url(new Uint8Array(buf));
+}
+async function unpackProject(t){
+  const kind = t[0], data = unb64url(t.slice(1));
+  if(kind === 'r') return JSON.parse(new TextDecoder().decode(data));
+  const ds = new DecompressionStream('deflate-raw');
+  const buf = await new Response(new Blob([data]).stream().pipeThrough(ds)).arrayBuffer();
+  return JSON.parse(new TextDecoder().decode(buf));
+}
+document.getElementById('bShare').addEventListener('click', async () => {
+  try{
+    const pack = await packProject();
+    const url = location.origin + location.pathname + '#p=' + pack;
+    if(url.length > 60000) return toast('작품이 너무 커서 링크로는 안 됩니다 — 「파일로 내보내기」를 쓰세요');
+    try{ await navigator.clipboard.writeText(url); toast('🔗 링크를 복사했어요 (' + Math.round(url.length/1024) + 'KB) — 붙여넣으면 이 배치도가 그대로 열립니다'); }
+    catch(e){ prompt('이 주소를 복사해서 보내세요', url); }
+  }catch(e){ toast('링크를 만들지 못했어요'); }
+});
+/* 링크로 받은 작품 — 지금 것을 덮으므로 반드시 물어본다 */
+async function loadFromHash(){
+  const m = /[#&]p=([A-Za-z0-9_-]+)/.exec(location.hash || '');
+  if(!m) return false;
+  try{
+    const p2 = await unpackProject(m[1]);
+    if(!p2 || !Array.isArray(p2.scenes) || !p2.scenes.length) throw new Error('형식 오류');
+    const n = p2.scenes.length;
+    if(!confirm('링크로 받은 배치도가 있습니다.\n\n「' + (p2.title||'무제') + '」 · 씬 ' + n + '개\n\n지금 작업 중인 것을 덮고 열까요?')){
+      history.replaceState(null, '', location.pathname);
+      return false;
+    }
+    project = Object.assign(newProject(), p2);
+    project.scenes = p2.scenes.map(x => Object.assign(newScene(), x));
+    project.active = clamp(p2.active|0, 0, project.scenes.length-1);
+    syncState();
+    uid = 1 + Math.max(0, ...project.scenes.flatMap(sc =>
+      [...sc.props, ...sc.actors, ...sc.lights, ...sc.cams, ...(sc.walls||[])].map(o => +o.id || 0)));
+    history.replaceState(null, '', location.pathname);
+    resetView(); fitBird(); refreshAll();
+    toast('🔗 링크로 받은 배치도를 열었어요');
+    return true;
+  }catch(e){ toast('링크가 손상됐어요'); return false; }
+}
+
+/* ── 파일로 주고받기 ── */
+document.getElementById('bExport').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(project, null, 1)], {type:'application/json'});
+  saveBlob(blob, safeName(project.title, '.shotplan.json'));
+  toast('📦 파일로 내보냈어요 — 이 파일 하나에 전부 들어 있습니다');
+});
+document.getElementById('bImport').addEventListener('click', () => document.getElementById('fImport').click());
+document.getElementById('fImport').addEventListener('change', async e => {
+  const f = e.target.files && e.target.files[0]; if(!f) return;
+  try{
+    const p2 = JSON.parse(await f.text());
+    if(!p2 || !Array.isArray(p2.scenes) || !p2.scenes.length) throw new Error('형식 오류');
+    if(!confirm('「' + (p2.title||'무제') + '」 · 씬 ' + p2.scenes.length + '개\n\n지금 작업 중인 것을 덮고 열까요?')) return;
+    snapshot();
+    project = Object.assign(newProject(), p2);
+    project.scenes = p2.scenes.map(x => Object.assign(newScene(), x));
+    project.active = clamp(p2.active|0, 0, project.scenes.length-1);
+    syncState();
+    uid = 1 + Math.max(0, ...project.scenes.flatMap(sc =>
+      [...sc.props, ...sc.actors, ...sc.lights, ...sc.cams, ...(sc.walls||[])].map(o => +o.id || 0)));
+    closePrefs(); resetView(); fitBird(); refreshAll();
+    toast('📥 불러왔어요');
+  }catch(err){ toast('이 파일은 읽지 못했어요'); }
+  finally{ e.target.value = ''; }
+});
+
 document.getElementById('bUndo').addEventListener('click', undo);
 document.getElementById('bRedo').addEventListener('click', redo);
 
@@ -3850,10 +4183,10 @@ document.getElementById('bPng').addEventListener('click', () => {
   g.fillStyle = '#7a8494'; g.font = '400 13px system-ui,sans-serif';
   g.fillText('빨간 영역 = 180° 선을 넘는 쪽 · 파란 부채꼴 = 심도 범위 · 점선 화살표 = 카메라 무브', 40, y0+124);
 
-  const a = document.createElement('a');
-  a.download = '배치도_씬' + state.no + '_' + state.name + '.png';
-  a.href = cv.toDataURL('image/png'); a.click();
-  toast('🖨 PNG를 내려받았어요');
+  cv.toBlob(bl => {
+    if(bl) saveBlob(bl, safeName('plan_S' + (state.no||'1'), '.png'));
+    toast('🖼 PNG를 내려받았어요');
+  }, 'image/png');
 });
 
 document.getElementById('bList').addEventListener('click', () => {
@@ -3916,6 +4249,7 @@ function syncInputs(){
   document.getElementById('setH').value = state.set.h;
   document.getElementById('lensSet').value = project.lensSet.join(', ');
   ratioSel.value = state.ratio;
+  syncStopMode();
 }
 function refreshAll(){ renderTabs(); renderPalette(); syncInputs(); redraw(); }
 window.addEventListener('resize', redraw);
@@ -3974,6 +4308,7 @@ loadPrefs(); applyPrefs(); applyWide();
 project = newProject(); syncState();
 if(!load(false)){ demo(); }
 refreshAll();
+loadFromHash();
 </script>
 
 </body>
