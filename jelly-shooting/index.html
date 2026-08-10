@@ -661,6 +661,11 @@
       </div>
       <div class="tag2" style="text-align:left;margin-top:8px;">랜덤은 기다리는 사람과 자동으로 이어줘요. AI는 혼자서도 바로 시작해요.</div>
     </div>
+    <div class="card hide" id="randCard">
+      <div class="label">🎲 랜덤 매칭</div>
+      <div class="tag2" id="randMsg" style="text-align:left;white-space:pre-line;line-height:1.5;"></div>
+      <button class="btn ghost" id="randCancelBtn" style="margin-top:10px;padding:12px 22px;font-size:15px;">✋ 그만 찾기</button>
+    </div>
     <div class="card">
       <div class="label">🤖 AI 실력 고르기</div>
       <div class="opts aiTierOpts" id="aiTierOpts"></div>
@@ -2069,6 +2074,7 @@ function netLeave(){
 // 방에 들어간다 — 코드는 로컬에서 만들므로 연결을 기다리지 않고 먼저 보여준다.
 // 예전엔 연결 실패 시 대기실을 아예 열지 않아서 '방 만들기'가 아무 일도 안 한 것처럼 보였다.
 function netEnterRoom(code,asHost){
+  netRandomStop();
   netLeave();       // ← 안에서 hubUnadvertise()가 돈다
   net.room=code; net.host=asHost; net.foe=null; net.ready=false; net.foeReady=false;
   openLobby();      // ← 코드 먼저
@@ -2254,8 +2260,20 @@ function renderRoomList(){
   });
 }
 // 🎲 랜덤 매칭 — 열린 방이 있으면 그리로, 없으면 방을 열고 기다린다
-let randT=null;
-function netRandomStop(){ if(randT){ clearTimeout(randT); randT=null; } }
+const RAND_WAIT_MS=20000;      // 20초는 기다려 준다. 첫 연결에서 목록이 늦게 오기도 한다.
+let randT=null, randT0=0;
+function netRandomStop(msg){
+  if(randT){ clearTimeout(randT); randT=null; }
+  randT0=0;
+  const c=$('randCard'); if(c) c.classList.add('hide');
+  if(msg) toast(msg);
+}
+function randShow(left){
+  const c=$('randCard'); if(!c) return;
+  c.classList.remove('hide');
+  $('randMsg').textContent='상대를 찾고 있어요… '+left+'초 남음\n'
+    +'아무도 없으면 내가 방을 열고 기다려요. 그만두려면 아래를 누르세요.';
+}
 function netRandom(){
   if(!nickOrPrompt()) return;
   netRandomStop();
@@ -2263,18 +2281,18 @@ function netRandom(){
   const pick=()=>{
     const rooms=hubRooms.filter(r=>r.game===netGame);
     if(rooms.length){ const r=rooms[Math.floor(Math.random()*rooms.length)];
-      toast('🎲 '+escapeHtml(r.name)+'님의 방으로!'); netEnterRoom(r.room,false); return true; }
+      netRandomStop(); toast('🎲 '+escapeHtml(r.name)+'님의 방으로!'); netEnterRoom(r.room,false); return true; }
     return false;
   };
   if(hubSynced&&pick()) return;
-  // 목록(presence sync)이 올 때까지 기다린다. 최대 7초. 그래도 없으면 내가 방을 연다.
-  toast('🎲 상대를 찾는 중…');
-  let tries=0;
+  randT0=performance.now(); randShow(Math.ceil(RAND_WAIT_MS/1000));
   const tick=()=>{
     randT=null;
-    if($('netScreen').classList.contains('hide')) return;          // 화면을 떠났으면 그만
+    if($('netScreen').classList.contains('hide')){ netRandomStop(); return; }   // 화면을 떠났으면 그만
     if(hubSynced&&pick()) return;
-    if(++tries<14){ randT=setTimeout(tick,500); return; }
+    const left=Math.ceil((RAND_WAIT_MS-(performance.now()-randT0))/1000);
+    if(left>0){ randShow(left); randT=setTimeout(tick,500); return; }
+    netRandomStop();
     netPublic=true; syncPublicBtn();
     toast('기다리는 사람이 없어 방을 열었어요 — 곧 누가 올 거예요!'); netCreate();
   };
@@ -3188,6 +3206,7 @@ $('throwGameBtn').onclick=()=>openNetMode('throw');
 $('netBackBtn').onclick=()=>{ hubLeave(); openStart(); };
 $('netRandomBtn').onclick=netRandom;
 $('netAiBtn').onclick=aiMatch;
+$('randCancelBtn').onclick=()=>netRandomStop('랜덤 매칭을 멈췄어요 ✋');
 $('aiBtn').onclick=openAiScreen; $('aiStartBtn').onclick=aiGo; $('aiBackBtn').onclick=openStart;
 $('roomRefreshBtn').onclick=()=>{ hubEnsure(); if(hub){ hubRooms=hubRead(); } renderRoomList();
   toast('🔄 목록을 새로 읽었어요'); };
