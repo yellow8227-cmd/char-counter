@@ -125,8 +125,11 @@ const AUDIT = String.raw`(() => {
       const b = el.getBoundingClientRect();
       if (b.width === 0 && b.height === 0) continue;
       const id = label(el);
-      if (b.right > VW + 1) push('넘침(우) ' + id + ' → ' + Math.round(b.right) + ' > ' + VW);
-      if (b.left < -1) push('넘침(좌) ' + id + ' → ' + Math.round(b.left));
+      // 글자도 조작 요소도 없는 장식(블롭 같은 흐린 원)은 일부러 화면 밖으로 흘려 놓는다.
+      // 그걸 넘침으로 세면 매번 같은 오탐이 뜬다. 내용이 있는 것만 본다.
+      const hasContent = el.matches('button,input,a,select,textarea,img,canvas') || !!el.textContent.trim();
+      if (hasContent && b.right > VW + 1) push('넘침(우) ' + id + ' → ' + Math.round(b.right) + ' > ' + VW);
+      if (hasContent && b.left < -1) push('넘침(좌) ' + id + ' → ' + Math.round(b.left));
       if (!el.children.length && el.textContent.trim() && el.scrollWidth > el.clientWidth + 2
           && st.overflowX !== 'auto' && st.overflowX !== 'scroll' && st.textOverflow !== 'ellipsis'
           && st.whiteSpace !== 'normal')
@@ -230,7 +233,18 @@ try {
     await send('Emulation.setDeviceMetricsOverride',
       { width: w, height: 820, deviceScaleFactor: 2, mobile: true });
     await send('Page.navigate', { url: 'file://' + file });
-    await sleep(1200);   // 폰트·스크립트·첫 렌더
+    // 고정 대기(1200ms)는 경주였다. 페이지 훅이 준비되기 전에 검사해서 폴백으로 떨어지고,
+    // 그 폴백이 장식까지 훑어 매번 다른 폭에서 오탐이 떴다. 훅을 기다린다.
+    let hooked = false;
+    for (let i = 0; i < 40; i++) {
+      await sleep(150);
+      const q = await send('Runtime.evaluate', {
+        expression: "typeof window.__auditEach==='function' && document.readyState==='complete'",
+        returnByValue: true });
+      if (q.result.value) { hooked = true; break; }
+    }
+    await sleep(300);    // 폰트·첫 렌더
+    if (!hooked) console.log('  ⚠️ 페이지에 __auditEach 훅이 없습니다 — 보이는 화면만 검사합니다');
 
     const r = await send('Runtime.evaluate', { expression: AUDIT, returnByValue: true, awaitPromise: false });
     if (r.exceptionDetails) { console.log('  스크립트 오류: ' + r.exceptionDetails.text); continue; }

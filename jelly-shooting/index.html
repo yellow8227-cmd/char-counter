@@ -1595,8 +1595,29 @@ function frameLoop(now){ if(!running){loopAlive=false;return;}
   if(paused){ requestAnimationFrame(frameLoop); return; }
   if(!lastT)lastT=now; let delta=(now-lastT)/1000;lastT=now;if(delta>0.25)delta=0.25;acc+=delta;
   let steps=0;while(acc>=DT&&steps<5&&running){update();acc-=DT;steps++;}if(steps>=5)acc=0;frame++;render();bgmTick();requestAnimationFrame(frameLoop); }
+// ⏸️ 자리 하나를 모드에 따라 바꿔 쓴다 — 혼자 하기는 일시정지, 대전은 포기하고 나가기.
+function syncPauseBtn(){
+  const b=$('pauseBtn'); if(!b) return;
+  b.textContent = netMode ? '🏳️' : '⏸️';
+  b.title = netMode ? '포기하고 나가기' : '일시정지';
+  b.classList.remove('hide');
+}
+let giveUpArmed=false, giveUpT=null;
+function armGiveUp(){
+  if(giveUpT) clearTimeout(giveUpT);
+  giveUpArmed=true; toast('🏳️ 한 번 더 누르면 이 판을 포기하고 나가요');
+  giveUpT=setTimeout(()=>{giveUpArmed=false;},3000);
+}
+function giveUpNow(){
+  giveUpArmed=false; if(giveUpT){clearTimeout(giveUpT);giveUpT=null;}
+  // 상대에게 끝났다고 알리고 나간다. 안 알리면 상대가 감시견 시간까지 기다린다.
+  if(net.ch) netSend({t:'over',score:score,reason:'dead',popped:pPopped,missed:pMissed});
+  running=false; paused=false;
+  ['hud','audioBar','itemBar','pauseBtn','netBar','throwWrap'].forEach(id=>$(id).classList.add('hide'));
+  netLeave(); restoreMode(); toast('판을 포기했어요 🏳️'); openStart();
+}
 function pauseGame(){ if(!running||paused)return;
-  if(netMode){ toast('실시간 대전은 일시정지할 수 없어요 ⚔️'); return; }   // 상대는 계속 플레이 중이다
+  if(netMode){ if(giveUpArmed) giveUpNow(); else armGiveUp(); return; }   // 대전은 포기하고 나가기
   paused=true; $('pauseScreen').classList.remove('hide'); if(bgmGain)bgmGain.gain.value=0; }
 function resumeGame(){ if(!paused)return; paused=false; lastT=0; $('pauseScreen').classList.add('hide'); if(bgmGain&&bgmOn)bgmGain.gain.value=0.15; }
 function quitGame(){ paused=false; running=false; $('pauseScreen').classList.add('hide'); $('hud').classList.add('hide'); $('audioBar').classList.add('hide'); $('itemBar').classList.add('hide'); $('pauseBtn').classList.add('hide'); if(bgmGain&&bgmOn)bgmGain.gain.value=0.15; openStart(); }
@@ -1616,7 +1637,8 @@ function startGame(){
   runCoins=0;dropTimer=Math.round(srand(8,12)*60);paused=false;pPopped=0;pMissed=0;
   player={x:W/2,targetX:W/2,mood:'idle',moodTimer:0,recoil:0};updateHud();
   markAttend();
-  showScreen(null);$('hud').classList.remove('hide');$('audioBar').classList.remove('hide');$('pauseBtn').classList.remove('hide');
+  showScreen(null);$('hud').classList.remove('hide');$('audioBar').classList.remove('hide');
+  syncPauseBtn();
   netStartSetup();
   ensureAudio();lastT=0;acc=0;running=true;buildItemBar();startLoop(); }
 function gameOver(){
@@ -2012,12 +2034,15 @@ const HEX={
   fog   :{e:'🌫️',n:'안개',cost:22,d:'4초간 상대 화면이 흐려져요'},
   bomb  :{e:'💣',n:'폭탄 세트',cost:25,d:'폭탄 1개 + 젤리 5개'},
   rush  :{e:'⚡',n:'스피드업',cost:0,bolt:true,d:'6초간 젤리가 1.7배 빨라져요 (🍡 3번으로 충전)'},
-  shield:{e:'🛡️',n:'실드',cost:16,def:true,d:'4초간 놓쳐도, 폭탄을 터뜨려도 목숨이 안 깎여요'},
-  clean :{e:'✨',n:'정화',cost:12,def:true,d:'걸린 방해를 지우고 4초간 유령 젤리가 보여요'},
+  shield:{e:'🛡️',n:'실드',cost:22,def:true,d:'3초간 놓쳐도, 폭탄을 터뜨려도 목숨이 안 깎여요'},
+  clean :{e:'✨',n:'정화',cost:14,def:true,d:'걸린 방해를 지우고 4초간 유령 젤리가 보여요'},
 };
 const HEX_ORDER=['jelly','ghost','zig','fog','bomb','rush','shield','clean'];
 const HEX_DEF=['shield','clean'];
-const SHIELD_SEC=4, REVEAL_SEC=4;
+// 던지기 게임의 터트리는 쪽은 상점 아이템도 함께 쓰므로 방어는 실드 하나만 준다.
+// 둘 다 주면 막을 수단이 일곱 개가 되어 던지는 쪽이 이길 방법이 없다.
+const HEX_DEF_POP=['shield'];
+const SHIELD_SEC=3, REVEAL_SEC=4;
 const HEX_SEC={zig:6,fog:4,rush:6};                  // 효과형 아이템의 지속 시간(초)
 const HEX_MAX=Math.max(...HEX_ORDER.map(k=>HEX[k].cost));
 const THROW_COST=HEX.jelly.cost, BOMB_COST=HEX.bomb.cost;
@@ -2225,16 +2250,20 @@ function syncPublicBtn(){ const b=$('netPublicBtn'); if(!b)return;
 // prize    : 이겼을 때 받는 코인
 const AI_TIERS=[
   {id:'baby', name:'🍼 뉴비 AI',  desc:'자주 놓쳐요. 이기는 맛 보기용',    prize:15,
-   acc:0.52,  early:[0.70,0.95], bombErr:0.22,  gap:[900,1750], spd:0, bombRate:0.10,
+   acc:0.52,  early:[0.70,0.95], bombErr:0.22,  gap:[820,1500], spd:1, bombRate:0.10,
+   arms:{normal:0.90,bomb:0.07,ghost:0.03,rain:0.00},
    dps:[8,26],   risk:0.055, thr:0.030, tn:1, combo:2},
   {id:'normal',name:'🙂 보통 AI',  desc:'적당히 잘해요. 기본값',            prize:40,
-   acc:0.80,  early:[0.45,0.85], bombErr:0.11,  gap:[620,1350], spd:1, bombRate:0.16,
+   acc:0.80,  early:[0.45,0.85], bombErr:0.11,  gap:[520,1050], spd:2, bombRate:0.16,
+   arms:{normal:0.66,bomb:0.14,ghost:0.11,rain:0.09},
    dps:[20,62],  risk:0.024, thr:0.060, tn:3, combo:4},
   {id:'smart', name:'🤓 개똑똑 AI',desc:'거의 안 놓쳐요. 각오하세요',       prize:90,
-   acc:0.94,  early:[0.26,0.55], bombErr:0.04,  gap:[430,900],  spd:2, bombRate:0.24,
+   acc:0.94,  early:[0.26,0.55], bombErr:0.04,  gap:[380,760],  spd:3, bombRate:0.24,
+   arms:{normal:0.54,bomb:0.18,ghost:0.14,rain:0.14},
    dps:[44,100], risk:0.010, thr:0.100, tn:4, combo:5},
   {id:'alpha', name:'🏆 알파고 AI',desc:'다 터뜨려요. 최고 난이도!',        prize:200,
-   acc:0.995, early:[0.12,0.30], bombErr:0.005, gap:[300,620],  spd:3, bombRate:0.30,
+   acc:0.995, early:[0.12,0.30], bombErr:0.005, gap:[260,520],  spd:3, bombRate:0.30,
+   arms:{normal:0.44,bomb:0.20,ghost:0.16,rain:0.20}, vyBoost:1.25,
    dps:[72,155], risk:0.003, thr:0.150, tn:5, combo:5},
 ];
 const AI_LOOK={baby:{kind:'bunny',color:'#ffe36e',acc:'none',accColor:'#ff5c8a'},
@@ -2295,6 +2324,13 @@ function aiMatch(){
   aiStart(); computeRole();
   netBeginCountdown();
 }
+// AI가 어떤 무기를 쓸지 뽑는다. 사람 쪽(TW)과 같은 이름이라 규칙이 어긋나지 않는다.
+function aiArm(t){
+  const w=t.arms||{normal:1}; let sum=0; for(const k in w) sum+=w[k];
+  let r=Math.random()*sum;
+  for(const k in w){ r-=w[k]; if(r<=0) return k; }
+  return 'normal';
+}
 // AI가 내 메시지를 받는다
 function aiOnMsg(o){
   if(!aiOn||!o||!o.t) return;
@@ -2339,16 +2375,25 @@ function aiTick(){
     if(now>=aiS.next){
       const t=aiCfg();
       aiS.spd=t.spd;
-      const spd=TSPD[t.spd].m;
-      const bomb=Math.random()<t.bombRate, ghost=!bomb&&Math.random()<0.13;
-      const r=bomb?27:Math.round(rand(24,32)), pal=curTheme().jelly;
-      netOnMsg({t:'jthrow',id:++aiS.jid,r,bomb,ghost,
-        x:Math.round(rand(r+8,480-r-8)),
-        color:bomb?'#4a4450':pal[Math.floor(Math.random()*pal.length)],
-        face:['happy','wink','star'][Math.floor(Math.random()*3)],
-        shape:bomb?'round':['round','round','bean','bear'][Math.floor(Math.random()*4)],
-        vy:(md.vy0+1.6)*spd+rand(0,0.4)});
-      aiS.next=now+rand(t.gap[0],t.gap[1]);
+      const spd=TSPD[t.spd].m*(t.vyBoost||1);
+      const arm=aiArm(t), pal=curTheme().jelly;
+      const n=(arm==='rain')?5:1, cx=rand(90,390);
+      for(let i=0;i<n;i++){
+        const bomb=(arm==='bomb'), r=bomb?27:Math.round(rand(24,32));
+        const x=(n===1)?rand(r+8,480-r-8):(cx+(i-2)*rand(52,74));
+        netOnMsg({t:'jthrow',id:++aiS.jid,r,bomb,ghost:(arm==='ghost'),
+          x:Math.round(Math.max(r+8,Math.min(480-r-8,x))),
+          color:bomb?'#4a4450':pal[Math.floor(Math.random()*pal.length)],
+          face:['happy','wink','star'][Math.floor(Math.random()*3)],
+          shape:bomb?'round':['round','round','bean','bear'][Math.floor(Math.random()*4)],
+          vy:(md.vy0+1.6)*spd+rand(0,0.4)});
+      }
+      if(arm!=='normal'){                       // 무기를 쓰면 상대도 알아야 한다
+        const nm=TW[arm]?TW[arm].emoji+' '+TW[arm].name:arm;
+        showCallout(nm+'!','#8a5cff'); shake=Math.max(shake,arm==='rain'?9:6);
+      }
+      // 젤리비처럼 한 번에 쏟아붓는 무기는 다음 던지기를 조금 더 쉰다
+      aiS.next=now+rand(t.gap[0],t.gap[1])*(arm==='rain'?1.8:1);
     }
   } else if(netGame==='dungeon'){                          // 서로 던지는 모드 — AI도 자기 판을 하는 척
     const t=aiCfg();
@@ -2510,7 +2555,8 @@ function netStartSetup(){
   // 던지기 게임의 터트리는 사람은 공격은 못 하지만 방어 아이템은 쓴다
   $('throwWrap').classList.toggle('hide',netGame==='throw'&&myRole==='thrower');
   buildHexBar();
-  $('pauseBtn').classList.add('hide');   // 대전 중 일시정지 금지
+  // 대전은 일시정지가 안 된다(상대가 계속 플레이 중). 대신 같은 자리에 '포기하고 나가기'.
+  syncPauseBtn();
   updateFoeHud(); updateGauge();
   if(net.watchT)clearInterval(net.watchT);
   net.watchT=setInterval(netWatch,1000);
@@ -2539,7 +2585,7 @@ function updateFoeHud(){
 }
 // 던지기 게임의 터트리는 사람은 공격을 못 한다. 대신 방어만 쓴다.
 function hexKinds(){
-  if(netMode&&netGame==='throw') return HEX_DEF.slice();
+  if(netMode&&netGame==='throw') return HEX_DEF_POP.slice();
   return HEX_ORDER.slice();
 }
 function buildHexBar(){
@@ -3094,7 +3140,7 @@ $('netPublicBtn').onclick=()=>{ netPublic=!netPublic; syncPublicBtn();
   if(netPublic){ hubJoin(); hubAdvertise(); } else hubUnadvertise();
   toast(netPublic?'🌍 목록에 공개해요':'🔒 코드를 아는 사람만 들어와요'); };
 $('nickInputN').addEventListener('input',e=>saveNick(e.target.value));
-$('throwerHomeBtn').onclick=throwerQuit;
+$('throwerHomeBtn').onclick=()=>{ if(giveUpArmed){ giveUpArmed=false; throwerQuit(); } else armGiveUp(); };
 // 무기 버튼은 buildThrowBar()에서 만든다
 $('rankBackBtn').onclick=()=>openStart();
 $('battleBtn').onclick=openBattle;
