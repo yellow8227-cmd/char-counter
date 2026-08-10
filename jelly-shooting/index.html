@@ -399,7 +399,7 @@
     </div>
     <div class="card">
       <div class="label">🔴 실시간 젤리 던지기 (NEW)</div>
-      <div class="tag2" style="text-align:left;margin-bottom:8px;">둘이 <b>동시에</b> 플레이하면서 상대 화면에 <b>젤리를 던집니다!</b> 인터넷 연결이 필요해요.</div>
+      <div class="tag2" style="text-align:left;margin-bottom:8px;">둘이 <b>동시에</b> 플레이하면서 상대 화면에 <b>젤리를 던집니다!</b> 배포된 주소(https)에서 동작해요.</div>
       <button class="btn" id="netCreateBtn" style="width:100%;padding:13px;font-size:17px;background:linear-gradient(180deg,#b28cff,#8a5cff);box-shadow:0 8px 0 #6a3edb,0 12px 22px rgba(120,80,220,0.35);">🏠 방 만들기</button>
       <div style="display:flex;gap:6px;margin-top:9px;">
         <input id="netCodeInput" maxlength="6" placeholder="방 코드 입력" style="flex:1;text-transform:uppercase;">
@@ -1139,6 +1139,13 @@ function saveNick(v){ nick=(v||'').trim().slice(0,10); localStorage.setItem('jel
 function syncNickInputs(){ ['nickInput','nickInput2','nickInput3','nickInputO'].forEach(id=>{
   const el=$(id); if(el&&el.value!==nick&&document.activeElement!==el)el.value=nick; }); }
 function escapeHtml(s){ return (s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+// "인터넷 연결이 필요해요"는 거짓말이 될 수 있다. 실제로는 SDK를 못 불러온 것
+// (미리보기·사내망의 CSP 차단)일 수도 있으므로 원인을 구분해서 알려준다.
+function netWhyOffline(){
+  if(!navigator.onLine) return '인터넷에 연결되어 있지 않아요 📡';
+  if(!window.supabase)  return '온라인 기능을 불러오지 못했어요. 미리보기라면 배포된 주소에서 해주세요 🔗';
+  return '온라인 서버에 연결하지 못했어요 😢';
+}
 function openRank(){ showScreen('rankScreen'); syncNickInputs(); lbMode=mode; buildLbTabs(); loadLeaderboard(); }
 function openBattle(){ showScreen('battleScreen'); syncNickInputs(); }
 // 랭킹은 난이도별로 따로 본다 — 순한맛 1등과 핵불닭 1등을 같은 줄에 세우면 안 된다.
@@ -1150,7 +1157,7 @@ function buildLbTabs(){ const o=$('lbModeTabs'); o.innerHTML='';
 async function loadLeaderboard(){
   const box=$('lbBox'), want=lbMode, m=MODES[want];
   $('lbTitle').textContent='🏆 '+m.emoji+m.name+' TOP 10';
-  if(!supaReady()){ box.innerHTML='<div class="rrow">인터넷 연결이 필요해요 📡</div>'; return; }
+  if(!supaReady()){ box.innerHTML='<div class="rrow">'+netWhyOffline()+'</div>'; return; }
   box.innerHTML='<div class="rrow">불러오는 중...</div>';
   try{
     const { data, error } = await getSupa().from('scores').select('name,score')
@@ -1190,7 +1197,7 @@ function netLeave(){
   netMode=false; net.foe=null; net.ready=false; net.foeReady=false; net.foeGone=false;
 }
 function netJoin(code,asHost){
-  if(!supaReady()){ toast('인터넷 연결이 필요해요 📡'); return false; }
+  if(!supaReady()){ toast(netWhyOffline()); return false; }
   netLeave();
   net.room=code; net.host=asHost; net.lastFoe=performance.now();
   net.ch=getSupa().channel('jelly:room:'+code);
@@ -1378,7 +1385,7 @@ function shareResult(){
 async function sendChallenge(){
   if(lastRun&&lastRun.net){ toast('실시간 대전 판은 도전장으로 보낼 수 없어요 ⚔️'); return; }
   if(!lastRun||lastRun.score<=0){ toast('0점은 도전장을 보낼 수 없어요 😅'); return; }
-  if(!supaReady()){ toast('인터넷 연결이 필요해요 📡'); return; }
+  if(!supaReady()){ toast(netWhyOffline()); return; }
   if(!nick){ $('overNickCard').classList.remove('hide'); $('nickInputO').value=nick; $('nickInputO').focus();
     toast('닉네임만 정하면 바로 보낼 수 있어요 🙋'); return; }
   const btn=$('sendChBtn'), code=makeCode();
@@ -1418,7 +1425,7 @@ function showBattleResult(title, sub, link, isCreate, code){
 async function joinByCode(code){
   code=(code||'').trim().toUpperCase();
   if(code.length<4){ toast('코드를 확인해주세요'); return; }
-  if(!supaReady()){ toast('인터넷 연결이 필요해요 📡'); return; }
+  if(!supaReady()){ toast(netWhyOffline()); return; }
   try{ const {data,error}=await getSupa().from('challenges').select('*').eq('id',code).maybeSingle();
     if(error||!data){ toast('그런 도전장이 없어요 😢'); return; }
     pendingChallenge=data; openAccept(); }catch(e){ toast('불러오기 실패'); }
