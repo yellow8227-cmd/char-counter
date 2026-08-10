@@ -186,6 +186,16 @@
   .shopbtn.craft{background:linear-gradient(180deg,#b28cff,#8a5cff);box-shadow:0 4px 0 #6a3edb;}
   .shopbtn:active{transform:translateY(4px);box-shadow:none;}
   .shopbtn:disabled{opacity:.4;cursor:default;box-shadow:none;filter:grayscale(.4);}
+  .lvtag{font-size:11px;font-weight:900;color:#fff;background:linear-gradient(180deg,#ffcf5c,#ffb02e);
+    padding:2px 7px;border-radius:8px;margin-left:4px;box-shadow:0 2px 0 #e0921a;}
+  .pips{font-size:12px;letter-spacing:2px;color:#ffb02e;margin-top:2px;}
+  .pips i{color:#e6d6df;font-style:normal;}
+  .shopcard .ds b{color:var(--ink);font-weight:900;}
+  .shopcard .ds.nx{color:#3f9a4f;font-weight:800;}
+  .shopbtn.up{background:linear-gradient(180deg,#8fd694,#4fc65f);box-shadow:0 4px 0 #37a04a;}
+  .itembtn .lv{position:absolute;bottom:-4px;right:-4px;background:linear-gradient(180deg,#ffcf5c,#ffb02e);
+    color:#7a4a08;font-size:10px;font-weight:900;padding:1px 5px;border-radius:8px;
+    box-shadow:0 2px 5px rgba(0,0,0,.25);font-family:var(--font);}
   .flash{animation:flashUp 1s ease;}
   @keyframes flashUp{0%{color:#ffb02e;transform:scale(1.15)}100%{color:inherit;transform:scale(1)}}
 
@@ -219,6 +229,32 @@
   #countNum{font-family:var(--font-title);font-size:clamp(90px,26vw,140px);color:#ff4d84;
     filter:drop-shadow(0 6px 0 #fff) drop-shadow(0 10px 16px rgba(230,62,114,0.4));}
   .codebig{font-size:34px;font-weight:900;color:var(--pink-d);letter-spacing:5px;}
+
+  /* ===== 홈 모드 버튼 ===== */
+  .homegrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;width:min(94vw,400px);}
+  .modebtn{border:none;cursor:pointer;font-family:var(--font);color:#fff;border-radius:20px;padding:13px 8px;
+    display:flex;flex-direction:column;align-items:center;gap:1px;transition:transform .08s;}
+  .modebtn:active{transform:translateY(4px);}
+  .modebtn .e{font-size:26px;line-height:1.1;}
+  .modebtn .n{font-weight:900;font-size:16px;}
+  .modebtn .d{font-weight:700;font-size:11px;opacity:.9;}
+  .modebtn.dungeon{background:linear-gradient(180deg,#b28cff,#8a5cff);box-shadow:0 6px 0 #6a3edb,0 12px 22px rgba(120,80,220,.35);}
+  .modebtn.throwg {background:linear-gradient(180deg,#ff9a5c,#ff6f3d);box-shadow:0 6px 0 #d94f1e,0 12px 22px rgba(230,110,50,.35);}
+  .modebtn.rankm  {background:linear-gradient(180deg,#8fb6ff,#5c7cff);box-shadow:0 6px 0 #3e56db,0 12px 22px rgba(60,80,220,.35);}
+  .modebtn.chalm  {background:linear-gradient(180deg,#ff8ab4,#ff5c8a);box-shadow:0 6px 0 var(--pink-d),0 12px 22px rgba(230,62,114,.35);}
+
+  /* ===== 던지는 사람 화면: 두 창 ===== */
+  #throwerView{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;
+    gap:10px;padding:52px 8px 12px;}
+  .tpanel{width:100%;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:0;}
+  .tpanel.grow{flex:1;min-height:0;}
+  .tlabel{font-size:11.5px;font-weight:900;color:var(--ink2);background:rgba(255,255,255,0.72);
+    padding:3px 12px;border-radius:999px;box-shadow:var(--shadow);}
+  #mirrorCanvas{height:100%;max-height:100%;max-width:100%;aspect-ratio:480/720;border-radius:18px;
+    box-shadow:var(--shadow);cursor:crosshair;touch-action:none;}
+  #myPadCanvas{width:min(100%,340px);aspect-ratio:480/200;border-radius:16px;box-shadow:var(--shadow);}
+  #throwerHomeBtn{position:absolute;top:10px;left:10px;z-index:8;}
+  #throwKindBtn{position:absolute;top:10px;right:10px;z-index:8;}
   .needfill{border-color:var(--pink)!important;animation:dpulse .8s ease-in-out 2;}
   /* 친구를 기다리는 동안 글씨에 빛이 흘러가게 — 멈춘 화면처럼 보이지 않게 한다 */
   .wait{background-image:linear-gradient(90deg,var(--ink2) 0%,var(--ink2) 38%,var(--pink) 50%,var(--ink2) 62%,var(--ink2) 100%);
@@ -257,6 +293,20 @@
     <button class="throwbtn" id="throwBtn" title="상대에게 젤리 던지기">🎯</button>
   </div>
   <div id="countWrap" class="hide"><div id="countNum">3</div></div>
+
+  <!-- 🎯 던지는 사람 화면 — 상대 화면과 내 화면을 같이 본다 -->
+  <div id="throwerView" class="hide">
+    <button class="iconbtn" id="throwerHomeBtn" title="홈으로">🏠</button>
+    <button class="chip" id="throwKindBtn">🍡 일반</button>
+    <div class="tpanel grow">
+      <div class="tlabel">🎯 상대 화면 — 여기를 눌러 던져요</div>
+      <canvas id="mirrorCanvas" width="480" height="720"></canvas>
+    </div>
+    <div class="tpanel">
+      <div class="tlabel">🙋 내 화면</div>
+      <canvas id="myPadCanvas" width="480" height="200"></canvas>
+    </div>
+  </div>
   <button class="iconbtn hide" id="pauseBtn" title="일시정지">⏸️</button>
   <div id="toast"></div>
 
@@ -281,11 +331,14 @@
     <div class="coinbadge" id="startCoins">🪙 0</div>
     <button class="btn gold dailypulse" id="dailyBtn" style="display:none;padding:14px 34px;font-size:18px;">🎁 오늘의 보너스 받기</button>
     <div class="rowbtn">
-      <button class="btn lg" id="playBtn">플레이 ▶</button>
+      <button class="btn lg" id="playBtn">🍡 혼자 하기 ▶</button>
     </div>
-    <div class="rowbtn">
-      <button class="btn" id="rankBtn" style="padding:14px 30px;font-size:18px;background:linear-gradient(180deg,#8fb6ff,#5c7cff);box-shadow:0 8px 0 #3e56db,0 14px 26px rgba(60,80,220,0.4);">🏆 랭킹</button>
-      <button class="btn" id="battleBtn" style="padding:14px 30px;font-size:18px;background:linear-gradient(180deg,#b28cff,#8a5cff);box-shadow:0 8px 0 #6a3edb,0 14px 26px rgba(120,80,220,0.4);">⚔️ 대전</button>
+    <!-- 모드는 전부 홈에서 한 번에 들어간다 -->
+    <div class="homegrid">
+      <button class="modebtn dungeon" id="dungeonBtn"><span class="e">⚔️</span><span class="n">실시간 던전</span><span class="d">둘이 서로 던지기</span></button>
+      <button class="modebtn throwg" id="throwGameBtn"><span class="e">🎯</span><span class="n">던지기 게임</span><span class="d">역할 정해서 대결</span></button>
+      <button class="modebtn rankm" id="rankBtn"><span class="e">🏆</span><span class="n">랭킹</span><span class="d">난이도별 순위</span></button>
+      <button class="modebtn chalm" id="battleBtn"><span class="e">📮</span><span class="n">도전장</span><span class="d">같은 판 점수 승부</span></button>
     </div>
     <div class="rowbtn">
       <button class="btn ghost" id="shopBtn" style="padding:12px 26px;font-size:16px;">🛒 창작소</button>
@@ -297,7 +350,7 @@
   <div id="shopScreen" class="screen hide">
     <div class="h2">🛒 아이템 창작소</div>
     <div class="coinbadge" id="shopCoins">🪙 0</div>
-    <div class="tag2">코인을 모아 아이템을 <b>해금·구매</b> 하고, <b>나만의 아이템</b>도 만들어요!</div>
+    <div class="tag2">같은 아이템을 다시 사면 <b>Lv.5까지 강화</b>돼요! <b>나만의 아이템</b>도 만들 수 있어요 ✨</div>
     <div class="shopgrid" id="shopGrid"></div>
     <div class="card" id="createPanel">
       <div class="label">🎨 나만의 아이템 만들기</div>
@@ -310,7 +363,7 @@
       <input id="ciName" maxlength="8" placeholder="예: 번개폭풍">
       <div style="text-align:center;margin-top:12px;"><button class="shopbtn craft" id="createBtn" style="font-size:15px;padding:12px 22px;">✨ 만들기 (150🪙)</button></div>
     </div>
-    <button class="btn ghost" id="shopBackBtn">← 뒤로</button>
+    <button class="btn ghost" id="shopBackBtn">← 홈으로</button>
   </div>
 
   <!-- SETUP -->
@@ -354,12 +407,12 @@
     </div>
     <div class="card">
       <div class="label">📊 데이터</div>
-      <div class="tag2" style="text-align:left;margin:0 0 4px;">코인·아이템·기록은 이 브라우저에 저장돼요.</div>
+      <div class="tag2" style="text-align:left;margin:0 0 4px;">코인·아이템·레벨·기록은 이 브라우저에 저장돼요.</div>
       <button class="setbtn" id="resetScores">🗑️ 최고기록만 초기화</button>
       <button class="setbtn danger" id="resetAll">💥 전체 초기화 (코인·아이템·스킨·기록)</button>
     </div>
     <div class="tag2">Jelly Shooting · 만든이 kami 🩷</div>
-    <button class="btn ghost" id="setBackBtn">← 뒤로</button>
+    <button class="btn ghost" id="setBackBtn">← 홈으로</button>
   </div>
 
   <!-- 🏆 랭킹 (난이도별) -->
@@ -382,12 +435,12 @@
       </div>
       <div id="lbBox"></div>
     </div>
-    <button class="btn ghost" id="rankBackBtn">← 뒤로</button>
+    <button class="btn ghost" id="rankBackBtn">← 홈으로</button>
   </div>
 
-  <!-- ⚔️ 대전 (도전장) -->
+  <!-- 📮 도전장 -->
   <div id="battleScreen" class="screen hide">
-    <div class="h2">⚔️ 대전</div>
+    <div class="h2">📮 도전장</div>
     <div class="card">
       <div class="label">🙋 내 닉네임</div>
       <input id="nickInput3" maxlength="10" placeholder="닉네임을 입력하세요">
@@ -405,21 +458,38 @@
       <div class="tag2" style="text-align:left;margin-bottom:8px;">따로 만들지 않아요. <b>게임이 끝난 결과 화면</b>에서 방금 친 점수를 그대로 도전장으로 보냅니다!</div>
       <button class="btn ghost" id="battlePlayBtn" style="width:100%;padding:12px;font-size:16px;">▶ 한 판 하고 보내기</button>
     </div>
+    <button class="btn ghost" id="battleBackBtn">← 홈으로</button>
+  </div>
+
+  <!-- 🔴 실시간 모드 입장 (실시간 던전 / 던지기 게임 공용) -->
+  <div id="netScreen" class="screen hide">
+    <div class="h2" id="netTitle">⚔️ 실시간 던전</div>
+    <div class="tag2" id="netDesc"></div>
     <div class="card">
-      <div class="label">🔴 실시간 젤리 던지기 (NEW)</div>
-      <div class="tag2" style="text-align:left;margin-bottom:8px;">둘이 <b>동시에</b> 플레이하면서 상대 화면에 <b>젤리를 던집니다!</b> 배포된 주소(https)에서 동작해요.</div>
+      <div class="label">🙋 내 닉네임</div>
+      <input id="nickInputN" maxlength="10" placeholder="닉네임을 입력하세요">
+    </div>
+    <div class="card hide" id="netRoleCard">
+      <div class="label">🎭 내 역할 고르기</div>
+      <div class="tag2" style="text-align:left;margin:0 0 9px;">방을 만드는 사람이 정해요. 친구는 자동으로 반대 역할이 됩니다.</div>
+      <div class="opts" id="netRoleOpts"></div>
+    </div>
+    <div class="card">
+      <div class="label">🚪 방</div>
       <button class="btn" id="netCreateBtn" style="width:100%;padding:13px;font-size:17px;background:linear-gradient(180deg,#b28cff,#8a5cff);box-shadow:0 8px 0 #6a3edb,0 12px 22px rgba(120,80,220,0.35);">🏠 방 만들기</button>
       <div style="display:flex;gap:6px;margin-top:9px;">
         <input id="netCodeInput" maxlength="6" placeholder="방 코드 입력" style="flex:1;text-transform:uppercase;">
         <button class="chip" id="netJoinBtn" style="padding:9px 16px;">입장!</button>
       </div>
+      <div class="tag2" style="text-align:left;margin-top:8px;">배포된 주소(https)에서 동작해요.</div>
     </div>
-    <button class="btn ghost" id="battleBackBtn">← 뒤로</button>
+    <button class="btn ghost" id="netBackBtn">← 홈으로</button>
   </div>
 
   <!-- 🔴 실시간 대전 대기실 -->
   <div id="lobbyScreen" class="screen hide">
     <div class="h2">🔴 대기실</div>
+    <div class="tag2" id="lobbyMode" style="font-size:15px;font-weight:900;color:var(--pink-d);"></div>
     <div class="card">
       <div class="label" id="lobbyCodeLabel">🚪 방 코드</div>
       <div class="codebig" id="lobbyCode">------</div>
@@ -445,7 +515,7 @@
     </div>
     <div class="tag2">젤리를 터뜨리면 게이지가 차고, 🎯 버튼으로 <b>상대 화면에 젤리를 던집니다.</b><br>둘 다 준비하면 카운트다운 후 동시에 시작해요!</div>
     <button class="btn lg" id="lobbyReadyBtn">준비 완료!</button>
-    <button class="btn ghost" id="lobbyLeaveBtn">← 나가기</button>
+    <button class="btn ghost" id="lobbyLeaveBtn">← 홈으로</button>
   </div>
 
   <!-- 도전장 받기 -->
@@ -465,7 +535,7 @@
     <div class="card" id="calBox"></div>
     <div class="tag2" id="calInfo"></div>
     <div class="tag2">매일 플레이하면 🍡 도장이 찍혀요!</div>
-    <button class="btn ghost" id="attendBackBtn">← 뒤로</button>
+    <button class="btn ghost" id="attendBackBtn">← 홈으로</button>
   </div>
 
   <!-- GAME OVER -->
@@ -515,7 +585,10 @@ let _supa=null;
 function getSupa(){ if(_supa)return _supa; if(!window.supabase)return null; _supa=window.supabase.createClient(SUPA_URL,SUPA_KEY); return _supa; }
 function supaReady(){ return !!(window.supabase && getSupa()); }
 // ================= Setup =================
-const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');
+// ctx는 '던지기 게임'의 상대 화면 미러를 그릴 때 잠깐 바꿔 끼운다.
+// drawJelly/drawAvatar를 그대로 재사용하려고 이렇게 한다.
+let canvas=document.getElementById('game'), ctx=canvas.getContext('2d');
+function withCtx(g,fn){ const old=ctx; ctx=g; try{ fn(); } finally { ctx=old; } }
 const preview=document.getElementById('previewCanvas'), pctx=preview.getContext('2d');
 const hero=document.getElementById('heroCanvas'), hctx=hero.getContext('2d');
 const $=id=>document.getElementById(id);
@@ -760,7 +833,26 @@ let inventory=loadJSON('jelly_inv',{});
 let crafted=loadJSON('jelly_crafted',[]);
 let customItems=loadJSON('jelly_custom',[]);
 let ownedKinds=loadJSON('jelly_kinds',['cat','dog','bunny']);
-function saveEconomy(){try{localStorage.setItem('jelly_coins',coins);localStorage.setItem('jelly_inv',JSON.stringify(inventory));localStorage.setItem('jelly_crafted',JSON.stringify(crafted));localStorage.setItem('jelly_custom',JSON.stringify(customItems));localStorage.setItem('jelly_kinds',JSON.stringify(ownedKinds));}catch(e){}}
+// 같은 아이템을 산 횟수가 그 아이템의 레벨이 된다 (최대 5).
+// 횟수를 그대로 레벨로 쓰면 저장값이 하나라 어긋날 일이 없다.
+let bought=loadJSON('jelly_bought',{});
+const ITEM_MAX_LV=5;
+function itemLv(id){ return Math.max(1,Math.min(ITEM_MAX_LV,bought[id]||1)); }
+function itemOwnedLv(id){ return Math.min(ITEM_MAX_LV,bought[id]||0); }   // 0이면 아직 안 산 것
+function nextLv(id){ return Math.min(ITEM_MAX_LV,(bought[id]||0)+1); }
+function isMaxLv(id){ return (bought[id]||0)>=ITEM_MAX_LV; }
+// 강화할수록 값이 오른다 — 레벨이 공짜면 5단계가 의미가 없다
+function buyCost(id){ return Math.round(ITEMS[id].buy*(1+0.5*(nextLv(id)-1))); }
+// 레벨별 효과를 한 줄로 설명한다 (상점에서 지금 성능을 바로 보여주려고)
+function lvDesc(eff,lv){
+  if(eff==='heart')  return '목숨 +'+[1,1,2,2,3][lv-1];
+  if(eff==='slow')   return '슬로우 '+(4+lv*2)+'초';
+  if(eff==='x2')     return '점수 ×'+(lv>=4?3:2)+' · '+(6+lv*2)+'초';
+  if(eff==='magnet') return '자석 '+(6+lv*2)+'초 · 흡인력 '+lv+'단계';
+  if(eff==='clear')  return '폭탄 제거'+(lv>1?(' + '+(lv-1)*2+'초 폭탄 차단'):'');
+  return 'Lv.'+lv;
+}
+function saveEconomy(){try{localStorage.setItem('jelly_coins',coins);localStorage.setItem('jelly_inv',JSON.stringify(inventory));localStorage.setItem('jelly_crafted',JSON.stringify(crafted));localStorage.setItem('jelly_custom',JSON.stringify(customItems));localStorage.setItem('jelly_kinds',JSON.stringify(ownedKinds));localStorage.setItem('jelly_bought',JSON.stringify(bought));}catch(e){}}
 const ITEMS={
   heart:{name:'하트팩',emoji:'💗',desc:'목숨 +1 즉시 회복',effect:'heart',buy:35,craft:0},
   slow: {name:'슬로우',emoji:'⏱️',desc:'6초간 젤리가 느려져요',effect:'slow',buy:45,craft:0},
@@ -779,41 +871,76 @@ function kindOwned(id){return (KIND_PRICE[id]||0)===0||ownedKinds.includes(id);}
 if(!kindOwned(character.kind)){ownedKinds.push(character.kind);saveEconomy();}
 // active effect timers (steps) + run coins
 let slowTimer=0,x2Timer=0,magnetTimer=0,runCoins=0;
+let slowLv=1,x2Lv=1,magnetLv=1,bombBan=0;   // 발동 중인 효과의 레벨 + 폭탄 차단 남은 시간
 
-function applyEffect(eff){
-  if(eff==='heart'){ lives++; floater(W/2,H*0.45,'💗 +1','#e63e72'); }
-  else if(eff==='slow'){ slowTimer=6*60; floater(W/2,H*0.45,'⏱️ 슬로우!','#4fa8ff'); }
-  else if(eff==='clear'){ let n=0; for(const j of jellies){ if(!j.dead&&j.bomb){ j.dead=true; burst(j.x,j.y,'#4a4450',18); n++; } } shake=8; floater(W/2,H*0.45,'🧹 폭탄 '+n+'개 제거!','#7a4a63'); }
-  else if(eff==='x2'){ x2Timer=8*60; floater(W/2,H*0.45,'🌟 점수 2배!','#ff9c3d'); }
-  else if(eff==='magnet'){ magnetTimer=8*60; comboTimer=999; floater(W/2,H*0.45,'🧲 자석 발동! 자동 수집','#8a5cff'); }
+function applyEffect(eff,lv){
+  lv=Math.max(1,Math.min(ITEM_MAX_LV,lv||1));
+  const tag=lv>1?(' Lv.'+lv):'';
+  if(eff==='heart'){ const n=[1,1,2,2,3][lv-1]; lives+=n; floater(W/2,H*0.45,'💗 +'+n+tag,'#e63e72'); }
+  else if(eff==='slow'){ slowLv=lv; slowTimer=(4+lv*2)*60; floater(W/2,H*0.45,'⏱️ 슬로우!'+tag,'#4fa8ff'); }
+  else if(eff==='clear'){ let n=0; for(const j of jellies){ if(!j.dead&&j.bomb){ j.dead=true; burst(j.x,j.y,'#4a4450',18); n++; } }
+    bombBan=Math.max(bombBan,(lv-1)*2*60); shake=8;
+    floater(W/2,H*0.45,'🧹 폭탄 '+n+'개 제거!'+tag,'#7a4a63');
+    if(lv>1) floater(W/2,H*0.52,(lv-1)*2+'초간 폭탄 차단','#7a4a63'); }
+  else if(eff==='x2'){ x2Lv=lv; x2Timer=(6+lv*2)*60; floater(W/2,H*0.45,'🌟 점수 '+(lv>=4?3:2)+'배!'+tag,'#ff9c3d'); }
+  else if(eff==='magnet'){ magnetLv=lv; magnetTimer=(6+lv*2)*60; comboTimer=999;
+    floater(W/2,H*0.45,'🧲 자석 발동!'+tag,'#8a5cff'); }
 }
 function useItem(id){
   if(!running||(inventory[id]||0)<=0||!ITEMS[id])return; ensureAudio();
-  inventory[id]--; saveEconomy(); applyEffect(ITEMS[id].effect);
+  inventory[id]--; saveEconomy(); applyEffect(ITEMS[id].effect,itemLv(id));
   playLevelUp(); updateHud(); buildItemBar();
 }
 function buildItemBar(){
   const bar=$('itemBar'); bar.innerHTML='';
   allItemIds().forEach(id=>{ const c=inventory[id]||0; if(c<=0||!ITEMS[id])return;
-    const b=document.createElement('button'); b.className='itembtn'; b.title=ITEMS[id].name;
-    b.innerHTML=ITEMS[id].emoji+`<span class="cnt">${c}</span><span class="kb">${ITEMS[id].name}</span>`; b.onclick=()=>useItem(id); bar.appendChild(b); });
+    const lv=itemLv(id);
+    const b=document.createElement('button'); b.className='itembtn';
+    b.title=ITEMS[id].name+' Lv.'+lv+' — '+lvDesc(ITEMS[id].effect,lv);
+    b.innerHTML=ITEMS[id].emoji+`<span class="cnt">${c}</span><span class="kb">${ITEMS[id].name}</span>`+
+      (lv>1?`<span class="lv">L${lv}</span>`:'');
+    b.onclick=()=>useItem(id); bar.appendChild(b); });
   bar.classList.toggle('hide', bar.children.length===0||!running);
 }
 function openShop(){ ensureAudio(); showScreen('shopScreen'); buildShop(); buildCreator(); }
 function buildShop(){
   $('shopCoins').textContent='🪙 '+coins;
   const grid=$('shopGrid'); grid.innerHTML='';
-  allItemIds().forEach(id=>{ const it=ITEMS[id]; if(!it)return; const avail=isAvailable(id),own=inventory[id]||0;
+  allItemIds().forEach(id=>{ const it=ITEMS[id]; if(!it)return;
+    const avail=isAvailable(id), own=inventory[id]||0, lv=itemOwnedLv(id), cost=buyCost(id);
     const card=document.createElement('div'); card.className='shopcard';
     let btn;
-    if(!avail){ const can=coins>=it.craft; btn=`<button class="shopbtn craft" data-act="craft" data-id="${id}" ${can?'':'disabled'}>🔨 창작<br>${it.craft}🪙</button>`; }
-    else { const can=coins>=it.buy; btn=`<button class="shopbtn" data-act="buy" data-id="${id}" ${can?'':'disabled'}>구매<br>${it.buy}🪙</button>`; }
+    if(!avail){ const can=coins>=it.craft;
+      btn=`<button class="shopbtn craft" data-act="craft" data-id="${id}" ${can?'':'disabled'}>🔨 창작<br>${it.craft}🪙</button>`; }
+    else if(isMaxLv(id)){ const can=coins>=cost;
+      btn=`<button class="shopbtn" data-act="buy" data-id="${id}" ${can?'':'disabled'}>구매<br>${cost}🪙</button>`; }
+    else { const can=coins>=cost;
+      btn=`<button class="shopbtn up" data-act="buy" data-id="${id}" ${can?'':'disabled'}>${lv?('⬆ Lv.'+nextLv(id)):'구매'}<br>${cost}🪙</button>`; }
     const tag=it.custom?'<span class="locktag">MY</span>':'';
-    card.innerHTML=`<div class="ico">${it.emoji}</div><div class="info"><div class="nm">${it.name} ${avail?'':'🔒'}${tag}</div><div class="ds">${it.desc}</div><div class="own">보유 ${own}개</div></div>${btn}`;
+    const lvtag=lv?`<span class="lvtag">Lv.${lv}${isMaxLv(id)?' MAX':''}</span>`:'';
+    const pips=lv?`<div class="pips">${'●'.repeat(lv)}<i>${'○'.repeat(ITEM_MAX_LV-lv)}</i></div>`:'';
+    // 레벨이 있으면 기본 설명 대신 '지금 성능'과 '다음 레벨'을 보여준다.
+    // 기본 설명을 그대로 두면 Lv.5인데 '목숨 +1'이라고 적혀 서로 어긋나 보인다.
+    const info = lv
+      ? `<div class="ds">지금 · <b>${lvDesc(it.effect,lv)}</b></div>`+
+        (isMaxLv(id)?'':`<div class="ds nx">⬆ Lv.${nextLv(id)} · ${lvDesc(it.effect,nextLv(id))}</div>`)
+      : `<div class="ds">${it.desc}</div>`;
+    card.innerHTML=`<div class="ico">${it.emoji}</div><div class="info">`+
+      `<div class="nm">${it.name} ${avail?'':'🔒'}${tag}${lvtag}</div>`+
+      `${info}${pips}<div class="own">보유 ${own}개</div></div>${btn}`;
     grid.appendChild(card); });
   grid.querySelectorAll('.shopbtn').forEach(b=>b.onclick=()=>{ const id=b.dataset.id,act=b.dataset.act;
     if(act==='craft'){ if(coins>=ITEMS[id].craft){ coins-=ITEMS[id].craft; crafted.push(id); saveEconomy(); playLevelUp(); buildShop(); toast('🔨 '+ITEMS[id].name+' 창작 완료!'); } }
-    else { if(coins>=ITEMS[id].buy){ coins-=ITEMS[id].buy; inventory[id]=(inventory[id]||0)+1; saveEconomy(); playSquish(3); buildShop(); } } });
+    else { const cost=buyCost(id);
+      if(coins>=cost){
+        const before=itemOwnedLv(id);
+        coins-=cost; inventory[id]=(inventory[id]||0)+1; bought[id]=(bought[id]||0)+1;
+        saveEconomy();
+        const after=itemOwnedLv(id);
+        if(after>before&&after>1){ playLevelUp(); toast('✨ '+ITEMS[id].name+' Lv.'+after+'! '+lvDesc(ITEMS[id].effect,after)); }
+        else playSquish(3);
+        buildShop();
+      } } });
 }
 // ---- 나만의 아이템 창작 ----
 const EFFECT_OPTS=[{id:'heart',label:'💗 목숨+1',buy:35},{id:'slow',label:'⏱️ 슬로우',buy:45},{id:'clear',label:'🧹 폭탄청소',buy:60},{id:'x2',label:'🌟 2배점수',buy:80},{id:'magnet',label:'🧲 자석',buy:70}];
@@ -832,6 +959,7 @@ function createCustom(){
   const id='c'+customItems.length+'_'+ciEffect;
   const item={id,name:nm,emoji:ciEmoji,desc:base.label.replace(/^\S+\s/,'')+' 효과',effect:ciEffect,buy:base.buy,craft:0,custom:true};
   customItems.push(item); ITEMS[id]=item; coins-=CREATE_COST; inventory[id]=(inventory[id]||0)+1;
+  bought[id]=1;   // 창작하면 Lv.1로 시작 — 상점에서 계속 강화할 수 있다
   saveEconomy(); playLevelUp(); $('ciName').value=''; buildShop(); buildCreator(); toast('✨ "'+nm+'" 창작 완료! (1개 증정)');
 }
 // ---- toast + 일일 보너스 ----
@@ -896,7 +1024,10 @@ let gspawn=null, runSeed=0;
 function srnd(){ return gspawn?gspawn():Math.random(); }
 function srand(a,b){ return a+srnd()*(b-a); }
 function diff(){ const m=MODES[mode]; return {spawn:Math.max(m.spawnMin,m.spawn0-level*m.spawnL),vy:m.vy0+level*m.vyL,bomb:Math.min(0.42,m.bomb0+level*m.bombL)}; }
-function spawnJelly(){ const d=diff(),isBomb=srnd()<d.bomb,gold=!isBomb&&srnd()<0.06,r=isBomb?27:(gold?28:srand(24,34)),face=['happy','wink','star'][Math.floor(srnd()*3)];
+function spawnJelly(){ const d=diff();
+  // 폭탄 차단 중이어도 srnd()는 그대로 소비한다. 건너뛰면 대전에서 양쪽 판이 갈라진다.
+  const bombRoll=srnd()<d.bomb, isBomb=(bombBan>0)?false:bombRoll,
+    gold=!isBomb&&srnd()<0.06,r=isBomb?27:(gold?28:srand(24,34)),face=['happy','wink','star'][Math.floor(srnd()*3)];
   const pal=curTheme().jelly;
   const shape=(isBomb||gold)?'round':['round','round','bean','bear'][Math.floor(srnd()*4)];
   jellies.push({x:srand(r+10,W-r-10),y:-r,vx:srand(-0.9,0.9),vy:srand(d.vy,d.vy+0.9),r,color:isBomb?'#4a4450':(gold?'#ffce3d':pal[Math.floor(srnd()*pal.length)]),face,shape,pts:gold?26:Math.round(40-r)+6,bomb:isBomb,gold,wob:Math.random()*7,dead:false}); }
@@ -930,7 +1061,7 @@ function hit(mx,my){ if(!running||paused)return; ensureAudio();
     if(dx*dx+dy*dy<=reach*reach){ dp.dead=true; player.targetX=dp.x; shots.push({tx:dp.x,ty:dp.y,life:1}); player.recoil=9;
       burst(dp.x,dp.y,'#ffe27a',28); ring(dp.x,dp.y,'#ffd54a',dp.r*3.8,7); playLevelUp(); setMood('wow',60);
       if(dp.type==='coin'){ runCoins+=15; floater(dp.x,dp.y-dp.r,'🪙+15','#c98a1e'); }
-      else applyEffect(dp.type);
+      else applyEffect(dp.type,itemLv(dp.type));   // 키워둔 레벨이 주워도 적용된다
       floater(dp.x,dp.y-dp.r-28,'부스트! '+dp.name,'#8a5cff'); showCallout('BOOST! '+dp.emoji,'#8a5cff');
       updateHud(); return; } }
   // 2) 가장 가까운(여유 범위 안) 젤리를 잡아줌 → 살짝 빗나가도 터짐
@@ -940,18 +1071,19 @@ function hit(mx,my){ if(!running||paused)return; ensureAudio();
     if(d2<=reach*reach && d2<bd){ bd=d2; bi=i; } }
   if(bi<0) return;
   const j=jellies[bi]; player.targetX=j.x; shots.push({tx:j.x,ty:j.y,life:1}); player.recoil=8; // 발사!
-  if(j.bomb){ j.dead=true;burst(j.x,j.y,'#4a4450',30);ring(j.x,j.y,'#ff5a5a',j.r*3.6,7);ring(j.x,j.y,'#ffd0d0',j.r*2.2,4);shake=18;playBomb();if(magnetTimer<=0){combo=1;comboTimer=0;}setMood('ouch',75);loseLife(); }
+  if(j.bomb){ j.dead=true;burst(j.x,j.y,'#4a4450',30);ring(j.x,j.y,'#ff5a5a',j.r*3.6,7);ring(j.x,j.y,'#ffd0d0',j.r*2.2,4);shake=18;playBomb();if(magnetTimer<=0){combo=1;comboTimer=0;}setMood('ouch',75);loseLife();jGone(j,'bomb'); }
   else popGood(j);
   updateHud(); }
 function popGood(j){ j.dead=true;combo=Math.min(combo+1,9);comboTimer=magnetTimer>0?999:90;
-  const mult=x2Timer>0?2:1, g=j.pts*combo*mult; score+=g;
+  const mult=x2Timer>0?(x2Lv>=4?3:2):1, g=j.pts*combo*mult; score+=g;
   const cGain=j.gold?12:1; runCoins+=cGain;
   burst(j.x,j.y,j.color,j.gold?34:24); burst(j.x,j.y,'#ffffff',6);
   ring(j.x,j.y,j.gold?'#ffce3d':j.color,j.r*3.4,6);
   shake=Math.max(shake,j.gold?9:4);
   floater(j.x,j.y-j.r,j.gold?('🪙+'+cGain):('+'+g),j.gold?'#c98a1e':'#e63e72');
   if(combo===3)showCallout('Nice! 🎵','#4fb0ff'); else if(combo===5)showCallout('Great! 💫','#ff9c3d'); else if(combo===7)showCallout('Perfect! 🔥','#ff5c8a'); else if(combo>=9)showCallout('AMAZING! 👑','#c792ff');
-  if(netMode){ throwGauge+=combo; updateGauge(); }   // 콤보가 높을수록 던질 게 빨리 찬다
+  if(netMode&&netGame==='dungeon'){ throwGauge+=combo; updateGauge(); }   // 콤보가 높을수록 던질 게 빨리 찬다
+  jGone(j,'pop');
   setMood((j.gold||combo>=5)?'wow':'happy',50); playSquish(combo);popCombo(); }
 function popCombo(){ const el=$('comboStat'); el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
 const LEVEL_STEP_BONUS=450;
@@ -1010,18 +1142,25 @@ function foeRing(j){ ctx.strokeStyle='rgba(150,90,255,0.95)';ctx.lineWidth=3;ctx
 function update(){ elapsed++; updateLevel();
   if(netMode){ if(elapsed%30===0)netSend({t:'stat',score:score,lives:lives,combo:combo,level:level});
     if(elapsed>=net.timeLimit*60){ gameOver(); return; } }
-  if(slowTimer>0)slowTimer--; if(x2Timer>0)x2Timer--; if(magnetTimer>0){magnetTimer--;if(magnetTimer===0)comboTimer=Math.min(comboTimer,90);}
-  const slowF=slowTimer>0?0.33:1;
-  spawnTimer++;const d=diff();if(spawnTimer>=d.spawn){spawnTimer=0;spawnJelly();}
-  dropTimer--; if(dropTimer<=0){ spawnDrop(); dropTimer=Math.round(srand(13,18)*60); }
+  if(slowTimer>0)slowTimer--; if(x2Timer>0)x2Timer--; if(bombBan>0)bombBan--;
+  if(magnetTimer>0){magnetTimer--;if(magnetTimer===0)comboTimer=Math.min(comboTimer,90);}
+  const slowF=slowTimer>0?(0.40-0.03*slowLv):1;   // Lv1 0.37 … Lv5 0.25 (높을수록 더 느려진다)
+  // 던지기 게임에서는 젤리가 저절로 나오지 않는다. 전부 상대가 던진 것이다.
+  if(!(netMode&&netGame==='throw')){
+    spawnTimer++;const d=diff();if(spawnTimer>=d.spawn){spawnTimer=0;spawnJelly();}
+    dropTimer--; if(dropTimer<=0){ spawnDrop(); dropTimer=Math.round(srand(13,18)*60); }
+  }
   if(magnetTimer>0)comboTimer=999;
   if(comboTimer>0){comboTimer--;if(comboTimer===0){combo=1;updateHud();}}
   for(const j of jellies){ if(j.dead)continue;j.wob+=0.12;j.x+=j.vx*slowF;j.y+=j.vy*slowF;if(j.x<j.r||j.x>W-j.r)j.vx*=-1;
-    if(j.y-j.r>H){j.dead=true;if(!j.bomb){loseLife();if(magnetTimer<=0){combo=1;comboTimer=0;}setMood('sad',65);playMiss();floater(j.x,H-40,'놓침!','#b06');}} }
+    if(j.y-j.r>H){j.dead=true;
+      if(!j.bomb){loseLife();if(magnetTimer<=0){combo=1;comboTimer=0;}setMood('sad',65);playMiss();floater(j.x,H-40,'놓침!','#b06');}
+      jGone(j,j.bomb?'fell':'miss'); } }
   for(const dp of drops){ if(dp.dead)continue; dp.wob+=0.1; dp.y+=dp.vy*slowF; if(dp.y-dp.r>H) dp.dead=true; }
   // 🧲 자석: 좋은 젤리를 플레이어 쪽으로 끌어당기고 자동으로 터뜨림
   if(magnetTimer>0){
-    for(const j of jellies){ if(j.dead||j.bomb)continue; j.x+=(player.x-j.x)*0.03; j.y+=0.4; }
+    const pull=0.02+0.012*magnetLv;   // Lv1 0.032 … Lv5 0.08
+    for(const j of jellies){ if(j.dead||j.bomb)continue; j.x+=(player.x-j.x)*pull; j.y+=0.4; }
     if(elapsed%9===0){ let bj=null,bd=Infinity; for(const j of jellies){ if(j.dead||j.bomb)continue; const dx=j.x-player.x,dy=j.y-(H-52),d=dx*dx+dy*dy; if(d<bd){bd=d;bj=j;} }
       if(bj){ player.targetX=bj.x; shots.push({tx:bj.x,ty:bj.y,life:1}); player.recoil=6; popGood(bj); updateHud(); } }
   }
@@ -1095,7 +1234,8 @@ function startGame(){ score=0;combo=1;comboTimer=0;level=1;lives=MODES[mode].liv
           : ((Math.random()*1e9)>>>0);
   gspawn = mulberry32(runSeed);
   jellies=[];particles=[];floaters=[];rings=[];shots=[];drops=[];banner=null;callout=null;flash=0;spawnTimer=0;elapsed=0;shake=0;frame=0;
-  slowTimer=0;x2Timer=0;magnetTimer=0;runCoins=0;dropTimer=Math.round(srand(8,12)*60);paused=false;
+  slowTimer=0;x2Timer=0;magnetTimer=0;bombBan=0;slowLv=1;x2Lv=1;magnetLv=1;
+  runCoins=0;dropTimer=Math.round(srand(8,12)*60);paused=false;
   player={x:W/2,targetX:W/2,mood:'idle',moodTimer:0,recoil:0};updateHud();
   markAttend();
   showScreen(null);$('hud').classList.remove('hide');$('audioBar').classList.remove('hide');$('pauseBtn').classList.remove('hide');
@@ -1127,7 +1267,7 @@ function gameOver(){ running=false;paused=false;$('hud').classList.add('hide');$
   showScreen('overScreen'); lockOverActions(); startAttract(); }
 
 // ================= Screens & flow =================
-const SCREENS=['startScreen','setupScreen','shopScreen','settingsScreen','attendScreen','rankScreen','battleScreen','lobbyScreen','acceptScreen','pauseScreen','overScreen'];
+const SCREENS=['startScreen','setupScreen','shopScreen','settingsScreen','attendScreen','rankScreen','battleScreen','netScreen','lobbyScreen','acceptScreen','pauseScreen','overScreen'];
 function showScreen(id){ if(id!=='overScreen')clearOverLock(); SCREENS.forEach(s=>$(s).classList.add('hide')); if(id)$(id).classList.remove('hide'); }
 // ---- 결과 화면 실수 탭 방지 ----
 // 죽는 순간 화면에 있던 손가락이 '다시 하기'를 눌러 판이 새로 시작되는 사고를 막는다.
@@ -1164,7 +1304,7 @@ function buildCalendar(){
 let nick=localStorage.getItem('jelly_nick')||'';
 function saveNick(v){ nick=(v||'').trim().slice(0,10); localStorage.setItem('jelly_nick',nick); syncNickInputs(); }
 // 닉네임 입력칸이 화면마다 있으니 한 곳에서 고치면 나머지도 따라간다 (입력 중인 칸은 건드리지 않음)
-function syncNickInputs(){ ['nickInput','nickInput2','nickInput3','nickInputO','nickInputL'].forEach(id=>{
+function syncNickInputs(){ ['nickInput','nickInput2','nickInput3','nickInputO','nickInputL','nickInputN'].forEach(id=>{
   const el=$(id); if(el&&el.value!==nick&&document.activeElement!==el)el.value=nick; }); }
 function escapeHtml(s){ return (s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
 // "인터넷 연결이 필요해요"는 거짓말이 될 수 있다. 실제로는 SDK를 못 불러온 것
@@ -1240,6 +1380,11 @@ async function submitScore(){
 // '상태 요약'만 주고받는다. 젤리가 위에서 아래로 내려오는 데 2~3초가 걸리므로
 // 200~300ms 지연은 체감되지 않는다 — 이 게임 구조가 지연에 관대한 덕이다.
 let netMode=false, netSeed=0, netModeName='normal', throwGauge=0;
+// 온라인 모드 두 가지 — 'dungeon'(둘 다 플레이, 서로 던지기) / 'throw'(역할 나눠 던지기 게임)
+let netGame='dungeon', hostRole='thrower', myRole='popper';
+function computeRole(){ myRole = net.host ? hostRole : (hostRole==='thrower'?'popper':'thrower'); }
+function gameLabel(){ return netGame==='throw'?'🎯 던지기 게임':'⚔️ 실시간 던전'; }
+function roleLabel(r){ return r==='thrower'?'🎯 던지는 사람':'💥 터트리는 사람'; }
 const THROW_COST=10, BOMB_COST=25;
 let net={ch:null,room:'',host:false,foe:null,ready:false,foeReady:false,
          foeStat:{score:0,lives:0,combo:1,level:1},lastFoe:0,
@@ -1314,7 +1459,7 @@ function netConnect(){
 // 닉네임이 없으면 토스트만 띄우고 끝내지 않고, 입력칸으로 데려가서 눈에 띄게 한다
 function nickOrPrompt(){
   if(nick) return true;
-  const el=$('nickInput3');
+  const el=$('netScreen').classList.contains('hide')?$('nickInput3'):$('nickInputN');
   if(el){ try{ el.scrollIntoView({block:'center'}); }catch(e){} el.focus();
     el.classList.add('needfill'); setTimeout(()=>el.classList.remove('needfill'),1700); }
   toast('닉네임을 먼저 정해주세요! 🙋');
@@ -1326,25 +1471,55 @@ function netOnMsg(m){
   if(m.t==='hello'||m.t==='hi'){
     net.foe={name:m.name||'친구',char:m.char};
     if(m.t==='hello') netSend({t:'hi',name:nick,char:character});   // 늦게 들어온 쪽에 내 정보 전달
-    if(net.host) netSend({t:'seed',seed:netSeed,mode:netModeName,timeLimit:net.timeLimit});
+    if(net.host) netSend({t:'seed',seed:netSeed,mode:netModeName,timeLimit:net.timeLimit,
+      game:netGame,hostRole:hostRole});
     renderLobby();
   }
   else if(m.t==='seed'){ if(!net.host){ netSeed=m.seed>>>0; netModeName=MODES[m.mode]?m.mode:'normal';
-      net.timeLimit=m.timeLimit||120; } renderLobby(); }
+      net.timeLimit=m.timeLimit||120;
+      netGame=(m.game==='throw')?'throw':'dungeon';
+      hostRole=(m.hostRole==='popper')?'popper':'thrower'; } renderLobby(); }
   else if(m.t==='ready'){ net.foeReady=true; renderLobby(); if(net.host&&net.ready) netStartMatch(); }
   else if(m.t==='start'){ if(!net.host) netBeginCountdown(); }
   else if(m.t==='throw'){ recvThrow(m.items||[]); }
-  else if(m.t==='stat'){ net.foeStat=m; updateFoeHud(); }
-  else if(m.t==='over'){ net.foeOver=true; net.foeScore=m.score|0; net.foeReason=m.reason||'time'; netResolve(); }
-  else if(m.t==='bye'){ net.foeGone=true;
-    if(running&&netMode){ toast('상대가 나갔어요 😢'); gameOver(); }
+  else if(m.t==='jthrow'){ recvJelly(m); }                       // 던지기 게임: 젤리 1개 도착
+  else if(m.t==='jgone'){ throwerOnGone(m); }                    // 던지기 게임: 그 젤리가 어떻게 됐는지
+  else if(m.t==='tstat'){ net.foeStat={score:m.score|0,lives:0,combo:1}; updateFoeHud(); }
+  else if(m.t==='stat'){ net.foeStat=m;
+    if(throwerAlive) popStat={score:m.score|0,lives:m.lives|0,combo:m.combo||1};
+    else updateFoeHud(); }
+  else if(m.t==='over'){ net.foeOver=true; net.foeScore=m.score|0; net.foeReason=m.reason||'time';
+    if(throwerAlive){ throwerFinish(); return; }                 // 터트리는 사람이 끝났으면 나도 끝
+    netResolve(); }
+  else if(m.t==='bye'){
+    if(net.foeOver) return;                       // 이미 끝낸 상대가 화면을 닫은 것 — 무시한다
+    net.foeGone=true;
+    // 상대가 나갔다고 내 판을 끊지 않는다. 끝까지 하고 승리로 처리한다.
+    if(netMode&&(running||throwerAlive)){ toast('상대가 나갔어요 — 끝까지 해보세요! 🏆'); }
     else { net.foe=null; net.foeReady=false; net.ready=false; toast('친구가 방에서 나갔어요 😢'); renderLobby(); } }
 }
 
 // ---- 방 만들기 / 참가 ----
+function openNetMode(game){
+  netGame=(game==='throw')?'throw':'dungeon';
+  showScreen('netScreen'); syncNickInputs();
+  $('netTitle').textContent=gameLabel();
+  $('netDesc').textContent = netGame==='throw'
+    ? '한 사람은 젤리를 던지고, 한 사람은 터뜨려요. 던지는 사람은 상대 화면을 보면서 조준합니다!'
+    : '둘이 동시에 플레이하면서 서로의 화면에 젤리를 던져요.';
+  $('netRoleCard').classList.toggle('hide',netGame!=='throw');
+  buildRoleOpts();
+}
+function buildRoleOpts(){
+  const o=$('netRoleOpts'); o.innerHTML='';
+  ['thrower','popper'].forEach(id=>{ const b=document.createElement('button');
+    b.className='chip'+(hostRole===id?' on':''); b.textContent=roleLabel(id);
+    b.onclick=()=>{ hostRole=id; buildRoleOpts(); }; o.appendChild(b); });
+}
 function netCreate(){
   if(!nickOrPrompt()) return;
   netSeed=(Math.random()*1e9)>>>0; netModeName=mode;
+  net.timeLimit=(netGame==='throw')?90:120;
   netEnterRoom(makeCode(),true);
 }
 function netJoinByCode(){
@@ -1368,6 +1543,8 @@ function openLobby(){ showScreen('lobbyScreen'); renderLobby(); }
 function renderLobby(){
   if($('lobbyScreen').classList.contains('hide')) return;
   // 방장과 참가자에게 필요한 안내가 다르다
+  computeRole();
+  $('lobbyMode').textContent=gameLabel()+(netGame==='throw'?(' · 내 역할 '+roleLabel(myRole)):'');
   $('lobbyCodeLabel').textContent=net.host?'🚪 방 코드 — 이걸 친구에게 보내세요':'🚪 내가 들어온 방';
   $('lobbyCopyBtn').textContent=net.host?'📋 코드·링크 복사해서 친구에게 보내기':'📋 이 방 링크 복사';
   $('lobbyCode').textContent=net.room||'------';
@@ -1426,7 +1603,9 @@ function netBeginCountdown(){
   let n=3; $('countNum').textContent=n;
   const t=setInterval(()=>{
     n--;
-    if(n<=0){ clearInterval(t); $('countWrap').classList.add('hide'); netMode=true; startGame(); return; }
+    if(n<=0){ clearInterval(t); $('countWrap').classList.add('hide'); netMode=true; computeRole();
+      if(netGame==='throw'&&myRole==='thrower') startThrower(); else startGame();
+      return; }
     $('countNum').textContent=n; ensureAudio(); playSquish(n);
   },700);
 }
@@ -1437,18 +1616,32 @@ function netStartSetup(){
   throwGauge=0;
   net.myOver=false; net.foeOver=false; net.foeScore=0; net.foeReason=''; net.foeGone=false;
   net.foeStat={score:0,lives:MODES[mode].lives,combo:1,level:1}; net.lastFoe=performance.now();
-  $('netBar').classList.remove('hide'); $('throwWrap').classList.remove('hide');
+  $('netBar').classList.remove('hide');
+  // 던지기 게임의 터트리는 사람은 던지지 않는다
+  $('throwWrap').classList.toggle('hide',netGame==='throw');
   $('pauseBtn').classList.add('hide');   // 대전 중 일시정지 금지
   updateFoeHud(); updateGauge();
   if(net.watchT)clearInterval(net.watchT);
   net.watchT=setInterval(netWatch,1000);
 }
 function netWatch(){
-  if(!netMode||!running) return;
-  if(performance.now()-net.lastFoe>10000){ net.foeGone=true; toast('상대와 연결이 끊겼어요 📡'); gameOver(); }
+  if(!netMode||!(running||throwerAlive)) return;
+  // 상대가 이미 끝냈거나 나간 건 '끊김'이 아니다. 이걸 구분하지 않아서
+  // 한쪽이 죽으면 살아 있는 쪽 게임까지 10초 뒤에 강제로 끝나 버렸다.
+  if(net.foeOver||net.foeGone) return;
+  if(performance.now()-net.lastFoe>10000){
+    net.foeGone=true; toast('상대와 연결이 끊겼어요 📡');
+    if(throwerAlive) throwerFinish(); else gameOver();
+  }
 }
 function updateFoeHud(){
-  const f=net.foeStat, nm=net.foe?net.foe.name:'친구', max=MODES[mode].lives, lv=Math.max(0,Math.min(max,f.lives|0));
+  const f=net.foeStat, nm=net.foe?net.foe.name:'친구';
+  if(netGame==='throw'){   // 던지는 사람에게는 목숨이 없다. 남은 시간을 대신 보여준다.
+    const left=Math.max(0,Math.ceil((net.timeLimit*60-elapsed)/60));
+    $('foeHud').innerHTML='<b>🎯 '+escapeHtml(nm)+'</b><span>던진 점수 ⭐ '+(f.score|0)+'</span><span>⏱ '+left+'초</span>';
+    return;
+  }
+  const max=MODES[mode].lives, lv=Math.max(0,Math.min(max,f.lives|0));
   $('foeHud').innerHTML='<b>🙋 '+escapeHtml(nm)+'</b><span>⭐ '+(f.score|0)+'</span><span>'+
     '❤️'.repeat(lv)+'🤍'.repeat(max-lv)+'</span>';
 }
@@ -1468,6 +1661,20 @@ function makeThrowItems(n,withBomb){
       shape:['round','round','bean','bear'][Math.floor(Math.random()*4)],bomb:false}); }
   if(withBomb) items.push({x:Math.round(rand(39,W-39)),r:27,color:'#4a4450',face:'happy',shape:'round',bomb:true});
   return items;
+}
+// 던지기 게임: 상대가 던진 젤리 1개 (id로 나중에 결과를 되돌려준다)
+function recvJelly(m){
+  if(!running||!netMode) return;
+  const r=Math.max(18,Math.min(36,m.r|0||27));
+  jellies.push({netId:m.id,x:Math.max(r+6,Math.min(W-r-6,m.x|0)),y:-r,vx:0,
+    vy:(+m.vy)||diff().vy,r,color:m.bomb?'#4a4450':(m.color||'#ff8fb8'),
+    face:m.face||'happy',shape:m.bomb?'round':(m.shape||'round'),
+    pts:Math.round(40-r)+6,bomb:!!m.bomb,gold:false,wob:Math.random()*7,dead:false,foe:true});
+}
+// 던진 사람에게 그 젤리가 어떻게 됐는지 알려준다
+function jGone(j,why){
+  if(!(netMode&&netGame==='throw')||!j.netId) return;
+  netSend({t:'jgone',id:j.netId,why:why,pscore:score,plives:lives});
 }
 function recvThrow(items){
   if(!running) return;
@@ -1498,6 +1705,136 @@ function doThrow(){
   playLevelUp(); updateGauge();
 }
 
+// ================= 🎯 던지기 게임: 던지는 사람 =================
+// 던지는 사람은 젤리를 받지 않는다. 대신 상대 화면(미러)과 내 화면을 같이 보고,
+// 미러를 눌러 그 자리에 젤리를 떨어뜨린다.
+// 미러는 '내가 던진 젤리'만으로 만들어지므로 좌표를 통째로 주고받을 필요가 없다.
+// 상대는 젤리가 어떻게 됐는지(jgone)만 알려주면 된다.
+const THROW_CD=42, TBOMB_CD=150;      // 프레임 (0.7초 / 2.5초)
+let throwerAlive=false, mirror=[], mirrorRAF=null, mframe=0;
+let throwCd=0, throwScore=0, nextBomb=false, jidSeq=0;
+let popStat={score:0,lives:0,combo:1};
+const mBg={};
+let mcv=null,mctx=null,pcv=null,pctx2=null;
+function mirrorInit(){ if(mcv)return; mcv=$('mirrorCanvas'); mctx=mcv.getContext('2d');
+  pcv=$('myPadCanvas'); pctx2=pcv.getContext('2d');
+  mcv.addEventListener('pointerdown',e=>{ if(!throwerAlive)return; e.preventDefault();
+    const r=mcv.getBoundingClientRect(); throwAt((e.clientX-r.left)*(480/r.width)); }); }
+function foeAvatar(){ return (net.foe&&net.foe.char)?net.foe.char:character; }
+
+function startThrower(){
+  mirrorInit();
+  running=false; paused=false; throwerAlive=true;
+  mirror=[]; throwCd=0; throwScore=0; nextBomb=false; jidSeq=0; elapsed=0; mframe=0;
+  popStat={score:0,lives:MODES[netModeName]?MODES[netModeName].lives:MODES[mode].lives,combo:1};
+  if(MODES[netModeName]) mode=netModeName;
+  net.myOver=false; net.foeOver=false; net.foeGone=false; net.lastFoe=performance.now();
+  showScreen(null);
+  ['hud','audioBar','itemBar','pauseBtn','netBar','throwWrap'].forEach(id=>$(id).classList.add('hide'));
+  canvas.style.display='none';
+  $('throwerView').classList.remove('hide');
+  $('throwKindBtn').textContent='🍡 일반';
+  ensureAudio();
+  if(net.watchT)clearInterval(net.watchT); net.watchT=setInterval(netWatch,1000);
+  if(mirrorRAF)cancelAnimationFrame(mirrorRAF);
+  mirrorRAF=requestAnimationFrame(mirrorLoop);
+}
+function throwAt(x){
+  if(!throwerAlive) return;
+  if(throwCd>0){ floater(0,0,'','#000'); return; }   // 쿨다운 중엔 아무 일도 없음
+  const bomb=nextBomb, pal=curTheme().jelly;
+  const r=bomb?27:Math.round(rand(24,32));
+  const id=++jidSeq;
+  const it={id,x:Math.round(Math.max(r+8,Math.min(480-r-8,x))),r,bomb,
+    color:bomb?'#4a4450':pal[Math.floor(Math.random()*pal.length)],
+    face:['happy','wink','star'][Math.floor(Math.random()*3)],
+    shape:bomb?'round':['round','round','bean','bear'][Math.floor(Math.random()*4)],
+    vy:diff().vy+rand(0,0.6)};
+  mirror.push({netId:id,x:it.x,y:-r,vx:0,vy:it.vy,r,color:it.color,face:it.face,shape:it.shape,
+    bomb:bomb,gold:false,pts:Math.round(40-r)+6,wob:Math.random()*7,dead:false,foe:true});
+  netSend(Object.assign({t:'jthrow'},it));
+  throwCd = bomb?TBOMB_CD:THROW_CD;
+  playSquish(bomb?1:3);
+}
+function throwerOnGone(m){
+  if(!throwerAlive) return;
+  const j=mirror.find(o=>o.netId===m.id); if(j)j.dead=true;
+  popStat.score=m.pscore|0; popStat.lives=m.plives|0;
+  if(m.why==='miss'){ throwScore+=40; }
+  else if(m.why==='bomb'){ throwScore+=60; }
+}
+function mirrorLoop(){
+  if(!throwerAlive) return;
+  mframe++; frame++; elapsed++;
+  if(throwCd>0) throwCd--;
+  for(const j of mirror){ if(j.dead)continue; j.wob+=0.12; j.y+=j.vy; if(j.y-j.r>720)j.dead=true; }
+  mirror=mirror.filter(j=>!j.dead);
+  drawMirror(); drawMyPad();
+  if(elapsed%30===0) netSend({t:'tstat',score:throwScore});
+  if(elapsed>=net.timeLimit*60){ throwerFinish(); return; }
+  mirrorRAF=requestAnimationFrame(mirrorLoop);
+}
+function drawMirror(){
+  const g=mctx, th=curTheme();
+  let bg=mBg[th.name];
+  if(!bg){ bg=g.createLinearGradient(0,0,0,720); bg.addColorStop(0,th.bg[0]); bg.addColorStop(0.55,th.bg[1]); bg.addColorStop(1,th.bg[2]); mBg[th.name]=bg; }
+  g.fillStyle=bg; g.fillRect(0,0,480,720);
+  for(let i=0;i<6;i++){const yy=((mframe*0.3+i*130)%760)-20;g.fillStyle=th.dot;g.beginPath();g.arc(60+i*75,yy,10+(i%3)*4,0,7);g.fill();}
+  withCtx(g,()=>{ for(const j of mirror) if(!j.dead&&j.y-j.r<=720) drawJelly(j); });
+  drawAvatar(g,240,668,40,foeAvatar(),'idle',mframe);
+  // 상대 상태
+  g.fillStyle='rgba(255,255,255,0.88)';
+  if(g.roundRect){g.beginPath();g.roundRect(12,12,456,46,15);g.fill();}else g.fillRect(12,12,456,46);
+  const max=MODES[mode].lives, lv=Math.max(0,Math.min(max,popStat.lives|0));
+  g.fillStyle='#5b3550'; g.font="900 21px 'Donguri','Apple SD Gothic Neo',sans-serif";
+  g.textAlign='left';  g.fillText('💥 '+(net.foe?net.foe.name:'친구'),26,43);
+  g.textAlign='right'; g.fillText('⭐ '+(popStat.score|0)+'  '+'❤️'.repeat(lv)+'🤍'.repeat(max-lv),454,43);
+}
+function drawMyPad(){
+  const g=pctx2;
+  g.clearRect(0,0,480,200);
+  g.fillStyle='rgba(255,255,255,0.72)'; g.fillRect(0,0,480,200);
+  drawAvatar(g,86,132,42,character,throwCd>0?'idle':'happy',mframe);
+  withCtx(g,()=>drawJelly({x:196,y:76,r:26,color:nextBomb?'#4a4450':'#ff8fb8',
+    face:'happy',shape:'round',bomb:nextBomb,gold:false,wob:mframe*0.06,dead:false}));
+  const cd=nextBomb?TBOMB_CD:THROW_CD, pct=1-Math.min(1,throwCd/cd);
+  g.fillStyle='rgba(240,225,235,0.95)'; g.fillRect(252,120,204,18);
+  g.fillStyle=throwCd>0?'#b28cff':'#4fc65f'; g.fillRect(252,120,204*pct,18);
+  g.fillStyle='#5b3550'; g.font="900 20px 'Donguri','Apple SD Gothic Neo',sans-serif"; g.textAlign='left';
+  g.fillText('던진 점수 ⭐ '+throwScore,252,52);
+  g.font="800 16px 'Donguri','Apple SD Gothic Neo',sans-serif";
+  g.fillText('⏱ '+Math.max(0,Math.ceil((net.timeLimit*60-elapsed)/60))+'초 남음',252,84);
+  g.fillText(throwCd>0?'준비 중…':(nextBomb?'💣 폭탄 준비 완료!':'🍡 던질 수 있어요!'),252,168);
+}
+function throwerFinish(){
+  if(!throwerAlive) return;
+  throwerAlive=false;
+  if(mirrorRAF){cancelAnimationFrame(mirrorRAF);mirrorRAF=null;}
+  if(net.watchT){clearInterval(net.watchT);net.watchT=null;}
+  $('throwerView').classList.add('hide'); canvas.style.display='';
+  net.myOver=true; net.myScore=throwScore; net.myReason='time';
+  netSend({t:'over',score:throwScore,reason:'time'});
+  netMode=false;
+  $('finalScore').textContent=throwScore;
+  $('overCoins').textContent='🪙 +0';
+  $('overMsg').textContent='🎯 던지는 사람 · '+gameLabel();
+  $('newBestWrap').classList.add('hide');
+  $('sendChBtn').classList.add('hide');
+  $('overNickCard').classList.add('hide');
+  $('battleResult').classList.add('hide');
+  renderRank(getScores(),-1);
+  $('overLb').innerHTML='<div class="rrow">던지기 게임 점수는 랭킹에 올라가지 않아요</div>';
+  lastRun={seed:0,mode:mode,score:throwScore,net:true};
+  showScreen('overScreen'); lockOverActions(); startAttract();
+  netResolve();
+}
+function throwerQuit(){
+  throwerAlive=false;
+  if(mirrorRAF){cancelAnimationFrame(mirrorRAF);mirrorRAF=null;}
+  $('throwerView').classList.add('hide'); canvas.style.display='';
+  netLeave(); openStart();
+}
+
 // ---- 승패 ----
 function netFinish(){
   net.myOver=true; net.myScore=score; net.myReason=(lives<=0)?'dead':'time';
@@ -1509,6 +1846,17 @@ function netResolve(){
   const nm=net.foe?net.foe.name:'친구', me=nick||'나';
   if(net.foeGone){ showBattleResult('🏆 승리! (상대 연결 끊김)',me+'  '+net.myScore+'점',null,false,null); return; }
   if(!net.foeOver){ showBattleResult('⏳ 상대 결과를 기다려요…',nm+'님이 아직 플레이 중이에요',null,false,null); return; }
+  if(netGame==='throw'){
+    // 던지기 게임: 터트리는 사람이 목숨을 다 잃으면 던진 쪽 승리, 시간까지 버티면 터트린 쪽 승리
+    const iAmThrower=(myRole==='thrower');
+    const popperDied = iAmThrower ? (net.foeReason==='dead') : (net.myReason==='dead');
+    const w = iAmThrower ? popperDied : !popperDied;
+    showBattleResult(w?'🏆 승리! 🎉':'😢 아쉽게 패배...',
+      roleLabel(myRole)+' '+me+'  '+net.myScore+'점\nvs\n'+
+      roleLabel(iAmThrower?'popper':'thrower')+' '+nm+'  '+net.foeScore+'점\n'+
+      (popperDied?'목숨을 다 잃었어요':'끝까지 버텨냈어요'),null,false,null);
+    return;
+  }
   let win=null;
   if(net.myReason!==net.foeReason) win=(net.myReason==='time');        // 살아남은 쪽 승리
   else if(net.myScore!==net.foeScore) win=(net.myScore>net.foeScore);  // 같은 조건이면 점수
@@ -1612,13 +1960,17 @@ let resetArmed=false,resetTimer=null;
 function resetScores(){ localStorage.removeItem('jelly_scores'); toast('🗑️ 최고기록을 지웠어요'); }
 function resetAll(){
   if(!resetArmed){ resetArmed=true; toast('⚠️ 한 번 더 누르면 코인·아이템·스킨·기록이 모두 사라져요'); if(resetTimer)clearTimeout(resetTimer); resetTimer=setTimeout(()=>{resetArmed=false;},3000); return; }
-  ['jelly_coins','jelly_inv','jelly_crafted','jelly_custom','jelly_kinds','jelly_scores','jelly_streak','jelly_daily'].forEach(k=>localStorage.removeItem(k));
-  coins=0; inventory={}; crafted=[]; ownedKinds=['cat','dog','bunny'];
+  ['jelly_coins','jelly_inv','jelly_crafted','jelly_custom','jelly_kinds','jelly_scores','jelly_streak','jelly_daily','jelly_bought'].forEach(k=>localStorage.removeItem(k));
+  coins=0; inventory={}; crafted=[]; bought={}; ownedKinds=['cat','dog','bunny'];
   customItems.forEach(ci=>{delete ITEMS[ci.id];}); customItems=[];
   if(!kindOwned(character.kind)){character.kind='cat';saveChar();}
   resetArmed=false; toast('✨ 전체 초기화 완료!'); syncSettingsUI();
 }
-function openStart(){ netLeave(); showScreen('startScreen'); $('battleResult').classList.add('hide'); const b=bestScore(),el=$('startBest'); if(b>0){el.textContent='🏆 최고기록 '+b+'점';el.classList.remove('hide');}else el.classList.add('hide'); $('startCoins').textContent='🪙 '+coins; checkDaily(); loopHero(); startAttract(); }
+function openStart(){
+  netLeave();
+  if(throwerAlive){ throwerAlive=false; if(mirrorRAF){cancelAnimationFrame(mirrorRAF);mirrorRAF=null;} }
+  $('throwerView').classList.add('hide'); canvas.style.display='';
+  showScreen('startScreen'); $('battleResult').classList.add('hide'); const b=bestScore(),el=$('startBest'); if(b>0){el.textContent='🏆 최고기록 '+b+'점';el.classList.remove('hide');}else el.classList.add('hide'); $('startCoins').textContent='🪙 '+coins; checkDaily(); loopHero(); startAttract(); }
 function openSetup(){ showScreen('setupScreen'); buildSetupUI(); loopPreview(); }
 $('playBtn').onclick=()=>{ensureAudio();openSetup();};
 $('shopBtn').onclick=()=>openShop();
@@ -1634,6 +1986,12 @@ $('quitBtn').onclick=quitGame;
 $('attendBtn').onclick=openAttend;
 $('attendBackBtn').onclick=()=>openStart();
 $('rankBtn').onclick=openRank;
+$('dungeonBtn').onclick=()=>openNetMode('dungeon');
+$('throwGameBtn').onclick=()=>openNetMode('throw');
+$('netBackBtn').onclick=()=>openStart();
+$('nickInputN').addEventListener('input',e=>saveNick(e.target.value));
+$('throwerHomeBtn').onclick=throwerQuit;
+$('throwKindBtn').onclick=()=>{ nextBomb=!nextBomb; $('throwKindBtn').textContent=nextBomb?'💣 폭탄':'🍡 일반'; };
 $('rankBackBtn').onclick=()=>openStart();
 $('battleBtn').onclick=openBattle;
 $('battleBackBtn').onclick=()=>openStart();
