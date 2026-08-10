@@ -847,6 +847,14 @@
         <label><span>세로</span><input type="number" id="setD" min="200" max="8000" step="50"></label>
         <label><span>높이</span><input type="number" id="setH" min="200" max="1200" step="10"></label>
       </div>
+      <div class="row" id="setPresets" style="margin-top:7px">
+        <button class="mini" data-set="300,500,230">원룸</button>
+        <button class="mini" data-set="450,400,235">거실</button>
+        <button class="mini" data-set="700,500,265">사무실</button>
+        <button class="mini" data-set="1200,900,450">스튜디오</button>
+        <button class="mini" data-set="2000,1500,600">야외</button>
+      </div>
+      <p class="hint">배치도의 <b>검은 테두리</b>가 이 크기입니다. 실측한 값이 있으면 그대로 넣으세요.</p>
     </section>
 
     <section class="card">
@@ -1193,7 +1201,7 @@ let project, state;      // state = 현재 씬 (project.scenes[project.active])
 function newScene(name, no){
   return {
     name: name || '새 씬', no: no || '1', loc: '실내',
-    set: {w:1000, d:800, h:280},
+    set: {w:450, d:400, h:235},          // 아파트 거실 정도. 스테이지가 아니라 방이 기본.
     walls:[], props:[], actors:[], lights:[], cams:[],
     activeCam:null, sel:null, selMulti:[], ratio:'239',
     axis:{on:true, a:null, b:null}, refCam:null, scrub:0,
@@ -3601,13 +3609,22 @@ document.getElementById('bClear').addEventListener('click', () => {
   closePrefs(); wipeScene(true);
 });
 
+/* 흔한 공간 크기 — 실측 기준. 헌팅 전에 대충 잡아 볼 때 쓴다. */
+document.getElementById('setPresets').addEventListener('click', e => {
+  const b = e.target.closest('[data-set]'); if(!b) return;
+  const [w,d,h] = b.dataset.set.split(',').map(Number);
+  snapshot();
+  state.set.w = w; state.set.d = d; state.set.h = h;
+  syncInputs(); resetView(); fitBird(); redraw();
+  toast('📐 ' + b.textContent + ' · ' + (w/100) + ' × ' + (d/100) + ' × ' + (h/100) + ' m');
+});
 ['setW','setD','setH'].forEach(id => document.getElementById(id).addEventListener('change', e => {
   snapshot();
   const v = +e.target.value || 400;
   if(id === 'setW') state.set.w = clamp(v, 200, 8000);
   if(id === 'setD') state.set.d = clamp(v, 200, 8000);
   if(id === 'setH') state.set.h = clamp(v, 200, 1200);
-  fitBird(); redraw();
+  resetView(); fitBird(); redraw();
 }));
 document.getElementById('pTitle').addEventListener('input', e => { project.title = e.target.value; });
 document.getElementById('sName').addEventListener('input', e => { state.name = e.target.value; renderTabs(); });
@@ -3757,6 +3774,7 @@ function aim(c, tx, ty){
 function demo(){
   project = newProject();
   syncState();
+  state.set = {w:1000, d:800, h:280};   // 예시 씬은 여러 요소를 한눈에 보이려고 넉넉하게
   state.loc = '실내 / 거실';
   const a1 = addActor(-110, 120), a2 = addActor(130, -40);
   a1.name = '지훈'; a2.name = '수연';
