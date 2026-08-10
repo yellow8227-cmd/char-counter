@@ -220,6 +220,13 @@
     filter:drop-shadow(0 6px 0 #fff) drop-shadow(0 10px 16px rgba(230,62,114,0.4));}
   .codebig{font-size:34px;font-weight:900;color:var(--pink-d);letter-spacing:5px;}
   .needfill{border-color:var(--pink)!important;animation:dpulse .8s ease-in-out 2;}
+  /* 친구를 기다리는 동안 글씨에 빛이 흘러가게 — 멈춘 화면처럼 보이지 않게 한다 */
+  .wait{background-image:linear-gradient(90deg,var(--ink2) 0%,var(--ink2) 38%,var(--pink) 50%,var(--ink2) 62%,var(--ink2) 100%);
+    background-size:260% 100%;background-repeat:no-repeat;
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:flowText 1.9s linear infinite;}
+  @keyframes flowText{0%{background-position:130% 0}100%{background-position:-30% 0}}
+  @media (prefers-reduced-motion:reduce){.wait{animation:none;color:var(--ink2);}}
 </style>
 </head>
 <body>
@@ -434,6 +441,7 @@
       <div class="label">👥 참가자</div>
       <div id="lobbyPlayers"></div>
       <div class="tag2" id="lobbyInfo" style="margin-top:8px;text-align:left;"></div>
+      <div class="tag2" id="lobbyWaitInfo" style="margin-top:4px;text-align:left;"></div>
     </div>
     <div class="tag2">젤리를 터뜨리면 게이지가 차고, 🎯 버튼으로 <b>상대 화면에 젤리를 던집니다.</b><br>둘 다 준비하면 카운트다운 후 동시에 시작해요!</div>
     <button class="btn lg" id="lobbyReadyBtn">준비 완료!</button>
@@ -1244,6 +1252,7 @@ function netLeave(){
   if(net.watchT){ clearInterval(net.watchT); net.watchT=null; }
   netMode=false; net.foe=null; net.ready=false; net.foeReady=false; net.foeGone=false;
   net.room=''; net.status=''; net.statusMsg=''; sdkT0=0;   // 방을 비워야 대기 중인 재시도가 멈춘다
+  lobbyStopWait();
 }
 // 방에 들어간다 — 코드는 로컬에서 만들므로 연결을 기다리지 않고 먼저 보여준다.
 // 예전엔 연결 실패 시 대기실을 아예 열지 않아서 '방 만들기'가 아무 일도 안 한 것처럼 보였다.
@@ -1327,7 +1336,9 @@ function netOnMsg(m){
   else if(m.t==='throw'){ recvThrow(m.items||[]); }
   else if(m.t==='stat'){ net.foeStat=m; updateFoeHud(); }
   else if(m.t==='over'){ net.foeOver=true; net.foeScore=m.score|0; net.foeReason=m.reason||'time'; netResolve(); }
-  else if(m.t==='bye'){ net.foeGone=true; if(running&&netMode){ toast('상대가 나갔어요 😢'); gameOver(); } else renderLobby(); }
+  else if(m.t==='bye'){ net.foeGone=true;
+    if(running&&netMode){ toast('상대가 나갔어요 😢'); gameOver(); }
+    else { net.foe=null; net.foeReady=false; net.ready=false; toast('친구가 방에서 나갔어요 😢'); renderLobby(); } }
 }
 
 // ---- 방 만들기 / 참가 ----
@@ -1364,7 +1375,7 @@ function renderLobby(){
   $('lobbyRole').textContent=net.host?'🏠 내가 방장 — 난이도·시간을 내가 정해요':'🚪 참가자 — 방장 설정을 따라요';
   const foe=net.foe;
   let h='<div class="rrow me"><span>🙋 '+escapeHtml(nick||'나')+' (나)</span><span>'+(net.ready?'✅ 준비완료':'⌛ 준비중')+'</span></div>';
-  h+='<div class="rrow"><span>'+(foe?('🙋 '+escapeHtml(foe.name)):'⌛ 친구를 기다려요…')+'</span><span>'+
+  h+='<div class="rrow"><span>'+(foe?('🙋 '+escapeHtml(foe.name)):'⌛ <span class="wait">친구를 기다려요…</span>')+'</span><span>'+
      (foe?(net.foeReady?'✅ 준비완료':'⌛ 준비중'):'—')+'</span></div>';
   $('lobbyPlayers').innerHTML=h;
   const m=MODES[netModeName]||MODES.normal;
@@ -1377,12 +1388,32 @@ function renderLobby(){
        '\n코드는 위에 있으니 먼저 친구에게 보내두세요. 연결되면 대전을 시작할 수 있어요.';
   $('lobbyRetryBtn').classList.toggle('hide',net.status==='ok'||net.status==='connecting');
   $('lobbyNickCard').classList.toggle('hide',!!nick);
+  if(foe) lobbyStopWait(); else if(!lobbyTickT) lobbyStartWait();
   const rb=$('lobbyReadyBtn'), ok=(net.status==='ok');
   rb.disabled=!ok||!foe||net.ready||!nick;
   rb.textContent = net.ready ? '✅ 준비 완료'
     : !nick ? '닉네임을 먼저 정해주세요'
     : !ok   ? '연결을 기다려요…'
     : foe   ? '준비 완료!' : '친구를 기다려요…';
+}
+// 아무도 안 들어오는 방에 계속 앉혀두지 않는다. 시간이 지나면 알아서 홈으로 보낸다.
+const LOBBY_WAIT_MS=180000;   // 3분
+let lobbyT0=0, lobbyTickT=null;
+function lobbyStartWait(){ lobbyT0=performance.now();
+  if(lobbyTickT)clearInterval(lobbyTickT); lobbyTickT=setInterval(lobbyTick,1000); lobbyTick(); }
+function lobbyStopWait(){ if(lobbyTickT){clearInterval(lobbyTickT);lobbyTickT=null;} lobbyT0=0;
+  const el=$('lobbyWaitInfo'); if(el)el.textContent=''; }
+function lobbyTick(){
+  if($('lobbyScreen').classList.contains('hide')){ lobbyStopWait(); return; }
+  if(net.foe){ lobbyStopWait(); return; }                       // 친구가 왔으면 타이머 끝
+  const left=LOBBY_WAIT_MS-(performance.now()-lobbyT0);
+  if(left<=0){
+    const why=(net.status==='ok')?'친구가 오지 않아 홈으로 돌아왔어요 🏠':'연결이 안 돼서 홈으로 돌아왔어요 📡';
+    lobbyStopWait(); netLeave(); openStart(); toast(why); return;
+  }
+  const sec=Math.ceil(left/1000);
+  // 여기만 갱신한다 — 참가자 목록을 다시 그리면 흐르는 글씨가 매초 처음으로 돌아간다
+  $('lobbyWaitInfo').textContent='⏳ '+Math.floor(sec/60)+'분 '+String(sec%60).padStart(2,'0')+'초 뒤 자동으로 홈으로 돌아가요';
 }
 function lobbyReady(){
   if(!net.foe||net.ready) return;
