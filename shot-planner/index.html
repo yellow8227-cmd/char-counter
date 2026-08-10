@@ -652,12 +652,7 @@
     <div class="wrap">
       <span class="eyebrow">기능</span>
       <h3 class="title">콘티에는 없는 것들</h3>
-      <p class="deck adcopy">
-        <span class="ln">그림으로는 다 그렸습니다.</span>
-        <span class="ln">정작 카메라를 어디에 세울지가 그림에 없을 뿐이죠.</span>
-        <span class="ln sp">렌즈가 어디까지 담는지, 저 자리에서 두 사람이 붙어 보이는지.</span>
-        <span class="ln">전부 나가서 세워 봐야 알던 것들입니다.</span>
-      </p>
+      <p class="deck">그림에는 카메라가 어디 서는지가 없습니다.</p>
 
       <div class="features">
         <article class="feature">
@@ -705,9 +700,7 @@
     <div class="wrap">
       <span class="eyebrow">쓰는 순서</span>
       <h3 class="title">처음 한 번은 이렇게</h3>
-      <p class="deck adcopy">
-        <span class="ln">두 번째부터는 설명이 필요 없습니다.</span>
-      </p>
+      <p class="deck">두 번째부터는 설명이 필요 없습니다.</p>
       <div class="steps">
         <div class="step">
           <h4>잰다</h4>
@@ -797,6 +790,16 @@
       <p class="desc">어두운 테마에서도 도면만 흰 종이처럼 볼 수 있어요.</p>
       <div class="seg" id="segPaper">
         <button data-paper="theme">테마 따름</button><button data-paper="white">항상 흰 도면</button>
+      </div>
+    </div>
+
+    <div class="fld">
+      <label>심도 기준 (착란원)</label>
+      <p class="desc">「시네 표준」은 현장에서 쓰는 심도표와 같은 값입니다.
+      4K 이상으로 크게 볼 작업이면 「엄격」이 실제에 가깝습니다 — 심도가 좁게 나와요.</p>
+      <div class="seg" id="segCoc">
+        <button data-coc="cine">시네 표준</button>
+        <button data-coc="strict">엄격 (4K)</button>
       </div>
     </div>
 
@@ -940,6 +943,7 @@
         <div class="seg tool" role="group" aria-label="도구">
           <button id="bSelect" class="on" title="선택 · 이동">👆</button>
           <button id="bPan" title="화면 이동 (Space 를 눌러도 됩니다)">🖐</button>
+          <button id="bMeasure" title="자 — 두 점 사이 거리를 잽니다">📏</button>
           <button id="bWall" title="벽 그리기">🧱</button>
           <button id="bErase" title="지우개">🧽</button>
         </div>
@@ -953,7 +957,7 @@
       </div>
       <canvas id="plan"></canvas>
       <div class="legend">
-        <span><b>휠</b> 확대 · <b>Space</b> 또는 <b>🖐</b> 로 화면 이동 · <b>⤢</b> 맞춤</span>
+        <span><b>휠</b> 확대 · <b>Space</b> 또는 <b>🖐</b> 로 화면 이동 · <b>📏</b> 로 거리 재기</span>
         <span class="dot"></span>
         <span><b>추가</b> 버튼을 누르면 커서를 따라다녀요 — <b>클릭한 자리에 놓입니다</b></span>
         <span class="dot"></span>
@@ -1047,7 +1051,7 @@ const ACCENTS = [
   {id:'purple', light:'#7a5ad6', dark:'#b394ff'},
   {id:'rose',   light:'#bc3c60', dark:'#ff8fb0'},
 ];
-const DEFAULT_PREFS = {theme:'auto', accent:'amber', fs:13, paper:'theme', snap:5, angle:15, wide:false};
+const DEFAULT_PREFS = {theme:'auto', accent:'amber', fs:13, paper:'theme', snap:5, angle:15, wide:false, coc:'cine'};
 let prefs = {...DEFAULT_PREFS};
 
 /* 배치도(2D 도면)에 쓰는 색. CSS 변수와 별개로 캔버스는 여기서 가져다 쓴다. */
@@ -1145,18 +1149,29 @@ function loadPrefs(){
   }catch(e){ prefs = {...DEFAULT_PREFS}; }
   prefs.snap = [1,5,10,25].includes(+prefs.snap) ? +prefs.snap : 5;
   prefs.wide = !!prefs.wide;
+  prefs.coc = COC_MODES[prefs.coc] ? prefs.coc : 'cine';
   prefs.angle = [5,15,45,90].includes(+prefs.angle) ? +prefs.angle : 15;
   prefs.fs = [12,13,15].includes(+prefs.fs) ? +prefs.fs : 13;
 }
 
 /* ---------- 촬영 상수 ---------- */
+/* coc = 착란원 지름(mm). 심도가 이 값으로 정해진다.
+   가로폭÷1500 으로 어림하던 것을 포맷별 시네 표준값으로 바꿨다 —
+   그 어림값은 슈퍼35에서 0.017mm 라, 현장에서 쓰는 표(0.025)보다 심도가 얕게 나왔다. */
 const BUILTIN_SENSORS = [
-  {id:'s35',  name:'슈퍼35',       w:24.89},
-  {id:'ff',   name:'풀프레임',     w:36.00},
-  {id:'lf',   name:'라지포맷',     w:41.40},
-  {id:'apsc', name:'APS-C',       w:23.60},
-  {id:'m43',  name:'마이크로 4/3', w:17.30},
+  {id:'s35',  name:'슈퍼35',       w:24.89, coc:0.025},
+  {id:'ff',   name:'풀프레임',     w:36.00, coc:0.030},
+  {id:'lf',   name:'라지포맷',     w:41.40, coc:0.035},
+  {id:'apsc', name:'APS-C',       w:23.60, coc:0.020},
+  {id:'m43',  name:'마이크로 4/3', w:17.30, coc:0.015},
 ];
+/* 4K 이상으로 크게 볼 때 쓰는 엄격 기준 — 심도가 좁게 나온다 */
+const COC_MODES = {cine:{name:'시네 표준', k:1}, strict:{name:'엄격 (4K)', k:0.6}};
+const cocOf = c => {
+  const S = sensorOf(c);
+  const base = (S && +S.coc > 0) ? +S.coc : (S ? S.w/1300 : 0.025);
+  return base * (COC_MODES[prefs.coc] ? COC_MODES[prefs.coc].k : 1);
+};
 const RATIOS = [
   {id:'239', name:'2.39 : 1', v:2.39}, {id:'200', name:'2.00 : 1', v:2.00},
   {id:'185', name:'1.85 : 1', v:1.85}, {id:'169', name:'16 : 9', v:16/9},
@@ -1235,6 +1250,16 @@ function propOf(o){
 }
 /* 이 소품이 종류 기본값에서 벗어나 있나 */
 const propResized = o => o.w != null || o.d != null || o.h != null;
+/* 앞뒤로 넘어뜨린 각도 (라디안). 0 = 똑바로 서 있음, 90° = 완전히 눕힘 */
+const tiltOf = o => toRad(clamp(+o.tilt || 0, -90, 90));
+/* 넘어뜨리면 위에서 본 자리도 달라진다 — 세로는 줄고, 높이가 바닥에 눕는다 */
+function propFootprint(o){
+  const P = propOf(o); if(!P) return {w:0, d:0, h:0};
+  const t = Math.abs(tiltOf(o));
+  if(!t) return {w:P.w, d:P.d, h:P.h};
+  const c = Math.cos(t), s2 = Math.sin(t);
+  return {w:P.w, d:P.d*c + P.h*s2, h:P.d*s2 + P.h*c};
+}
 
 /* all() = 3D로 그려지는 요소들. 벽은 별도로 다룬다(선/좌표 두 개라 성격이 다름). */
 const all = () => [...state.props, ...state.actors, ...state.lights, ...state.cams];
@@ -1260,12 +1285,16 @@ const sensorOf = c => project.sensors.find(s => s.id === c.sensor) || project.se
 const ratioVal = () => (RATIOS.find(r => r.id === state.ratio) || RATIOS[0]).v;
 
 /* ---------- 렌즈 계산 ---------- */
-const hFov = c => 2*Math.atan(sensorOf(c).w / (2*c.lens));
+/* 아나모픽 렌즈는 가로를 눌러 담기 때문에, 같은 초점거리라도 스퀴즈 배율만큼 더 넓게 본다.
+   (2x 아나 50mm 의 가로 화각 = 구면 25mm 와 같다) */
+const sqz = c => (SQUEEZE.includes(+c.squeeze) ? +c.squeeze : 1);
+const hFov = c => 2*Math.atan(sensorOf(c).w * sqz(c) / (2*c.lens));
 const vFov = c => 2*Math.atan(Math.tan(hFov(c)/2) / ratioVal());
+const SQUEEZE = [1, 1.33, 1.5, 1.8, 2];
 
 function dof(c){
   const f = c.lens, N = c.stop, s = c.focus;
-  const coc = sensorOf(c).w / 1500;
+  const coc = cocOf(c);
   const H = (f*f)/(N*coc) + f;
   const smm = s*10;
   const near = smm*(H-f)/(H + smm - 2*f);
@@ -1567,6 +1596,22 @@ function primsOf(o){
   let ps, rot = 0;
   if(o.type === 'prop'){
     ps = propPrimsFor(o); rot = o.rot;
+    const tilt = tiltOf(o);
+    if(tilt){
+      /* 물건 전체가 밑동을 축으로 앞뒤로 넘어간다.
+         부품마다 제자리에서 도는 게 아니라, 중심도 같이 돌아야 사다리가 사다리로 눕는다.
+         돌린 뒤 바닥을 파고들면 그만큼 통째로 들어 올린다. */
+      const ct = Math.cos(tilt), st = Math.sin(tilt);
+      ps = ps.map(q => ({...q, pitch:tilt,
+        y: q.y*ct - q.z*st,
+        z: q.y*st + q.z*ct}));
+      let lowest = Infinity;
+      for(const q of ps){
+        const half = (Math.abs(q.d*st) + Math.abs(q.h*ct))/2;
+        lowest = Math.min(lowest, q.z - half);
+      }
+      if(lowest < 0) ps = ps.map(q => ({...q, z:q.z - lowest}));
+    }
     const lift = +o.z || 0;               // 테이블 위에 올려놓기
     if(lift) ps = ps.map(q => ({...q, z:q.z + lift}));
   }
@@ -1607,7 +1652,8 @@ function wallPrims(viewPos){
 /* 도형 → 면.
    면은 항상 "중심이 원점인 로컬 좌표"로 만든 다음, yaw만큼 z축 회전시키고 중심으로 옮긴다.
    덕분에 45° 처럼 어중간한 각도로 돌려놔도 실루엣이 정확하다. */
-function facesOf(p){
+function facesOf(p, lod){
+  const LV = lod === undefined ? 2 : lod;   // 자세함 단계 (원기둥 쪽 L 과 겹치지 않게)
   const F = [], {w,d,h,c} = p, rx=w/2, ry=d/2, rz=h/2;
   if(p.k === 'box'){
     const A=[-rx,-ry,-rz], Bb=[rx,-ry,-rz], C=[rx,ry,-rz], D=[-rx,ry,-rz];
@@ -1616,13 +1662,13 @@ function facesOf(p){
     F.push([A,Bb,B2,A2]);  F.push([C,D,D2,C2]);
     F.push([D,A,A2,D2]);   F.push([Bb,C,C2,B2]);
   } else if(p.k === 'sph'){
-    const LA=6, LO=10;
+    const LA = LV===0?3:(LV===1?4:6), LO = LV===0?5:(LV===1?7:10);
     for(let i=0;i<LA;i++){ const t0=Math.PI*i/LA, t1=Math.PI*(i+1)/LA;
       for(let j=0;j<LO;j++){ const f0=2*Math.PI*j/LO, f1=2*Math.PI*(j+1)/LO;
         const P=(t,f)=>[rx*Math.sin(t)*Math.cos(f), ry*Math.sin(t)*Math.sin(f), rz*Math.cos(t)];
         F.push([P(t0,f0),P(t0,f1),P(t1,f1),P(t1,f0)]); } }
   } else if(p.k === 'cyl'){
-    const N=12, ax=p.axis||'z';
+    const N = LV===0?6:(LV===1?8:12), ax=p.axis||'z';
     const L = ax==='z'?h:(ax==='y'?d:w), R = ax==='x'?d/2:w/2;
     const pt=(a,s)=>{ const cs=Math.cos(a)*R, sn=Math.sin(a)*R, hf=L/2*s;
       if(ax==='z') return [cs,sn,hf];
@@ -1634,13 +1680,21 @@ function facesOf(p){
     for(let i=0;i<N;i++){ const a=2*Math.PI*i/N; tp.push(pt(a,1)); bt.push(pt(a,-1)); }
     F.push(tp); F.push(bt.reverse());
   } else if(p.k === 'con'){
-    const N=12, R=rx, ap=[0,0,rz], ring=[];
+    const N = LV===0?6:(LV===1?8:12), R=rx, ap=[0,0,rz], ring=[];
     for(let i=0;i<N;i++){ const a=2*Math.PI*i/N; ring.push([Math.cos(a)*R, Math.sin(a)*R, -rz]); }
     for(let i=0;i<N;i++) F.push([ring[i], ring[(i+1)%N], ap]);
     F.push(ring.slice().reverse());
   }
+  /* 기울기는 로컬 X축(왼→오른쪽 축) 둘레로 먼저 먹인 다음 yaw 로 돌린다.
+     사다리를 세우거나 액자를 눕히는 것처럼 앞뒤로 넘어뜨리는 회전이다. */
+  const pit = p.pitch || 0;
   const yaw = p.yaw || 0, cy = Math.cos(yaw), sy = Math.sin(yaw);
-  const T = q => [p.x + q[0]*cy - q[1]*sy, p.y + q[0]*sy + q[1]*cy, p.z + q[2]];
+  const cp2 = Math.cos(pit), sp2 = Math.sin(pit);
+  const T = q => {
+    let qy = q[1], qz = q[2];
+    if(pit){ const ny = qy*cp2 - qz*sp2, nz = qy*sp2 + qz*cp2; qy = ny; qz = nz; }
+    return [p.x + q[0]*cy - qy*sy, p.y + q[0]*sy + qy*cy, p.z + qz];
+  };
   return F.map(pts => ({pts: pts.map(T), c}));
 }
 
@@ -1658,6 +1712,7 @@ const NEAR = 4;                                  // 근평면 (cm)
 function makeProjector(v, cw, ch){
   const {r,f,u} = basis(v);
   const F = (cw/2)/Math.tan(v.fovH/2);
+  makeProjector.F = F;
   const toView = p => {
     const vx=p[0]-v.x, vy=p[1]-v.y, vz=p[2]-v.z;
     return [vx*r[0]+vy*r[1]+vz*r[2], vx*u[0]+vy*u[1]+vz*u[2], vx*f[0]+vy*f[1]+vz*f[2]];
@@ -1732,11 +1787,31 @@ function paint3D(g, cw, ch, view, opts){
     const sp = cp.map(prj.toScreen);
     list.push({sp, depth: sp.reduce((s,v)=>s+v[2],0)/sp.length, col:'#1a1f2b', alpha:q.alpha});
   }
+  /* 물건이 많아지면 면 개수가 프레임을 다 먹는다.
+     ① 카메라 뒤에 있으면 통째로 건너뛰고
+     ② 화면에서 손톱만 하면 면을 적게 만들고
+     ③ 그려 봐야 한 픽셀도 안 되는 면은 버린다. */
+  const FPX = makeProjector.F || 800;
   for(const p of prims){
-    for(const face of facesOf(p)){
+    const rv = prj.toView([p.x, p.y, p.z]);
+    const rad = Math.max(p.w||0, p.d||0, p.h||0)/2 + 1;
+    if(rv[2] < NEAR - rad) continue;
+    const px = rv[2] > 1 ? rad*FPX/rv[2] : 1e9;
+    if(px < 0.8) continue;
+    // 화면 밖으로 완전히 벗어난 것은 면을 만들지도 않는다
+    if(px < 1e8){
+      const sc = prj.toScreen(rv);
+      if(sc[0]+px < -8 || sc[0]-px > cw+8 || sc[1]+px < -8 || sc[1]-px > ch+8) continue;
+    }
+    const lod = px < 14 ? 0 : (px < 45 ? 1 : 2);
+    for(const face of facesOf(p, lod)){
       const cp = clipNear(face.pts.map(prj.toView), NEAR);
       if(cp.length < 3) continue;
       const sp = cp.map(prj.toScreen);
+      let a2 = 0;
+      for(let i=0;i<sp.length;i++){ const j=(i+1)%sp.length;
+        a2 += sp[i][0]*sp[j][1] - sp[j][0]*sp[i][1]; }
+      if(Math.abs(a2) < 3) continue;
       const P = face.pts;
       const ux=P[1][0]-P[0][0], uy=P[1][1]-P[0][1], uz=P[1][2]-P[0][2];
       const vx=P[2][0]-P[0][0], vy=P[2][1]-P[0][1], vz=P[2][2]-P[0][2];
@@ -1821,7 +1896,7 @@ function radiusOf(o){
   if(o.type === 'actor'){ const F = footOf(o); return Math.max(26, Math.max(F.w, F.d)/2); }
   if(o.type === 'cam')   return 32;
   if(o.type === 'light') return 24;
-  const P = propOf(o); return P ? Math.max(P.w, P.d)/2 : 30;
+  const P = propFootprint(o); return P.w ? Math.max(P.w, P.d)/2 : 30;
 }
 
 function drawPlan(target, tw, th){
@@ -1924,6 +1999,7 @@ function drawPlan(target, tw, th){
     drawGuides(g, cw, ch);
     drawGhost(g);
     drawMarquee(g);
+    drawRuler(g);
     drawDragReadout(g);
   }
   drawScaleBar(g, cw, ch);
@@ -1931,6 +2007,7 @@ function drawPlan(target, tw, th){
 
 /* ── 맞춤선 · 미리보기 · 올가미 ─────────────────────────── */
 let guides = [];            // {axis:'x'|'y', v:월드좌표, kind}
+let ruler = null;           // 자 — {x1,y1,x2,y2} 월드좌표
 let placing = null;         // 놓는 중인 것 {key, at:[x,y], rot}
 let marquee = null;         // 올가미 {x1,y1,x2,y2} 월드좌표
 
@@ -1965,6 +2042,27 @@ function drawGhost(g){
   }
   g.restore();
   label(g, placingName() + ' — 클릭해서 놓기', p[0], p[1] - Math.max(18, 26*PT.s), ACC, 11);
+}
+/* 자 — 현장에서 제일 자주 하는 질문에 답한다: 여기서 저기까지 몇 m인가 */
+function drawRuler(g){
+  if(!ruler) return;
+  const a = w2s(ruler.x1, ruler.y1), b = w2s(ruler.x2, ruler.y2);
+  const dx = ruler.x2-ruler.x1, dy = ruler.y2-ruler.y1;
+  const len = Math.hypot(dx, dy);
+  g.save();
+  g.strokeStyle = PAL.sel; g.lineWidth = 2;
+  g.beginPath(); g.moveTo(a[0],a[1]); g.lineTo(b[0],b[1]); g.stroke();
+  for(const p2 of [a,b]){                       // 양 끝 눈금
+    g.beginPath(); g.arc(p2[0],p2[1], 4, 0, Math.PI*2);
+    g.fillStyle = PAL.sel; g.fill();
+    g.strokeStyle = PAL.bg; g.lineWidth = 1.5; g.stroke();
+  }
+  g.restore();
+  if(len > 0.5){
+    const deg = ((Math.atan2(dx, dy)*180/Math.PI)%360+360)%360;
+    label(g, (len/100).toFixed(2)+' m · '+deg.toFixed(0)+'°',
+          (a[0]+b[0])/2, (a[1]+b[1])/2 - 14, PAL.sel, 11.5);
+  }
 }
 function drawMarquee(g){
   if(!marquee) return;
@@ -2102,17 +2200,19 @@ function label(g, txt, x, y, col, size){
 }
 
 function drawProp2D(g, o){
-  const P = propOf(o); if(!P) return;
+  const P0 = propOf(o); if(!P0) return;
+  const P = propFootprint(o);
   const c = w2s(o.x,o.y), isSel = state.sel === o.id;
   g.save(); g.translate(c[0],c[1]); g.rotate(o.rot);
   const w = P.w*PT.s, d = P.d*PT.s;
-  g.fillStyle = P.custom ? (P.color + '55') : PAL.propFill;
+  g.fillStyle = P0.custom ? (P0.color + '55') : PAL.propFill;
   g.strokeStyle = isSel ? PAL.sel : PAL.propStroke; g.lineWidth = isSel ? 2.5 : 1.4;
   g.fillRect(-w/2,-d/2,w,d); g.strokeRect(-w/2,-d/2,w,d);
   g.beginPath(); g.moveTo(-w/2,-d/2); g.lineTo(w/2,d/2); g.stroke();
   g.restore();
   if(Math.min(w,d) > 14)
-    label(g, (o.label || P.name) + (+o.z ? ' ↑' + Math.round(o.z) : ''), c[0], c[1], PAL.text);
+    label(g, (o.label || P0.name) + (+o.z ? ' ↑' + Math.round(o.z) : '')
+          + (+o.tilt ? ' ∠' + Math.round(o.tilt) + '°' : ''), c[0], c[1], PAL.text);
 }
 function drawActor2D(g, o){
   const c = w2s(o.x,o.y), R = Math.max(9, 24*PT.s), isSel = state.sel === o.id;
@@ -2424,7 +2524,7 @@ function hitCandidates(wx, wy){
     if(d <= wtol) out.push({o:w, rank:1, key:d});
   }
   for(const o of state.props){
-    const P = propOf(o); if(!P) continue;
+    const P = propFootprint(o); if(!P.w) continue;
     const a = -o.rot, dx = wx-o.x, dy = wy-o.y;
     const lx = dx*Math.cos(a) - dy*Math.sin(a), ly = dx*Math.sin(a) + dy*Math.cos(a);
     if(Math.abs(lx) <= P.w/2 && Math.abs(ly) <= P.d/2) out.push({o, rank:2, key:P.w*P.d});
@@ -2449,7 +2549,7 @@ function hitCandidates(wx, wy){
 function bboxOf(o){
   if(!o) return {w:0, d:0};
   if(o.type === 'prop'){
-    const P = propOf(o); if(!P) return {w:0, d:0};
+    const P = propFootprint(o); if(!P.w) return {w:0, d:0};
     const c = Math.abs(Math.cos(o.rot||0)), s = Math.abs(Math.sin(o.rot||0));
     return {w: P.w*c + P.d*s, d: P.w*s + P.d*c};
   }
@@ -2594,6 +2694,12 @@ planCv.addEventListener('pointerdown', e => {
 
   if(placing){ dropPlacing(e.shiftKey); return; }
 
+  // 자 — 스냅 없이 실제 좌표를 그대로 잰다
+  if(mode === 'measure'){
+    ruler = {x1:wx, y1:wy, x2:wx, y2:wy, live:true};
+    redrawLive(); return;
+  }
+
   // 지우개 — 집히는 건 뭐든 지운다 (벽 포함)
   if(mode === 'erase'){
     const t = hitTest(wx, wy, e.altKey);
@@ -2682,6 +2788,7 @@ planCv.addEventListener('pointermove', e => {
   }
   const [wx, wy] = planPoint(e);
 
+  if(ruler && ruler.live){ ruler.x2 = wx; ruler.y2 = wy; redrawLive(); return; }
   if(placing){ placing.at = snapMove(placingProto(), wx, wy, e.altKey, []); redrawLive(); return; }
   if(marquee){ marquee.x2 = wx; marquee.y2 = wy; redrawLive(); return; }
   if(drawingWall){
@@ -2727,6 +2834,10 @@ planCv.addEventListener('pointermove', e => {
 });
 
 function endPointer(e){
+  if(ruler && ruler.live){
+    ruler.live = false;
+    if(Math.hypot(ruler.x2-ruler.x1, ruler.y2-ruler.y1) < 1) ruler = null;
+  }
   pointers.delete(e.pointerId);
   if(pointers.size < 2) pinch = null;
   if(panning){ panning = null; applyCursor(); }
@@ -2795,6 +2906,7 @@ document.addEventListener('keydown', e => {
 
   if(e.key === 'Delete' || e.key === 'Backspace'){ removeSel(); e.preventDefault(); return; }
   if(e.key === 'Escape'){
+    if(ruler){ ruler = null; redraw(); toast('자를 지웠어요'); return; }
     if(placing){ stopPlacing(); toast('배치를 그만뒀어요'); return; }
     setSel([]); redraw(); return;
   }
@@ -2976,6 +3088,7 @@ function renderInsp(){
     h += sel_('i_lens','렌즈', lensOptions(o.lens), o.lens);
     h += sel_('i_sensor','센서', project.sensors.map(s=>[s.id,s.name]), o.sensor);
     h += sel_('i_stop','조리개', STOPS.map(s=>[s,'T'+s]), o.stop);
+    h += sel_('i_sq','아나모픽', SQUEEZE.map(v=>[v, v===1?'구면 (1x)':v+'x']), sqz(o));
     h += num_('i_focus','초점(cm)', o.focus, 20, 30000, 10);
     h += num_('i_z','높이(cm)', Math.round(o.z), 5, 1200, 5);
     h += num_('i_tilt','틸트(°)', Math.round(toDeg(o.tilt)), -80, 80, 1);
@@ -3035,8 +3148,12 @@ function renderInsp(){
         '</div>';
       h += '<div class="grid2" style="margin-top:8px">' +
         num_('i_pz','바닥에서(cm)', Math.round(+o.z || 0), 0, 1000, 5) +
-        wrap_('앉는 높이', '<input value="'+seatHeightOf(o)+' cm" disabled>') +
+        num_('i_tiltp','기울기(°)', Math.round(+o.tilt || 0), -90, 90, 5) +
         '</div>';
+      h += '<div class="row" style="margin-top:6px"><span class="mini" style="margin:0">' +
+        '앉는 높이 <b>' + seatHeightOf(o) + 'cm</b>' +
+        (+o.tilt ? ' · 눕힌 뒤 자리 ' + Math.round(propFootprint(o).d) + 'cm · 높이 ' + Math.round(propFootprint(o).h) + 'cm' : '') +
+        '</span></div>';
       h += '<p class="hint">「바닥에서」를 올리면 <b>테이블 위에 올려놓은</b> 것이 됩니다. ' +
            '크기는 이 소품 하나만 바뀌고, 같은 종류의 다른 것들은 그대로예요' +
            (B ? ' (' + esc(B.name) + ' 기본값 ' + B.w + '×' + B.d + '×' + B.h + ')' : '') + '.</p>';
@@ -3074,6 +3191,8 @@ function renderInsp(){
   on('i_sizeReset','click', S(() => { delete o.w; delete o.d; delete o.h; redraw(); }));
   on('i_pz','focus', () => snapshot());
   on('i_pz','input', () => { o.z = clamp(nv('i_pz'), 0, 1000); redraw(); });
+  on('i_tiltp','focus', () => snapshot());
+  on('i_tiltp','input', () => { o.tilt = clamp(nv('i_tiltp'), -90, 90); redraw(); });
   ['i_x','i_y','i_rot'].forEach(id => on(id,'focus', () => snapshot()));
   on('i_x','input', () => { o.x = nv('i_x'); redraw(); });
   on('i_y','input', () => { o.y = nv('i_y'); redraw(); });
@@ -3084,6 +3203,7 @@ function renderInsp(){
   on('i_lens','change', S(() => { o.lens = +document.getElementById('i_lens').value; redraw(); }));
   on('i_sensor','change', S(() => { o.sensor = document.getElementById('i_sensor').value; redraw(); }));
   on('i_stop','change', S(() => { o.stop = +document.getElementById('i_stop').value; redraw(); }));
+  on('i_sq','change', S(() => { o.squeeze = +document.getElementById('i_sq').value; redraw(); }));
   on('i_move','change', S(() => {
     o.move = document.getElementById('i_move').value;
     if(MOVE_NEEDS_PATH(o.move) && !o.end) makePath(o);
@@ -3172,6 +3292,8 @@ function renderCamInfo(){
     kv('심도', (D.near/100).toFixed(2)+' ~ '+(isFinite(D.far)?(D.far/100).toFixed(2)+' m':'∞')) +
     kv('심도 폭', isFinite(D.far) ? ((D.far-D.near)/100).toFixed(2)+' m' : '∞') +
     kv('과초점 거리', (D.hyper/100).toFixed(2)+' m') +
+    kv('착란원 · 포맷', cocOf(c).toFixed(3)+' mm · '+esc(sensorOf(c).name)+' '+sensorOf(c).w+'mm'
+       + (sqz(c)!==1 ? ' · 아나 '+sqz(c)+'x' : '')) +
     kv('초점면 프레임 폭', (2*c.focus*Math.tan(hFov(c)/2)/100).toFixed(2)+' m') +
     (s ? kv('피사체 ('+esc(s.a.name)+')', (s.d/100).toFixed(2)+' m · '+size) : '') +
     (s ? kv('피사체 눈높이', eyeH(s.a) + ' cm' +
@@ -3497,6 +3619,7 @@ function applyCursor(){
     : panning ? 'grabbing'
     : mode === 'wall' ? 'crosshair'
     : mode === 'erase' ? 'pointer'
+    : mode === 'measure' ? 'crosshair'
     : (mode === 'pan' || spaceDown) ? 'grab'
     : 'default';
 }
@@ -3504,7 +3627,7 @@ function setMode(m){
   const changed = m !== mode;
   mode = m;
   if(m !== 'select' && placing){ placing = null; guides = []; }
-  const map = {select:'bSelect', pan:'bPan', wall:'bWall', erase:'bErase'};
+  const map = {select:'bSelect', pan:'bPan', measure:'bMeasure', wall:'bWall', erase:'bErase'};
   for(const k in map){ const el = document.getElementById(map[k]); if(el) el.classList.toggle('on', k === m); }
   applyCursor();
   if(changed && m !== 'select' && m !== 'pan') setSel([]);
@@ -3512,6 +3635,12 @@ function setMode(m){
 }
 document.getElementById('bSelect').addEventListener('click', () => { stopPlacing(); setMode('select'); });
 document.getElementById('bPan').addEventListener('click', () => setMode(mode === 'pan' ? 'select' : 'pan'));
+document.getElementById('bMeasure').addEventListener('click', () => {
+  const on = mode !== 'measure';
+  setMode(on ? 'measure' : 'select');
+  if(on) toast('📏 두 점을 이어 끌면 거리가 나옵니다 · Esc 로 지우기');
+  else { ruler = null; redraw(); }
+});
 document.getElementById('bWall').addEventListener('click', () => setMode(mode === 'wall' ? 'select' : 'wall'));
 document.getElementById('bErase').addEventListener('click', () => setMode(mode === 'erase' ? 'select' : 'erase'));
 document.getElementById('bFit').addEventListener('click', () => { resetView(); fitBird(); redraw(); });
@@ -3563,6 +3692,7 @@ segWire('segTheme','theme', v => { prefs.theme = v; });
 segWire('segFs','fs',       v => { prefs.fs = +v; });
 segWire('segPaper','paper', v => { prefs.paper = v; });
 segWire('segSnap','snap',   v => { prefs.snap = +v; });
+segWire('segCoc','coc',     v => { prefs.coc = v; });
 segWire('segAng','ang',     v => { prefs.angle = +v; });
 document.getElementById('swAcc').addEventListener('click', e => {
   const s = e.target.closest('[data-acc]'); if(!s) return;
@@ -3580,6 +3710,7 @@ function syncPrefsUI(){
   mark('segFs','fs', prefs.fs);
   mark('segPaper','paper', prefs.paper);
   mark('segSnap','snap', prefs.snap);
+  mark('segCoc','coc', prefs.coc);
   mark('segAng','ang', prefs.angle);
   const sw = document.getElementById('swAcc');
   if(sw) sw.querySelectorAll('[data-acc]').forEach(s =>
