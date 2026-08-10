@@ -262,6 +262,10 @@ code{font-family:var(--mono);font-size:11.5px;background:var(--s2);border:1px so
 #t-prompt>*{order:2}
 #t-prompt>#lookcard{order:7}
 #t-prompt>#askcard{order:8}
+a.btn{display:inline-flex;align-items:center;text-decoration:none;color:var(--tx)}
+a.btn.pri{color:var(--onacc)}
+a.btn.gh{color:var(--tx2)}
+a.btn.gh:hover{color:var(--tx)}
 .opt.off{opacity:.4}
 .chip .pay,.chip .free{font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.06em;
   padding:1px 6px;border-radius:20px;margin-left:5px;vertical-align:1px}
@@ -890,6 +894,15 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <label class="chip" data-tgset="gen">🎨 그 외 이미지 AI <em class="free">무료 있음</em></label>
     </div>
 
+    <div class="row" id="gorow" style="margin:-6px 0 16px">
+      <span class="mini" style="margin:0 2px 0 0">그냥 사이트만 열기</span>
+      <a class="btn sm gh" href="https://www.midjourney.com/imagine" target="_blank" rel="noopener">🖼️ 미드저니 ↗</a>
+      <a class="btn sm gh" href="https://discord.com/channels/@me" target="_blank" rel="noopener">💬 디스코드 ↗</a>
+      <a class="btn sm gh" href="https://labs.google/fx/tools/flow" target="_blank" rel="noopener">🎬 Flow ↗</a>
+      <a class="btn sm gh" href="https://labs.google/fx/tools/image-fx" target="_blank" rel="noopener">🎨 ImageFX ↗</a>
+      <a class="btn sm gh" href="https://www.bing.com/images/create" target="_blank" rel="noopener">🎨 Bing ↗</a>
+    </div>
+
     <div class="card pcard" data-tg="mj">
       <div class="outhd tgbar"><b>🖼️ 미드저니</b><span class="k">키워드 나열형 · 스틸</span></div>
       <div class="tgbody">
@@ -902,7 +915,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
           </div>
         </div>
         <div class="row" style="margin-top:13px">
-          <button class="btn pri" data-open="mj">📋 복사하고 미드저니 열기</button>
+          <a class="btn pri" href="https://www.midjourney.com/imagine" target="_blank" rel="noopener" data-open="mj">📋 복사하고 미드저니 열기</a>
           <button class="btn" data-copy="o-mj">📋 복사만</button>
           <button class="btn gh" id="mjside">🪟 옆에 띄워두고 작업</button>
         </div>
@@ -953,7 +966,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <div class="tgbody">
         <div class="out empty2" id="o-veo">컷을 선택하세요</div>
         <div class="row" style="margin-top:13px">
-          <button class="btn pri" data-open="flow">📋 복사하고 Flow 열기</button>
+          <a class="btn pri" href="https://labs.google/fx/tools/flow" target="_blank" rel="noopener" data-open="flow">📋 복사하고 Flow 열기</a>
           <button class="btn" data-copy="o-veo">📋 복사만</button>
           <span class="mini" style="margin:0">Flow에선 캐릭터 이미지를 <b>Ingredients</b>로 함께 넣으세요</span>
         </div>
@@ -966,8 +979,8 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
         <div class="out empty2" id="o-gen">컷을 선택하세요</div>
         <p class="mini">미드저니 구독이 없어도 <b>공짜로 바로 해볼 수 있는 곳</b>입니다. 위 프롬프트가 그대로 통해요.</p>
         <div class="row" style="margin-top:11px">
-          <button class="btn pri" data-open="imagefx">📋 복사하고 ImageFX 열기</button>
-          <button class="btn" data-open="bing">📋 복사하고 Bing 열기</button>
+          <a class="btn pri" href="https://labs.google/fx/tools/image-fx" target="_blank" rel="noopener" data-open="imagefx">📋 복사하고 ImageFX 열기</a>
+          <a class="btn" href="https://www.bing.com/images/create" target="_blank" rel="noopener" data-open="bing">📋 복사하고 Bing 열기</a>
           <button class="btn gh" data-copy="o-gen">📋 복사만</button>
         </div>
         <p class="mini">둘 다 구글 · 마이크로소프트 계정만 있으면 무료입니다.
@@ -3169,13 +3182,14 @@ function pickMJ(e){
 
 /* ---------- 바로 작업하러 가기 ---------- */
 function outText(id){ const el=$(id); return el.classList.contains('empty2')?'':el.textContent; }
+/* 이동은 <a href>가 맡는다 — 팝업 차단에 걸리지 않고, 우클릭으로 새 탭도 된다.
+   여기서는 복사만 한다. 프롬프트가 비어 있어도 링크는 그대로 열린다. */
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-open]'); if(!b) return;
   const s=SITES[b.dataset.open]; if(!s) return;
   const t=outText(s.out);
-  if(!t){ toast('먼저 컷을 고르거나 내용을 적어주세요'); return; }
+  if(!t){ toast(`${s.name}(으)로 갑니다 — 복사할 프롬프트는 아직 없어요`); return; }
   copy(t,`복사했어요 — ${s.name} 입력창에 붙여넣기(Ctrl+V)`);
-  window.open(s.url,'_blank','noopener');
 });
 $('mjside').addEventListener('click',()=>{
   const t=outText('o-mj');
