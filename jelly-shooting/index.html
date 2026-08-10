@@ -1045,7 +1045,7 @@ function renderRank(top,my){let r='<div class="t">🏅 내 최고 기록 TOP 5 <
 const KIND_FX={
   cat  :{sx:1.00,sy:0.96,eyeGap:0.34,eyeW:0.155,eyeH:0.215,blush:0.60},
   dog  :{sx:1.08,sy:0.94,eyeGap:0.33,eyeW:0.150,eyeH:0.190,blush:0.68},
-  bunny:{sx:0.92,sy:1.06,eyeGap:0.32,eyeW:0.180,eyeH:0.250,blush:0.56},
+  bunny:{sx:1.00,sy:0.99,eyeGap:0.33,eyeW:0.175,eyeH:0.235,blush:0.60},
   bear :{sx:1.13,sy:1.00,eyeGap:0.41,eyeW:0.120,eyeH:0.160,blush:0.74},
   human:{sx:0.96,sy:1.04,eyeGap:0.31,eyeW:0.145,eyeH:0.195,blush:0.58},
 };
@@ -1139,7 +1139,8 @@ function drawAvatar(g,cx,cy,R,cfg,mood,t){ mood=mood||'idle';t=t||0; g.save(); g
   g.fillStyle=col;
   if(cfg.kind==='cat'){ triEar(g,-R*0.60,-R*0.86,R*0.56,col,dark,'#ff9ec0'); triEar(g,R*0.60,-R*0.86,R*0.56,col,dark,'#ff9ec0'); }
   else if(cfg.kind==='bear'){ circEar(g,-R*0.7,-R*0.7,R*0.34,col); circEar(g,R*0.7,-R*0.7,R*0.34,col); }
-  else if(cfg.kind==='bunny'){ longEar(g,-R*0.4,-R*1.05,R*0.28,R*0.85,col,'#ffc2d6',-0.12); longEar(g,R*0.4,-R*1.05,R*0.28,R*0.85,col,'#ffc2d6',0.12); }
+  else if(cfg.kind==='bunny'){ // 얇고 곧으면 안테나처럼 보인다 — 통통하게, 바깥으로 벌려서
+    longEar(g,-R*0.44,-R*0.98,R*0.34,R*0.76,col,'#ffb9d2',-0.24); longEar(g,R*0.44,-R*0.98,R*0.34,R*0.76,col,'#ffb9d2',0.24); }
   else if(cfg.kind==='dog'){ floppyEar(g,-R*0.86,-R*0.04,R*0.36,R*0.92,dark,-1); floppyEar(g,R*0.86,-R*0.04,R*0.36,R*0.92,dark,1); }
   else if(isHuman){ // 뒷머리 — 얼굴보다 살짝 크게 깔아서 머리 테두리처럼 보이게
     g.fillStyle=col;g.beginPath();g.ellipse(0,-R*0.12,R*1.10,R*1.08,0,0,7);g.fill(); }
@@ -1155,16 +1156,22 @@ function drawAvatar(g,cx,cy,R,cfg,mood,t){ mood=mood||'idle';t=t||0; g.save(); g
     g.moveTo(-R*0.99,-R*0.20);
     g.quadraticCurveTo(-R*1.04,-R*0.98,-R*0.20,-R*1.09);   // 왼쪽 옆 → 정수리
     g.quadraticCurveTo( R*0.86,-R*1.00, R*0.99,-R*0.24);   // 정수리 → 오른쪽 옆
-    g.quadraticCurveTo( R*0.74,-R*0.56, R*0.34,-R*0.42);   // 오른쪽 안쪽
-    g.quadraticCurveTo(-R*0.06,-R*0.30,-R*0.28,-R*0.60);   // 가르마에서 흘러내리는 앞머리
+    g.quadraticCurveTo( R*0.78,-R*0.48, R*0.36,-R*0.32);   // 오른쪽 안쪽 (조금 더 내려서 이마를 좁힌다)
+    g.quadraticCurveTo(-R*0.04,-R*0.20,-R*0.30,-R*0.52);   // 가르마에서 흘러내리는 앞머리
     g.quadraticCurveTo(-R*0.55,-R*0.38,-R*0.99,-R*0.20);   // 왼쪽 안쪽 마무리
     g.closePath(); g.fill();
-    g.fillStyle='rgba(255,255,255,0.22)';                  // 머릿결 하이라이트
-    g.beginPath();g.ellipse(-R*0.30,-R*0.78,R*0.34,R*0.13,-0.30,0,7);g.fill(); }
+    // 예전엔 불투명 타원 하나라 어두운 머리색에서 '회색 얼룩'으로 보였다.
+    // 가장자리로 사라지는 결 두 줄로 바꾼다.
+    [[-0.34,-0.80,0.30,0.085,-0.34,0.30],[-0.02,-0.92,0.24,0.060,-0.10,0.18]].forEach(([hx,hy,hw,hh,rot,al])=>{
+      const hg=g.createRadialGradient(R*hx,R*hy,1,R*hx,R*hy,R*hw);
+      hg.addColorStop(0,'rgba(255,255,255,'+al+')'); hg.addColorStop(1,'rgba(255,255,255,0)');
+      g.fillStyle=hg; g.save(); g.translate(R*hx,R*hy); g.rotate(rot);
+      g.beginPath(); g.ellipse(0,0,R*hw,R*hh,0,0,7); g.fill(); g.restore(); }); }
   // 주둥이 — 크기·색이 달라야 인상이 갈린다. 강아지는 크고 하얗게, 곰은 밝은 톤, 고양이는 옅게.
   if(cfg.kind==='dog'){ g.fillStyle='rgba(255,255,255,0.85)';g.beginPath();g.ellipse(0,R*0.30,R*0.47,R*0.33,0,0,7);g.fill(); }
   else if(cfg.kind==='bear'){ g.fillStyle=shade(col,32);g.beginPath();g.ellipse(0,R*0.34,R*0.41,R*0.30,0,0,7);g.fill(); }
-  else if(cfg.kind==='bunny'){ g.fillStyle='rgba(255,255,255,0.62)';g.beginPath();g.ellipse(0,R*0.30,R*0.31,R*0.25,0,0,7);g.fill(); }
+  else if(cfg.kind==='bunny'){ // 순백으로 두면 흰 앞니가 묻힌다 — 살짝 크림색으로 깔고 앞니를 순백으로
+    g.fillStyle='rgba(255,246,250,0.72)';g.beginPath();g.ellipse(0,R*0.33,R*0.38,R*0.28,0,0,7);g.fill(); }
   else if(cfg.kind==='cat'){ g.fillStyle='rgba(255,255,255,0.40)';g.beginPath();g.ellipse(0,R*0.32,R*0.35,R*0.22,0,0,7);g.fill(); }
   const eyeY=-R*0.05,ex=R*nf.eyeGap; g.fillStyle='#3a2b34';
   if(mood==='sad'){ g.strokeStyle='#3a2b34';g.lineWidth=R*0.09;g.lineCap='round';
@@ -1188,9 +1195,25 @@ function drawAvatar(g,cx,cy,R,cfg,mood,t){ mood=mood||'idle';t=t||0; g.save(); g
   else if(cfg.kind==='dog'){ g.fillStyle='#3a2b34';g.beginPath();g.ellipse(0,R*0.20,R*0.14,R*0.105,0,0,7);g.fill();
     g.fillStyle='rgba(255,255,255,0.5)';g.beginPath();g.ellipse(-R*0.045,R*0.17,R*0.048,R*0.03,-0.4,0,7);g.fill(); }
   else if(cfg.kind==='bear'){ g.fillStyle='#4a3a44';g.beginPath();g.ellipse(0,R*0.25,R*0.155,R*0.095,0,0,7);g.fill(); }
-  else if(cfg.kind==='bunny'){ g.fillStyle='#ff8fb0';g.beginPath();g.moveTo(-R*0.075,R*0.17);g.lineTo(R*0.075,R*0.17);g.lineTo(0,R*0.26);g.closePath();g.fill(); }
+  else if(cfg.kind==='bunny'){ // 뾰족한 세모는 차갑다 — 모서리를 둥글린 작은 하트코
+    g.fillStyle='#ff8fb0';g.beginPath();
+    g.moveTo(0,R*0.265);
+    g.quadraticCurveTo(-R*0.115,R*0.205,-R*0.085,R*0.163);
+    g.quadraticCurveTo(-R*0.045,R*0.135,0,R*0.172);
+    g.quadraticCurveTo(R*0.045,R*0.135,R*0.085,R*0.163);
+    g.quadraticCurveTo(R*0.115,R*0.205,0,R*0.265);
+    g.fill();
+    g.fillStyle='rgba(255,255,255,0.45)';g.beginPath();g.ellipse(-R*0.03,R*0.185,R*0.032,R*0.02,-0.4,0,7);g.fill(); }
   else if(!isHuman){ g.fillStyle=dark;g.beginPath();g.moveTo(-R*0.09,R*0.16);g.lineTo(R*0.09,R*0.16);g.lineTo(0,R*0.26);g.closePath();g.fill(); }
   if(mood==='wow'){ g.fillStyle='#3a2b34';g.beginPath();g.ellipse(0,R*0.34,R*0.15,R*0.19,0,0,7);g.fill(); g.fillStyle='#ff8fae';g.beginPath();g.ellipse(0,R*0.42,R*0.08,R*0.09,0,0,7);g.fill(); }
+  else if(cfg.kind==='bunny'){ // 🐰 인중선 + 좌우로 벌어지는 ω 입 — 토끼로 읽히게 하는 핵심.
+    // 캔버스는 y가 아래로 향하므로 θ=π/2 가 '아래'다. 아래로 볼록한 그릇은 θ:0→π 이고,
+    // 두 그릇을 가운데서 맞붙이면 ω 모양이 된다(각도를 잘못 주면 비스듬한 선이 된다).
+    const mr=R*0.115, my=R*0.300;
+    g.strokeStyle='#3a2b34';g.lineWidth=R*0.050;g.lineCap='round';
+    g.beginPath();g.moveTo(0,R*0.255);g.lineTo(0,my);g.stroke();               // 인중
+    g.beginPath();g.arc(-mr,my,mr,0,Math.PI);g.stroke();
+    g.beginPath();g.arc( mr,my,mr,0,Math.PI);g.stroke(); }
   else { g.strokeStyle='#3a2b34';g.lineWidth=R*0.07;g.lineCap='round';g.beginPath();
     if(mood==='sad')g.arc(0,R*0.55,R*0.24,Math.PI+0.5,-0.5);
     else if(mood==='ouch')g.arc(0,R*0.46,R*0.13,Math.PI+0.35,-0.35);
@@ -1227,24 +1250,43 @@ function kindExtras(g,R,cfg,mood){
     g.fillStyle='#ffce3d';g.beginPath();g.arc(0,R*1.02,R*0.10,0,7);g.fill();
   }
   else if(cfg.kind==='bunny'){                            // 🐰 앞니 + 수염
-    g.fillStyle='#fff';g.strokeStyle='rgba(120,80,100,0.32)';g.lineWidth=Math.max(1,R*0.02);
-    g.beginPath();g.rect(-R*0.105,R*0.38,R*0.088,R*0.145);g.fill();g.stroke();
-    g.beginPath();g.rect(R*0.017,R*0.38,R*0.088,R*0.145);g.fill();g.stroke();
+    // 네모난 흰 칸 두 개는 교정기처럼 보였다. 아래를 둥글린 앞니로, 입 바로 밑에 붙인다.
+    g.save();
+    g.shadowColor='rgba(110,70,95,0.42)';g.shadowBlur=R*0.06;g.shadowOffsetY=R*0.018;
+    g.fillStyle='#ffffff';
+    [-1,1].forEach(s2=>{ g.beginPath();
+      g.roundRect(s2>0?R*0.009:-R*0.093,R*0.298,R*0.084,R*0.134,[R*0.014,R*0.014,R*0.042,R*0.042]);
+      g.fill(); });
+    g.restore();
     g.strokeStyle='rgba(120,80,100,0.32)';g.lineWidth=Math.max(1,R*0.028);g.lineCap='round';
-    [-1,1].forEach(s=>{ g.beginPath();g.moveTo(s*R*0.32,R*0.25);g.lineTo(s*R*0.82,R*0.19);g.stroke();
-      g.beginPath();g.moveTo(s*R*0.32,R*0.31);g.lineTo(s*R*0.80,R*0.35);g.stroke(); });
+    [-1,1].forEach(s=>{ g.beginPath();g.moveTo(s*R*0.40,R*0.26);g.lineTo(s*R*0.86,R*0.20);g.stroke();
+      g.beginPath();g.moveTo(s*R*0.40,R*0.33);g.lineTo(s*R*0.84,R*0.38);g.stroke(); });
   }
   else if(cfg.kind==='bear'){                             // 🐻 짧고 통통한 팔
     g.fillStyle=shade(col,-16);
     g.beginPath();g.ellipse(-R*1.02,R*0.44,R*0.19,R*0.25,0.38,0,7);g.fill();
     g.beginPath();g.ellipse(R*1.02,R*0.44,R*0.19,R*0.25,-0.38,0,7);g.fill();
   }
-  else if(cfg.kind==='human'){                            // 🧒 귀 + 삐죽 솟은 애교머리
-    [-1,1].forEach(s=>{
-      g.fillStyle='#ffdcbe';g.beginPath();g.ellipse(s*R*0.93,R*0.10,R*0.13,R*0.18,0,0,7);g.fill();
-      g.fillStyle='rgba(226,150,120,0.45)';g.beginPath();g.ellipse(s*R*0.95,R*0.10,R*0.055,R*0.09,0,0,7);g.fill(); });
-    g.strokeStyle=col;g.lineWidth=Math.max(1.6,R*0.07);g.lineCap='round';
-    g.beginPath();g.moveTo(R*0.06,-R*1.05);g.quadraticCurveTo(R*0.32,-R*1.32,R*0.01,-R*1.40);g.stroke();
+  else if(cfg.kind==='human'){                            // 🧒 귀 + 정수리 머리 뭉치
+    [-1,1].forEach(s=>{   // 손잡이처럼 튀어나와 보이지 않게 조금 작게, 조금 위로
+      g.fillStyle='#ffdcbe';g.beginPath();g.ellipse(s*R*0.90,R*0.04,R*0.105,R*0.145,0,0,7);g.fill();
+      g.fillStyle='rgba(226,150,120,0.40)';g.beginPath();g.ellipse(s*R*0.92,R*0.05,R*0.042,R*0.072,0,0,7);g.fill(); });
+    // 선 하나면 철사, 뭉치면 꼭지처럼 보인다. 밑동은 넓고 끝으로 갈수록 가늘어지는
+    // 머리 한 갈래로 그려야 '머리카락'으로 읽힌다.
+    // 곡선 두 개로 감싸면 금세 얇아져 철사/뿔처럼 보인다.
+    // 점점 작아지는 원을 이어 붙이면 밑동은 도톰하고 끝만 가늘어져 '머리 뭉치'로 읽힌다.
+    g.fillStyle=col;
+    // 여기서 두 번 헛돌았다. 곡선 두 개로 감싸면 금세 얇아져 철사처럼 되고,
+    // 원을 여러 개 이어 붙이면 원 테두리가 드러나 애벌레처럼 울퉁불퉁해진다.
+    // 굵기가 다른 선 세 개를 둥근 끝(lineCap)으로 겹치는 게 가장 매끄럽다.
+    // (앞머리 정수리가 -1.09R 쯤이므로 밑동을 그 선에 걸쳐야 뭉치 전체가 보인다)
+    g.strokeStyle=col; g.lineCap='round'; g.lineJoin='round';
+    const seg=(x0,y0,cx,cy,x1,y1,w)=>{ g.lineWidth=R*w; g.beginPath();
+      g.moveTo(R*x0,R*y0); g.quadraticCurveTo(R*cx,R*cy,R*x1,R*y1); g.stroke(); };
+    seg(-0.04,-1.02,  0.01,-1.09,  0.07,-1.16, 0.215);   // 밑동 — 도톰하게
+    seg( 0.055,-1.145, 0.105,-1.215, 0.155,-1.285, 0.145);// 중간
+    seg( 0.145,-1.275, 0.185,-1.325, 0.215,-1.375, 0.072);// 끝 — 가늘게
+    // (뭉치 위 하이라이트는 회색 줄처럼 보여서 뺐다)
   }
 }
 function twinkle(g,x,y,s){g.save();g.translate(x,y);g.beginPath();for(let i=0;i<8;i++){const a=i/8*Math.PI*2,rr=i%2?s*0.38:s;g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);}g.closePath();g.fill();g.restore();}
