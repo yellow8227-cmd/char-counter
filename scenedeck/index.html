@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SCENEDECK · 씬덱</title>
 <meta name="description" content="시나리오를 씬과 컷으로 나누고, 미드저니 · 이미지 · 영상 프롬프트까지 한 자리에서. 설치도 로그인도 없는 단일 HTML 워크벤치.">
-<meta name="theme-color" content="#9c6b0e">
+<meta name="theme-color" content="#101011">
 
 <!-- 탭 아이콘: 헤더의 SD 마크를 그대로 SVG로 넣었다. 파일이 따로 필요 없다. -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23c08c22'/%3E%3Cstop offset='1' stop-color='%238a5c09'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Ctext x='32' y='44' font-family='Helvetica,Arial,sans-serif' font-size='30' font-weight='700' letter-spacing='.5' text-anchor='middle' fill='%23ffffff'%3ESD%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23101011'/%3E%3Ctext x='32' y='43' font-family='Georgia,Times,serif' font-size='27' font-weight='700' letter-spacing='1.5' text-anchor='middle' fill='%23ffffff'%3ESD%3C/text%3E%3C/svg%3E">
 
 <!--
   링크 미리보기 카드 (카카오톡 · 슬랙 · 페이스북 · 엑스 등)
@@ -32,12 +32,12 @@
 <meta name="twitter:image" content="https://unrivaled-daifuku-5ae4b9.netlify.app/og.png">
 <style>
 /* =========================================================
-   타이포그래피
-   - G602 (Griun_602)  : 디스플레이 — 로고 · 제목 · 슬레이트.
-       마커로 슬레이트에 쓴 느낌. 손글씨 8종 중 작은 크기에서 가장 또렷하다.
-       '—' '·' 같은 일부 문장부호 글리프가 없어 그 글자만 Noto Sans KR로 자동 대체된다.
-   - Noto Sans KR      : 본문 · UI (가변 폰트라 굵기 전 범위 사용 가능)
-   - Consolas          : 프롬프트 출력
+   타이포그래피 — 두 얼굴만 쓴다
+   - --disp  세리프  : 로고 · 제목 · 큰 숫자. 영화 크레딧의 활자처럼 가늘고 높게.
+   - --sans  산세리프: 본문 · UI. 작은 라벨은 대문자 + 넓은 자간으로만 구별한다.
+   - --mono  모노    : 씬 번호 · 타임코드 · 프롬프트 출력. 숫자가 세로로 맞는다.
+   - --slate         : 내려받아 둔 G602(마커 손글씨)가 있으면 슬레이트 글자에만 쓴다.
+                       없으면 모노로 조용히 떨어진다.
    폰트 파일은 fonts/ 폴더에 함께 둔다. file:// 에서도 로딩되는 것을 확인했다.
    ========================================================= */
 @font-face{
@@ -46,240 +46,255 @@
   font-weight:400 700; font-display:swap;
 }
 :root{
-  --disp:'G602','Pretendard','Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --disp:'Playfair Display','Didot','Bodoni MT','Times New Roman',Georgia,'Pretendard','Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',sans-serif;
   --sans:'Pretendard','Pretendard Variable','Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',system-ui,-apple-system,'Segoe UI',sans-serif;
-  --mono:'Consolas','D2Coding','Cascadia Mono',monospace;
+  --mono:'Consolas','D2Coding','Cascadia Mono','SFMono-Regular',monospace;
+  --slate:'G602','Consolas','D2Coding',monospace;
 
-  --r:12px; --rs:8px;
+  --r:2px; --rs:2px;
 
-  /* --- 기본: 밝은 화면 --- */
-  --bg:#ffffff; --s1:#f8f7f4; --s2:#f2f1ec; --s3:#e9e7e0;
-  --line:#e4e2da; --line2:#cbc8bd;
-  --tx:#15140f; --tx2:#54514a; --tx3:#77736a;
-  --acc:#9c6b0e; --acc2:#7a5308; --accdim:#fbf0d8; --accbd:#e6d3a4; --onacc:#ffffff;
-  --teal:#0d7a67; --tealdim:#e2f2ef; --tealbd:#a9d9cf; --red:#b03129; --blue:#28568f;
-  --outbg:#fbfaf6; --outtx:#262b36; --entx:#2f3a4d; --ph:#918d83;
-  --sb:#d6d3cb; --sb2:#bcb8ad;
-  --dgrbd:#eed3d0; --dgrbg:#fbeceb;
-  --warnbg:#fdf4e2; --warnbd:#ecd8a6; --warntx:#6b5211;
-  --herotop:#fdf6e8;
-  --hdr:rgba(255,255,255,.9); --fade0:rgba(255,255,255,0); --fade1:rgba(255,255,255,.94);
-  --mask:rgba(38,34,26,.42); --shadow:rgba(40,34,20,.16);
-  --glow:rgba(156,107,14,.18); --glow2:rgba(156,107,14,.10);
+  /* --- 기본: 밝은 화면. 검정 · 흰색 · 그 사이의 회색만 쓴다 --- */
+  --bg:#ffffff; --s1:#f7f7f6; --s2:#f1f1ef; --s3:#e8e8e5;
+  --line:#e3e3e0; --line2:#c5c5c0;
+  --tx:#101011; --tx2:#4d4d4f; --tx3:#84848a;
+  /* 강조 = 잉크 그 자체. 「선택됨」은 색이 아니라 반전으로 말한다 */
+  --acc:#101011; --acc2:#3a3a3c; --accdim:#f1f1ef; --accbd:#c5c5c0; --onacc:#ffffff;
+  /* 유일한 유채색 — 잉크블루. 포커스 · 링크 · 영문 필드에만 쓴다 */
+  --sig:#3a5b8c; --sigdim:#eef1f6; --sigbd:#c3cddd;
+  --teal:#2f6248; --tealdim:#eef2ef; --tealbd:#c6d5cb; --red:#8e2f26; --blue:#3a5b8c;
+  --outbg:#fbfbfa; --outtx:#26262a; --entx:#33445c; --ph:#9a9a9e;
+  --sb:#dcdcd8; --sb2:#bcbcb7;
+  --dgrbd:#e3cbc7; --dgrbg:#f9efed;
+  --warnbg:#f7f7f6; --warnbd:#c5c5c0; --warntx:#3a3a3c;
+  --herotop:#f7f7f6;
+  --hdr:rgba(255,255,255,.9); --fade0:rgba(255,255,255,0); --fade1:rgba(255,255,255,.96);
+  --mask:rgba(16,16,17,.44); --shadow:rgba(16,16,17,.13);
+  --glow:rgba(16,16,17,.08); --glow2:rgba(16,16,17,.04);
+  --focus:rgba(58,91,140,.26);
 }
 
 /* --- 어둡게 (헤더의 전환 버튼으로 켠다) --- */
 :root[data-theme="dark"]{
-  --bg:#0a0a0b; --s1:#121215; --s2:#191920; --s3:#212129;
-  --line:#26262e; --line2:#3a3a45;
-  --tx:#f3f3f4; --tx2:#b8b8c2; --tx3:#8f8f9b;
-  --acc:#e0ac4a; --acc2:#f5cd80; --accdim:#392d13; --accbd:#46370f; --onacc:#171204;
-  --teal:#5ec5b0; --tealdim:#123029; --tealbd:#1d4a42; --red:#e0706a; --blue:#8fb2ee;
-  --outbg:#060607; --outtx:#ccd4e3; --entx:#cdd5e4; --ph:#5a5a66;
-  --sb:#2c2c35; --sb2:#3d3d49;
-  --dgrbd:#3d2422; --dgrbg:#2a1a19;
-  --warnbg:#2a2113; --warnbd:#4a3c1c; --warntx:#e6cf9b;
-  --herotop:#1d1a15;
-  --hdr:rgba(10,10,11,.88); --fade0:rgba(10,10,11,0); --fade1:rgba(10,10,11,.92);
-  --mask:rgba(5,5,6,.8); --shadow:rgba(0,0,0,.6);
-  --glow:rgba(224,172,74,.22); --glow2:rgba(224,172,74,.15);
+  --bg:#0b0b0c; --s1:#131315; --s2:#18181b; --s3:#212125;
+  --line:#27272b; --line2:#3c3c41;
+  --tx:#f4f4f2; --tx2:#b2b2b0; --tx3:#83838a;
+  --acc:#f4f4f2; --acc2:#cbcbc8; --accdim:#212125; --accbd:#3c3c41; --onacc:#0b0b0c;
+  --sig:#93b2dc; --sigdim:#141a23; --sigbd:#2b3a4f;
+  --teal:#6cb691; --tealdim:#12201a; --tealbd:#27402f; --red:#d9736a; --blue:#93b2dc;
+  --outbg:#070708; --outtx:#cfcfd4; --entx:#c3cfdf; --ph:#5c5c62;
+  --sb:#2d2d33; --sb2:#3e3e45;
+  --dgrbd:#3d2523; --dgrbg:#231716;
+  --warnbg:#18181b; --warnbd:#3c3c41; --warntx:#cbcbc8;
+  --herotop:#131315;
+  --hdr:rgba(11,11,12,.9); --fade0:rgba(11,11,12,0); --fade1:rgba(11,11,12,.96);
+  --mask:rgba(4,4,5,.78); --shadow:rgba(0,0,0,.6);
+  --glow:rgba(244,244,242,.1); --glow2:rgba(244,244,242,.05);
+  --focus:rgba(147,178,220,.3);
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
   background:var(--bg); color:var(--tx); font-family:var(--sans);
-  font-size:14px; line-height:1.65; -webkit-font-smoothing:antialiased;
+  font-size:14px; line-height:1.7; -webkit-font-smoothing:antialiased;
   font-feature-settings:"tnum" 1;
+  word-break:keep-all; overflow-wrap:break-word;
 }
 button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
-::-webkit-scrollbar{width:11px;height:11px}
+:focus-visible{outline:2px solid var(--sig);outline-offset:2px}
+::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--sb);border-radius:6px;border:3px solid var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--sb);border-radius:0;border:3px solid var(--bg)}
 ::-webkit-scrollbar-thumb:hover{background:var(--sb2)}
 
 /* ---------- 헤더 ---------- */
-.skip{position:absolute;left:-9999px;top:0;z-index:300;background:var(--acc);color:var(--onacc);
-  padding:10px 18px;border-radius:0 0 10px 0;font-weight:700;text-decoration:none}
+.skip{position:absolute;left:-9999px;top:0;z-index:300;background:var(--tx);color:var(--bg);
+  padding:10px 18px;border-radius:0;font-weight:700;text-decoration:none}
 .skip:focus{left:0}
 
 header{
   position:sticky;top:0;z-index:60;background:var(--hdr);
-  backdrop-filter:blur(16px) saturate(1.4);border-bottom:1px solid var(--line);
+  backdrop-filter:blur(14px) saturate(1.2);border-bottom:1px solid var(--line);
 }
-.hbar{display:flex;align-items:center;gap:13px;padding:11px 26px;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:11px;background:none;border:none;padding:0;
-  cursor:pointer;text-align:left;color:inherit;flex:none;border-radius:10px}
-.brand:hover .logo em{color:var(--acc2)}
-.brand .mark{width:34px;height:34px;border-radius:10px;flex:none;display:grid;place-items:center;
-  font-family:var(--disp);font-size:15px;color:var(--onacc);letter-spacing:.02em;
-  background:linear-gradient(150deg,var(--acc2),var(--acc));box-shadow:0 4px 14px var(--glow)}
-.logo{font-family:var(--disp);font-size:21px;white-space:nowrap;line-height:1.05;letter-spacing:.01em}
-.logo em{font-style:normal;color:var(--acc);transition:color .14s}
-.logo small{display:block;font-family:var(--sans);font-size:9px;letter-spacing:.17em;color:var(--tx3);font-weight:600;text-transform:uppercase;margin-top:2px}
+.hbar{display:flex;align-items:center;gap:14px;padding:15px 30px 13px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;background:none;border:none;padding:0;
+  cursor:pointer;text-align:left;color:inherit;flex:none;border-radius:0}
+.brand:hover .logo em{color:var(--tx3)}
+.brand .mark{width:30px;height:30px;border-radius:0;flex:none;display:grid;place-items:center;
+  font-family:var(--slate);font-size:12px;color:var(--onacc);letter-spacing:.1em;font-weight:700;
+  background:var(--acc)}
+.logo{font-family:var(--disp);font-size:20px;white-space:nowrap;line-height:1;letter-spacing:.16em}
+.logo em{font-style:normal;color:inherit;transition:color .16s}
+.logo small{display:block;font-family:var(--sans);font-size:8.5px;letter-spacing:.2em;color:var(--tx3);
+  font-weight:600;margin-top:5px}
 
-.ptwrap{display:flex;align-items:center;gap:10px;flex:1;min-width:190px;max-width:400px;
-  background:var(--s1);border:1px solid var(--line);border-radius:10px;padding:4px 13px;
-  transition:border-color .14s}
-.ptwrap:hover{border-color:var(--line2)}
-.ptwrap:focus-within{border-color:var(--acc)}
-.ptwrap>span{font-size:9px;font-weight:700;letter-spacing:.15em;color:var(--tx3);text-transform:uppercase;flex:none}
+.ptwrap{display:flex;align-items:center;gap:11px;flex:1;min-width:190px;max-width:400px;
+  background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:2px 0;
+  transition:border-color .16s}
+.ptwrap:hover{border-bottom-color:var(--line2)}
+.ptwrap:focus-within{border-bottom-color:var(--tx)}
+.ptwrap>span{font-size:8.5px;font-weight:700;letter-spacing:.2em;color:var(--tx3);text-transform:uppercase;flex:none}
 .ptitle{background:transparent;border:none;border-radius:0;padding:3px 0;
-  font-family:var(--disp);font-size:19px;width:100%;min-width:0}
+  font-family:var(--disp);font-size:18px;width:100%;min-width:0}
 .ptitle::placeholder{color:var(--tx3)}
 .ptitle:hover,.ptitle:focus{outline:none;background:transparent}
 .hsp{flex:1}
-.saveind{font-size:10.5px;color:var(--tx3);white-space:nowrap;letter-spacing:.06em;display:flex;align-items:center;gap:6px;font-weight:600}
-.saveind::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--tx3)}
+.saveind{font-size:9.5px;color:var(--tx3);white-space:nowrap;letter-spacing:.14em;display:flex;
+  align-items:center;gap:7px;font-weight:600;text-transform:uppercase}
+.saveind::before{content:"";width:4px;height:4px;border-radius:50%;background:var(--tx3)}
 .saveind.on{color:var(--teal)}
 .saveind.on::before{background:var(--teal)}
 
 .navwrap{position:relative}
-.navwrap::after{content:"";position:absolute;right:0;top:0;bottom:0;width:38px;pointer-events:none;
+.navwrap::after{content:"";position:absolute;right:0;top:0;bottom:0;width:34px;pointer-events:none;
   background:linear-gradient(90deg,var(--fade0),var(--fade1))}
-nav{display:flex;gap:6px;padding:0 22px 10px;overflow-x:auto;scrollbar-width:none}
+nav{display:flex;gap:28px;padding:0 30px;overflow-x:auto;scrollbar-width:none}
 nav::-webkit-scrollbar{height:0}
 nav button{
-  background:transparent;border:1px solid transparent;border-radius:999px;
-  padding:7px 14px;cursor:pointer;color:var(--tx3);font-size:12.5px;font-weight:600;
-  white-space:nowrap;transition:background .14s,color .14s,border-color .14s;
+  background:transparent;border:0;border-bottom:1px solid transparent;border-radius:0;
+  padding:0 0 12px;cursor:pointer;color:var(--tx3);font-size:12px;font-weight:600;
+  letter-spacing:.1em;white-space:nowrap;transition:color .16s,border-color .16s;
 }
-nav button:hover{color:var(--tx);background:var(--s1);border-color:var(--line)}
-nav button.on{color:var(--onacc);background:var(--acc);border-color:var(--acc)}
-nav button.on:hover{background:var(--acc2);border-color:var(--acc2)}
+nav button:hover{color:var(--tx2);border-bottom-color:var(--line2)}
+nav button.on{color:var(--tx);background:transparent;border-bottom:2px solid var(--tx);
+  margin-bottom:-1px;padding-bottom:11px}
+nav button.on:hover{color:var(--tx);border-bottom-color:var(--tx)}
 
 /* ---------- 레이아웃 ---------- */
-main{max-width:1180px;margin:0 auto;padding:34px 26px 80px}
-.tab{display:none;animation:fade .2s ease}
+main{max-width:1180px;margin:0 auto;padding:42px 30px 96px}
+.tab{display:none;animation:fade .22s ease}
 .tab.on{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
-.pghd{margin-bottom:26px;padding-bottom:18px;border-bottom:1px solid var(--line)}
-.pghd h2{font-family:var(--disp);font-size:29px;margin:0 0 6px;line-height:1.2}
-.pghd p{color:var(--tx2);font-size:13px;margin:0;max-width:76ch}
+.pghd{margin-bottom:30px;padding-bottom:20px;border-bottom:1px solid var(--tx)}
+.pghd h2{font-family:var(--disp);font-size:32px;margin:0 0 8px;line-height:1.2;letter-spacing:.01em;text-wrap:balance}
+.pghd p{color:var(--tx2);font-size:13px;margin:0;max-width:70ch}
 .pghd p b{color:var(--tx);font-weight:600}
 
-.card{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-bottom:16px}
-.card>h3{margin:0 0 16px;font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:9px}
-.step{font-family:var(--disp);font-size:14px;color:var(--acc);background:var(--accdim);
-  width:24px;height:24px;border-radius:7px;display:grid;place-items:center;flex:none}
-.tagx{font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--tx3);
-  border:1px solid var(--line2);padding:2px 8px;border-radius:20px;text-transform:uppercase}
-.grid{display:grid;gap:14px}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:22px;margin-bottom:16px}
+.card>h3{margin:0 0 18px;font-size:12px;font-weight:700;letter-spacing:.12em;
+  display:flex;align-items:center;gap:10px;text-transform:uppercase}
+.step{font-family:var(--mono);font-size:10.5px;color:var(--onacc);background:var(--acc);
+  width:20px;height:20px;border-radius:0;display:grid;place-items:center;flex:none;letter-spacing:0}
+.tagx{font-size:9px;font-weight:700;letter-spacing:.16em;color:var(--tx3);
+  border:1px solid var(--line2);padding:3px 8px;border-radius:0;text-transform:uppercase}
+.grid{display:grid;gap:16px}
 .g2{grid-template-columns:1fr 1fr}
 .g3{grid-template-columns:repeat(3,1fr)}
 .g4{grid-template-columns:repeat(4,1fr)}
 @media(max-width:860px){.g2,.g3,.g4{grid-template-columns:1fr}}
 
-label.f{display:block;margin-bottom:14px}
-label.f>span{font-size:10.5px;font-weight:700;letter-spacing:.09em;color:var(--tx3);
-  text-transform:uppercase;display:block;margin-bottom:6px}
+label.f{display:block;margin-bottom:16px}
+label.f>span{font-size:9.5px;font-weight:700;letter-spacing:.16em;color:var(--tx3);
+  text-transform:uppercase;display:block;margin-bottom:7px}
 input[type=text],input[type=number],select,textarea{
-  width:100%;background:var(--s2);border:1px solid var(--line);
-  border-radius:var(--rs);padding:9px 11px;transition:border-color .14s,background .14s;
+  width:100%;background:var(--bg);border:1px solid var(--line2);
+  border-radius:var(--rs);padding:10px 12px;transition:border-color .16s,box-shadow .16s;
 }
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc);background:var(--s3)}
-input:hover:not(:focus),select:hover:not(:focus),textarea:hover:not(:focus){border-color:var(--line2)}
-textarea{resize:vertical;min-height:70px;line-height:1.7}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--sig);
+  box-shadow:0 0 0 3px var(--focus);background:var(--bg)}
+input:hover:not(:focus),select:hover:not(:focus),textarea:hover:not(:focus){border-color:var(--tx2)}
+textarea{resize:vertical;min-height:70px;line-height:1.75}
 select{cursor:pointer}
 input::placeholder,textarea::placeholder{color:var(--ph)}
 .enfield input,.enfield textarea{font-family:var(--mono);font-size:12.5px;color:var(--entx)}
-.enfield>span::after{content:" ⟶ EN";color:var(--acc);letter-spacing:.04em}
+.enfield>span::after{content:" / EN";color:var(--sig);letter-spacing:.16em}
 
-.btn{background:var(--s2);border:1px solid var(--line);border-radius:var(--rs);
-  padding:8px 14px;cursor:pointer;font-size:12.5px;font-weight:600;
-  transition:background .14s,border-color .14s;white-space:nowrap}
-.btn:hover{background:var(--s3);border-color:var(--line2)}
+.btn{background:var(--bg);border:1px solid var(--line2);border-radius:var(--rs);
+  padding:9px 16px;cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.02em;
+  transition:background .16s,border-color .16s,color .16s;white-space:nowrap}
+.btn:hover{background:var(--bg);border-color:var(--tx)}
 .btn.pri{background:var(--acc);border-color:var(--acc);color:var(--onacc)}
 .btn.pri:hover{background:var(--acc2);border-color:var(--acc2)}
-.btn.gh{background:transparent}
-.btn.gh:hover{background:var(--s2)}
+.btn.gh{background:transparent;border-color:transparent;color:var(--tx2)}
+.btn.gh:hover{background:transparent;border-color:var(--line2);color:var(--tx)}
 .btn.dgr{color:var(--red);border-color:var(--dgrbd);background:transparent}
-.btn.dgr:hover{background:var(--dgrbg)}
-.btn.sm{padding:5px 10px;font-size:11.5px}
-.btn.ico{padding:5px 8px;font-size:11px;line-height:1}
-.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.dgr:hover{background:var(--dgrbg);border-color:var(--red)}
+.btn.sm{padding:6px 11px;font-size:11px}
+.btn.ico{padding:6px 9px;font-size:11px;line-height:1}
+.btn:disabled{opacity:.35;cursor:not-allowed}
 .row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
-.mini{font-size:11.5px;color:var(--tx3);line-height:1.6;margin:6px 0 0}
+.mini{font-size:11.5px;color:var(--tx3);line-height:1.7;margin:7px 0 0}
 .mini b{color:var(--tx2)}
 
-.empty{text-align:center;padding:52px 24px;color:var(--tx3);
-  border:1px dashed var(--line2);border-radius:var(--r);background:var(--s1)}
-.empty b{display:block;font-family:var(--disp);color:var(--tx);font-size:21px;margin-bottom:8px}
-.empty p{margin:0 0 18px;font-size:12.5px}
+.empty{text-align:center;padding:60px 24px;color:var(--tx3);
+  border:1px solid var(--line);border-radius:var(--r);background:var(--s1)}
+.empty b{display:block;font-family:var(--disp);color:var(--tx);font-size:24px;margin-bottom:10px;letter-spacing:.01em}
+.empty p{margin:0 0 20px;font-size:12.5px}
 
-.out{background:var(--outbg);border:1px solid var(--line);border-radius:var(--rs);padding:14px 15px;
-  font-family:var(--mono);font-size:12.5px;line-height:1.8;
+.out{background:var(--outbg);border:1px solid var(--line);border-radius:var(--rs);padding:15px 16px;
+  font-family:var(--mono);font-size:12.5px;line-height:1.85;
   white-space:pre-wrap;word-break:break-word;color:var(--outtx)}
 .out.empty2{color:var(--tx3);font-style:italic;font-family:var(--sans)}
-.outhd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
-.outhd b{font-size:13px;display:flex;align-items:center;gap:8px}
-.outhd .k{font-size:10.5px;color:var(--tx3);letter-spacing:.04em}
+.outhd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}
+.outhd b{font-size:12px;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:9px}
+.outhd .k{font-family:var(--mono);font-size:10px;color:var(--tx3);letter-spacing:.08em}
 
-.chip{display:inline-flex;align-items:center;gap:5px;background:var(--s2);
-  border:1px solid var(--line);border-radius:20px;padding:4px 12px;font-size:11.5px;
-  cursor:pointer;transition:.14s;font-weight:600}
-.chip:hover{border-color:var(--line2)}
-.chip.on{background:var(--accdim);border-color:var(--acc);color:var(--acc2)}
+.chip{display:inline-flex;align-items:center;gap:6px;background:transparent;
+  border:1px solid var(--line2);border-radius:0;padding:5px 12px;font-size:11.5px;
+  cursor:pointer;transition:.16s;font-weight:600;color:var(--tx2)}
+.chip:hover{border-color:var(--tx);color:var(--tx)}
+.chip.on{background:var(--acc);border-color:var(--acc);color:var(--onacc)}
 
-.itemhd{display:flex;align-items:center;gap:11px;margin-bottom:16px;flex-wrap:wrap}
-.slate{font-family:var(--disp);font-size:14px;flex:none;padding:4px 10px;border-radius:7px;
-  background:var(--accdim);color:var(--acc2);border:1px solid var(--accbd);letter-spacing:.03em}
-.slate.cut{background:var(--tealdim);color:var(--teal);border-color:var(--tealbd)}
-.nmin{font-family:var(--disp);font-size:20px;flex:1;min-width:140px;
-  background:transparent;border:none;border-bottom:1px solid var(--line);border-radius:0;padding:4px 2px}
-.nmin:focus{outline:none;border-bottom-color:var(--acc);background:transparent}
+.itemhd{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.slate{font-family:var(--slate);font-size:11.5px;flex:none;padding:5px 10px;border-radius:0;
+  background:var(--acc);color:var(--onacc);border:1px solid var(--acc);letter-spacing:.12em;font-weight:700}
+.slate.cut{background:transparent;color:var(--tx2);border-color:var(--line2)}
+.nmin{font-family:var(--disp);font-size:21px;flex:1;min-width:140px;
+  background:transparent;border:none;border-bottom:1px solid var(--line);border-radius:0;padding:5px 2px}
+.nmin:focus{outline:none;border-bottom-color:var(--tx);background:transparent;box-shadow:none}
 .nmin::placeholder{font-family:var(--sans);font-size:14px;color:var(--tx3)}
-.ord{display:flex;gap:3px}
+.ord{display:flex;gap:4px}
 
-.cutcard{background:var(--s2);border:1px solid var(--line);border-radius:10px;margin-bottom:11px;overflow:hidden}
-.cutbar{display:flex;align-items:center;gap:11px;padding:9px 12px;cursor:pointer;transition:background .14s}
-.cutbar:hover{background:var(--s3)}
+.cutcard{background:var(--bg);border:1px solid var(--line);border-radius:0;margin-bottom:10px;overflow:hidden}
+.cutbar{display:flex;align-items:center;gap:12px;padding:10px 13px;cursor:pointer;transition:background .16s}
+.cutbar:hover{background:var(--s1)}
 .cutbar .sum{flex:1;min-width:0;font-size:12.5px;color:var(--tx2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cutbar .sum i{color:var(--tx3);font-style:normal}
-.cutbar .meta{font-family:var(--mono);font-size:10.5px;color:var(--tx3);white-space:nowrap}
+.cutbar .meta{font-family:var(--mono);font-size:10px;color:var(--tx3);white-space:nowrap;letter-spacing:.06em}
 .cutbar .caret{color:var(--tx3);transition:transform .18s;font-size:10px}
+.cutcard.open{border-color:var(--line2)}
 .cutcard.open .cutbar .caret{transform:rotate(90deg)}
-.cutbody{padding:2px 14px 14px;border-top:1px solid var(--line);display:none}
+.cutbody{padding:2px 15px 15px;border-top:1px solid var(--line);display:none}
 .cutcard.open .cutbody{display:block}
-.tn{width:44px;height:26px;border-radius:4px;object-fit:cover;flex:none;background:var(--outbg);border:1px solid var(--line)}
+.tn{width:44px;height:26px;border-radius:0;object-fit:cover;flex:none;background:var(--outbg);border:1px solid var(--line)}
 
-.thumb{width:100%;aspect-ratio:16/9;background:var(--outbg);border:1px dashed var(--line2);
-  display:grid;place-items:center;color:var(--tx3);font-size:11.5px;cursor:pointer;overflow:hidden;
-  transition:border-color .14s}
-.thumb:hover{border-color:var(--acc)}
+.thumb{width:100%;aspect-ratio:16/9;background:var(--outbg);border:1px solid var(--line2);
+  display:grid;place-items:center;color:var(--tx3);font-size:11px;cursor:pointer;overflow:hidden;
+  letter-spacing:.1em;transition:border-color .16s}
+.thumb:hover{border-color:var(--tx)}
 .thumb img{width:100%;height:100%;object-fit:cover}
-.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
-.bcard{background:var(--s2);border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.bmeta{padding:11px 12px;font-size:11.5px;color:var(--tx2);line-height:1.6}
-.bmeta b{font-family:var(--disp);color:var(--acc2);font-size:13px}
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.bcard{background:var(--bg);border:1px solid var(--line);border-radius:0;overflow:hidden}
+.bmeta{padding:12px 13px;font-size:11.5px;color:var(--tx2);line-height:1.65}
+.bmeta b{font-family:var(--slate);color:var(--tx);font-size:12px;letter-spacing:.1em}
 
-.prog{display:flex;gap:5px;margin-top:12px}
-.prog i{height:3px;flex:1;background:var(--line);border-radius:2px;transition:background .2s}
+.prog{display:flex;gap:4px;margin-top:13px}
+.prog i{height:2px;flex:1;background:var(--line);border-radius:0;transition:background .2s}
 .prog i.on{background:var(--acc)}
 
 /* 프롬프트 출력 카드 — 고른 것만 펼쳐 둔다 */
 .pcard .tgbar{cursor:pointer;margin-bottom:0}
-.pcard .tgbar b::before{content:"▾ ";color:var(--tx3);font-size:11px}
-.pcard.fold .tgbar b::before{content:"▸ "}
+.pcard .tgbar b::before{content:"− ";color:var(--tx3);font-family:var(--mono)}
+.pcard.fold .tgbar b::before{content:"+ "}
 .pcard.fold{background:transparent}
 .pcard.fold .tgbody{display:none}
-.pcard .tgbody{margin-top:14px}
-.opt{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:9px}
-.opt>span{flex:none;width:82px;font-size:10.5px;font-weight:700;letter-spacing:.08em;
+.pcard .tgbody{margin-top:15px}
+.opt{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.opt>span{flex:none;width:82px;font-size:9.5px;font-weight:700;letter-spacing:.16em;
   color:var(--tx3);text-transform:uppercase}
 code{font-family:var(--mono);font-size:11.5px;background:var(--s2);border:1px solid var(--line);
-  border-radius:5px;padding:2px 7px;color:var(--acc2)}
+  border-radius:0;padding:2px 7px;color:var(--tx)}
 #lookcard>.fa,#askcard>.fa{padding:0 18px 18px}
 
 /* 합쳐진 탭 안의 섹션 바로가기 */
-.subnav{display:flex;gap:7px;flex-wrap:wrap;margin:-8px 0 22px}
-.subnav button{background:var(--s1);border:1px solid var(--line);border-radius:999px;
-  padding:6px 14px;font-size:12px;font-weight:600;color:var(--tx2);cursor:pointer;transition:.14s}
-.subnav button:hover{border-color:var(--acc);color:var(--acc)}
+.subnav{display:flex;gap:8px;flex-wrap:wrap;margin:-10px 0 24px}
+.subnav button{background:transparent;border:1px solid var(--line);border-radius:0;
+  padding:6px 14px;font-size:11.5px;font-weight:600;color:var(--tx2);cursor:pointer;transition:.16s}
+.subnav button:hover{border-color:var(--tx);color:var(--tx)}
 
 /* 이 탭에서 할 일이 끝나면 다음으로 */
 .nextbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:flex-end;
-  margin-top:30px;padding-top:22px;border-top:1px solid var(--line)}
+  margin-top:34px;padding-top:24px;border-top:1px solid var(--line)}
 .nextbar span{font-size:12.5px;color:var(--tx3)}
 
 /* 프롬프트 탭 — 빠른 입력일 땐 결과를 입력칸 바로 아래로 끌어올린다 */
@@ -292,213 +307,227 @@ a.btn.pri{color:var(--onacc)}
 a.btn.gh{color:var(--tx2)}
 a.btn.gh:hover{color:var(--tx)}
 .opt.off{opacity:.4}
-.chip .pay,.chip .free{font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.06em;
-  padding:1px 6px;border-radius:20px;margin-left:5px;vertical-align:1px}
-.chip .pay{background:var(--dgrbg);color:var(--red);border:1px solid var(--dgrbd)}
-.chip .free{background:var(--tealdim);color:var(--teal);border:1px solid var(--tealbd)}
+.chip .pay,.chip .free{font-style:normal;font-size:9px;font-weight:700;letter-spacing:.12em;
+  padding:1px 6px;border-radius:0;margin-left:6px;vertical-align:1px;text-transform:uppercase}
+.chip .pay{background:transparent;color:var(--red);border:1px solid var(--dgrbd)}
+.chip .free{background:transparent;color:var(--teal);border:1px solid var(--tealbd)}
+.chip.on .pay{color:var(--onacc);border-color:rgba(255,255,255,.4)}
+.chip.on .free{color:var(--onacc);border-color:rgba(255,255,255,.4)}
 @media(max-width:720px){ #mjside{display:none} }
 
 /* 컷 빠른 선택 바 */
-.cutnav{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px}
-.cutnav button{font-family:var(--mono);font-size:11px;padding:5px 10px;border-radius:6px;
-  border:1px solid var(--line);background:var(--s2);color:var(--tx2);cursor:pointer;white-space:nowrap}
-.cutnav button:hover{border-color:var(--line2);color:var(--tx)}
-.cutnav button.on{background:var(--accdim);border-color:var(--acc);color:var(--acc2)}
+.cutnav{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px}
+.cutnav button{font-family:var(--mono);font-size:10.5px;padding:6px 11px;border-radius:0;
+  border:1px solid var(--line);background:transparent;color:var(--tx3);cursor:pointer;
+  white-space:nowrap;letter-spacing:.06em;transition:.16s}
+.cutnav button:hover{border-color:var(--tx2);color:var(--tx)}
+.cutnav button.on{background:var(--acc);border-color:var(--acc);color:var(--onacc)}
 
 .mask{position:fixed;inset:0;background:var(--mask);backdrop-filter:blur(4px);
-  z-index:100;display:none;padding:32px 20px;overflow:auto}
+  z-index:100;display:none;padding:36px 20px;overflow:auto}
 .mask.on{display:block}
-.modal{max-width:820px;margin:0 auto;background:var(--s1);border:1px solid var(--line2);
-  border-radius:14px;padding:24px;box-shadow:0 24px 70px var(--shadow)}
-.modal h3{font-family:var(--disp);font-size:23px;margin:0 0 4px}
-.modal>p{color:var(--tx2);font-size:12.5px;margin:0 0 18px}
+.modal{max-width:820px;margin:0 auto;background:var(--bg);border:1px solid var(--line2);
+  border-radius:0;padding:30px;box-shadow:0 30px 80px var(--shadow)}
+.modal h3{font-family:var(--disp);font-size:26px;margin:0 0 6px;letter-spacing:.01em}
+.modal>p{color:var(--tx2);font-size:12.5px;margin:0 0 20px}
 
-.status{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;
-  padding:5px 11px;border-radius:20px;border:1px solid var(--line);background:var(--s2)}
-.status::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--tx3);flex:none}
+.status{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:600;
+  padding:6px 11px;border-radius:0;border:1px solid var(--line2);background:transparent;letter-spacing:.04em}
+.status::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--tx3);flex:none}
 .status.ok{color:var(--teal);border-color:var(--tealbd)}
 .status.ok::before{background:var(--teal)}
-.status.busy{color:var(--acc2);border-color:var(--accbd)}
-.status.busy::before{background:var(--acc);animation:pulse 1s infinite}
+.status.busy{color:var(--tx);border-color:var(--tx2)}
+.status.busy::before{background:var(--tx);animation:pulse 1s infinite}
 @keyframes pulse{50%{opacity:.25}}
 
-.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(22px);
-  background:var(--s3);color:var(--tx);border:1px solid var(--line2);
-  padding:11px 16px 11px 20px;border-radius:26px;font-weight:600;font-size:13px;
+.toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(22px);
+  background:var(--acc);color:var(--onacc);border:1px solid var(--acc);
+  padding:12px 18px;border-radius:0;font-weight:600;font-size:13px;
   opacity:0;pointer-events:none;transition:.24s cubic-bezier(.2,.9,.3,1);z-index:200;
-  box-shadow:0 12px 36px var(--shadow);max-width:86vw;
-  display:flex;align-items:center;gap:14px}
+  box-shadow:0 16px 44px var(--shadow);max-width:86vw;
+  display:flex;align-items:center;gap:16px}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
-.toast .ub{background:var(--acc);color:var(--onacc);border:none;border-radius:18px;
-  padding:5px 13px;font-weight:700;font-size:12px;cursor:pointer;flex:none}
+.toast .ub{background:transparent;color:var(--onacc);border:1px solid var(--onacc);border-radius:0;
+  padding:5px 12px;font-weight:700;font-size:11.5px;cursor:pointer;flex:none;letter-spacing:.06em}
 
-.warn{background:var(--warnbg);border:1px solid var(--warnbd);color:var(--warntx);border-radius:var(--rs);padding:12px 14px;font-size:12.5px;margin-bottom:16px}
-.bar{height:5px;background:var(--s3);border-radius:3px;overflow:hidden;margin-top:9px}
-.bar i{display:block;height:100%;background:var(--teal);border-radius:3px}
-.divx{height:1px;background:var(--line);margin:18px 0}
-.rule{display:flex;align-items:center;gap:12px;margin:20px 0 14px;color:var(--tx3);
-  font-size:10.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase}
+.warn{background:var(--warnbg);border:1px solid var(--warnbd);border-left:3px solid var(--tx);
+  color:var(--warntx);border-radius:0;padding:13px 15px;font-size:12.5px;margin-bottom:16px}
+.bar{height:3px;background:var(--s3);border-radius:0;overflow:hidden;margin-top:10px}
+.bar i{display:block;height:100%;background:var(--tx);border-radius:0}
+.divx{height:1px;background:var(--line);margin:20px 0}
+.rule{display:flex;align-items:center;gap:14px;margin:24px 0 15px;color:var(--tx3);
+  font-size:9.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase}
 .rule::after{content:"";flex:1;height:1px;background:var(--line)}
-kbd{font-family:var(--mono);font-size:11px;background:var(--s3);border:1px solid var(--line2);
-  border-bottom-width:2px;border-radius:5px;padding:1px 6px;color:var(--tx2)}
+kbd{font-family:var(--mono);font-size:11px;background:transparent;border:1px solid var(--line2);
+  border-radius:0;padding:1px 6px;color:var(--tx2)}
 
 /* 파일을 화면 어디에 떨어뜨려도 받는다 — 작은 점선 상자를 정확히 맞출 필요가 없다 */
 .dropveil{position:fixed;inset:0;z-index:250;display:none;place-items:center;
   background:var(--mask);backdrop-filter:blur(3px)}
 .dropveil.on{display:grid}
-.dropveil>div{border:3px dashed var(--acc);border-radius:20px;background:var(--s1);
-  padding:44px 60px;text-align:center;box-shadow:0 24px 70px var(--shadow)}
-.dropveil b{display:block;font-family:var(--disp);font-size:30px;color:var(--acc);margin-bottom:8px}
-.dropveil span{font-size:13px;color:var(--tx2)}
+.dropveil>div{border:1px solid var(--bg);border-radius:0;background:var(--bg);
+  padding:56px 72px;text-align:center;box-shadow:0 30px 80px var(--shadow);outline:1px solid var(--line2);outline-offset:8px}
+.dropveil b{display:block;font-family:var(--disp);font-size:32px;color:var(--tx);margin-bottom:10px}
+.dropveil span{font-size:12.5px;color:var(--tx2);letter-spacing:.04em}
 
 /* 분해 결과 미리보기 — 잘못 잡힌 줄을 그 자리에서 뺄 수 있게 */
-.out.list{white-space:normal;font-family:var(--sans);font-size:12.5px;padding:8px}
-.prow{display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px}
+.out.list{white-space:normal;font-family:var(--sans);font-size:12.5px;padding:6px}
+.prow{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:0}
 .prow+.prow{border-top:1px solid var(--line)}
-.prow:hover{background:var(--s2)}
-.prow>b{font-family:var(--mono);font-size:11px;color:var(--tx3);width:22px;flex:none;text-align:right}
+.prow:hover{background:var(--s1)}
+.prow>b{font-family:var(--mono);font-size:10.5px;color:var(--tx3);width:24px;flex:none;text-align:right}
 .prow .pt{flex:1;min-width:0}
 .prow .ph{display:block;color:var(--tx);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .prow .pm{display:block;font-size:11px;color:var(--tx3);margin-top:2px}
 .prow .pm i{font-style:normal;color:var(--red)}
-.pwarn{background:var(--warnbg);border:1px solid var(--warnbd);color:var(--warntx);
-  border-radius:var(--rs);padding:10px 13px;font-size:12.5px;margin:0 0 10px}
+.pwarn{background:var(--warnbg);border:1px solid var(--warnbd);border-left:3px solid var(--tx);
+  color:var(--warntx);border-radius:0;padding:11px 14px;font-size:12.5px;margin:0 0 10px}
 
 /* 지금 어디쯤 왔는지 · 다음에 뭘 눌러야 하는지 */
-.steps4{display:flex;gap:8px;flex-wrap:wrap;margin:-6px 0 14px}
-.s4{display:flex;align-items:center;gap:8px;padding:8px 15px;border-radius:999px;
-  border:1px solid var(--line);background:var(--s1);font-size:12.5px;font-weight:600;color:var(--tx3)}
-.s4 b{width:19px;height:19px;border-radius:50%;display:grid;place-items:center;flex:none;
-  background:var(--s3);color:var(--tx3);font-size:11px}
-.s4.done{color:var(--teal);border-color:var(--tealbd);background:var(--tealdim)}
+.steps4{display:flex;gap:0;flex-wrap:wrap;margin:-4px 0 18px;border:1px solid var(--line)}
+.s4{display:flex;align-items:center;gap:9px;padding:10px 16px;border-radius:0;
+  border:0;background:transparent;font-size:12px;font-weight:600;color:var(--tx3);flex:1;min-width:150px}
+.s4+.s4{border-left:1px solid var(--line)}
+.s4 b{font-family:var(--mono);width:18px;height:18px;border-radius:0;display:grid;place-items:center;
+  flex:none;background:var(--s3);color:var(--tx3);font-size:10px}
+.s4.done{color:var(--teal);background:transparent}
 .s4.done b{background:var(--teal);color:var(--bg)}
-.s4.now{color:var(--acc2);border-color:var(--acc);background:var(--accdim)}
+.s4.now{color:var(--tx);background:var(--s2)}
 .s4.now b{background:var(--acc);color:var(--onacc)}
-.nowbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 22px;
-  padding:13px 16px;border:1px solid var(--accbd);background:var(--accdim);border-radius:var(--r)}
+.nowbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 24px;
+  padding:14px 17px;border:1px solid var(--line);border-left:3px solid var(--tx);
+  background:var(--s1);border-radius:0}
 .nowbar .t{font-size:13px;font-weight:600;color:var(--tx)}
 .bad{color:var(--red);font-weight:700}
 @media(max-width:720px){ #hshare .lb{display:none} }
 
 /* ---------- 대본 탭 ---------- */
 .drop{
-  border:2px dashed var(--line2);border-radius:var(--r);padding:34px 20px;text-align:center;
-  color:var(--tx3);transition:.16s;background:var(--s2)
+  border:1px dashed var(--line2);border-radius:0;padding:40px 20px;text-align:center;
+  color:var(--tx3);transition:.16s;background:var(--s1)
 }
-.drop b{display:block;font-family:var(--disp);font-size:19px;color:var(--tx2);margin-bottom:6px}
+.drop b{display:block;font-family:var(--disp);font-size:21px;color:var(--tx);margin-bottom:8px}
 .drop span{font-size:12px}
-.drop.hot{border-color:var(--acc);background:var(--accdim);color:var(--acc2)}
-.drop.hot b{color:var(--acc2)}
-.scwrap{display:grid;grid-template-columns:1.7fr 1fr;gap:16px}
+.drop.hot{border-color:var(--tx);border-style:solid;background:var(--s2);color:var(--tx2)}
+.drop.hot b{color:var(--tx)}
+.scwrap{display:grid;grid-template-columns:1.7fr 1fr;gap:18px}
 @media(max-width:900px){.scwrap{grid-template-columns:1fr}}
-.lbx{font-size:10.5px;font-weight:700;letter-spacing:.09em;color:var(--tx3);
-  text-transform:uppercase;display:block;margin-bottom:6px}
+.lbx{font-size:9.5px;font-weight:700;letter-spacing:.16em;color:var(--tx3);
+  text-transform:uppercase;display:block;margin-bottom:7px}
 #sc-body{font-family:var(--sans)}
-.dlg{color:var(--acc2)}
-.dir{color:var(--tx2)}
+.dlg{color:var(--tx);font-weight:600}
+.dir{color:var(--tx3)}
 /* =========================================================
    홈(랜딩) · 푸터 · 반응형
    ========================================================= */
-.hero{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:20px;
-  background:radial-gradient(125% 130% at 10% 0%,var(--herotop) 0%,var(--s1) 46%,var(--bg) 100%);
-  padding:54px 46px 44px;margin-bottom:22px}
-.hero::after{content:"";position:absolute;right:-14%;bottom:-70%;width:62%;height:150%;
-  background:radial-gradient(closest-side,var(--glow2),transparent 72%);pointer-events:none}
+.hero{position:relative;overflow:visible;border:0;border-radius:0;
+  background:none;padding:76px 56px 66px;margin:6px 0 34px}
+.hero::before,.hero::after{content:"";position:absolute;width:36%;height:58%;pointer-events:none}
+.hero::before{left:0;top:0;border-left:1px solid var(--line2);border-top:1px solid var(--line2)}
+.hero::after{right:0;bottom:0;border-right:1px solid var(--line2);border-bottom:1px solid var(--line2)}
 .hero>*{position:relative;z-index:1}
-.badge{display:inline-flex;align-items:center;gap:8px;font-size:10.5px;font-weight:700;
-  letter-spacing:.11em;text-transform:uppercase;color:var(--acc2);
-  background:var(--accdim);border:1px solid var(--accbd);padding:5px 13px;border-radius:999px}
-.hero h1{font-family:var(--disp);font-size:clamp(32px,5vw,54px);line-height:1.12;
-  margin:20px 0 0;letter-spacing:.01em}
+.badge{display:inline-flex;align-items:center;gap:14px;font-size:9.5px;font-weight:700;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--tx3);
+  background:none;border:0;padding:0;border-radius:0}
+.badge::before{content:"";width:38px;height:1px;background:var(--line2)}
+.hero h1{font-family:var(--disp);font-size:clamp(30px,4.5vw,52px);line-height:1.22;font-weight:700;
+  margin:26px 0 0;letter-spacing:-.018em;text-wrap:balance;max-width:24ch}
 .brw{display:inline}
-.hero .lead{color:var(--tx2);font-size:14.5px;line-height:1.85;max-width:60ch;margin:16px 0 0}
+.hero .lead{color:var(--tx2);font-size:14px;line-height:1.9;max-width:56ch;margin:20px 0 0}
 .hero .lead b{color:var(--tx);font-weight:600}
-.cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}
-.btn.lg{padding:12px 22px;font-size:13.5px;border-radius:11px}
-.herofoot{display:flex;gap:34px;flex-wrap:wrap;margin-top:30px;padding-top:22px;border-top:1px solid var(--line)}
-.herofoot div{font-size:11.5px;color:var(--tx3);letter-spacing:.04em;font-weight:600;max-width:22ch;line-height:1.5}
-.herofoot b{display:block;font-family:var(--disp);font-size:26px;color:var(--tx);line-height:1.15;
-  letter-spacing:0;text-transform:none;margin-bottom:2px}
+.cta{display:flex;gap:11px;flex-wrap:wrap;margin-top:34px}
+.btn.lg{padding:14px 24px;font-size:12.5px;border-radius:0;letter-spacing:.04em}
+.herofoot{display:flex;gap:0;flex-wrap:wrap;margin-top:44px;padding-top:0;border-top:1px solid var(--line)}
+.herofoot div{font-size:10.5px;color:var(--tx3);letter-spacing:.14em;font-weight:600;
+  text-transform:uppercase;line-height:1.5;flex:1;min-width:150px;padding:18px 20px 0 0}
+.herofoot b{display:block;font-family:var(--disp);font-size:30px;color:var(--tx);line-height:1.1;
+  letter-spacing:0;text-transform:none;margin-bottom:6px}
 
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.stepbox{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:20px 20px 22px}
-.stepbox .n{font-family:var(--disp);font-size:13px;color:var(--acc);background:var(--accdim);
-  width:26px;height:26px;border-radius:8px;display:grid;place-items:center;margin-bottom:13px}
-.stepbox h4{margin:0 0 7px;font-size:14px}
-.stepbox p{margin:0;font-size:12.5px;color:var(--tx2);line-height:1.75}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.stepbox{background:none;border:0;border-top:1px solid var(--tx);border-radius:0;padding:16px 0 0}
+.stepbox .n{font-family:var(--mono);font-size:10px;color:var(--tx3);background:none;
+  width:auto;height:auto;border-radius:0;display:block;margin-bottom:12px;letter-spacing:.16em}
+.stepbox h4{margin:0 0 8px;font-size:14.5px;font-family:var(--disp);letter-spacing:.01em}
+.stepbox p{margin:0;font-size:12.5px;color:var(--tx2);line-height:1.8}
 
-.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(252px,1fr));gap:14px}
-.fcard{display:block;text-align:left;background:var(--s1);border:1px solid var(--line);
-  border-radius:14px;padding:20px;cursor:pointer;color:inherit;font:inherit;
-  transition:border-color .16s,background .16s,transform .16s}
-.fcard:hover{border-color:var(--line2);background:var(--s2);transform:translateY(-2px)}
-.fcard .ic{font-size:19px;display:block;margin-bottom:11px}
-.fcard h4{margin:0 0 7px;font-size:14px}
-.fcard p{margin:0;font-size:12.5px;color:var(--tx2);line-height:1.75}
-.fcard .go{display:block;margin-top:13px;font-size:11.5px;font-weight:700;color:var(--acc);letter-spacing:.03em}
-.fcard:hover .go{color:var(--acc2)}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(252px,1fr));gap:16px}
+.fcard{display:block;text-align:left;background:transparent;border:1px solid var(--line);
+  border-radius:0;padding:22px;cursor:pointer;color:inherit;font:inherit;
+  transition:border-color .16s,background .16s}
+.fcard:hover{border-color:var(--tx);background:var(--s1);transform:none}
+.fcard .ic{display:block;margin-bottom:14px;font-family:var(--mono);font-size:9.5px;
+  letter-spacing:.2em;color:var(--tx3);text-transform:uppercase}
+.fcard h4{margin:0 0 8px;font-size:14.5px;font-family:var(--disp);letter-spacing:.01em;
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.fcard p{margin:0;font-size:12.5px;color:var(--tx2);line-height:1.8}
+.fcard .go{display:block;margin-top:16px;font-size:11px;font-weight:700;color:var(--tx);letter-spacing:.1em}
+.fcard:hover .go{color:var(--tx)}
 
-.shd{margin:52px 0 18px}
-.shd h3{font-family:var(--disp);font-size:26px;margin:0 0 7px;line-height:1.25}
-.shd p{margin:0;color:var(--tx2);font-size:13px;max-width:74ch;line-height:1.75}
+.shd{margin:64px 0 20px}
+.shd h3{font-family:var(--disp);font-size:28px;margin:0 0 8px;line-height:1.25;letter-spacing:.01em;text-wrap:balance}
+.shd p{margin:0;color:var(--tx2);font-size:13px;max-width:70ch;line-height:1.8}
 .shd p b{color:var(--tx);font-weight:600}
 
-.split{display:grid;grid-template-columns:1.05fr .95fr;gap:16px;align-items:start}
-.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--s1)}
+.split{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;align-items:start}
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:0;background:transparent}
 .tbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:340px}
-.tbl th,.tbl td{text-align:left;padding:11px 15px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.65}
-.tbl th{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);
-  background:var(--s2);font-weight:700;white-space:nowrap}
+.tbl th,.tbl td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.7}
+.tbl th{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx3);
+  background:transparent;font-weight:700;white-space:nowrap;border-bottom-color:var(--tx)}
 .tbl tr:last-child td{border-bottom:none}
 .tbl td b{color:var(--tx);font-weight:600}
 .tbl .y{color:var(--teal);font-weight:700}
 .tbl .n{color:var(--red);font-weight:700}
-.tbl .w{color:var(--acc2);font-weight:700}
+.tbl .w{color:var(--tx);font-weight:700}
 
-.faq{background:var(--s1);border:1px solid var(--line);border-radius:12px;margin-bottom:9px;overflow:hidden}
-.faq summary{cursor:pointer;padding:15px 18px;font-weight:600;font-size:13.5px;
-  list-style:none;display:flex;gap:11px;align-items:center}
+.faq{background:transparent;border:0;border-top:1px solid var(--line);border-radius:0;margin-bottom:0;overflow:hidden}
+.faq summary{cursor:pointer;padding:17px 2px;font-weight:600;font-size:13.5px;
+  list-style:none;display:flex;gap:13px;align-items:center}
 .faq summary::-webkit-details-marker{display:none}
-.faq summary::before{content:"+";color:var(--acc);font-family:var(--mono);font-weight:700;flex:none;width:11px}
-.faq[open] summary::before{content:"\2212"}
-.faq summary:hover{background:var(--s2)}
-.faq .fa{padding:0 20px 17px 40px;color:var(--tx2);font-size:12.5px;line-height:1.85;margin:0}
+.faq summary::before{content:"+";color:var(--tx3);font-family:var(--mono);font-weight:400;flex:none;width:11px}
+.faq[open] summary::before{content:"\2212";color:var(--tx)}
+.faq summary:hover{background:transparent;color:var(--tx)}
+.faq .fa{padding:0 2px 20px 24px;color:var(--tx2);font-size:12.5px;line-height:1.9;margin:0}
 .faq .fa b{color:var(--tx)}
 
-footer{border-top:1px solid var(--line);background:var(--s1);margin-top:70px}
-.fin{max-width:1180px;margin:0 auto;padding:36px 26px 40px;display:flex;gap:44px;flex-wrap:wrap;align-items:flex-start}
+footer{border-top:1px solid var(--tx);background:transparent;margin-top:84px}
+.fin{max-width:1180px;margin:0 auto;padding:44px 30px 44px;display:flex;gap:48px;flex-wrap:wrap;align-items:flex-start}
 .fin .fl{flex:1;min-width:230px}
-.fin .fl p{color:var(--tx3);font-size:12px;margin:12px 0 0;line-height:1.75;max-width:44ch}
-.fnav{display:flex;flex-direction:column;gap:8px;min-width:120px}
-.fnav b{font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--tx3);margin-bottom:3px}
+.fin .fl p{color:var(--tx3);font-size:12px;margin:16px 0 0;line-height:1.8;max-width:44ch}
+.fnav{display:flex;flex-direction:column;gap:9px;min-width:120px}
+.fnav b{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--tx3);margin-bottom:4px}
 .fnav button{background:none;border:none;padding:0;color:var(--tx2);font-size:12.5px;
   cursor:pointer;text-align:left;font-weight:500}
-.fnav button:hover{color:var(--acc2)}
-.fbot{border-top:1px solid var(--line);padding:15px 26px;color:var(--tx3);font-size:11.5px;text-align:center}
+.fnav button:hover{color:var(--tx);text-decoration:underline;text-underline-offset:3px}
+.fbot{border-top:1px solid var(--line);padding:17px 30px;color:var(--tx3);font-size:10.5px;
+  text-align:center;letter-spacing:.1em}
 
 @media(max-width:1000px){.split{grid-template-columns:1fr}}
 @media(max-width:820px){
-  .steps{grid-template-columns:1fr}
-  .hero{padding:38px 24px 32px;border-radius:16px}
-  .herofoot{gap:22px}
-  .herofoot b{font-size:22px}
+  .steps{grid-template-columns:1fr;gap:22px}
+  .hero{padding:46px 26px 40px}
+  .hero::before,.hero::after{width:46%;height:52%}
+  .herofoot{gap:0}
+  .herofoot b{font-size:24px}
 }
 @media(max-width:720px){
   body{font-size:13.5px}
-  .hbar{padding:10px 14px;gap:10px}
+  .hbar{padding:12px 16px 10px;gap:11px}
   .ptwrap{order:5;max-width:none;flex-basis:100%}
-  nav{padding:0 12px 9px}
-  main{padding:22px 14px 70px}
-  .pghd h2{font-size:24px}
-  .card{padding:16px}
+  nav{padding:0 16px;gap:20px}
+  main{padding:26px 16px 76px}
+  .pghd h2{font-size:25px}
+  .card{padding:17px}
   .mask{padding:14px 10px}
-  .modal{padding:18px;border-radius:12px}
+  .modal{padding:20px;border-radius:0}
   .cta{gap:9px}
-  .cta .btn{flex:1 1 100%;white-space:normal;text-align:center}
-  .fin{gap:26px;padding:28px 16px 32px}
-  .shd{margin:40px 0 14px}
-  .shd h3{font-size:22px}
+  .cta .btn{flex:1 1 100%;white-space:normal;text-align:center;justify-content:center}
+  .fin{gap:28px;padding:32px 16px 34px}
+  .shd{margin:46px 0 16px}
+  .shd h3{font-size:23px}
   .brw{display:none}
+  .steps4{flex-direction:column}
+  .s4+.s4{border-left:0;border-top:1px solid var(--line)}
 }
 @media(prefers-reduced-motion:reduce){
   *{animation-duration:.01ms!important;transition-duration:.01ms!important}
@@ -518,18 +547,18 @@ footer{border-top:1px solid var(--line);background:var(--s1);margin-top:70px}
     </button>
     <label class="ptwrap"><span>작품</span><input class="ptitle" id="ptitle" placeholder="제목을 적어주세요"></label>
     <div class="hsp"></div>
-    <button class="btn sm pri" id="hshare" title="지금 상태 그대로 공유하기">🔗<span class="lb"> 공유</span></button>
-    <button class="btn sm" id="themetog" aria-label="화면 밝기 전환">🌙 어둡게</button>
-    <button class="btn sm" id="openmt">🌐 번역</button>
+    <button class="btn sm pri" id="hshare" title="지금 상태 그대로 공유하기">↗<span class="lb"> 공유</span></button>
+    <button class="btn sm" id="themetog" aria-label="화면 밝기 전환">어둡게</button>
+    <button class="btn sm" id="openmt">번역</button>
     <span class="saveind on" id="saveind">저장됨</span>
   </div>
   <div class="navwrap">
     <nav id="nav" aria-label="주요 메뉴">
-      <button data-t="home" class="on">🏠 홈</button>
-      <button data-t="plan">✍️ 기획</button>
-      <button data-t="cut">🎬 대본 · 컷</button>
-      <button data-t="prompt">✨ 프롬프트</button>
-      <button data-t="data">⚙️ 설정</button>
+      <button data-t="home" class="on">홈</button>
+      <button data-t="plan">기획</button>
+      <button data-t="cut">대본 · 컷</button>
+      <button data-t="prompt">프롬프트</button>
+      <button data-t="data">설정</button>
     </nav>
   </div>
 </header>
@@ -544,9 +573,9 @@ footer{border-top:1px solid var(--line);background:var(--s1);margin-top:70px}
       <p class="lead"><b>원고를 올리면 씬으로 나뉘고, 버튼 하나면 컷까지 만들어집니다.</b> 급할 땐 한 줄만 적어 프롬프트만 뽑을 수도 있어요.
       캐릭터 <b>외형 고정 블록</b>은 모든 컷에 토씨 하나 안 틀리고 들어가서, 컷마다 인물이 딴 사람이 되는 사고를 막아줍니다.</p>
       <div class="cta">
-        <button class="btn pri lg" data-go="cut">📄 원고 올리고 시작하기</button>
-        <button class="btn lg" data-go="prompt" data-pmset="quick">⚡ 한 줄만 적고 프롬프트만</button>
-        <button class="btn gh lg" data-go="plan">✍️ 이야기부터 만들기</button>
+        <button class="btn pri lg" data-go="cut">원고 올리고 시작하기</button>
+        <button class="btn lg" data-go="prompt" data-pmset="quick">한 줄만 적고 프롬프트만</button>
+        <button class="btn gh lg" data-go="plan">이야기부터 만들기</button>
       </div>
       <div class="herofoot" id="homestat"></div>
       <p class="mini" id="homeproj" style="margin-top:12px"></p>
@@ -554,17 +583,17 @@ footer{border-top:1px solid var(--line);background:var(--s1);margin-top:70px}
 
     <div class="steps">
       <div class="stepbox">
-        <div class="n">1</div>
+        <div class="n">01</div>
         <h4>원고를 끌어다 놓기</h4>
         <p>「대본 · 컷」 탭에 파일을 떨구면 <b>씬 단위로 자동 분해</b>됩니다. 이야기부터 만들고 싶으면 「기획」에서 시작해도 돼요.</p>
       </div>
       <div class="stepbox">
-        <div class="n">2</div>
+        <div class="n">02</div>
         <h4>컷으로 쪼개기 — 버튼 하나</h4>
         <p>「모든 씬을 컷으로 쪼개기」를 누르면 <b>전 씬이 한 번에</b> 컷으로 나뉘고, 샷·조명까지 자동으로 채워집니다.</p>
       </div>
       <div class="stepbox">
-        <div class="n">3</div>
+        <div class="n">03</div>
         <h4>프롬프트 뽑아 쓰기</h4>
         <p>미드저니 · Veo(Flow) · 범용 이미지 <b>세 문법이 동시에</b> 만들어집니다.
         급하면 씬·컷 없이 <b>한 줄만 적어</b> 뽑는 「빠른 입력」도 있어요.</p>
@@ -577,22 +606,22 @@ footer{border-top:1px solid var(--line);background:var(--s1);margin-top:70px}
     </div>
     <div class="fgrid">
       <button class="fcard" data-go="cut">
-        <span class="ic">🎬</span><h4>대본 · 컷 <span class="tagx">여기서 시작</span></h4>
+        <span class="ic">Script &middot; Cut</span><h4>대본 · 컷 <span class="tagx">여기서 시작</span></h4>
         <p>원고 파일을 올리면 씬으로 나뉘고, <b>버튼 하나로 전 씬이 컷까지</b> 만들어집니다. 샷·조명도 자동으로 채워져요.</p>
         <span class="go">원고 올리러 가기 →</span>
       </button>
       <button class="fcard" data-go="prompt">
-        <span class="ic">✨</span><h4>프롬프트</h4>
+        <span class="ic">Prompt</span><h4>프롬프트</h4>
         <p>미드저니 · Veo(Flow) · 범용 이미지를 동시에. <b>복사하고 미드저니 열기</b> 버튼 하나로 바로 작업할 수 있어요.</p>
         <span class="go">프롬프트 뽑기 →</span>
       </button>
       <button class="fcard" data-go="plan">
-        <span class="ic">✍️</span><h4>기획 <span class="tagx">선택</span></h4>
+        <span class="ic">Plan</span><h4>기획 <span class="tagx">선택</span></h4>
         <p>이야기부터 만들 때. 로그라인 · 시놉시스 · 3막 · 씬 리스트, 그리고 캐릭터 <b>외형 고정 블록</b>.</p>
         <span class="go">기획 열기 →</span>
       </button>
       <button class="fcard" data-go="data">
-        <span class="ic">⚙️</span><h4>설정 · 내보내기</h4>
+        <span class="ic">Data</span><h4>설정 · 내보내기</h4>
         <p>JSON 백업 하나에 이미지까지 전부. 촬영 스케줄표 · 콜시트 · 컷 리스트 CSV와 대본 TXT도 뽑힙니다.</p>
         <span class="go">설정 열기 →</span>
       </button>
@@ -615,11 +644,11 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
         <table class="tbl">
           <thead><tr><th>가져올 수 있는 원고</th><th>지원</th></tr></thead>
           <tbody>
-            <tr><td><b>.txt</b> · <b>.md</b></td><td class="y">✅ 됩니다</td></tr>
-            <tr><td><b>.docx</b> (워드)</td><td class="y">✅ 라이브러리 없이 직접 읽습니다</td></tr>
-            <tr><td><b>.fdx</b> (파이널 드래프트)</td><td class="y">✅ 인물 · 대사 구조까지</td></tr>
-            <tr><td><b>.pdf</b></td><td class="w">⚠️ 「PDF로 저장」한 건 되고, 스캔본은 안 됩니다</td></tr>
-            <tr><td><b>.hwp</b> (한글)</td><td class="n">❌ 워드나 PDF로 저장해 올려주세요</td></tr>
+            <tr><td><b>.txt</b> · <b>.md</b></td><td class="y">✓ 됩니다</td></tr>
+            <tr><td><b>.docx</b> (워드)</td><td class="y">✓ 라이브러리 없이 직접 읽습니다</td></tr>
+            <tr><td><b>.fdx</b> (파이널 드래프트)</td><td class="y">✓ 인물 · 대사 구조까지</td></tr>
+            <tr><td><b>.pdf</b></td><td class="w">「PDF로 저장」한 건 되고, 스캔본은 안 됩니다</td></tr>
+            <tr><td><b>.hwp</b> (한글)</td><td class="n">✕ 워드나 PDF로 저장해 올려주세요</td></tr>
           </tbody>
         </table>
       </div>
@@ -644,11 +673,11 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <p class="fa">아닙니다. 모든 내용은 <b>이 브라우저 안에만</b> 저장됩니다 — 텍스트는 localStorage, 이미지는 IndexedDB.
       서버로 올라가는 것도, 계정을 만드는 것도 없습니다. 대신 <b>브라우저 데이터를 지우면 같이 날아가니</b> 「설정」에서 JSON 백업을 습관으로 만드세요.</p></details>
     <details class="faq"><summary>씬·컷 안 만들고 프롬프트만 뽑고 싶어요</summary>
-      <p class="fa">「프롬프트」 탭 맨 위에서 <b>⚡ 빠른 입력</b>을 고르세요.
+      <p class="fa">「프롬프트」 탭 맨 위에서 <b>빠른 입력</b>을 고르세요.
       무슨 일이 벌어지는지 한 줄만 적으면 세 가지 프롬프트가 바로 나옵니다. 씬도 컷도 만들 필요 없어요.
       마음에 들면 <b>「이 내용을 컷으로 저장」</b>으로 나중에 이어서 쓸 수도 있습니다.</p></details>
     <details class="faq"><summary>원고를 올렸는데 컷을 하나하나 만들어야 하나요?</summary>
-      <p class="fa">아닙니다. 원고를 적용하면 「대본 · 컷」 탭에 <b>⚡ 컷까지 한 번에</b> 카드가 나타납니다.
+      <p class="fa">아닙니다. 원고를 적용하면 「대본 · 컷」 탭에 <b>컷까지 한 번에</b> 카드가 나타납니다.
       「모든 씬을 컷으로 쪼개기」 한 번이면 전 씬이 컷으로 나뉘고, <b>샷·조명 자동 배분</b>까지 켜져 있어
       프롬프트가 곧바로 쓸 만한 문장으로 나옵니다. 이미 컷이 있는 씬은 건드리지 않아요.</p></details>
     <details class="faq"><summary>AI가 자동으로 연결되나요?</summary>
@@ -675,19 +704,19 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <p>이야기와 등장인물을 잡는 곳입니다. <b>이미 원고가 있으면 건너뛰고 「대본 · 컷」으로 가세요.</b></p>
     </div>
     <div class="subnav">
-      <button data-jumpto="sec-story">📖 스토리</button>
-      <button data-jumpto="sec-char">👤 캐릭터</button>
+      <button data-jumpto="sec-story">스토리</button>
+      <button data-jumpto="sec-char">캐릭터</button>
     </div>
 
     <div id="sec-story">
-      <div class="rule">📖 스토리 — 로그라인에서 씬 리스트까지</div>
+      <div class="rule">스토리 — 로그라인에서 씬 리스트까지</div>
       <div class="prog" id="storyprog"></div>
 
     <div class="card">
       <h3><span class="step">1</span>로그라인 <span class="tagx">한 문장</span></h3>
       <textarea id="s-logline" placeholder="누가 / 무엇을 원하는데 / 무엇이 막고 있는가 — 한 문장으로.&#10;예) 기억을 파는 브로커가, 죽은 딸의 마지막 기억을 되찾기 위해, 자신의 과거 전부를 팔아넘긴다."></textarea>
       <div class="row" style="margin-top:11px">
-        <button class="btn sm" data-ask="logline">🤖 AI 질문지 복사</button>
+        <button class="btn sm" data-ask="logline">AI 질문지 복사</button>
         <span class="mini" style="margin:0">문제점 3가지 + 변주안 5개를 받습니다</span>
       </div>
     </div>
@@ -702,7 +731,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <h3><span class="step">2</span>시놉시스 <span class="tagx">한 문단</span></h3>
       <textarea id="s-synopsis" style="min-height:140px" placeholder="주인공이 어떤 세계에서 무엇을 겪고, 어디로 도착하는지 한 문단으로."></textarea>
       <div class="row" style="margin-top:11px">
-        <button class="btn sm" data-ask="synopsis">🤖 AI 질문지 복사</button>
+        <button class="btn sm" data-ask="synopsis">AI 질문지 복사</button>
         <span class="mini" style="margin:0">확장 + 논리 구멍 점검</span>
       </div>
     </div>
@@ -715,7 +744,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
         <label class="f"><span>3막 — 해결</span><textarea id="s-act3" style="min-height:120px" placeholder="클라이맥스와 그 이후"></textarea></label>
       </div>
       <div class="row">
-        <button class="btn sm" data-ask="acts">🤖 AI 질문지 복사</button>
+        <button class="btn sm" data-ask="acts">AI 질문지 복사</button>
         <span class="mini" style="margin:0">어디가 늘어지고 어디가 비었는지</span>
       </div>
     </div>
@@ -732,22 +761,22 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <h3><span class="step">5</span>씬 리스트 만들기</h3>
       <p class="mini" style="margin:0 0 14px">질문지를 복사해 AI에 붙여넣고, <b>받은 표를 그대로 다시 붙여넣으면 씬이 자동으로 만들어집니다.</b> 손으로 옮겨 적을 필요 없어요.</p>
       <div class="row">
-        <button class="btn pri" data-ask="scenelist">🤖 ① 질문지 복사</button>
-        <button class="btn" id="openpaste">📥 ② 받은 표 붙여넣기</button>
-        <button class="btn gh" data-ask="full">📋 작품 전체 브리핑</button>
+        <button class="btn pri" data-ask="scenelist">① 질문지 복사</button>
+        <button class="btn" id="openpaste">② 받은 표 붙여넣기</button>
+        <button class="btn gh" data-ask="full">작품 전체 브리핑</button>
       </div>
     </div>
     </div>
 
     <div id="sec-char">
-      <div class="rule">👤 캐릭터 — 외형 고정 블록</div>
+      <div class="rule">캐릭터 — 외형 고정 블록</div>
       <p class="mini" style="margin:0 0 14px">AI 영상의 최대 난관은 <b>캐릭터가 매 컷마다 딴 사람이 되는 것</b>입니다.
       아래를 채우면 <b>외형 고정 블록</b>이 자동으로 만들어지고, 모든 프롬프트에 토씨 하나 안 틀리고 삽입돼요.</p>
     <div class="row" style="margin-bottom:18px"><button class="btn pri" id="addchar">＋ 캐릭터 추가</button></div>
     <div id="charlist"></div>
     </div>
 
-    <div class="nextbar"><span>다 됐으면</span><button class="btn pri" data-go="cut">🎬 대본 · 컷으로 →</button></div>
+    <div class="nextbar"><span>다 됐으면</span><button class="btn pri" data-go="cut">대본 · 컷으로 →</button></div>
   </section>
 
   <!-- ===== 대본 · 컷 (대본 + 씬·컷 + 보드) ===== -->
@@ -759,23 +788,23 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     <div class="steps4" id="cutsteps"></div>
     <div class="nowbar" id="cutnow"></div>
     <div class="subnav">
-      <button data-jumpto="sec-script">📄 원고 · 씬</button>
-      <button data-jumpto="sec-scene">🎬 씬 · 컷 손보기</button>
-      <button data-jumpto="sec-board">🖼️ 스토리보드</button>
+      <button data-jumpto="sec-script">원고 · 씬</button>
+      <button data-jumpto="sec-scene">씬 · 컷 손보기</button>
+      <button data-jumpto="sec-board">스토리보드</button>
     </div>
 
     <div id="sec-script">
 
     <div class="card" id="dropzone">
-      <h3>📂 원고 불러오기</h3>
+      <h3>원고 불러오기</h3>
       <div class="drop" id="dropbox">
         <b>여기로 파일을 끌어다 놓으세요</b>
         <span>또는 아래 버튼으로 고르기 · <b>.txt · .docx · .pdf · .fdx · .md</b></span>
       </div>
       <div class="row" style="margin-top:12px">
-        <button class="btn pri" id="sc-pick">📄 파일 고르기</button>
+        <button class="btn pri" id="sc-pick">파일 고르기</button>
         <input type="file" id="sc-file" accept=".txt,.md,.fdx,.docx,.pdf,text/plain,application/pdf" style="display:none">
-        <button class="btn" id="sc-paste">📋 원고를 직접 붙여넣기</button>
+        <button class="btn" id="sc-paste">원고를 직접 붙여넣기</button>
         <span class="mini" style="margin:0" id="sc-fname"></span>
       </div>
       <p class="mini"><b>PDF는 종류를 탑니다.</b> 워드·한글에서 「PDF로 저장」한 건 읽히지만,
@@ -784,13 +813,13 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     </div>
 
     <div class="card" id="sc-scan" style="display:none">
-      <h3>🖼️ 이 PDF는 글자가 아니라 사진입니다 <span class="tagx">OCR 필요</span></h3>
+      <h3>이 PDF는 글자가 아니라 사진입니다 <span class="tagx">OCR 필요</span></h3>
       <p class="mini" id="sc-scanmsg" style="margin:0 0 12px"></p>
       <div class="row">
-        <button class="btn pri" id="sc-scandl">🖼️ 페이지 그림 내려받기</button>
-        <a class="btn" href="https://drive.google.com/drive/my-drive" target="_blank" rel="noopener">📄 구글 드라이브로 글자 뽑기 ↗</a>
-        <a class="btn gh" href="https://lens.google.com/" target="_blank" rel="noopener">🔍 Google 렌즈 ↗</a>
-        <button class="btn gh" id="sc-scanpaste">📋 뽑은 글자 붙여넣기</button>
+        <button class="btn pri" id="sc-scandl">페이지 그림 내려받기</button>
+        <a class="btn" href="https://drive.google.com/drive/my-drive" target="_blank" rel="noopener">구글 드라이브로 글자 뽑기 ↗</a>
+        <a class="btn gh" href="https://lens.google.com/" target="_blank" rel="noopener">Google 렌즈 ↗</a>
+        <button class="btn gh" id="sc-scanpaste">뽑은 글자 붙여넣기</button>
       </div>
       <div class="rule">글자로 바꾸는 가장 쉬운 방법</div>
       <p class="mini"><b>① 구글 드라이브 (한글 정확도가 가장 좋습니다 · 무료)</b><br>
@@ -804,11 +833,11 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     </div>
 
     <div class="card" id="sc-raw-wrap" style="display:none">
-      <h3>✂️ 씬 분해</h3>
+      <h3>씬 분해</h3>
       <textarea id="sc-raw" style="min-height:180px;font-family:var(--mono);font-size:12.5px" placeholder="S#1. 비 내리는 뒷골목 / 밤&#10;&#10;지훈이 우산 없이 걸어 나온다.&#10;&#10;지훈: 이제 그만하자.&#10;&#10;S#2. 기억 상점 / 심야"></textarea>
       <p class="mini" id="sc-hint">씬 머리글은 <b>S#1.</b> · <b>씬 1</b> · <b>1.</b> · <b>INT./EXT.</b> 형태를 모두 알아봅니다. 시간대(낮·밤·새벽…)도 자동으로 잡아요.</p>
       <div class="row" style="margin-top:10px">
-        <button class="btn pri" id="sc-parse">🔍 분해 미리보기</button>
+        <button class="btn pri" id="sc-parse">분해 미리보기</button>
         <select id="sc-mode" style="max-width:230px">
           <option value="replace">기존 씬을 모두 교체</option>
           <option value="append">뒤에 이어 붙이기</option>
@@ -818,7 +847,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       </div>
       <div class="row" id="sc-front" style="display:none;margin-top:10px">
         <span class="mini" style="margin:0" id="sc-fronttxt"></span>
-        <button class="btn" id="sc-addchars">👤 캐릭터로 등록</button>
+        <button class="btn" id="sc-addchars">캐릭터로 등록</button>
         <button class="btn gh" id="sc-frontsee">앞부분 보기</button>
       </div>
       <div class="row" id="sc-fallback" style="display:none;margin-top:10px">
@@ -830,16 +859,16 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     </div>
 
     <div class="card" id="sc-oneshot" style="display:none">
-      <h3>⚡ 컷까지 한 번에 <span class="tagx">프롬프트 바로 쓰기</span></h3>
+      <h3>컷까지 한 번에 <span class="tagx">프롬프트 바로 쓰기</span></h3>
       <div class="row">
-        <button class="btn pri" id="sc-allcuts">🎬 모든 씬을 컷으로 만들기</button>
+        <button class="btn pri" id="sc-allcuts">모든 씬을 컷으로 만들기</button>
         <select id="sc-mode2" style="max-width:230px">
           <option value="split">문단 · 대사마다 한 컷</option>
           <option value="whole">씬 하나당 한 컷 (전문 통째로)</option>
         </select>
         <label class="chip on" id="sc-autochip"><input type="checkbox" id="sc-autoshot" checked style="width:auto;margin-right:5px">샷 · 조명 자동 배분</label>
-        <button class="btn" id="sc-tomt">🌐 영문 칸 채우기</button>
-        <button class="btn" data-go="prompt">✨ 프롬프트 뽑으러 가기</button>
+        <button class="btn" id="sc-tomt">영문 칸 채우기</button>
+        <button class="btn" data-go="prompt">프롬프트 뽑으러 가기</button>
         <div class="hsp"></div>
         <span class="mini" id="sc-allstat" style="margin:0"></span>
       </div>
@@ -852,7 +881,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     </div>
 
     <details class="faq" id="sc-edit">
-      <summary>✍️ 씬별로 원고 고치기 <span class="tagx">필요할 때만</span></summary>
+      <summary>씬별로 원고 고치기 <span class="tagx">필요할 때만</span></summary>
       <div class="fa" style="padding:0 18px 18px">
     <div class="card" style="background:transparent;border:none;padding:0;margin:0">
       <h3 style="display:none">씬별 원고 편집</h3>
@@ -869,8 +898,8 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
             <textarea id="sc-body" style="min-height:340px;line-height:1.9" placeholder="이 씬의 지문과 대사를 씁니다.&#10;&#10;대사는 「이름: 대사」 형태로 쓰면 자동으로 인식돼요."></textarea>
           </label>
           <div class="row">
-            <button class="btn sm" id="sc-tocuts">🎬 이 씬만 컷으로 쪼개기</button>
-            <button class="btn sm gh" id="sc-askscene">🤖 이 씬 수정 요청문</button>
+            <button class="btn sm" id="sc-tocuts">이 씬만 컷으로 쪼개기</button>
+            <button class="btn sm gh" id="sc-askscene">이 씬 수정 요청문</button>
           </div>
         </div>
         <div>
@@ -883,12 +912,12 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     </details>
 
     <details class="faq" id="sc-aiwork">
-      <summary>🤖 AI에게 대본 다듬기 맡기기 <span class="tagx">선택</span></summary>
+      <summary>AI에게 대본 다듬기 맡기기 <span class="tagx">선택</span></summary>
       <div class="fa" style="padding:0 18px 18px">
         <div class="row">
-          <button class="btn" data-ask="rewrite">📋 전체 대본 검토 요청문</button>
-          <button class="btn" data-ask="dialogue">📋 대사 살리기 요청문</button>
-          <button class="btn" id="sc-openrep">📥 고친 대본 붙여넣기</button>
+          <button class="btn" data-ask="rewrite">전체 대본 검토 요청문</button>
+          <button class="btn" data-ask="dialogue">대사 살리기 요청문</button>
+          <button class="btn" id="sc-openrep">고친 대본 붙여넣기</button>
         </div>
         <p class="mini">요청문을 AI에 붙여넣고, 받은 수정본을 「고친 대본 붙여넣기」로 되돌려 넣으면 씬이 갱신됩니다.</p>
       </div>
@@ -896,10 +925,10 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     </div>
 
     <div id="sec-scene">
-      <div class="rule">🎬 씬 · 컷 손보기 — 필요할 때만</div>
+      <div class="rule">씬 · 컷 손보기 — 필요할 때만</div>
     <div class="row" style="margin-bottom:18px">
       <button class="btn pri" id="addscene">＋ 씬 추가</button>
-      <button class="btn" id="openpaste2">📥 표로 한 번에 넣기</button>
+      <button class="btn" id="openpaste2">표로 한 번에 넣기</button>
       <button class="btn gh" id="expandall">모두 펼치기 / 접기</button>
       <div class="hsp"></div>
       <span class="mini" id="cutstat" style="margin:0"></span>
@@ -908,11 +937,11 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     </div>
 
     <div id="sec-board">
-      <div class="rule">🖼️ 스토리보드 — 뽑아온 이미지 붙이기</div>
+      <div class="rule">스토리보드 — 뽑아온 이미지 붙이기</div>
     <div id="boardwrap"></div>
     </div>
 
-    <div class="nextbar"><span>컷이 준비됐으면</span><button class="btn pri" data-go="prompt">✨ 프롬프트 뽑으러 →</button></div>
+    <div class="nextbar"><span>컷이 준비됐으면</span><button class="btn pri" data-go="prompt">프롬프트 뽑으러 →</button></div>
   </section>
 
   <!-- ===== 프롬프트 ===== -->
@@ -923,12 +952,12 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     </div>
 
     <div class="row" id="pmode" style="margin-bottom:18px">
-      <label class="chip on" data-pm="cut">🎬 만들어둔 컷에서</label>
-      <label class="chip" data-pm="quick">⚡ 빠른 입력 — 씬 · 컷 없이 바로</label>
+      <label class="chip on" data-pm="cut">만들어둔 컷에서</label>
+      <label class="chip" data-pm="quick">빠른 입력 — 씬 · 컷 없이 바로</label>
     </div>
 
     <div class="card" id="qcard" style="display:none">
-      <h3>⚡ 빠른 입력 <span class="tagx">저장 안 해도 바로 나옵니다</span></h3>
+      <h3>빠른 입력 <span class="tagx">저장 안 해도 바로 나옵니다</span></h3>
       <label class="f"><span>이 장면에서 무슨 일이 벌어지나요</span>
         <textarea id="q-desc" style="min-height:76px" placeholder="지훈이 우산도 없이 빗속 골목을 걸어 나온다"></textarea></label>
       <div class="grid g3">
@@ -950,14 +979,14 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <span class="lbx">등장인물 — 켜두면 외형 고정 블록이 그대로 들어갑니다</span>
       <div class="row" id="qchars" style="margin-bottom:14px"></div>
       <div class="row">
-        <button class="btn pri" id="q-save">💾 이 내용을 컷으로 저장</button>
+        <button class="btn pri" id="q-save">이 내용을 컷으로 저장</button>
         <button class="btn gh" id="q-clear">비우기</button>
         <span class="mini" style="margin:0">저장해두면 보드 · 스케줄표 · 내보내기에서도 함께 쓸 수 있어요</span>
       </div>
     </div>
 
     <details class="faq" id="lookcard">
-      <summary>🎨 전체 화면 룩 — 모든 컷에 공통으로 붙는 값 <span class="tagx">고급</span></summary>
+      <summary>전체 화면 룩 — 모든 컷에 공통으로 붙는 값 <span class="tagx">고급</span></summary>
       <div class="fa">
       <div class="grid g3">
         <label class="f"><span>비주얼 스타일 <b style="color:var(--tx3);font-weight:600">— 매체를 「선언 없음」으로 둘 때만</b></span><select id="v-look"></select></label>
@@ -973,7 +1002,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     </details>
 
     <div class="card" id="cutcard">
-      <h3>🎯 씬 · 컷 선택 <span class="tagx" id="curlabel">—</span></h3>
+      <h3>씬 · 컷 선택 <span class="tagx" id="curlabel">—</span></h3>
       <div class="row" style="margin-bottom:11px">
         <select id="p-scene" style="max-width:360px"></select>
         <span class="mini" id="p-modelbl" style="margin:0 2px 0 6px;display:none">이 씬 나누기</span>
@@ -988,41 +1017,41 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
         <button class="btn" id="p-next">다음 →</button>
         <span class="mini" style="margin:0"><kbd>←</kbd> <kbd>→</kbd> 키로도 이동</span>
         <div class="hsp"></div>
-        <button class="btn" id="p-allcopy">📋 이 씬 전체 복사</button>
+        <button class="btn" id="p-allcopy">이 씬 전체 복사</button>
       </div>
     </div>
 
     <div class="row" id="tgpick" style="margin-bottom:14px">
       <span class="mini" style="margin:0 4px 0 0">어디에 쓰실 건가요</span>
-      <label class="chip on" data-tgset="mj">🖼️ 미드저니 <em class="pay">유료</em></label>
-      <label class="chip" data-tgset="veo">🎬 Veo / Flow <em class="pay">유료</em></label>
-      <label class="chip" data-tgset="gen">🎨 그 외 이미지 AI <em class="free">무료 있음</em></label>
+      <label class="chip on" data-tgset="mj">미드저니 <em class="pay">유료</em></label>
+      <label class="chip" data-tgset="veo">Veo / Flow <em class="pay">유료</em></label>
+      <label class="chip" data-tgset="gen">그 외 이미지 AI <em class="free">무료 있음</em></label>
     </div>
 
     <div class="row" id="gorow" style="margin:-6px 0 16px">
       <span class="mini" style="margin:0 2px 0 0">그냥 사이트만 열기</span>
-      <a class="btn sm gh" href="https://www.midjourney.com/imagine" target="_blank" rel="noopener">🖼️ 미드저니 ↗</a>
-      <a class="btn sm gh" href="https://discord.com/channels/@me" target="_blank" rel="noopener">💬 디스코드 ↗</a>
-      <a class="btn sm gh" href="https://labs.google/fx/tools/flow" target="_blank" rel="noopener">🎬 Flow ↗</a>
-      <a class="btn sm gh" href="https://labs.google/fx/tools/image-fx" target="_blank" rel="noopener">🎨 ImageFX ↗</a>
-      <a class="btn sm gh" href="https://www.bing.com/images/create" target="_blank" rel="noopener">🎨 Bing ↗</a>
+      <a class="btn sm gh" href="https://www.midjourney.com/imagine" target="_blank" rel="noopener">미드저니 ↗</a>
+      <a class="btn sm gh" href="https://discord.com/channels/@me" target="_blank" rel="noopener">디스코드 ↗</a>
+      <a class="btn sm gh" href="https://labs.google/fx/tools/flow" target="_blank" rel="noopener">Flow ↗</a>
+      <a class="btn sm gh" href="https://labs.google/fx/tools/image-fx" target="_blank" rel="noopener">ImageFX ↗</a>
+      <a class="btn sm gh" href="https://www.bing.com/images/create" target="_blank" rel="noopener">Bing ↗</a>
     </div>
 
     <div class="card pcard" data-tg="mj">
-      <div class="outhd tgbar"><b>🖼️ 미드저니</b><span class="k">키워드 나열형 · 스틸</span></div>
+      <div class="outhd tgbar"><b>미드저니</b><span class="k">키워드 나열형 · 스틸</span></div>
       <div class="tgbody">
         <div class="out empty2" id="o-mj">컷을 선택하세요</div>
         <div class="warn" id="mjhangul" style="display:none;margin:12px 0 0">
           <div id="mjhtext">한글이 섞여 있어요 — 미드저니는 영어를 훨씬 잘 알아듣습니다.</div>
           <div class="row" style="margin-top:9px">
-            <button class="btn sm" id="mjtrans">🌐 영문으로 바꾸기</button>
-            <button class="btn sm" id="mjtpaste" style="display:none">📥 AI 답변 붙여넣기</button>
+            <button class="btn sm" id="mjtrans">영문으로 바꾸기</button>
+            <button class="btn sm" id="mjtpaste" style="display:none">AI 답변 붙여넣기</button>
           </div>
         </div>
         <div class="row" style="margin-top:13px">
-          <a class="btn pri" href="https://www.midjourney.com/imagine" target="_blank" rel="noopener" data-open="mj">📋 복사하고 미드저니 열기</a>
-          <button class="btn" data-copy="o-mj">📋 복사만</button>
-          <button class="btn gh" id="mjside">🪟 옆에 띄워두고 작업</button>
+          <a class="btn pri" href="https://www.midjourney.com/imagine" target="_blank" rel="noopener" data-open="mj">복사하고 미드저니 열기</a>
+          <button class="btn" data-copy="o-mj">복사만</button>
+          <button class="btn gh" id="mjside">옆에 띄워두고 작업</button>
         </div>
 
         <div class="rule">무엇으로 보이게 할까요 — 이게 결과를 가장 크게 바꿉니다</div>
@@ -1035,12 +1064,12 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
         <p class="mini" id="mjhead" style="margin:-4px 0 0"></p>
 
         <details class="faq" style="margin:14px 0 0">
-          <summary>🎯 같은 스타일로 계속 뽑기 — <code>--sref</code> · <code>--oref</code> <span class="tagx">일관성</span></summary>
+          <summary>같은 스타일로 계속 뽑기 — <code>--sref</code> · <code>--oref</code> <span class="tagx">일관성</span></summary>
           <div class="fa" style="padding:0 18px 18px">
             <label class="f"><span>스타일 코드 (--sref)</span>
               <input type="text" id="mj-sref" placeholder="469710847   또는   469710847 1234567  (여러 개는 띄어쓰기)"></label>
             <div class="row" style="margin:-8px 0 14px">
-              <button class="btn sm" id="mj-srefrand">🎲 random 넣기</button>
+              <button class="btn sm" id="mj-srefrand">random 넣기</button>
               <span class="mini" style="margin:0">마음에 드는 그림이 나오면 그 코드를 적어두세요 — 다음 컷도 같은 화풍이 됩니다</span>
             </div>
             <label class="f"><span>인물 사진 주소 (--oref)</span>
@@ -1059,8 +1088,8 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
         <div class="rule">미드저니 설정 — 고르면 뒤에 자동으로 붙습니다</div>
         <div class="opt"><span>화면비</span><div class="row" id="mj-ar"></div></div>
         <div class="opt"><span>느낌</span><div class="row" id="mj-look">
-          <label class="chip" data-mj="look|raw">📷 사진처럼</label>
-          <label class="chip" data-mj="look|art">🎨 그림처럼</label>
+          <label class="chip" data-mj="look|raw">사진처럼</label>
+          <label class="chip" data-mj="look|art">그림처럼</label>
         </div></div>
         <div class="opt"><span>스타일 강도</span><div class="row" id="mj-sty">
           <label class="chip" data-mj="sty|low">약하게 — 시킨 대로</label>
@@ -1077,7 +1106,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
         <div class="warn" style="margin-top:16px">
           <b>먼저 알아두실 것 — 미드저니는 유료입니다.</b><br>
           무료 체험이 없어서, 계정을 만들어도 <b>구독을 해야 이미지가 나옵니다.</b>
-          공짜로 먼저 해보고 싶으면 아래 <b>「🎨 그 외 이미지 AI」</b>를 여세요 —
+          공짜로 먼저 해보고 싶으면 아래 <b>「그 외 이미지 AI」</b>를 여세요 —
           ImageFX · Bing은 계정만 있으면 무료고, <b>프롬프트는 그대로 통합니다.</b>
         </div>
 
@@ -1091,33 +1120,33 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
             <p style="margin:0 0 10px"><b>4.</b> 이 창으로 돌아와 <kbd>←</kbd> <kbd>→</kbd> 키로 다음 컷으로 넘기고 <b>2번부터 반복</b>하세요.
             컷을 넘길 때마다 프롬프트가 새로 조립되니, 「복사하고 열기」 대신 <b>「복사만」</b>을 누르고 옆 창에 붙여넣으면 더 빠릅니다.</p>
             <p class="mini" style="margin:0">창이 안 열리면 주소창 오른쪽의 <b>팝업 차단 아이콘</b>에서 허용해 주세요.
-            「🪟 옆에 띄워두고 작업」은 창을 나란히 놓을 수 있는 <b>데스크톱에서만</b> 의미가 있습니다.</p>
+            「옆에 띄워두고 작업」은 창을 나란히 놓을 수 있는 <b>데스크톱에서만</b> 의미가 있습니다.</p>
           </div>
         </details>
       </div>
     </div>
 
     <div class="card pcard fold" data-tg="veo">
-      <div class="outhd tgbar"><b>🎬 Veo / Flow</b><span class="k">서술형 · 움직임과 소리 포함</span></div>
+      <div class="outhd tgbar"><b>Veo / Flow</b><span class="k">서술형 · 움직임과 소리 포함</span></div>
       <div class="tgbody">
         <div class="out empty2" id="o-veo">컷을 선택하세요</div>
         <div class="row" style="margin-top:13px">
-          <a class="btn pri" href="https://labs.google/fx/tools/flow" target="_blank" rel="noopener" data-open="flow">📋 복사하고 Flow 열기</a>
-          <button class="btn" data-copy="o-veo">📋 복사만</button>
+          <a class="btn pri" href="https://labs.google/fx/tools/flow" target="_blank" rel="noopener" data-open="flow">복사하고 Flow 열기</a>
+          <button class="btn" data-copy="o-veo">복사만</button>
           <span class="mini" style="margin:0">Flow에선 캐릭터 이미지를 <b>Ingredients</b>로 함께 넣으세요</span>
         </div>
       </div>
     </div>
 
     <div class="card pcard fold" data-tg="gen">
-      <div class="outhd tgbar"><b>🎨 그 외 이미지 AI</b><span class="k">Nano Banana · ImageFX · SD 계열</span></div>
+      <div class="outhd tgbar"><b>그 외 이미지 AI</b><span class="k">Nano Banana · ImageFX · SD 계열</span></div>
       <div class="tgbody">
         <div class="out empty2" id="o-gen">컷을 선택하세요</div>
         <p class="mini">미드저니 구독이 없어도 <b>공짜로 바로 해볼 수 있는 곳</b>입니다. 위 프롬프트가 그대로 통해요.</p>
         <div class="row" style="margin-top:11px">
-          <a class="btn pri" href="https://labs.google/fx/tools/image-fx" target="_blank" rel="noopener" data-open="imagefx">📋 복사하고 ImageFX 열기</a>
-          <a class="btn" href="https://www.bing.com/images/create" target="_blank" rel="noopener" data-open="bing">📋 복사하고 Bing 열기</a>
-          <button class="btn gh" data-copy="o-gen">📋 복사만</button>
+          <a class="btn pri" href="https://labs.google/fx/tools/image-fx" target="_blank" rel="noopener" data-open="imagefx">복사하고 ImageFX 열기</a>
+          <a class="btn" href="https://www.bing.com/images/create" target="_blank" rel="noopener" data-open="bing">복사하고 Bing 열기</a>
+          <button class="btn gh" data-copy="o-gen">복사만</button>
         </div>
         <p class="mini">둘 다 구글 · 마이크로소프트 계정만 있으면 무료입니다.
         <b>「--ar」 같은 값은 붙지 않으니</b> 화면비는 그 사이트에서 직접 고르세요.</p>
@@ -1125,10 +1154,10 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     </div>
 
     <details class="faq" id="askcard">
-      <summary>🤖 AI로 프롬프트 더 다듬기</summary>
+      <summary>AI로 프롬프트 더 다듬기</summary>
       <div class="fa">
         <p style="margin:0 0 10px">AI에 붙여넣으면 이 컷의 맥락을 이해한 상태로 프롬프트를 손봐줍니다.</p>
-        <button class="btn" data-ask="prompt">📋 이 컷 개선 요청문 복사</button>
+        <button class="btn" data-ask="prompt">이 컷 개선 요청문 복사</button>
       </div>
     </details>
   </section>
@@ -1142,15 +1171,15 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     </div>
 
     <div class="card">
-      <h3>💾 저장 용량</h3>
+      <h3>저장 용량</h3>
       <div id="quota"></div>
     </div>
 
     <div class="card">
-      <h3>🔗 지금 상태 그대로 공유하기</h3>
+      <h3>지금 상태 그대로 공유하기</h3>
       <div class="row">
-        <button class="btn pri" id="sh-make">🔗 공유 링크 만들기</button>
-        <button class="btn" id="sh-copy" style="display:none">📋 링크 복사</button>
+        <button class="btn pri" id="sh-make">공유 링크 만들기</button>
+        <button class="btn" id="sh-copy" style="display:none">링크 복사</button>
         <button class="btn gh" id="sh-open" style="display:none">↗ 열어보기</button>
         <span class="mini" id="sh-info" style="margin:0"></span>
       </div>
@@ -1159,28 +1188,28 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <p class="mini">지금 씬 · 컷 · 캐릭터 · 프롬프트 설정이 <b>주소 안에 통째로 담깁니다.</b>
       받은 사람은 링크만 열면 같은 화면을 봅니다 — 파일을 주고받을 필요가 없어요.
       <b>내용은 주소에만 들어가고 서버로는 올라가지 않습니다.</b></p>
-      <p class="mini">⚠️ <b>이미지는 빠집니다</b>(주소에 담기엔 너무 큽니다). 이미지까지 넘기려면 아래 <b>JSON 백업</b> 파일을 보내세요.
+      <p class="mini"><b>이미지는 빠집니다</b>(주소에 담기엔 너무 큽니다). 이미지까지 넘기려면 아래 <b>JSON 백업</b> 파일을 보내세요.
       작업이 아주 크면 링크가 너무 길어져 만들지 못할 수 있는데, 그때도 알려드립니다.</p>
     </div>
 
     <div class="card">
-      <h3>📁 백업 · 복원</h3>
+      <h3>백업 · 복원</h3>
       <div class="row">
-        <button class="btn pri" id="d-export">⬇️ JSON으로 내보내기</button>
-        <button class="btn" id="d-import">⬆️ JSON 불러오기</button>
+        <button class="btn pri" id="d-export">↓ JSON으로 내보내기</button>
+        <button class="btn" id="d-import">↑ JSON 불러오기</button>
         <input type="file" id="d-file" accept=".json,application/json" style="display:none">
       </div>
       <p class="mini">JSON 하나에 스토리 · 캐릭터 · 컷 · <b>이미지까지</b> 전부 들어갑니다. 다른 컴퓨터로 옮길 때도 이 파일만 가져가면 돼요.</p>
     </div>
 
     <div class="card">
-      <h3>📊 내보내기</h3>
+      <h3>내보내기</h3>
       <div class="row">
-        <button class="btn" id="d-csv">⬇️ 컷 리스트 CSV</button>
-        <button class="btn" id="d-sched">📅 촬영 스케줄표 CSV</button>
-        <button class="btn" id="d-call">👥 캐릭터 콜시트 CSV</button>
-        <button class="btn" id="d-script">📄 대본 TXT</button>
-        <button class="btn" id="d-txt">✨ 프롬프트 전량 TXT</button>
+        <button class="btn" id="d-csv">↓ 컷 리스트 CSV</button>
+        <button class="btn" id="d-sched">촬영 스케줄표 CSV</button>
+        <button class="btn" id="d-call">캐릭터 콜시트 CSV</button>
+        <button class="btn" id="d-script">대본 TXT</button>
+        <button class="btn" id="d-txt">프롬프트 전량 TXT</button>
       </div>
       <p class="mini">CSV는 엑셀·구글시트에서 바로 열립니다.
       <b>촬영 스케줄표</b>는 같은 장소끼리 묶어 정렬해줘요 — 실제 촬영은 씬 순서가 아니라 장소 단위로 몰아 찍으니까요.
@@ -1188,16 +1217,16 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     </div>
 
     <div class="card">
-      <h3>🌐 번역 엔진</h3>
+      <h3>번역 엔진</h3>
       <div class="row"><span class="status" id="mtstat">확인 전</span><button class="btn sm" id="mtcheck">다시 확인</button></div>
       <p class="mini">크롬 내장 번역(온디바이스)을 쓰면 인터넷 전송도 요금도 없이 즉시 번역됩니다. 안 되는 환경이면 「번역」의 <b>일괄 방식</b>을 쓰세요 — 어디서든 동작합니다.</p>
     </div>
 
     <div class="card">
-      <h3>🆕 새로 시작</h3>
+      <h3>새로 시작</h3>
       <div class="row">
-        <button class="btn pri" id="d-new">🆕 새 작품 시작</button>
-        <button class="btn dgr" id="d-reset">🗑️ 전부 지우기</button>
+        <button class="btn pri" id="d-new">새 작품 시작</button>
+        <button class="btn dgr" id="d-reset">전부 지우기</button>
       </div>
       <p class="mini">둘 다 지금 작업을 비웁니다. 누르면 <b>지금 무엇이 지워지는지 보여주고</b>,
       <b>「백업하고 시작」</b>을 고르면 JSON을 먼저 내려받은 뒤 비웁니다.
@@ -1239,14 +1268,14 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
   <div class="modal">
     <div class="row" style="justify-content:space-between;align-items:flex-start;margin-bottom:16px">
       <div>
-        <h3>🌐 번역</h3>
+        <h3>번역</h3>
         <p style="margin:2px 0 0">한글로 쓴 내용을 프롬프트용 영어로 바꿔 <b>비어 있는 영문 칸에 한 번에 채웁니다.</b></p>
       </div>
       <button class="btn sm gh" data-close="mtmask">✕ 닫기</button>
     </div>
     <div class="row" style="margin-bottom:16px">
       <span class="status" id="mtstat2">확인 전</span>
-      <button class="btn pri" id="mtauto">⚡ 자동 번역 실행</button>
+      <button class="btn pri" id="mtauto">자동 번역 실행</button>
       <span class="mini" style="margin:0">크롬 내장 번역이 되는 환경에서만</span>
     </div>
     <div class="rule">되지 않을 때 — 붙여넣기 방식</div>
@@ -1255,7 +1284,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <div>
         <label class="f"><span>① 번역 요청문</span></label>
         <div class="out" id="mtreq" style="max-height:200px;overflow:auto;font-size:11.5px">—</div>
-        <div class="row" style="margin-top:9px"><button class="btn sm" id="mtreqcopy">📋 요청문 복사</button></div>
+        <div class="row" style="margin-top:9px"><button class="btn sm" id="mtreqcopy">요청문 복사</button></div>
       </div>
       <div>
         <label class="f"><span>② AI가 준 답 붙여넣기</span></label>
@@ -1274,7 +1303,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
   <div class="modal">
     <div class="row" style="justify-content:space-between;align-items:flex-start;margin-bottom:16px">
       <div>
-        <h3>📥 표로 한 번에 넣기</h3>
+        <h3>표로 한 번에 넣기</h3>
         <p style="margin:2px 0 0">AI가 준 씬 리스트 표를 <b>그대로 붙여넣으면</b> 씬이 자동으로 만들어집니다.</p>
       </div>
       <button class="btn sm gh" data-close="pmask">✕ 닫기</button>
@@ -1300,7 +1329,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
   <div class="modal">
     <div class="row" style="justify-content:space-between;align-items:flex-start;margin-bottom:16px">
       <div>
-        <h3>📥 고친 대본 붙여넣기</h3>
+        <h3>고친 대본 붙여넣기</h3>
         <p style="margin:2px 0 0">AI가 고쳐준 대본을 붙여넣으면 <b>씬 머리글을 기준으로 해당 씬 본문만 갈아끼웁니다.</b></p>
       </div>
       <button class="btn sm gh" data-close="rmask">✕ 닫기</button>
@@ -1330,26 +1359,26 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
   <div class="modal" style="max-width:640px">
     <div class="row" style="justify-content:space-between;align-items:flex-start;margin-bottom:14px">
       <div>
-        <h3>🔗 지금 상태 그대로 공유</h3>
+        <h3>지금 상태 그대로 공유</h3>
         <p style="margin:2px 0 0">이 링크를 열면 <b>지금 이 화면 그대로</b> 보입니다.</p>
       </div>
       <button class="btn sm gh" data-close="shmask">✕ 닫기</button>
     </div>
     <div class="out empty2" id="m-url" style="font-size:11.5px;max-height:130px;overflow:auto">만드는 중…</div>
     <div class="row" style="margin-top:12px">
-      <button class="btn pri" id="m-copy">📋 링크 복사</button>
+      <button class="btn pri" id="m-copy">링크 복사</button>
       <button class="btn" id="m-open">↗ 열어보기</button>
       <span class="mini" id="m-info" style="margin:0"></span>
     </div>
     <div class="warn" id="m-snap" style="margin:12px 0 0;display:none">
-      📌 이 링크는 <b>지금 이 순간의 상태를 그대로 찍어 담은 것</b>입니다.
+      이 링크는 <b>지금 이 순간의 상태를 그대로 찍어 담은 것</b>입니다.
       보낸 뒤에 고친 내용은 <b>반영되지 않아요</b> — 바뀌면 다시 만들어 보내주세요.
     </div>
     <p class="mini">내용은 <b>주소 안에만</b> 담깁니다 — 서버로 올라가지 않아요.
     <b>이미지는 빠집니다</b>(주소에 담기엔 너무 큽니다).
     받은 사람이 고친 내용은 이쪽으로 돌아오지 않습니다(각자 자기 브라우저에 저장돼요).</p>
     <div class="row" style="margin-top:6px">
-      <button class="btn sm gh" id="m-tojson">📁 이미지까지 보내려면 — JSON 백업</button>
+      <button class="btn sm gh" id="m-tojson">이미지까지 보내려면 — JSON 백업</button>
     </div>
   </div>
 </div>
@@ -1415,15 +1444,15 @@ const MOOD = {
    같은 장면이라도 「영화 스틸」인지 「스토리보드 스케치」인지에 따라 완전히 달라진다.
    head: 맨 앞 / tail: 끝에 붙는 화질·질감 선언 / raw: --style raw 권장 여부 */
 const MEDIUM = {
-  '🎬 영화 스틸':        {head:'cinematic, film still',                 tail:'hyper-realistic',                         raw:true},
-  '📼 90년대 DVD 화면':  {head:'DVD screengrab, movie still',           tail:'hyper-realistic, detailed style',         raw:true},
-  '📷 다큐 사진':        {head:'documentary photograph',                tail:'natural light, unposed, photojournalism', raw:true},
-  '✏️ 스토리보드 스케치': {head:'pencil sketch for storyboard',          tail:'rough hatching, black and white',         raw:false},
-  '🖍️ 콘티 마커화':      {head:'storyboard panel, marker sketch',       tail:'loose linework, limited color',           raw:false},
-  '🎨 플랫 벡터 일러스트':{head:'flat vector graphic illustration',      tail:'simple shapes and lines, flat colors',    raw:false},
-  '🖼️ 콘셉트 아트':      {head:'cinematic concept art',                 tail:'digital matte painting, highly detailed', raw:false},
-  '🌸 애니메이션 스틸':   {head:'anime film still',                      tail:'cel shaded, detailed background art',     raw:false},
-  '📺 광고 · 제품 컷':   {head:'commercial photography still',          tail:'studio lighting, ultra detailed',         raw:true},
+  '영화 스틸':        {head:'cinematic, film still',                 tail:'hyper-realistic',                         raw:true},
+  '90년대 DVD 화면':  {head:'DVD screengrab, movie still',           tail:'hyper-realistic, detailed style',         raw:true},
+  '다큐 사진':        {head:'documentary photograph',                tail:'natural light, unposed, photojournalism', raw:true},
+  '스토리보드 스케치': {head:'pencil sketch for storyboard',          tail:'rough hatching, black and white',         raw:false},
+  '콘티 마커화':      {head:'storyboard panel, marker sketch',       tail:'loose linework, limited color',           raw:false},
+  '플랫 벡터 일러스트':{head:'flat vector graphic illustration',      tail:'simple shapes and lines, flat colors',    raw:false},
+  '콘셉트 아트':      {head:'cinematic concept art',                 tail:'digital matte painting, highly detailed', raw:false},
+  '애니메이션 스틸':   {head:'anime film still',                      tail:'cel shaded, detailed background art',     raw:false},
+  '광고 · 제품 컷':   {head:'commercial photography still',          tail:'studio lighting, ultra detailed',         raw:true},
   '(선언 없음)':         {head:'',                                      tail:'',                                        raw:false}
 };
 /* 카메라 · 필름 — 필기의 「shot on Hasselblad」 「shot on Nikon FA」.
@@ -1546,7 +1575,7 @@ function blank(){
   return {title:'',
     story:{logline:'',genre:'',tone:'',format:'',synopsis:'',act1:'',act2:'',act3:'',theme:'',ref:''},
     style:{look:'실사 시네마틱',ar:'16:9 (가로)',palette:'',extra:'',mj:'--ar 16:9 --style raw',
-           medium:'🎬 영화 스틸',cam:'',era:'',comp:'',
+           medium:'영화 스틸',cam:'',era:'',comp:'',
            neg:'text, watermark, extra fingers, deformed hands, blurry, lowres'},
     chars:[],scenes:[],sel:{scene:'',cut:''}};
 }
@@ -1839,7 +1868,7 @@ async function mtRunAuto(btn,label){
   if(btn){ btn.disabled=false; btn.textContent=label||old; }
   return ok>0;
 }
-$('mtauto').addEventListener('click',()=>mtRunAuto($('mtauto'),'⚡ 자동 번역 실행'));
+$('mtauto').addEventListener('click',()=>mtRunAuto($('mtauto'),'자동 번역 실행'));
 $('mtapply').addEventListener('click',()=>{
   const T=mtTargets();
   if(!T.length){ toast('적용할 대상이 없어요'); return; }
@@ -2001,17 +2030,17 @@ function renderChars(){
         <label class="f enfield"><span>특징</span><input type="text" data-cf="markEn" value="${esc(c.markEn)}" placeholder="scar through left eyebrow"></label>
       </div>
       <div class="row" style="margin:-6px 0 4px">
-        <button class="btn sm" data-ctrans="${c.id}">🌐 한글 → 영문 번역</button>
+        <button class="btn sm" data-ctrans="${c.id}">한글 → 영문 번역</button>
         <span class="mini" style="margin:0">빈 영문 칸을 채웁니다</span>
       </div>
 
       <div class="divx"></div>
-      <div class="outhd"><b>🔒 외형 고정 블록</b><span class="k">모든 프롬프트에 그대로 삽입</span></div>
+      <div class="outhd"><b>외형 고정 블록</b><span class="k">모든 프롬프트에 그대로 삽입</span></div>
       <div class="out" data-clock="${c.id}">${esc(charLock(c))||'<i>위 항목을 채우면 여기에 자동으로 만들어집니다</i>'}</div>
       <div class="row" style="margin:11px 0 0">
-        <button class="btn sm" data-clockcopy="${c.id}">📋 복사</button>
-        <button class="btn sm gh" data-clockedit="${c.id}">✏️ 직접 쓰기</button>
-        <button class="btn sm gh" data-csheet="${c.id}">🎨 캐릭터 시트 프롬프트</button>
+        <button class="btn sm" data-clockcopy="${c.id}">복사</button>
+        <button class="btn sm gh" data-clockedit="${c.id}">직접 쓰기</button>
+        <button class="btn sm gh" data-csheet="${c.id}">캐릭터 시트 프롬프트</button>
       </div>
       <label class="f enfield" data-clockwrap="${c.id}" style="display:${c.lockManual?'block':'none'};margin-top:12px">
         <span>직접 작성 (비우면 자동 생성으로 돌아갑니다)</span>
@@ -2024,7 +2053,7 @@ function renderChars(){
         <label class="f"><span>말투 · 화법</span><textarea data-cf="speech" placeholder="짧게 끊어 말한다"></textarea></label>
         <label class="f"><span>캐릭터 아크</span><textarea data-cf="arc" placeholder="어디서 시작해 어디로 변하는가"></textarea></label>
       </div>
-      <div class="row"><button class="btn sm" data-cask="${c.id}">🤖 캐릭터 심화 질문지 복사</button></div>
+      <div class="row"><button class="btn sm" data-cask="${c.id}">캐릭터 심화 질문지 복사</button></div>
     </div>`).join('');
 
   S.chars.forEach(c=>{
@@ -2124,14 +2153,14 @@ function renderScenes(){
         <label class="f enfield"><span>장소</span><input type="text" data-sf="locEn" value="${esc(s.locEn)}" placeholder="rain-soaked back alley"></label>
         <label class="f"><span>시간대</span><select data-sf="time">${opts(TIME,s.time)}</select></label>
       </div>
-      <div class="row" style="margin:-6px 0 12px"><button class="btn sm" data-strans="${s.id}">🌐 장소 한글 → 영문</button></div>
+      <div class="row" style="margin:-6px 0 12px"><button class="btn sm" data-strans="${s.id}">장소 한글 → 영문</button></div>
       <label class="f"><span>씬 요약</span><textarea data-sf="summary" placeholder="이 씬에서 무슨 일이 일어나는가"></textarea></label>
 
       <div class="rule">컷 ${s.cuts.length}개</div>
       ${s.cuts.map((c,ci)=>cutHTML(s,c,si,ci)).join('')||'<p class="mini" style="text-align:center;padding:14px 0;margin:0">아직 컷이 없어요</p>'}
       <div class="row" style="margin-top:12px">
         <button class="btn" data-cutadd="${s.id}">＋ 컷 추가</button>
-        <button class="btn gh" data-cutpaste="${s.id}">📥 컷 여러 개 붙여넣기</button>
+        <button class="btn gh" data-cutpaste="${s.id}">컷 여러 개 붙여넣기</button>
       </div>
     </div>`).join('');
 
@@ -2177,8 +2206,8 @@ function cutBodyHTML(s,c){
         <label class="f enfield"><span>컷 내용</span><textarea data-kf="descEn" placeholder="a man walks out of the alley without an umbrella, glancing back once"></textarea></label>
       </div>
       <div class="row" style="margin:-6px 0 12px">
-        <button class="btn sm" data-ktrans="${c.id}">🌐 한글 → 영문</button>
-        <button class="btn sm gh" data-kimg="${c.id}">🖼️ ${c.hasImg?'이미지 교체':'이미지 넣기'}</button>
+        <button class="btn sm" data-ktrans="${c.id}">한글 → 영문</button>
+        <button class="btn sm gh" data-kimg="${c.id}">${c.hasImg?'이미지 교체':'이미지 넣기'}</button>
         ${c.hasImg?`<button class="btn sm gh" data-kimgdel="${c.id}">이미지 제거</button>`:''}
         <div class="hsp"></div>
         <div class="ord">
@@ -2207,7 +2236,7 @@ function cutBodyHTML(s,c){
       </div>
       <label class="f"><span>메모</span><input type="text" data-kf="note" placeholder="Flow에서 3번 시도 / 재생성 필요"></label>
       <div class="row">
-        <button class="btn sm" data-kgo="${s.id}|${c.id}">✨ 이 컷 프롬프트 보기</button>
+        <button class="btn sm" data-kgo="${s.id}|${c.id}">이 컷 프롬프트 보기</button>
         <button class="btn sm gh" data-kdup="${s.id}|${c.id}">⧉ 복제</button>
         <button class="btn sm dgr" data-kdel="${s.id}|${c.id}">컷 삭제</button>
       </div>
@@ -3039,7 +3068,7 @@ async function ingestFile(f){
   $('sc-scan').style.display='none'; scanImgs=[];
   const ext=(f.name.split('.').pop()||'').toLowerCase();
   if(CANT[ext]){
-    setFileMsg(`❌ <b>${esc(f.name)}</b> — ${CANT[ext]}은 읽을 수 없습니다. `
+    setFileMsg(`✕ <b>${esc(f.name)}</b> — ${CANT[ext]}은 읽을 수 없습니다. `
       +(HOWTO[ext]||'<b>.txt · .docx · .pdf · .fdx</b> 중 하나로 저장해 올려주세요.'),true);
     toast(`${CANT[ext]}은 읽을 수 없어요`);
     paintSteps();
@@ -3052,12 +3081,12 @@ async function ingestFile(f){
     if(!text||!text.trim()) throw new Error('내용이 비어 있습니다');
     $('sc-raw-wrap').style.display='block';
     $('sc-raw').value=text;
-    setFileMsg(`✅ <b>${esc(f.name)}</b> · ${(f.size/1024).toFixed(0)}KB · ${text.length.toLocaleString()}자를 읽었습니다`);
+    setFileMsg(`✓ <b>${esc(f.name)}</b> · ${(f.size/1024).toFixed(0)}KB · ${text.length.toLocaleString()}자를 읽었습니다`);
     $('sc-parse').click();
     $('sc-raw-wrap').scrollIntoView({behavior:'smooth',block:'start'});
     toast('불러왔어요 ✓ 분해 결과를 확인하세요');
   }catch(e){
-    setFileMsg(`❌ <b>${esc(f.name)}</b> — ${esc(e.message)}`,true);
+    setFileMsg(`✕ <b>${esc(f.name)}</b> — ${esc(e.message)}`,true);
     if(e.scan){
       scanImgs=e.images||[];
       const box=$('sc-scan');
@@ -3172,7 +3201,7 @@ function showParsed(how){
   }else fr.style.display='none';
   const front=scParsed.front
     ? '※ 맨 앞부분은 씬으로 세지 않았습니다 (위 「앞부분 보기」에서 확인할 수 있어요).' : '';
-  pv.innerHTML=(doubts.length?`<div class="pwarn">⚠️ ${doubts.join('<br>')}<br>
+  pv.innerHTML=(doubts.length?`<div class="pwarn">${doubts.join('<br>')}<br>
     <span class="mini" style="margin:6px 0 0;display:block">아래에서 <b>「✕ 씬 아님」</b>으로 빼거나,
     <b>「빈 줄로 나누기」 · 「통째로 한 씬으로」</b>를 쓰세요.</span></div>`:'')
     +(how?`<p class="mini" style="margin:0 0 8px">${esc(how)}</p>`:'')
@@ -3452,13 +3481,13 @@ function paintSteps(){
     `<div class="s4 ${s.done?'done':(i===cur?'now':'')}"><b>${s.done?'✓':i+1}</b><span>${s.t}</span></div>`).join('');
   const say=(m,btn)=>{ bar.innerHTML=`<span class="t">${m}</span>${btn||''}`; };
   if(cur===0) say('① 먼저 원고를 올리세요. <b>화면 아무 데나 끌어다 놓아도</b> 됩니다.',
-      '<button class="btn pri" id="now-pick">📄 파일 고르기</button><button class="btn" id="now-paste">📋 직접 붙여넣기</button>');
+      '<button class="btn pri" id="now-pick">파일 고르기</button><button class="btn" id="now-paste">직접 붙여넣기</button>');
   else if(cur===1) say('② 아래에서 씬을 확인하고 <b>「✓ 적용」</b>을 누르세요.',
       '<button class="btn pri" id="now-jump2">아래로 이동</button>');
   else if(cur===2) say(`③ 씬 ${nScene}개가 준비됐어요. <b>「모든 씬을 컷으로 만들기」</b> 한 번이면 끝납니다.`,
-      '<button class="btn pri" id="now-cuts">🎬 컷 만들기</button>');
-  else say(`✅ 씬 ${nScene}개 · 컷 ${nCut}개 준비 완료. 이제 프롬프트를 뽑으면 됩니다.`,
-      '<button class="btn pri" data-go="prompt">✨ 프롬프트 뽑으러 →</button>');
+      '<button class="btn pri" id="now-cuts">컷 만들기</button>');
+  else say(`✓ 씬 ${nScene}개 · 컷 ${nCut}개 준비 완료. 이제 프롬프트를 뽑으면 됩니다.`,
+      '<button class="btn pri" data-go="prompt">프롬프트 뽑으러 →</button>');
 }
 document.addEventListener('click',e=>{
   const t=e.target;
@@ -3526,7 +3555,7 @@ const STYLE_FIELDS=['look','ar','palette','extra','mj','neg','medium','cam','era
 function fillStyle(){
   $('v-look').innerHTML=opts(LOOK,S.style.look);
   $('v-ar').innerHTML=opts(AR,S.style.ar);
-  if($('v-medium')) $('v-medium').innerHTML=opts(MEDIUM,S.style.medium||'🎬 영화 스틸');
+  if($('v-medium')) $('v-medium').innerHTML=opts(MEDIUM,S.style.medium||'영화 스틸');
   if($('v-cam'))    $('v-cam').innerHTML=opts(CAM,S.style.cam||'');
   if($('v-era'))    $('v-era').innerHTML=opts(ERA,S.style.era||'');
   if($('v-comp'))   $('v-comp').innerHTML=opts(COMP,S.style.comp||'');
@@ -3557,8 +3586,8 @@ function renderCutNav(){
     ['p-modelbl','p-msplit','p-mwhole'].forEach(id=>$(id).style.display='none');
     hint.textContent='';
     nav.innerHTML='<span class="mini" style="margin:0 8px 0 0">아직 씬도 컷도 없어요 —</span>'
-      +'<button class="btn sm pri" data-pmset="quick">⚡ 빠른 입력으로 바로 뽑기</button>'
-      +'<button class="btn sm" data-go="cut">📄 원고 올리기</button>';
+      +'<button class="btn sm pri" data-pmset="quick">빠른 입력으로 바로 뽑기</button>'
+      +'<button class="btn sm" data-go="cut">원고 올리기</button>';
     $('curlabel').textContent='—'; return;
   }
   sel.disabled=false;
@@ -3589,8 +3618,8 @@ function renderCutNav(){
   }
   if(!list.length){
     nav.innerHTML='<span class="mini" style="margin:0 8px 0 0">아직 컷이 없어요 —</span>'
-      +'<button class="btn sm pri" data-pmset="quick">⚡ 빠른 입력으로 바로 뽑기</button>'
-      +'<button class="btn sm" data-go="cut">📄 원고 올리기</button>';
+      +'<button class="btn sm pri" data-pmset="quick">빠른 입력으로 바로 뽑기</button>'
+      +'<button class="btn sm" data-go="cut">원고 올리기</button>';
     $('curlabel').textContent='—'; return;
   }
   if(!list.some(x=>x.c.id===S.sel.cut)){
@@ -3680,7 +3709,7 @@ function styleBits(){
    [매체 선언] → [샷·앵글·구도] → [인물] → [행동] → [배경] → [시대] → [시간·조명·분위기]
    → [카메라·렌즈] → [화질 선언] → [파라미터]
    앞에 무엇을 두느냐가 결과를 가장 크게 좌우하므로 매체 선언을 맨 앞에 못 박는다. */
-function medium(){ return MEDIUM[S.style.medium]||MEDIUM['🎬 영화 스틸']; }
+function medium(){ return MEDIUM[S.style.medium]||MEDIUM['영화 스틸']; }
 function buildMJ(s,c){
   const m=medium(), p=[];
   if(m.head) p.push(m.head);
@@ -3936,19 +3965,19 @@ function paintHangulWarn(){
   if(MT.state==='ok'){
     txt.innerHTML='한글이 섞여 있어요 — <b>버튼 한 번이면</b> 영문 칸을 채워 프롬프트가 영어로 바뀝니다.'
       +(/언어팩/.test(MT.reason)?' <span class="mini" style="margin:0">(처음 한 번은 언어팩을 받느라 조금 걸립니다)</span>':'');
-    go.textContent='🌐 영문으로 바꾸기'; go.disabled=false; ps.style.display='none';
+    go.textContent='영문으로 바꾸기'; go.disabled=false; ps.style.display='none';
   }else if(MT.state==='checking'||MT.state==='unknown'){
     txt.textContent='한글이 섞여 있어요 — 자동 번역이 되는 브라우저인지 확인 중…';
     go.disabled=true; ps.style.display='none';
   }else{
     txt.innerHTML='한글이 섞여 있어요. <b>이 브라우저는 자동 번역을 지원하지 않습니다</b>(크롬 138 이상에서만 됩니다) — '
       +'요청문을 복사해 AI에 붙여넣고, 받은 답을 되돌려 넣으면 영문 칸이 한 번에 채워집니다.';
-    go.textContent='📋 번역 요청문 복사'; go.disabled=false; ps.style.display='';
+    go.textContent='번역 요청문 복사'; go.disabled=false; ps.style.display='';
   }
 }
 $('mjtrans').addEventListener('click',async()=>{
   if(MT.state==='ok'){
-    if(await mtRunAuto($('mjtrans'),'🌐 영문으로 바꾸기')) renderPrompt();
+    if(await mtRunAuto($('mjtrans'),'영문으로 바꾸기')) renderPrompt();
     return;
   }
   const T=mtRefresh();
@@ -4252,7 +4281,7 @@ function localNotice(){
   return `<b class="bad">지금은 내 컴퓨터의 파일로 열려 있어서, 만든 주소를 남에게 보내도 열리지 않습니다.</b><br>
     주소가 <code>file:///…</code> 로 시작하는 <b>이 컴퓨터의 파일 경로</b>이기 때문입니다.<br><br>
     <b>공유하려면</b><br>
-    ① <b>📁 JSON 백업 파일</b>을 보내면 이미지까지 전부 넘어갑니다 (받는 쪽은 「JSON 불러오기」).<br>
+    ① <b>JSON 백업 파일</b>을 보내면 이미지까지 전부 넘어갑니다 (받는 쪽은 「JSON 불러오기」).<br>
     ② 이 <code>index.html</code> 을 <b>웹에 한 번 올려두면</b> 그다음부터 링크 공유가 그대로 됩니다 —
     <b>app.netlify.com/drop</b> 에 파일을 끌어다 놓기만 하면 주소가 생깁니다 (가입 불필요).`;
 }
@@ -4260,7 +4289,7 @@ function embedNotice(){
   return `<b class="bad">이 화면은 다른 페이지 안에 들어 있어서 공유 링크를 만들 수 없습니다.</b><br>
     여기서 만든 주소는 <b>바깥 페이지가 아니라 안쪽 화면의 주소</b>라, 보내도 내용이 열리지 않아요.<br><br>
     <b>대신 이렇게 하세요</b><br>
-    ① <b>📁 JSON 백업 파일</b>을 보내면 이미지까지 전부 넘어갑니다 (받는 쪽은 「JSON 불러오기」).<br>
+    ① <b>JSON 백업 파일</b>을 보내면 이미지까지 전부 넘어갑니다 (받는 쪽은 「JSON 불러오기」).<br>
     ② 이 앱을 <b>따로 열어두고</b>(내려받은 <code>index.html</code>을 더블클릭하거나 GitHub Pages 주소로)
     쓰시면 공유 링크가 정상 동작합니다.`;
 }
@@ -4290,7 +4319,7 @@ async function makeShareLink(urlEl,infoEl){
     +(imgs?` <b class="bad">· 이미지 ${imgs}장은 빠집니다</b>`:'');
   return true;
 }
-/* 헤더의 🔗 공유 — 어느 탭에 있든 한 번에 */
+/* 헤더의 공유 — 어느 탭에 있든 한 번에 */
 function selectEl(el){
   try{ const r=document.createRange(); r.selectNodeContents(el);
        const s=getSelection(); s.removeAllRanges(); s.addRange(r); }catch(e){}
@@ -4309,7 +4338,7 @@ $('hshare').addEventListener('click',async()=>{
     $('m-snap').style.display=ok?'':'none';
     if(ok){
       selectEl(u);                       // 복사가 막혀도 Ctrl+C 만 누르면 되도록 미리 선택해 둔다
-      toast('링크를 만들었어요 — 「📋 링크 복사」를 눌러주세요');
+      toast('링크를 만들었어요 — 「링크 복사」를 눌러주세요');
     }
   }catch(e){ u.textContent='링크를 만들지 못했어요: '+e.message; }
 });
@@ -4323,7 +4352,7 @@ $('sh-make').addEventListener('click',async()=>{
     const ok=await makeShareLink($('sh-url'),$('sh-info'));
     $('sh-copy').style.display=ok?'':'none';
     $('sh-open').style.display=ok?'':'none';
-    if(ok){ selectEl($('sh-url')); toast('링크를 만들었어요 — 「📋 링크 복사」를 눌러주세요'); }
+    if(ok){ selectEl($('sh-url')); toast('링크를 만들었어요 — 「링크 복사」를 눌러주세요'); }
   }catch(e){ toast('링크를 만들지 못했어요: '+e.message); }
 });
 $('sh-copy').addEventListener('click',()=>copy(shareURL,'링크를 복사했어요 ✓'));
@@ -4342,7 +4371,7 @@ async function loadShared(param){
     `받은 것: <b>${esc(sum)}</b><br>지금 이 브라우저에 있는 것: <b>${mine}</b><br><br>
      열면 <b>지금 작업이 받은 것으로 바뀝니다.</b> 먼저 백업해두면 언제든 되돌릴 수 있어요.<br>
      <span class="mini" style="display:block;margin-top:8px">※ 공유 링크에는 이미지가 들어 있지 않습니다.</span>`,
-    [{key:'backup',label:'💾 내 작업 백업하고 열기',cls:'pri'},{key:'go',label:'그냥 열기'}]);
+    [{key:'backup',label:'내 작업 백업하고 열기',cls:'pri'},{key:'go',label:'그냥 열기'}]);
   if(!k) return false;
   if(k==='backup'){ $('d-export').click(); await new Promise(r=>setTimeout(r,700)); }
   try{ for(const key of (await IDB.keys())||[]) await IDB.del(key); }catch(e){}
@@ -4497,7 +4526,7 @@ function workSummary(){
 }
 async function startFresh(title,msg){
   const k=await ask(title,msg,[
-    {key:'backup',label:'💾 백업하고 시작',cls:'pri'},
+    {key:'backup',label:'백업하고 시작',cls:'pri'},
     {key:'go',label:'백업 없이 시작',cls:'dgr'}
   ]);
   if(!k) return;
@@ -4596,7 +4625,7 @@ const THEMEKEY='scenedeck_theme';
 function applyTheme(t){
   document.documentElement.setAttribute('data-theme',t);
   const b=$('themetog');
-  if(b) b.textContent = (t==='dark') ? '☀️ 밝게' : '🌙 어둡게';
+  if(b) b.textContent = (t==='dark') ? '밝게' : '어둡게';
 }
 (function initTheme(){
   let t='light';
