@@ -156,6 +156,22 @@ async function run(){
   if(met) ok('첫 인사 3통이 유실돼도 만난다');
   else no('인사가 한 번 유실되면 서로 못 본다');
 
+  // ── 5-c. 방장이 고른 난이도·역할이 손님에게 그대로 가는가 ──
+  install(A,'까미'); install(B,'하늘');
+  ev(A,"openNetMode('throw')"); ev(B,"openNetMode('throw')");
+  await sleep(120);
+  ev(A,"netModeName='fire'; hostRole='popper'; netCreate();");
+  ev(B,'netEnterRoom("'+ev(A,'net.room')+'",false)');
+  await wait(bothMet,5000);
+  await sleep(400);
+  const gm=ev(B,'netModeName'), gr=ev(B,'hostRole'), gs=ev(B,'net.timeLimit');
+  if(gm==='fire') ok('방장이 고른 난이도(핵불닭)가 손님에게 전달됐다');
+  else no('난이도가 전달되지 않았다: 손님은 '+gm);
+  if(gr==='popper') ok('방장 역할(터트리는 사람)이 전달돼 손님은 반대 역할이 된다 (손님 역할 '+ev(B,'(computeRole(),myRole)')+')');
+  else no('역할이 전달되지 않았다: '+gr);
+  if(gs===90) ok('던지기 게임 제한시간 90초 전달');
+  else no('제한시간이 틀렸다: '+gs);
+
   // ── 6. 링크를 코드 칸에 붙여넣어도 되는가 ──
   const cases=[['abc123','ABC123'],[' ab-c1 23 ','ABC123'],
     ['https://x.y/?r=ABC123','ABC123'],['https://x.y/index.html?r=abc123#z','ABC123']];

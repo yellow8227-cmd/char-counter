@@ -162,6 +162,9 @@
   @keyframes wob{0%,100%{transform:translateY(0) rotate(-2deg) scale(1)}50%{transform:translateY(-2px) rotate(2deg) scale(1.03)}}
   .tag{font-size:clamp(15px,4vw,19px);font-weight:800;color:var(--ink);max-width:340px;line-height:1.5;}
   .tag2{font-size:14px;font-weight:700;color:var(--ink2);margin-top:-4px;}
+  /* 한 카드 안에서 항목을 나누는 작은 제목. label 보다 조용해야 카드가 두 장처럼 안 보인다 */
+  .sublabel{font-size:14.5px;font-weight:900;color:var(--ink);text-align:left;margin:10px 0 7px;}
+  .card > .sublabel:first-child{margin-top:0;}   /* 카드 맨 위일 때만 여백을 없앤다 */
   #heroCanvas{filter:drop-shadow(0 10px 14px rgba(190,120,160,0.3));}
 
   .btn{position:relative;border:none;cursor:pointer;font-family:var(--font);font-weight:900;color:#fff;
@@ -796,28 +799,28 @@
       <div class="label">🙋 내 닉네임</div>
       <input id="nickInputN" maxlength="10" placeholder="닉네임을 입력하세요">
     </div>
-    <div class="card hide" id="netRoleCard">
-      <div class="label">🎭 내 역할 고르기</div>
-      <div class="tag2" style="text-align:left;margin:0 0 9px;">방을 만드는 사람이 정해요. 친구는 자동으로 반대 역할이 됩니다.</div>
-      <div class="opts" id="netRoleOpts"></div>
+    <!-- 역할과 난이도는 한 장에 모은다. 방장이 정하는 것이 흩어져 있으면
+         무엇이 내 선택이고 무엇이 상대 것인지 헷갈린다. -->
+    <div class="card" id="netSetupCard">
+      <div class="label">⚙️ 방 설정 <span class="tag2" style="font-weight:800;">— 방을 만드는 사람이 정해요</span></div>
+      <div class="hide" id="netRoleCard">
+        <div class="sublabel">🎭 내 역할</div>
+        <div class="opts" id="netRoleOpts"></div>
+        <div class="tag2" style="text-align:left;margin:6px 0 0;">친구는 자동으로 반대 역할이 됩니다.</div>
+      </div>
+      <div class="sublabel" id="netModeLabel">🍬 난이도</div>
+      <div class="opts modeOpts"></div>
+      <div class="tag2" id="netSetupInfo" style="text-align:left;margin-top:8px;"></div>
     </div>
     <div class="card">
-      <div class="label">⚡ 바로 시작</div>
-      <div class="rowbtn" style="gap:8px;">
-        <button class="btn" id="netRandomBtn" style="padding:13px 18px;font-size:16px;background:linear-gradient(180deg,#8fd694,#4fc65f);box-shadow:0 6px 0 #37a04a;">🎲 랜덤 매칭</button>
-        <button class="btn" id="netAiBtn" style="padding:13px 18px;font-size:16px;background:linear-gradient(180deg,#ffb08a,#ff8a5c);box-shadow:0 6px 0 #e0691a;">🤖 AI와 대결</button>
-      </div>
-      <div class="tag2" style="text-align:left;margin-top:8px;">랜덤은 기다리는 사람과 자동으로 이어줘요. AI는 혼자서도 바로 시작해요.</div>
+      <div class="label">🎲 랜덤 매칭</div>
+      <button class="btn" id="netRandomBtn" style="width:100%;padding:14px 18px;font-size:17px;background:linear-gradient(180deg,#8fd694,#4fc65f);box-shadow:0 6px 0 #37a04a;">🎲 아무나 만나기</button>
+      <div class="tag2" style="text-align:left;margin-top:8px;">기다리는 사람과 자동으로 이어줘요. 20초 안에 못 만나면 방을 만들어 둡니다.</div>
     </div>
     <div class="card hide" id="randCard">
       <div class="label">🎲 랜덤 매칭</div>
       <div class="tag2" id="randMsg" style="text-align:left;white-space:pre-line;line-height:1.5;"></div>
       <button class="btn ghost" id="randCancelBtn" style="margin-top:10px;padding:12px 22px;font-size:15px;">✋ 그만 찾기</button>
-    </div>
-    <div class="card">
-      <div class="label">🤖 AI 실력 고르기</div>
-      <div class="opts aiTierOpts" id="aiTierOpts"></div>
-      <div class="tag2 aiTierDesc" id="aiTierDesc" style="text-align:left;margin-top:8px;"></div>
     </div>
     <div class="card">
       <div class="label hdr">
@@ -837,7 +840,14 @@
         <input id="netCodeInput" maxlength="6" placeholder="방 코드 입력" style="flex:1;text-transform:uppercase;">
         <button class="chip" id="netJoinBtn" style="padding:9px 16px;">입장!</button>
       </div>
-      <div class="tag2" style="text-align:left;margin-top:8px;">온라인 기능은 배포된 주소(https)에서 동작해요. AI 대결은 인터넷 없이도 됩니다.</div>
+      <div class="tag2" style="text-align:left;margin-top:8px;">온라인 대전은 배포된 주소(https)에서 동작해요.</div>
+    </div>
+        <!-- AI 는 '친구랑 하기'와 섞지 않는다. 같은 화면에 실력 고르기까지 있으면
+         지금 내가 친구를 기다리는 건지 AI랑 하는 건지 헷갈린다. -->
+    <div class="card">
+      <div class="label">🤖 혼자 연습하기</div>
+      <div class="tag2" style="text-align:left;margin-bottom:9px;">친구가 없어도 AI와 바로 붙을 수 있어요. 실력은 다음 화면에서 골라요.</div>
+      <button class="btn" id="netAiBtn" style="width:100%;padding:13px 18px;font-size:16px;background:linear-gradient(180deg,#ffb08a,#ff8a5c);box-shadow:0 6px 0 #e0691a;">🤖 AI와 대결 →</button>
     </div>
     <button class="btn ghost" id="netBackBtn">← 홈으로</button>
   </div>
@@ -846,17 +856,23 @@
   <div id="aiScreen" class="screen hide">
     <div class="h2">🤖 AI와 대결</div>
     <div class="tag2">인터넷 없이 혼자서 바로 붙어요. 이기면 실력에 따라 코인을 줍니다!</div>
+    <!-- 친구 화면과 같은 짝으로 묶는다: '내가 정하는 것' 한 장 + '상대' 한 장.
+         카드가 넷으로 흩어져 있으면 무엇이 내 설정이고 무엇이 상대 설정인지 헷갈린다. -->
     <div class="card">
-      <div class="label">🎮 어떤 게임으로?</div>
+      <div class="label">⚙️ 대결 설정</div>
+      <div class="sublabel">🎮 어떤 게임으로?</div>
       <div class="opts" id="aiGameOpts"></div>
-      <div class="tag2" id="aiGameDesc" style="text-align:left;margin-top:8px;"></div>
-    </div>
-    <div class="card hide" id="aiRoleCard">
-      <div class="label">🎭 내 역할</div>
-      <div class="opts" id="aiRoleOpts"></div>
+      <div class="tag2" id="aiGameDesc" style="text-align:left;margin-top:7px;"></div>
+      <div class="hide" id="aiRoleCard">
+        <div class="sublabel">🎭 내 역할</div>
+        <div class="opts" id="aiRoleOpts"></div>
+      </div>
+      <div class="sublabel">🍬 난이도</div>
+      <div class="opts modeOpts"></div>
+      <div class="tag2" id="aiSetupInfo" style="text-align:left;margin-top:8px;"></div>
     </div>
     <div class="card">
-      <div class="label">🤖 AI 실력 고르기</div>
+      <div class="label">🤖 상대 — AI 실력</div>
       <div class="opts aiTierOpts"></div>
       <div class="tag2 aiTierDesc" style="text-align:left;margin-top:8px;"></div>
     </div>
@@ -2786,7 +2802,9 @@ function buildAiOpts(){
 }
 // 홈에서 바로 들어오는 AI 대결 — 게임과 역할을 여기서 고른다
 let aiGame='throw', aiRole='popper';
-function openAiScreen(){ showScreen('aiScreen'); buildAiGameOpts(); buildAiOpts(); }
+function openAiScreen(){ showScreen('aiScreen');
+  if(!MODES[netModeName]) netModeName=userMode;
+  buildAiGameOpts(); buildAiOpts(); buildNetModeOpts(); syncNetSetup(); }
 function buildAiGameOpts(){
   const o=$('aiGameOpts'); if(!o) return; o.innerHTML='';
   [['throw','🎯 던지기 게임'],['dungeon','⚔️ 실시간 던전']].forEach(([id,label])=>{
@@ -2796,7 +2814,7 @@ function buildAiGameOpts(){
     ? '한 사람은 던지고 한 사람은 터뜨려요. 역할을 골라주세요.'
     : '같은 판을 동시에 플레이하는 점수 대결. 게이지가 차면 방해 아이템으로 AI를 괴롭힐 수 있어요!';
   $('aiRoleCard').classList.toggle('hide',aiGame!=='throw');
-  buildAiRoleOpts();
+  buildAiRoleOpts(); syncNetSetup();
 }
 function buildAiRoleOpts(){
   const o=$('aiRoleOpts'); if(!o) return; o.innerHTML='';
@@ -2818,7 +2836,8 @@ function aiStop(){ aiOn=false; if(aiT){ clearInterval(aiT); aiT=null; } }
 function aiMatch(){
   if(!nick) saveNick('나');
   netLeave(); hubLeave();
-  netSeed=(Math.random()*1e9)>>>0; netModeName=mode;
+  netSeed=(Math.random()*1e9)>>>0;
+  if(!MODES[netModeName]) netModeName=userMode;   // 화면에서 고른 난이도
   net.timeLimit=(netGame==='throw')?90:120;
   net.room=''; net.host=true;
   aiStart(); computeRole();
@@ -2932,18 +2951,42 @@ function openNetMode(game){
     ? '한 사람은 젤리를 던지고, 한 사람은 터뜨려요. 던지는 사람은 무기(👻유령·💣폭탄·🌧️젤리비)와 낙하 속도(🐢~🚀)를 골라 상대 화면을 보면서 조준합니다!'
     : '둘이 똑같은 판을 동시에 플레이해요. 상대 점수가 실시간으로 보이고, 더 오래 버티며 많이 터뜨린 쪽이 승리! 게이지가 차면 방해 젤리를 한 번씩 보낼 수 있어요.';
   $('netRoleCard').classList.toggle('hide',netGame!=='throw');
-  buildRoleOpts(); syncPublicBtn(); buildAiOpts();
+  // 내가 '준비하기'에서 고른 난이도를 기본값으로 놓고, 여기서 바꿀 수 있게 한다
+  if(!MODES[netModeName]) netModeName='normal';
+  if(!net.room) netModeName=userMode;
+  buildRoleOpts(); buildNetModeOpts(); syncNetSetup(); syncPublicBtn();
   renderRoomList(); hubEnsure();
 }
 function buildRoleOpts(){
   const o=$('netRoleOpts'); o.innerHTML='';
   ['thrower','popper'].forEach(id=>{ const b=document.createElement('button');
     b.className='chip'+(hostRole===id?' on':''); b.textContent=roleLabel(id);
-    b.onclick=()=>{ hostRole=id; buildRoleOpts(); }; o.appendChild(b); });
+    b.onclick=()=>{ hostRole=id; buildRoleOpts(); syncNetSetup(); }; o.appendChild(b); });
+}
+// 방 난이도. 예전에는 '준비하기'에서 고른 값을 몰래 가져다 썼다 —
+// 친구랑 할 때 난이도가 어디서 정해지는지 화면에 안 보여서 바꿀 수가 없었다.
+function buildNetModeOpts(){
+  document.querySelectorAll('.modeOpts').forEach(o=>{ o.innerHTML='';
+    Object.keys(MODES).forEach(id=>{ const m=MODES[id];
+      const b=document.createElement('button');
+      b.className='chip'+(netModeName===id?' on':''); b.textContent=m.emoji+' '+m.name;
+      b.onclick=()=>{ netModeName=id; buildNetModeOpts(); syncNetSetup(); hubAdvertise(); };
+      o.appendChild(b); }); });
+}
+function syncNetSetup(){
+  const m=MODES[netModeName]||MODES.normal, sec=(netGame==='throw')?90:120;
+  const ai=$('aiSetupInfo');
+  if(ai) ai.innerHTML='선택: <b>'+m.emoji+m.name+'</b> · 목숨 '+m.lives+'개 · 제한시간 '
+    +((aiGame==='throw')?90:120)+'초';
+  const el=$('netSetupInfo'); if(!el) return;
+  el.innerHTML='선택: <b>'+m.emoji+m.name+'</b> · 목숨 '+m.lives+'개 · 제한시간 '+sec+'초'
+    +(netGame==='throw' ? ' · 내 역할 <b>'+escapeHtml(roleLabel(hostRole))+'</b>' : '')
+    +'<br>들어온 친구는 이 설정을 그대로 따라요.';
 }
 function netCreate(){
   if(!nickOrPrompt()) return;
-  netSeed=(Math.random()*1e9)>>>0; netModeName=mode;
+  netSeed=(Math.random()*1e9)>>>0;
+  if(!MODES[netModeName]) netModeName=userMode;   // 화면에서 고른 난이도를 그대로 쓴다
   net.timeLimit=(netGame==='throw')?90:120;
   netEnterRoom(makeCode(),true);
 }
@@ -3785,7 +3828,9 @@ $('throwGameBtn').onclick=()=>openNetMode('throw');
 // 로비 연결은 유지한다 — 그래야 혼자 하기 중에도 "새 방이 열렸어요" 알림이 온다
 $('netBackBtn').onclick=()=>{ netRandomStop(); openStart(); };
 $('netRandomBtn').onclick=netRandom;
-$('netAiBtn').onclick=aiMatch;
+// AI 는 AI 화면에서 게임·역할·실력을 골라 시작한다. 여기서 바로 시작하면
+// 친구 설정과 AI 설정이 한 화면에 섞여 무엇이 적용되는지 알 수 없다.
+$('netAiBtn').onclick=()=>{ aiGame=netGame; openAiScreen(); };
 $('randCancelBtn').onclick=()=>netRandomStop('랜덤 매칭을 멈췄어요 ✋');
 $('inviteNo').onclick=hideInvite;
 $('aiBtn').onclick=openAiScreen; $('aiStartBtn').onclick=aiGo; $('aiBackBtn').onclick=openStart;
