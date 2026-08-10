@@ -717,6 +717,26 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       한글 파일(<b>.hwp</b>)은 지원하지 않으니 워드나 PDF로 저장해서 올려주세요.</p>
     </div>
 
+    <div class="card" id="sc-scan" style="display:none">
+      <h3>🖼️ 이 PDF는 글자가 아니라 사진입니다 <span class="tagx">OCR 필요</span></h3>
+      <p class="mini" id="sc-scanmsg" style="margin:0 0 12px"></p>
+      <div class="row">
+        <button class="btn pri" id="sc-scandl">🖼️ 페이지 그림 내려받기</button>
+        <a class="btn" href="https://drive.google.com/drive/my-drive" target="_blank" rel="noopener">📄 구글 드라이브로 글자 뽑기 ↗</a>
+        <a class="btn gh" href="https://lens.google.com/" target="_blank" rel="noopener">🔍 Google 렌즈 ↗</a>
+        <button class="btn gh" id="sc-scanpaste">📋 뽑은 글자 붙여넣기</button>
+      </div>
+      <div class="rule">글자로 바꾸는 가장 쉬운 방법</div>
+      <p class="mini"><b>① 구글 드라이브 (한글 정확도가 가장 좋습니다 · 무료)</b><br>
+      드라이브에 이 PDF를 올린 뒤 파일을 <b>우클릭 → 연결 프로그램 → Google 문서</b>로 열면
+      글자가 뽑힌 문서로 바뀝니다. 그 글자를 복사해 <b>「뽑은 글자 붙여넣기」</b>에 넣으세요.</p>
+      <p class="mini"><b>② AI에게 그림째로 물어보기</b><br>
+      「페이지 그림 내려받기」로 받은 이미지를 ChatGPT · Claude · Google 렌즈에 넣고
+      <b>「이 이미지의 글자를 그대로 옮겨 적어줘」</b>라고 하면 됩니다.</p>
+      <p class="mini">이 앱은 밖으로 아무것도 보내지 않기 때문에 <b>글자 인식(OCR)을 직접 하지는 못합니다.</b>
+      한글 인식에 필요한 데이터만 수십 MB라 파일 하나에 담을 수가 없어요. 대신 위 두 길이 확실합니다.</p>
+    </div>
+
     <div class="card" id="sc-raw-wrap" style="display:none">
       <h3>✂️ 씬 분해</h3>
       <textarea id="sc-raw" style="min-height:180px;font-family:var(--mono);font-size:12.5px" placeholder="S#1. 비 내리는 뒷골목 / 밤&#10;&#10;지훈이 우산 없이 걸어 나온다.&#10;&#10;지훈: 이제 그만하자.&#10;&#10;S#2. 기억 상점 / 심야"></textarea>
@@ -1642,7 +1662,7 @@ $('nav').addEventListener('click',e=>{
   $('t-'+b.dataset.t).classList.add('on');
   if(b.dataset.t==='prompt') renderPrompt();
   if(b.dataset.t==='plan') renderChars();
-  if(b.dataset.t==='cut'){ renderScript(); renderScenes(); renderBoard(); paintOneshot(); }
+  if(b.dataset.t==='cut'){ renderScript(); paintOneshot(); lazyMark(); }
   if(b.dataset.t==='data'){ updQuota(); mtProbe(); }
   window.scrollTo(0,0);
 });
@@ -2413,7 +2433,9 @@ async function readPdf(buf){
     if(end<0) continue;
     objs.set(m[1],{head:bin.slice(bodyStart,Math.min(end,bodyStart+3000)),bodyStart,end});
   }
-  const streamOf=async o=>{
+  // 스트림의 시작·끝 위치. inline(객체 스트림 안에서 꺼낸 객체)은 스트림이 없다.
+  const spanOf=o=>{
+    if(o.bodyStart<0) return null;
     const sIdx=bin.indexOf('stream',o.bodyStart);
     if(sIdx<0||sIdx>o.end) return null;
     let d=sIdx+6;
@@ -2423,8 +2445,35 @@ async function readPdf(buf){
     if(e<0||e>o.end+64) e=o.end;
     const lm=/\/Length\s+(\d+)/.exec(o.head);
     if(lm){ const L=parseInt(lm[1],10); if(L>0&&d+L<=bin.length) e=d+L; }
-    return applyFilters(u8.subarray(d,e),o.head);
+    return [d,e];
   };
+  const rawStreamOf=o=>{ const s=spanOf(o); return s?u8.subarray(s[0],s[1]):null; };
+  const streamOf=async o=>{
+    const s=spanOf(o); if(!s) return null;
+    return applyFilters(u8.subarray(s[0],s[1]),o.head);
+  };
+
+  /* 객체 스트림(/Type /ObjStm) 안에 여러 객체를 압축해 넣는 것이 PDF 1.5부터의 기본이다.
+     워드·한글·리브레오피스가 만든 PDF는 폰트 딕셔너리를 거의 다 여기에 넣기 때문에,
+     이걸 풀지 않으면 /F1 → ToUnicode 연결이 끊겨 한글이 한 글자도 안 나온다. */
+  for(const [,o] of [...objs]){
+    if(!/\/Type\s*\/ObjStm/.test(o.head)) continue;
+    const data=await streamOf(o);
+    if(!data) continue;
+    const s=latin1(data);
+    const N=parseInt((/\/N\s+(\d+)/.exec(o.head)||[])[1]||'0',10);
+    const First=parseInt((/\/First\s+(\d+)/.exec(o.head)||[])[1]||'0',10);
+    if(!N||!First) continue;
+    const nums=s.slice(0,First).trim().split(/\s+/).map(Number);
+    for(let i=0;i<N;i++){
+      const onum=nums[i*2], off=nums[i*2+1];
+      if(!Number.isFinite(onum)||!Number.isFinite(off)) continue;
+      const nextOff=(i+1<N&&Number.isFinite(nums[(i+1)*2+1]))?nums[(i+1)*2+1]:(s.length-First);
+      const body=s.slice(First+off,First+nextOff);
+      const key=String(onum);
+      if(!objs.has(key)) objs.set(key,{head:body.slice(0,3000),bodyStart:-1,end:-1});
+    }
+  }
   // 1) ToUnicode 표를 들고 있는 폰트들을 모은다
   const cmapByObj={};
   for(const [num,o] of objs){
@@ -2476,7 +2525,26 @@ async function readPdf(buf){
     const got=pdfContentText(txt,fontMap);
     if(got.trim()) parts.push(got);
   }
-  if(!parts.length) throw new Error('글자를 찾지 못했습니다 — 스캔한 PDF(이미지)일 수 있어요');
+  if(!parts.length){
+    // 글자가 없다면 사진 PDF다. 페이지 그림을 꺼내 두면 OCR로 넘길 수 있다.
+    const imgs=[], other=[];
+    for(const [,o] of objs){
+      if(!/\/Subtype\s*\/Image/.test(o.head)) continue;
+      const f=/\/Filter\s*\/?\[?\s*\/?(\w+)/.exec(o.head);
+      const kind=f?f[1]:'';
+      if(kind==='DCTDecode'){
+        // 크기로 거르지 않고 JPEG 표식(FF D8)으로 확인한다 — 작은 그림도 진짜 페이지일 수 있다
+        const raw=rawStreamOf(o);
+        if(raw&&raw.length>16&&raw[0]===0xFF&&raw[1]===0xD8) imgs.push({bytes:raw,type:'image/jpeg',ext:'jpg'});
+        else other.push('DCTDecode(읽기 실패)');
+      }else other.push(kind||'?');
+    }
+    const err=new Error(imgs.length
+      ? `글자가 아니라 사진입니다 — 페이지 그림 ${imgs.length}장을 찾았어요`
+      : '글자를 찾지 못했습니다 — 스캔한 PDF(이미지)로 보입니다');
+    err.scan=true; err.images=imgs; err.otherKinds=[...new Set(other)];
+    throw err;
+  }
   return parts.join('\n\n');
 }
 /* 뽑아낸 결과가 사람이 읽을 만한지 대충 판정 — 깨진 글자를 그대로 넣지 않기 위해 */
@@ -2614,8 +2682,11 @@ $('sc-file').addEventListener('change',()=>{
   const f=$('sc-file').files[0]; if(f) ingestFile(f);
   $('sc-file').value='';
 });
+let scanImgs=[];
 async function ingestFile(f){
   toast('읽는 중…');
+  $('sc-fname').textContent=`${f.name} · ${(f.size/1024).toFixed(0)}KB — 읽는 중…`;
+  $('sc-scan').style.display='none'; scanImgs=[];
   try{
     const text=await readScriptFile(f);
     if(!text||!text.trim()) throw new Error('내용이 비어 있습니다');
@@ -2626,9 +2697,38 @@ async function ingestFile(f){
     $('sc-raw-wrap').scrollIntoView({behavior:'smooth',block:'start'});
     toast('불러왔어요 ✓ 분해 결과를 확인하세요');
   }catch(e){
-    toast('읽지 못했어요: '+e.message);
+    $('sc-fname').textContent=`${f.name} — 읽지 못했습니다`;
+    if(e.scan){
+      scanImgs=e.images||[];
+      const box=$('sc-scan');
+      $('sc-scanmsg').innerHTML = scanImgs.length
+        ? `<b>${esc(f.name)}</b> 안에서 <b>페이지 그림 ${scanImgs.length}장</b>을 찾았습니다. 글자 데이터는 들어 있지 않습니다.`
+        : `<b>${esc(f.name)}</b> 에는 글자 데이터가 없습니다. 스캔하거나 사진으로 만든 PDF로 보입니다.`
+          + (e.otherKinds&&e.otherKinds.length?` (그림 형식: ${esc(e.otherKinds.join(', '))} — 이 형식은 꺼내지 못합니다)`:'');
+      $('sc-scandl').style.display = scanImgs.length?'':'none';
+      box.style.display='block';
+      box.scrollIntoView({behavior:'smooth',block:'start'});
+      toast('사진 PDF입니다 — 글자로 바꾸는 방법을 안내할게요');
+    }else{
+      toast('읽지 못했어요: '+e.message);
+    }
   }
 }
+$('sc-scandl').addEventListener('click',async()=>{
+  if(!scanImgs.length){ toast('내려받을 그림이 없어요'); return; }
+  for(let i=0;i<scanImgs.length;i++){
+    const im=scanImgs[i];
+    dl(fileName('page'+String(i+1).padStart(2,'0'),im.ext), new Blob([im.bytes],{type:im.type}));
+    await new Promise(r=>setTimeout(r,250));
+  }
+  toast(`페이지 그림 ${scanImgs.length}장을 내려받았어요 ✓`);
+});
+$('sc-scanpaste').addEventListener('click',()=>{
+  $('sc-raw-wrap').style.display='block';
+  $('sc-raw').focus();
+  $('sc-raw').scrollIntoView({behavior:'smooth',block:'center'});
+  toast('여기에 뽑은 글자를 붙여넣고 「분해 미리보기」를 누르세요');
+});
 /* 드래그 앤 드롭 */
 const dbox=$('dropbox');
 ['dragenter','dragover'].forEach(ev=>dbox.addEventListener(ev,e=>{ e.preventDefault(); dbox.classList.add('hot'); }));
@@ -3705,8 +3805,43 @@ async function updQuota(){
 }
 
 /* ---------- 전체 렌더 ---------- */
+/* =========================================================
+   무거운 목록은 화면에 들어올 때만 그린다.
+   탭을 합치면서 「대본 · 컷」 하나에 씬 목록 + 스토리보드가 같이 얹혔는데,
+   컷이 수백 개면 탭을 누를 때마다 카드 수백 장을 통째로 다시 그리느라 멈칫한다.
+   ========================================================= */
+const LAZY=[{id:'sec-scene',fn:()=>renderScenes()},{id:'sec-board',fn:()=>renderBoard()}];
+let lazyPending=false;
+function lazyMark(){
+  LAZY.forEach(s=>s.dirty=true);
+  const st=$('cutstat'); if(st) st.textContent=statLine();
+  lazyFlush();
+}
+function lazyFlush(){
+  if(lazyPending) return;
+  lazyPending=true;
+  requestAnimationFrame(()=>{
+    lazyPending=false;
+    // 하나를 그리면 아래 것이 화면 밖으로 밀리므로 두 번까지만 확인한다
+    for(let pass=0;pass<2;pass++){
+      let drew=false;
+      for(const s of LAZY){
+        if(!s.dirty) continue;
+        const el=$(s.id);
+        if(!el||!el.closest('.tab.on')) continue;
+        const r=el.getBoundingClientRect();
+        if(r.top>innerHeight*1.6 || r.bottom<-innerHeight*0.6) continue;
+        s.dirty=false; s.fn(); drew=true;
+      }
+      if(!drew) break;
+    }
+  });
+}
+window.addEventListener('scroll',lazyFlush,{passive:true});
+window.addEventListener('resize',lazyFlush);
+
 function renderAll(){
-  fillStory(); fillStyle(); renderChars(); renderScenes(); renderScript(); renderPrompt(); renderBoard(); updQuota(); renderHome(); paintOneshot();
+  fillStory(); fillStyle(); renderChars(); renderScript(); renderPrompt(); updQuota(); renderHome(); paintOneshot(); lazyMark();
 }
 
 /* ---------- 시작 ---------- */
