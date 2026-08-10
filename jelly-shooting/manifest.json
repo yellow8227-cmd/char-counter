@@ -1,0 +1,16 @@
+{
+  "name": "Jelly Shooting",
+  "short_name": "젤리슈팅",
+  "description": "터질 때마다 도파민 팡팡! 귀여운 젤리 슈팅 게임",
+  "lang": "ko",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffdaef",
+  "theme_color": "#ff5c8a",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
