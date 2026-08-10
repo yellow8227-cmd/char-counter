@@ -29,7 +29,10 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      # enablement: 저장소 설정에서 손으로 켜지 않아도 여기서 Pages 를 켠다
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       # shot-planner 폴더가 사이트의 뿌리가 된다 — 주소가 곧 도구다
       - uses: actions/upload-pages-artifact@v3
         with:
