@@ -29,7 +29,7 @@
     --bg:#f2f3f5; --bg2:#e8eaee;
     --panel:#ffffff; --panel2:#f5f6f8; --panel3:#eceef2; --panel4:#e2e5ea;
     --line:#e2e4e9; --line2:#cbd0d8; --line3:#b3bac5;
-    --ink:#16191f; --ink2:#3d434e; --sub:#6b7280; --sub2:#9aa1ac;
+    --ink:#16191f; --ink2:#3d434e; --sub:#5f6673; --sub2:#767e8b;
     --warn:#c0392f; --ok:#1e7a52;
     --badge-bad-bg:#fdecea; --badge-bad-ink:#a8322a;
     --badge-mv-bg:#eaf1fa; --badge-mv-ink:#1f5f96;
@@ -45,7 +45,7 @@
     --bg:#0e1014; --bg2:#0a0c0f;
     --panel:#181b21; --panel2:#1f232a; --panel3:#272c34; --panel4:#323842;
     --line:#282d35; --line2:#3b424d; --line3:#4d5560;
-    --ink:#e9ecf1; --ink2:#c2c8d2; --sub:#8b93a1; --sub2:#6a7280;
+    --ink:#e9ecf1; --ink2:#c2c8d2; --sub:#98a1b0; --sub2:#828b99;
     --warn:#ff7d72; --ok:#4fce8e;
     --badge-bad-bg:#3d1e1c; --badge-bad-ink:#ff9d94;
     --badge-mv-bg:#12303f; --badge-mv-ink:#7fd0ff;
@@ -559,7 +559,7 @@
   .site .foot{
     border-top:1px solid var(--line); padding:30px 0 44px;
     display:flex; gap:14px; align-items:center; flex-wrap:wrap;
-    color:var(--sub2); font-size:calc(var(--fs) - 2px);
+    color:var(--sub); font-size:calc(var(--fs) - 2px);
   }
   .site .foot .sep{ flex:1 }
   .site .foot b{ color:var(--sub); font-weight:600 }
@@ -1204,9 +1204,9 @@ function propOf(o){
   const P = getProp(o.kind);
   if(!P) return null;
   if(o.w == null && o.d == null && o.h == null) return P;
-  return {...P, w: o.w != null ? o.w : P.w,
-                d: o.d != null ? o.d : P.d,
-                h: o.h != null ? o.h : P.h};
+  // 손으로 고친 저장본에서 이상한 값이 들어올 수 있다. 못 쓸 값이면 종류 기본값으로.
+  const n = (v, dflt) => { v = +v; return isFinite(v) && v > 0 ? clamp(v, 1, 2000) : dflt; };
+  return {...P, w:n(o.w, P.w), d:n(o.d, P.d), h:n(o.h, P.h)};
 }
 /* 이 소품이 종류 기본값에서 벗어나 있나 */
 const propResized = o => o.w != null || o.d != null || o.h != null;
@@ -1424,9 +1424,24 @@ function lightPrims(l){
           B(0,0,l.z-16, 30,22,30, kelvinRGB(l.kelvin))];
 }
 
+/* 크기를 바꾼 소품의 3D 도형.
+   도형은 언제나 종류의 기본 치수로 만든 다음, 축마다 배율을 곱해 늘린다.
+   그래야 의자 다리 굵기 같은 비례가 유지되고, 아무리 줄여도 도형이 뒤집히지 않는다. */
+function propPrimsFor(o){
+  const base = getProp(o.kind);
+  if(!base || !(base.w > 0) || !(base.d > 0) || !(base.h > 0)) return [];
+  const ps = propPrims(o.kind, base);
+  const P = propOf(o);
+  const sx = P.w/base.w, sy = P.d/base.d, sz = P.h/base.h;
+  if(sx === 1 && sy === 1 && sz === 1) return ps;
+  return ps.map(q => ({...q,
+    x: q.x*sx, y: q.y*sy, z: q.z*sz,
+    w: q.w*sx, d: q.d*sy, h: q.h*sz}));
+}
+
 function primsOf(o){
   let ps, rot = 0;
-  if(o.type === 'prop'){ const P = propOf(o); if(!P) return []; ps = propPrims(o.kind, P); rot = o.rot; }
+  if(o.type === 'prop'){ ps = propPrimsFor(o); rot = o.rot; }
   else if(o.type === 'actor'){ ps = actorPrims(o); rot = o.rot; }
   else if(o.type === 'cam'){ ps = camPrims(o); rot = o.pan; }
   else if(o.type === 'light'){ ps = lightPrims(o); rot = o.pan; }
@@ -2353,6 +2368,12 @@ function hitTest(wx, wy, cycle){
   }
   return c[0];
 }
+/* 손잡이를 집어도 되는 자리인가 —
+   누른 곳에 '다른 물건'이 있으면 그 물건을 고르는 쪽이 먼저다. */
+function handleFree(wx, wy, selId){
+  const c = hitCandidates(wx, wy);
+  return !c.length || c[0].id === selId;
+}
 function handlePos(o){
   const rot = (o.type==='cam'||o.type==='light') ? o.pan : o.rot;
   const rr = radiusOf(o) + 22/PT.s;
@@ -2414,6 +2435,7 @@ planCv.addEventListener('contextmenu', e => e.preventDefault());
 
 planCv.addEventListener('pointerdown', e => {
   planCv.setPointerCapture(e.pointerId);
+  if(e.isPrimary){ pointers.clear(); pinch = null; }   // 새 손짓 — 놓친 기록 정리
   pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
   if(pointers.size === 2){                          // 두 손가락 — 확대 / 화면 이동
     drag = null; drawingWall = null; marquee = null; panning = null;
@@ -2443,10 +2465,10 @@ planCv.addEventListener('pointerdown', e => {
     drawingWall = {x1:snap(wx,10), y1:snap(wy,10), x2:snap(wx,10), y2:snap(wy,10)};
     return;
   }
-  // 무브 경로 끝점 잡기
+  // 무브 경로 끝점 잡기 — 판정 범위는 화면 기준으로 (배율이 낮아도 일정하게)
   for(const c of state.cams){
     if(c.end && c.id === state.activeCam &&
-       Math.hypot(wx-c.end.x, wy-c.end.y) <= 30 + 10/PT.s){
+       Math.hypot(wx-c.end.x, wy-c.end.y) <= 24/PT.s){
       snapshot(); drag = {mode:'end', o:c, dx:wx-c.end.x, dy:wy-c.end.y}; return;
     }
   }
@@ -2454,11 +2476,15 @@ planCv.addEventListener('pointerdown', e => {
   if(sel && sel.type === 'wall'){
     // 벽 끝점 손잡이
     const tol = 18/PT.s;
-    if(Math.hypot(wx-sel.x1, wy-sel.y1) < tol){ snapshot(); drag = {mode:'wallEnd', o:sel, n:1}; return; }
-    if(Math.hypot(wx-sel.x2, wy-sel.y2) < tol){ snapshot(); drag = {mode:'wallEnd', o:sel, n:2}; return; }
+    if(handleFree(wx, wy, sel.id)){
+      if(Math.hypot(wx-sel.x1, wy-sel.y1) < tol){ snapshot(); drag = {mode:'wallEnd', o:sel, n:1}; return; }
+      if(Math.hypot(wx-sel.x2, wy-sel.y2) < tol){ snapshot(); drag = {mode:'wallEnd', o:sel, n:2}; return; }
+    }
   } else if(sel){
     const h = handlePos(sel);
-    if(Math.hypot(wx-h[0], wy-h[1]) < 20/PT.s){ snapshot(); drag = {mode:'rotate', o:sel}; return; }
+    if(Math.hypot(wx-h[0], wy-h[1]) < 16/PT.s && handleFree(wx, wy, sel.id)){
+      snapshot(); drag = {mode:'rotate', o:sel}; return;
+    }
   }
   const hit = hitTest(wx, wy, e.altKey);
   if(hit){
@@ -2527,7 +2553,8 @@ planCv.addEventListener('pointermove', e => {
     if(mode === 'select' && !spaceDown){
       const s2 = state.sel && byId(state.sel);
       let cur = hitCandidates(wx, wy).length ? 'move' : 'default';
-      if(s2 && s2.type !== 'wall' && Math.hypot(wx-handlePos(s2)[0], wy-handlePos(s2)[1]) < 20/PT.s)
+      if(s2 && s2.type !== 'wall' && cur === 'default' &&
+         Math.hypot(wx-handlePos(s2)[0], wy-handlePos(s2)[1]) < 16/PT.s)
         cur = 'grab';
       if(planCv.style.cursor !== cur) planCv.style.cursor = cur;
     }
@@ -2610,7 +2637,11 @@ document.addEventListener('keydown', e => {
     setSel(ids, ids[0]); redraw();
     toast('👆 ' + ids.length + '개 전부 골랐어요'); return;
   }
-  if(e.code === 'Space' && !spaceDown){ spaceDown = true; planCv.style.cursor = 'grab'; e.preventDefault(); return; }
+  if(e.code === 'Space' && !spaceDown){
+    // 버튼·링크·접기에 초점이 있으면 Space 는 그것을 누르는 키다. 가로채지 않는다.
+    if(/^(BUTTON|A|SUMMARY)$/.test(e.target.tagName)) return;
+    spaceDown = true; applyCursor(); e.preventDefault(); return;
+  }
 
   // 화면 보기 조작
   if(e.key === '0'){ resetView(); redraw(); toast('🔍 화면을 맞췄어요'); return; }
@@ -2866,7 +2897,9 @@ function renderInsp(){
     o.w = clamp(nv('i_pw')||1, 1, 2000);
     o.d = clamp(nv('i_pd')||1, 1, 2000);
     o.h = clamp(nv('i_ph')||1, 1, 2000);
-    drawPlan(); drawCamView(); drawBird();     // 패널은 그대로 두고 그림만 다시 그린다
+    const rb = document.getElementById('i_sizeReset');
+    if(rb) rb.disabled = !propResized(o);      // 패널을 다시 그리지 않으니 직접 켠다
+    drawPlan(); drawCamView(); drawBird();     // 그림만 새로
   };
   ['i_pw','i_pd','i_ph'].forEach(id => {
     on(id,'focus', () => snapshot());          // 되돌리기 지점은 만지기 시작할 때 한 번
@@ -3320,7 +3353,8 @@ document.getElementById('bPrefs').addEventListener('click', openPrefs);
 document.getElementById('bPrefsClose').addEventListener('click', closePrefs);
 prefsModal.addEventListener('click', e => { if(e.target === prefsModal) closePrefs(); });
 document.getElementById('bPrefsReset').addEventListener('click', () => {
-  prefs = {...DEFAULT_PREFS}; savePrefs(); applyPrefs(); toast('설정을 처음 상태로 되돌렸어요');
+  prefs = {...DEFAULT_PREFS}; savePrefs(); applyPrefs(); applyWide();
+  toast('설정을 처음 상태로 되돌렸어요');
 });
 /* 헤더의 🌗 — 자동이면 지금 보이는 것의 반대로 고정 */
 document.getElementById('bTheme').addEventListener('click', () => {
