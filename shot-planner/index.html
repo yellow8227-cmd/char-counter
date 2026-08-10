@@ -604,19 +604,28 @@
     #printsheet{ display:block; color:#000; font-size:9pt; line-height:1.45 }
     .psheet{ display:flex; flex-direction:column; height:100% }
     .phead{ display:flex; align-items:flex-start; gap:12mm; border-bottom:1.2pt solid #000; padding-bottom:2.5mm }
-    .ptitle b{ display:block; font-size:16pt; letter-spacing:-.4pt; line-height:1.15 }
-    .ptitle span{ display:block; font-size:9pt; color:#333; margin-top:1mm }
+    .ptitle{ min-width:0; overflow:hidden }
+    .ptitle b, .ptitle span{ display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+    .ptitle b{ font-size:16pt; letter-spacing:-.4pt; line-height:1.15 }
+    .ptitle span{ font-size:9pt; color:#333; margin-top:1mm }
     .pblock{ margin-left:auto; border-collapse:collapse; font-size:8pt }
     .pblock td{ border:.6pt solid #999; padding:.8mm 2.5mm }
     .pblock td:first-child{ color:#555; background:#f2f2f2 }
-    /* 도면은 늘였다 줄였다 하면 축척이 어긋난다. 209×154mm 로 못 박는다. */
+    /* 도면은 늘였다 줄였다 하면 축척이 어긋난다. 186×136mm 로 못 박는다. */
     .pbody{ display:flex; gap:6mm; margin-top:4mm; flex:1; min-height:0 }
-    #pp-img{ width:209mm; height:154mm; flex:none; object-fit:contain; border:.6pt solid #666 }
-    .pside{ width:62mm; flex:none }
+    .pmain{ width:186mm; flex:none }
+    #pp-img{ width:186mm; height:136mm; display:block; object-fit:contain; border:.6pt solid #666 }
+    .pside{ width:85mm; flex:none }
     .pside h4{ margin:0 0 1.5mm; font-size:8.5pt; letter-spacing:.4pt; border-bottom:.6pt solid #000; padding-bottom:.8mm }
-    .pside h4+*{ margin-bottom:4mm }
-    .plegend{ list-style:none; margin:0; padding:0; font-size:8pt }
-    .plegend li{ display:flex; align-items:flex-start; gap:2mm; margin-bottom:1.2mm; line-height:1.35 }
+    .pside h4+*{ margin-bottom:3.5mm }
+    #pp-cam, #pp-bird{ display:block; border:.6pt solid #666 }
+    #pp-cam{ width:85mm }
+    #pp-bird{ width:85mm; height:44mm; object-fit:cover }
+    .pcap{ margin:.8mm 0 3.5mm; font-size:7.5pt; color:#333 }
+    /* 범례는 도면 밑에 가로 띠로 눕힌다 — 옆 칸을 그림에 내주려고 */
+    .plegend{ list-style:none; margin:2.5mm 0 0; padding:0; font-size:8pt;
+              display:grid; grid-template-columns:repeat(3,1fr); gap:1mm 3mm }
+    .plegend li{ display:flex; align-items:flex-start; gap:2mm; line-height:1.35 }
     .plegend i{ width:3.4mm; height:3.4mm; flex:none; margin-top:.4mm; border:.6pt solid #333 }
     .lg-cam{ background:#e08a00 } .lg-act{ background:#5fd08a; border-radius:50% }
     .lg-lit{ background:#fff2c4 } .lg-prop{ background:#dcdcdc }
@@ -786,8 +795,8 @@
   <button id="bSave">💾 저장</button>
   <button id="bLoad">📂 불러오기</button>
   <button id="bShare">🔗 공유</button>
-  <button id="bPrint">🖨 도면 인쇄</button>
-  <button id="bPng">🖼 PNG</button>
+  <button id="bPrint">🖨 한 장 인쇄</button>
+  <button id="bPng">🖼 도면 PNG</button>
   <button id="bList">📋 샷리스트</button>
   <span class="vr"></span>
   <button id="bTheme" class="icon" title="밝게 / 어둡게 전환">🌗</button>
@@ -1053,7 +1062,8 @@
       <div id="insp"><div class="empty">배치도에서 요소를 클릭하세요.</div></div>
     </section>
     <section class="card">
-      <h2>카메라 뷰</h2>
+      <h2>카메라 뷰<button id="bCamPng" class="mini" style="margin-left:auto"
+            title="이 화면을 PNG 로 저장">⤓ PNG</button></h2>
       <canvas id="cam"></canvas>
       <div class="row" style="margin-top:7px">
         <select id="ratio"></select>
@@ -1065,7 +1075,8 @@
     </section>
 
     <section class="card">
-      <h2>조감도</h2>
+      <h2>조감도<button id="bBirdPng" class="mini" style="margin-left:auto"
+            title="이 화면을 PNG 로 저장">⤓ PNG</button></h2>
       <canvas id="bird"></canvas>
       <p class="hint">드래그 회전 · 휠 확대</p>
     </section>
@@ -1095,23 +1106,43 @@
       <table class="pblock"><tbody id="pp-block"></tbody></table>
     </div>
     <div class="pbody">
-      <img id="pp-img" alt="배치도">
-      <div class="pside">
-        <h4>범례</h4>
+      <div class="pmain">
+        <img id="pp-img" alt="배치도">
         <ul class="plegend">
           <li><i class="lg-cam"></i>카메라 (슬레이트 · 렌즈)</li>
           <li><i class="lg-act"></i>배우 (이름 · 자세)</li>
           <li><i class="lg-lit"></i>조명 (세기 · 색온도)</li>
           <li><i class="lg-prop"></i>소품</li>
           <li><i class="lg-wall"></i>벽</li>
-          <li><i class="lg-axis"></i>180° 선 — 붉은 쪽은 넘으면 안 되는 방향</li>
+          <li><i class="lg-axis"></i>180° 선 — 붉은 쪽 넘기 금지</li>
         </ul>
+      </div>
+      <div class="pside">
+        <h4>카메라 뷰</h4>
+        <img id="pp-cam" alt="카메라 뷰">
+        <p class="pcap" id="pp-camcap"></p>
+        <h4>조감도</h4>
+        <img id="pp-bird" alt="조감도">
         <h4>셋업</h4>
         <table class="ptbl"><thead><tr><th>슬레이트</th><th>렌즈</th><th>높이</th><th>무브</th><th>샷</th></tr></thead>
           <tbody id="pp-shots"></tbody></table>
       </div>
     </div>
     <div class="pfoot"><span id="pp-foot"></span><span>촬영 배치도 · Shot Planner</span></div>
+  </div>
+</div>
+
+<!-- 묻는 창. 브라우저 confirm/prompt 는 샌드박스 안에서 막히므로 직접 만든다. -->
+<div class="modal" id="askModal">
+  <div class="sheet" style="width:min(430px,100%)">
+    <h3 id="askTitle"></h3>
+    <p class="sub" id="askBody" style="white-space:pre-line"></p>
+    <textarea id="askInput" rows="6" style="display:none; width:100%; box-sizing:border-box;
+      font-family:var(--mono); font-size:calc(var(--fs) - 2px); resize:vertical"></textarea>
+    <div class="row" style="justify-content:flex-end; margin-top:16px">
+      <button id="askNo">취소</button>
+      <button id="askYes" class="on">확인</button>
+    </div>
   </div>
 </div>
 
@@ -2423,16 +2454,22 @@ function drawCam2D(g, c){
    카메라 뷰 · 조감도
    ============================================================ */
 const camCv = document.getElementById('cam');
-function drawCamView(){
-  const c = liveCam();
-  const wrapW = Math.max(1, camCv.getBoundingClientRect().width);
-  const h = Math.max(60, Math.round(wrapW/ratioVal()));
-  camCv.style.height = h + 'px';
-  const {g, w:cw, h:ch} = fitCanvas(camCv, h);
+/* 화면에도 그리고, 종이에도 그린다. target 을 주면 그 캔버스에 그 크기로. */
+function drawCamView(target, tw, th, cam){
+  const c = cam || liveCam();
+  let g, cw, ch;
+  if(target){ g = target; cw = tw; ch = th; }
+  else{
+    const wrapW = Math.max(1, camCv.getBoundingClientRect().width);
+    const h = Math.max(60, Math.round(wrapW/ratioVal()));
+    camCv.style.height = h + 'px';
+    const r = fitCanvas(camCv, h); g = r.g; cw = r.w; ch = r.h;
+  }
+  const k = Math.max(1, ch/220);       // 종이에 크게 그릴 때 글자·선도 같이 커지도록
   // 카메라 뷰는 "필름 프레임"이라 테마와 무관하게 항상 어둡게 둔다
   g.fillStyle = '#0b0d12'; g.fillRect(0,0,cw,ch);
   if(!c){
-    g.fillStyle = '#5a6272'; g.font = '13px system-ui,sans-serif';
+    g.fillStyle = '#5a6272'; g.font = (13*k) + 'px system-ui,sans-serif';
     g.textAlign='center'; g.textBaseline='middle';
     g.fillText('카메라를 추가하세요', cw/2, ch/2); return;
   }
@@ -2444,32 +2481,34 @@ function drawCamView(){
     if(s && s[0] > -40 && s[0] < cw+40) label(g, a.name, s[0], s[1], '#1d6b3f');
   }
   if(on_('cbGuide')){
-    g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = 1;
+    g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = k;
     for(let i=1;i<3;i++){
       g.beginPath(); g.moveTo(cw*i/3,0); g.lineTo(cw*i/3,ch); g.stroke();
       g.beginPath(); g.moveTo(0,ch*i/3); g.lineTo(cw,ch*i/3); g.stroke();
     }
-    g.strokeStyle = 'rgba(255,255,255,.35)'; g.setLineDash([5,4]);
+    g.strokeStyle = 'rgba(255,255,255,.35)'; g.setLineDash([5*k,4*k]);
     g.strokeRect(cw*.05, ch*.05, cw*.9, ch*.9);
     g.strokeRect(cw*.10, ch*.10, cw*.8, ch*.8);
     g.setLineDash([]);
     g.strokeStyle = 'rgba(255,255,255,.5)';
-    g.beginPath(); g.moveTo(cw/2-8,ch/2); g.lineTo(cw/2+8,ch/2);
-    g.moveTo(cw/2,ch/2-8); g.lineTo(cw/2,ch/2+8); g.stroke();
+    g.beginPath(); g.moveTo(cw/2-8*k,ch/2); g.lineTo(cw/2+8*k,ch/2);
+    g.moveTo(cw/2,ch/2-8*k); g.lineTo(cw/2,ch/2+8*k); g.stroke();
   }
-  g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(0,0,cw,20);
+  g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(0,0,cw,20*k);
   const bad = crossesAxis(c);
-  g.fillStyle = bad ? '#ff8a8a' : ACC; g.font = '700 11px system-ui,sans-serif';
+  g.fillStyle = bad ? '#ff8a8a' : ACC; g.font = '700 ' + (11*k) + 'px system-ui,sans-serif';
   g.textAlign='left'; g.textBaseline='middle';
   g.fillText((bad?'⚠︎ 축넘김  ':'') + c.slate + '  ' + c.lens + 'mm  T' + c.stop +
              '  H' + Math.round(c.z) + 'cm  ' + c.move +
-             (c.end && state.scrub>0 ? '  ▶' + Math.round(state.scrub*100) + '%' : ''), 8, 10);
+             (c.end && state.scrub>0 ? '  ▶' + Math.round(state.scrub*100) + '%' : ''), 8*k, 10*k);
 }
 
 const birdCv = document.getElementById('bird');
 const bird = {yaw:0.5, pitch:0.85, dist:1600};
-function drawBird(){
-  const {g, w:cw, h:ch} = fitCanvas(birdCv);
+function drawBird(target, tw, th){
+  let g, cw, ch;
+  if(target){ g = target; cw = tw; ch = th; }
+  else{ const r = fitCanvas(birdCv); g = r.g; cw = r.w; ch = r.h; }
   g.fillStyle = PAL.bird; g.fillRect(0,0,cw,ch);
   const tz = state.set.h*0.35;
   const b = basis({pan:bird.yaw, tilt:-bird.pitch});
@@ -2993,6 +3032,11 @@ planCv.addEventListener('wheel', e => {
 }, {passive:false});
 
 document.addEventListener('keydown', e => {
+  if(askDone){                       // 묻는 창이 떠 있으면 그것부터
+    if(e.key === 'Escape'){ e.preventDefault(); closeAsk(null); }
+    else if(e.key === 'Enter' && askInput.style.display === 'none'){ e.preventDefault(); closeAsk(true); }
+    return;
+  }
   if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
   const meta = e.ctrlKey || e.metaKey;
   if(meta && e.key.toLowerCase() === 'z'){
@@ -3819,12 +3863,16 @@ document.getElementById('bDupCam').addEventListener('click', () => {
    ============================================================ */
 /* 브라우저가 한글·한자 파일 이름을 통째로 버려서 「download」 로 저장되는 일이 있다.
    ASCII 로만 된 이름이면 그대로 쓰고, 아니면 날짜를 붙인 이름으로 떨어뜨린다. */
-function safeName(stem, ext){
+/* 크로뮴은 ASCII 가 아닌 파일명을 통째로 버린다(전부 "download" 가 된다).
+   그래서 제목이 한글이면 날짜로 대신하되, 뒤에 붙는 꼬리표(sheet·cam·bird)는
+   반드시 남긴다. 안 그러면 세 장이 같은 이름으로 떨어져 서로를 덮어쓴다. */
+function safeName(stem, ext, tag){
   const clean = String(stem||'').replace(/[\\/:*?"<>|]+/g,'').trim();
   const d = new Date(), pad = n => String(n).padStart(2,'0');
   const stamp = d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate());
   const asciiOk = clean && /^[\x20-\x7E]+$/.test(clean);
-  return (asciiOk ? clean : 'shotplan_' + stamp) + ext;   // 한글 제목이면 날짜로 대신한다
+  const t = String(tag||'').replace(/[^A-Za-z0-9._-]+/g, '');
+  return (asciiOk ? clean : 'shotplan_' + stamp) + (t ? '_' + t : '') + ext;
 }
 /* 이 도구를 웹에 올려 두면 샌드박스 안에서 돌기 때문에 <a download> 가
    아무 말 없이 막힌다. 브라우저가 내주는 저장 통로를 먼저 쓰고,
@@ -3872,22 +3920,32 @@ async function copyProjectJson(){
     toast('복사가 막혔어요 — 🔗 공유 링크를 쓰세요');
   }
 }
+/* 남의 작품을 받아 여는 길은 셋(파일·붙여넣기·링크)인데 하는 일은 같다. */
+function adoptProject(p2){
+  snapshot();
+  project = Object.assign(newProject(), p2);
+  project.scenes = p2.scenes.map(x => Object.assign(newScene(), x));
+  project.active = clamp(p2.active|0, 0, project.scenes.length-1);
+  syncState();
+  uid = 1 + Math.max(0, ...project.scenes.flatMap(sc =>
+    [...sc.props, ...sc.actors, ...sc.lights, ...sc.cams, ...(sc.walls||[])].map(o => +o.id || 0)));
+}
+const askOverwrite = (p2, lead) => ask(
+  lead || '📥 이걸 열까요?',
+  '「' + (p2.title || '무제') + '」 · 씬 ' + p2.scenes.length + '개\n\n' +
+  '지금 작업 중인 것을 덮습니다. (열고 나서 Ctrl+Z 로 되돌릴 수 있어요)',
+  '열기');
 async function pasteProjectJson(){
   let txt = '';
   try{ txt = await navigator.clipboard.readText(); }catch(e){}
-  if(!txt) txt = prompt('내보내 둔 작품 JSON 을 붙여넣으세요') || '';
+  if(!txt) txt = await askText('📥 JSON 붙여넣기',
+    '내보내 둔 작품 JSON 을 붙여넣고 「열기」를 누르세요.', '{ "title": …') || '';
   if(!txt.trim()) return;
   try{
     const p2 = JSON.parse(txt);
     if(!p2 || !Array.isArray(p2.scenes) || !p2.scenes.length) throw new Error('형식 오류');
-    if(!confirm('「' + (p2.title||'무제') + '」 · 씬 ' + p2.scenes.length + '개\n\n지금 작업 중인 것을 덮고 열까요?')) return;
-    snapshot();
-    project = Object.assign(newProject(), p2);
-    project.scenes = p2.scenes.map(x => Object.assign(newScene(), x));
-    project.active = clamp(p2.active|0, 0, project.scenes.length-1);
-    syncState();
-    uid = 1 + Math.max(0, ...project.scenes.flatMap(sc =>
-      [...sc.props, ...sc.actors, ...sc.lights, ...sc.cams, ...(sc.walls||[])].map(o => +o.id || 0)));
+    if(!await askOverwrite(p2)) return;
+    adoptProject(p2);
     closePrefs(); resetView(); fitBird(); refreshAll();
     toast('📥 붙여넣은 작품을 열었어요');
   }catch(e){ toast('읽지 못했어요 — 작품 JSON 이 맞는지 확인해 주세요'); }
@@ -3936,12 +3994,37 @@ const SHEET_LEGEND = [
   ['#fff2c4', 'sq',  '조명 (세기 · 색온도)'],
   ['#dcdcdc', 'sq',  '소품'],
   ['#444444', 'bar', '벽'],
-  ['#cc3333', 'dash','180° 선 — 붉은 쪽은 넘으면 안 되는 방향'],
+  ['#cc3333', 'dash','180° 선 — 붉은 쪽 넘기 금지'],
 ];
 /* A4 가로(297×210) 에서 여백 10mm 를 빼면 277×190.
    그 중 범례 62mm 와 사이 6mm 를 빼고 남는 209mm 가 도면 폭이고,
    머리말·꼬리말을 빼고 남는 154mm 가 도면 높이다. 인쇄용 CSS 도 같은 값을 쓴다. */
-const SHEET_MM = {page:[297,210], m:10, plan:[209,154], side:62, gap:6};
+const SHEET_MM = {page:[297,210], m:10, plan:[186,136], side:85, gap:6,
+                  legend:12, cam:[85,48], bird:[85,44]};
+/* 카메라 뷰는 화면비대로 눕는다. 4:3 처럼 세로가 길면 폭을 줄여 키를 맞춘다. */
+function camBox(){
+  const [W, H] = SHEET_MM.cam, r = ratioVal();
+  return W/r <= H ? [W, W/r] : [H*r, H];
+}
+/* 종이에 얹을 그림 하나 — 화면 캔버스를 건드리지 않고 따로 그린다 */
+function offscreen(wmm, hmm, draw, dpm){
+  const k = dpm || 12;
+  const cv = document.createElement('canvas');
+  cv.width = Math.round(wmm*k); cv.height = Math.round(hmm*k);
+  draw(cv.getContext('2d'), cv.width, cv.height);
+  return cv;
+}
+const camSheet = () => { const [w, h] = camBox();
+  return offscreen(w, h, (g, W, H) => drawCamView(g, W, H)); };
+const birdSheet = () => offscreen(SHEET_MM.bird[0], SHEET_MM.bird[1],
+  (g, W, H) => drawBird(g, W, H));
+function camCaption(){
+  const c = liveCam(); if(!c) return '카메라 없음';
+  const s2 = subjectOf(c);
+  return c.slate + ' · ' + c.lens + 'mm ' + ((project.stopMode||'T')==='T'?'T':'f/') + c.stop
+    + ' · H' + Math.round(c.z) + 'cm · ' + (c.move||'고정')
+    + (s2 ? ' · ' + shotSizeOf({...c, focus:s2.d}, visH(s2.a)) : '');
+}
 /* 도면만 그린 캔버스. 표준 축척으로 떨어뜨린 뒤 그린다. */
 function planSheet(){
   /* 1mm 당 12px 로 그린다. 종이 위에서 정확히 209mm 를 차지하므로 축척이 맞는다. */
@@ -3994,6 +4077,12 @@ function buildSheet(){
   const {cv, denom} = planSheet();
   const S = sheetData(denom);
   document.getElementById('pp-img').src = cv.toDataURL('image/png');
+  const cb = camBox();
+  const camImg = document.getElementById('pp-cam');
+  camImg.src = camSheet().toDataURL('image/png');
+  camImg.style.width = cb[0] + 'mm'; camImg.style.height = cb[1] + 'mm';
+  document.getElementById('pp-camcap').textContent = camCaption();
+  document.getElementById('pp-bird').src = birdSheet().toDataURL('image/png');
   document.getElementById('pp-title').textContent = S.title;
   document.getElementById('pp-sub').textContent = S.sub;
   document.getElementById('pp-block').innerHTML =
@@ -4055,54 +4144,60 @@ function sheetCanvas(){
     cell(bkX + bkKeyW, by, bkValW, bkH, v, 8, 400, null);
     by += bkH;
   }
+  g.save();
+  g.beginPath(); g.rect(L, T - mm(2), bkX - L - mm(8), mm(14)); g.clip();
   text(S.title, L, T + mm(6), 16, 700, '#000');
   text(S.sub,   L, T + mm(10.5), 9, 400, '#333');
+  g.restore();
   const headY = Math.max(by, T + mm(12)) + mm(2.5);
   line(L, headY, R, headY, '#000', mm(.42));
 
-  /* 본문 — 왼쪽 도면(209×154mm 고정), 오른쪽 범례와 셋업표 */
+  /* 본문 — 왼쪽에 도면(186×140mm 고정)과 범례 띠, 오른쪽에 카메라 뷰·조감도·셋업표 */
   const bodyY = headY + mm(4);
   const iw = mm(SHEET_MM.plan[0]), ih = mm(SHEET_MM.plan[1]);
-  g.drawImage(plan.cv, L, bodyY, iw, ih);
-  g.strokeStyle = '#666'; g.lineWidth = mm(.2); g.strokeRect(L, bodyY, iw, ih);
+  const frame = (cv2, x, y, w, h) => {
+    g.drawImage(cv2, x, y, w, h);
+    g.strokeStyle = '#666'; g.lineWidth = mm(.2); g.strokeRect(x, y, w, h);
+  };
+  frame(plan.cv, L, bodyY, iw, ih);
+
+  /* 범례 — 도면 밑에 3칸씩 두 줄 */
+  const lgY = bodyY + ih + mm(3.6), lgW = iw/3;
+  SHEET_LEGEND.forEach(([col, shape, name], i) => {
+    const cx = L + (i%3)*lgW, cy = lgY + Math.floor(i/3)*mm(4.4);
+    const s2 = mm(3.4), y0 = cy - mm(2.6);
+    g.fillStyle = col; g.strokeStyle = '#333'; g.lineWidth = mm(.2);
+    if(shape === 'dot'){
+      g.beginPath(); g.arc(cx + s2/2, y0 + s2/2, s2/2, 0, 7); g.fill(); g.stroke();
+    }else if(shape === 'bar'){
+      g.fillRect(cx, y0 + s2/2 - mm(.6), s2, mm(1.2));
+    }else if(shape === 'dash'){
+      for(let j=0;j<3;j++) g.fillRect(cx + j*mm(1.3), y0 + s2/2 - mm(.5), mm(.8), mm(1));
+    }else{
+      g.fillRect(cx, y0, s2, s2); g.strokeRect(cx, y0, s2, s2);
+    }
+    text(name, cx + s2 + mm(2), cy, 8, 400, '#000');
+  });
 
   const sideW = mm(SHEET_MM.side), sx = R - sideW;
-  const bodyBot = bodyY + ih;
+  const bodyBot = bodyY + ih + mm(SHEET_MM.legend);
   let sy = bodyY + mm(3.4);
   const heading = t => {
     text(t, sx, sy, 8.5, 700, '#000');
     line(sx, sy + mm(1), R, sy + mm(1), '#000', mm(.2));
-    sy += mm(5.2);
+    sy += mm(4.4);
   };
-  heading('범례');
-  for(const [col, shape, name] of SHEET_LEGEND){
-    const s2 = mm(3.4), y0 = sy - mm(2.6);
-    g.fillStyle = col; g.strokeStyle = '#333'; g.lineWidth = mm(.2);
-    if(shape === 'dot'){
-      g.beginPath(); g.arc(sx + s2/2, y0 + s2/2, s2/2, 0, 7); g.fill(); g.stroke();
-    }else if(shape === 'bar'){
-      g.fillRect(sx, y0 + s2/2 - mm(.6), s2, mm(1.2));
-    }else if(shape === 'dash'){
-      for(let i=0;i<3;i++) g.fillRect(sx + i*mm(1.3), y0 + s2/2 - mm(.5), mm(.8), mm(1));
-    }else{
-      g.fillRect(sx, y0, s2, s2); g.strokeRect(sx, y0, s2, s2);
-    }
-    /* 「180° 선」 처럼 긴 줄은 두 줄로 접는다 */
-    const tx = sx + s2 + mm(2), avail = R - tx;
-    font(8, 400);
-    let rest = name, lines = [];
-    while(rest && lines.length < 2){
-      if(g.measureText(rest).width <= avail || lines.length === 1){ lines.push(rest); break; }
-      let cut = rest.length;
-      while(cut > 1 && g.measureText(rest.slice(0, cut)).width > avail) cut--;
-      lines.push(rest.slice(0, cut)); rest = rest.slice(cut);
-    }
-    for(const ln of lines){ text(ln, tx, sy, 8, 400, '#000'); sy += mm(3.6); }
-    sy += mm(1);
-  }
-  sy += mm(3);
+  heading('카메라 뷰');
+  const cb = camBox();
+  frame(camSheet(), sx, sy, mm(cb[0]), mm(cb[1]));
+  sy += mm(cb[1] + 4);
+  text(camCaption(), sx, sy, 7.5, 400, '#333');
+  sy += mm(5);
+  heading('조감도');
+  frame(birdSheet(), sx, sy, mm(SHEET_MM.bird[0]), mm(SHEET_MM.bird[1]));
+  sy += mm(SHEET_MM.bird[1] + 5);
   heading('셋업');
-  const colMm = [11, 16, 9, 10, 16];    // 합 62mm
+  const colMm = [14, 22, 12, 14, 23];   // 합 85mm
   const rowH = mm(4.4);
   const row = (cells, head) => {
     let x = sx;
@@ -4131,14 +4226,28 @@ function sheetCanvas(){
   text('촬영 배치도 · Shot Planner', R, footY, 7.5, 400, '#555', 'right');
   return cv;
 }
-function sheetStem(){
-  return (project.title || 'shotplan') + '_S' + (state.no||'1') + '_도면';
+const sheetStem = () => project.title || 'shotplan';
+const sceneTag  = () => 'S' + String(state.no || '1').replace(/[^A-Za-z0-9]+/g, '');
+async function savePngOf(cv, tag){
+  const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
+  if(!blob){ toast('그림을 만들지 못했어요'); return; }
+  await saveFile(safeName(sheetStem(), '.png', sceneTag() + '_' + tag), blob);
 }
+/* 카메라 뷰·조감도는 화면 것보다 크게 다시 그려서 준다 (300dpi 기준 폭 160mm) */
+document.getElementById('bCamPng').addEventListener('click', () => {
+  const r = ratioVal();
+  savePngOf(offscreen(160, 160/r, (g, W, H) => drawCamView(g, W, H), 12),
+            'cam' + (liveCam() ? '_' + liveCam().slate : ''));
+});
+document.getElementById('bBirdPng').addEventListener('click', () => {
+  savePngOf(offscreen(160, 100, (g, W, H) => drawBird(g, W, H), 12), 'bird');
+});
+
 async function saveSheetPng(){
   const cv = sheetCanvas();
   const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
   if(!blob){ toast('도면을 만들지 못했어요'); return; }
-  await saveFile(safeName(sheetStem(), '.png'), blob);
+  await saveFile(safeName(sheetStem(), '.png', sceneTag() + '_sheet'), blob);
 }
 
 /* 인쇄가 실제로 열렸는지는 beforeprint 로만 알 수 있다.
@@ -4153,7 +4262,7 @@ document.getElementById('bPrint').addEventListener('click', () => {
     window.removeEventListener('beforeprint', mark);
     if(opened) toast('🖨 인쇄 창에서 「PDF로 저장」을 고르면 도면 파일이 됩니다');
     else{
-      toast('인쇄가 막힌 곳이라 도면을 PNG 한 장으로 뽑을게요');
+      toast('인쇄가 막힌 곳이라 한 장을 PNG 로 뽑을게요');
       saveSheetPng();
     }
   }, 120);
@@ -4191,7 +4300,7 @@ document.getElementById('bShare').addEventListener('click', async () => {
     const url = location.origin + location.pathname + '#p=' + pack;
     if(url.length > 60000) return toast('작품이 너무 커서 링크로는 안 됩니다 — 「파일로 내보내기」를 쓰세요');
     try{ await navigator.clipboard.writeText(url); toast('🔗 링크를 복사했어요 (' + Math.round(url.length/1024) + 'KB) — 붙여넣으면 이 배치도가 그대로 열립니다'); }
-    catch(e){ prompt('이 주소를 복사해서 보내세요', url); }
+    catch(e){ showText('🔗 공유 링크', '복사가 막혀 있어요. 아래 주소를 골라 복사해서 보내세요.', url); }
   }catch(e){ toast('링크를 만들지 못했어요'); }
 });
 /* 링크로 받은 작품 — 지금 것을 덮으므로 반드시 물어본다 */
@@ -4202,16 +4311,11 @@ async function loadFromHash(){
     const p2 = await unpackProject(m[1]);
     if(!p2 || !Array.isArray(p2.scenes) || !p2.scenes.length) throw new Error('형식 오류');
     const n = p2.scenes.length;
-    if(!confirm('링크로 받은 배치도가 있습니다.\n\n「' + (p2.title||'무제') + '」 · 씬 ' + n + '개\n\n지금 작업 중인 것을 덮고 열까요?')){
+    if(!await askOverwrite(p2, '🔗 링크로 받은 배치도가 있습니다')){
       history.replaceState(null, '', location.pathname);
       return false;
     }
-    project = Object.assign(newProject(), p2);
-    project.scenes = p2.scenes.map(x => Object.assign(newScene(), x));
-    project.active = clamp(p2.active|0, 0, project.scenes.length-1);
-    syncState();
-    uid = 1 + Math.max(0, ...project.scenes.flatMap(sc =>
-      [...sc.props, ...sc.actors, ...sc.lights, ...sc.cams, ...(sc.walls||[])].map(o => +o.id || 0)));
+    adoptProject(p2);
     history.replaceState(null, '', location.pathname);
     resetView(); fitBird(); refreshAll();
     toast('🔗 링크로 받은 배치도를 열었어요');
@@ -4221,28 +4325,37 @@ async function loadFromHash(){
 
 /* ── 파일로 주고받기 ── */
 document.getElementById('bExport').addEventListener('click', () => {
-  saveFile(safeName(project.title ? project.title + '_shotplan' : '', '.json'), JSON.stringify(project, null, 1));
+  saveFile(safeName(project.title, '.json'), JSON.stringify(project, null, 1));
 });
 document.getElementById('bCopyJson').addEventListener('click', copyProjectJson);
 document.getElementById('bPasteJson').addEventListener('click', pasteProjectJson);
 document.getElementById('bImport').addEventListener('click', () => document.getElementById('fImport').click());
-document.getElementById('fImport').addEventListener('change', async e => {
-  const f = e.target.files && e.target.files[0]; if(!f) return;
+async function openProjectFile(f){
+  if(!f) return;
   try{
     const p2 = JSON.parse(await f.text());
     if(!p2 || !Array.isArray(p2.scenes) || !p2.scenes.length) throw new Error('형식 오류');
-    if(!confirm('「' + (p2.title||'무제') + '」 · 씬 ' + p2.scenes.length + '개\n\n지금 작업 중인 것을 덮고 열까요?')) return;
-    snapshot();
-    project = Object.assign(newProject(), p2);
-    project.scenes = p2.scenes.map(x => Object.assign(newScene(), x));
-    project.active = clamp(p2.active|0, 0, project.scenes.length-1);
-    syncState();
-    uid = 1 + Math.max(0, ...project.scenes.flatMap(sc =>
-      [...sc.props, ...sc.actors, ...sc.lights, ...sc.cams, ...(sc.walls||[])].map(o => +o.id || 0)));
+    if(!await askOverwrite(p2, '📥 ' + f.name)) return;
+    adoptProject(p2);
     closePrefs(); resetView(); fitBird(); refreshAll();
     toast('📥 불러왔어요');
-  }catch(err){ toast('이 파일은 읽지 못했어요'); }
-  finally{ e.target.value = ''; }
+  }catch(err){ toast('이 파일은 읽지 못했어요 — 내보내 둔 .json 이 맞나요?'); }
+}
+document.getElementById('fImport').addEventListener('change', async e => {
+  await openProjectFile(e.target.files && e.target.files[0]);
+  e.target.value = '';
+});
+/* 파일 고르기 창이 막힌 곳도 있어서, 끌어다 놓는 길을 함께 둔다 */
+document.addEventListener('dragover', e => {
+  if(e.dataTransfer && [...e.dataTransfer.types].includes('Files')){
+    e.preventDefault(); e.dataTransfer.dropEffect = 'copy';
+  }
+});
+document.addEventListener('drop', e => {
+  const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+  if(!f) return;
+  e.preventDefault();
+  openProjectFile(f);
 });
 
 document.getElementById('bUndo').addEventListener('click', undo);
@@ -4351,6 +4464,54 @@ ratioSel.addEventListener('change', () => { state.ratio = ratioSel.value; redraw
 /* ============================================================
    저장 / 불러오기 / 내보내기
    ============================================================ */
+/* ── 묻는 창 ──────────────────────────────────────────────
+   웹에 올려 둔 상태에서는 브라우저의 confirm/prompt 가 막힌다. 막히면 아무것도
+   묻지 않고 「아니오」로 답해 버려서, 불러오기가 통째로 죽어 있었다. 직접 만든다. */
+const askModal = document.getElementById('askModal');
+const askInput = document.getElementById('askInput');
+let askDone = null;
+function closeAsk(v){
+  const f = askDone; askDone = null;
+  askModal.classList.remove('open');
+  if(f) f(v);
+}
+function openAsk(title, body, opt){
+  const o = opt || {};
+  document.getElementById('askTitle').textContent = title;
+  const b = document.getElementById('askBody');
+  b.textContent = body || ''; b.style.display = body ? '' : 'none';
+  askInput.style.display = o.input ? '' : 'none';
+  askInput.value = '';
+  askInput.placeholder = o.placeholder || '';
+  document.getElementById('askYes').textContent = o.ok || '확인';
+  const no = document.getElementById('askNo');
+  no.textContent = o.cancel || '취소';
+  no.style.display = o.single ? 'none' : '';
+  askModal.classList.add('open');
+  setTimeout(() => (o.input ? askInput : document.getElementById('askYes')).focus(), 30);
+  return new Promise(res => { askDone = res; });
+}
+/* 예/아니오 — confirm() 자리 */
+const ask = (title, body, ok) => openAsk(title, body, {ok}).then(v => v !== null && v !== false);
+/* 글 받기 — prompt() 자리. 취소하면 null */
+const askText = (title, body, placeholder) =>
+  openAsk(title, body, {input:true, placeholder, ok:'열기'}).then(v => (typeof v === 'string' ? v : null));
+/* 보여 주기만 — 복사가 막혔을 때 주소를 손으로 옮겨 갈 수 있게 */
+function showText(title, body, value){
+  openAsk(title, body, {input:true, ok:'닫기', single:true});
+  askInput.value = value;
+  setTimeout(() => { askInput.focus(); askInput.select(); }, 40);
+}
+document.getElementById('askYes').addEventListener('click', () => {
+  closeAsk(askInput.style.display === 'none' ? true : askInput.value);
+});
+document.getElementById('askNo').addEventListener('click', () => closeAsk(null));
+askModal.addEventListener('click', e => { if(e.target === askModal) closeAsk(null); });
+askInput.addEventListener('keydown', e => {
+  if(e.key === 'Enter' && (e.metaKey || e.ctrlKey)){ e.preventDefault(); closeAsk(askInput.value); }
+  e.stopPropagation();      // 배치도 단축키가 가로채지 않도록
+});
+
 function toast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
@@ -4422,7 +4583,7 @@ document.getElementById('bPng').addEventListener('click', () => {
   g.fillStyle = '#7a8494'; g.font = '400 13px system-ui,sans-serif';
   g.fillText('빨간 영역 = 180° 선을 넘는 쪽 · 파란 부채꼴 = 심도 범위 · 점선 화살표 = 카메라 무브', 40, y0+124);
 
-  cv.toBlob(bl => { if(bl) saveFile(safeName('plan_S' + (state.no||'1'), '.png'), bl); }, 'image/png');
+  cv.toBlob(bl => { if(bl) saveFile(safeName(sheetStem(), '.png', sceneTag() + '_plan'), bl); }, 'image/png');
 });
 
 document.getElementById('bList').addEventListener('click', () => {
@@ -4443,7 +4604,7 @@ document.getElementById('bList').addEventListener('click', () => {
   const txt = project.title + '\n' + rows.map(r => r.join('\t')).join('\n');
   navigator.clipboard.writeText(txt)
     .then(() => toast('📋 전체 씬 샷 리스트를 복사했어요 — 엑셀에 그대로 붙습니다'))
-    .catch(() => saveFile(safeName('shotlist', '.txt'), txt));
+    .catch(() => saveFile(safeName(sheetStem(), '.txt', sceneTag() + '_shotlist'), txt));
 });
 
 /* ============================================================
