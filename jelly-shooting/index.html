@@ -2058,6 +2058,7 @@ function netSend(o){
   if(aiOn){ aiOnMsg(o); return; }        // AI 대결은 같은 경로를 그대로 쓴다
   if(net.ch){ try{ net.ch.send({type:'broadcast',event:'msg',payload:o}); }catch(e){} } }
 function netLeave(){
+  netHelloStop();
   if(net.ch){ netSend({t:'bye'}); try{ getSupa().removeChannel(net.ch); }catch(e){} net.ch=null; }
   if(net.watchT){ clearInterval(net.watchT); net.watchT=null; }
   aiStop(); hubUnadvertise();
@@ -2068,10 +2069,11 @@ function netLeave(){
 // 방에 들어간다 — 코드는 로컬에서 만들므로 연결을 기다리지 않고 먼저 보여준다.
 // 예전엔 연결 실패 시 대기실을 아예 열지 않아서 '방 만들기'가 아무 일도 안 한 것처럼 보였다.
 function netEnterRoom(code,asHost){
-  netLeave();
+  netLeave();       // ← 안에서 hubUnadvertise()가 돈다
   net.room=code; net.host=asHost; net.foe=null; net.ready=false; net.foeReady=false;
   openLobby();      // ← 코드 먼저
   netConnect();     // ← 연결은 뒤에서
+  if(asHost&&netPublic&&!aiOn) hubEnsure();   // ← 그래서 여기서 다시 등록한다
 }
 // 온라인 기능(supabase) 로더.
 // 모바일 회선에서는 CDN 스크립트가 수십 초 걸리기도 하고, 인앱 브라우저·광고
@@ -2114,7 +2116,8 @@ function netConnect(){
   net.ch.on('broadcast',{event:'msg'},p=>netOnMsg(p&&p.payload));
   net.ch.subscribe(st=>{
     if(st==='SUBSCRIBED'){ net.status='ok'; net.statusMsg='';
-      if(nick) netSend({t:'hello',name:nick,char:character}); }
+      if(nick) netSend({t:'hello',name:nick,char:character});
+      netHelloLoop(); }
     else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED'){
       net.status='fail';
       net.statusMsg='서버에 연결하지 못했어요 (Supabase Realtime 설정을 확인하세요)';
@@ -2122,6 +2125,16 @@ function netConnect(){
     renderLobby();
   });
 }
+// 상대를 알기 전까지 1.2초마다 다시 인사한다. 상대가 답(hi)하거나 40번(약 48초)이면 멈춘다.
+function netHelloLoop(){
+  netHelloStop();
+  let tries=0;
+  net.helloT=setInterval(()=>{
+    if(!net.ch||net.foe||++tries>40){ netHelloStop(); return; }
+    if(nick) netSend({t:'hello',name:nick,char:character});
+  },1200);
+}
+function netHelloStop(){ if(net.helloT){ clearInterval(net.helloT); net.helloT=null; } }
 // 닉네임이 없으면 토스트만 띄우고 끝내지 않고, 입력칸으로 데려가서 눈에 띄게 한다
 function nickOrPrompt(){
   if(nick) return true;
@@ -2136,6 +2149,7 @@ function netOnMsg(m){
   net.lastFoe=performance.now(); net.foeGone=false;
   if(m.t==='hello'||m.t==='hi'){
     net.foe={name:m.name||'친구',char:m.char};
+    netHelloStop();                       // 상대를 알았으니 인사를 멈춘다
     if(m.t==='hello') netSend({t:'hi',name:nick,char:character});   // 늦게 들어온 쪽에 내 정보 전달
     if(net.host){ hubUnadvertise();      // 친구가 들어왔으니 목록에서 내린다
       netSend({t:'seed',seed:netSeed,mode:netModeName,timeLimit:net.timeLimit,
@@ -2175,14 +2189,28 @@ function netOnMsg(m){
 // 테이블을 만들지 않고 Realtime presence를 쓴다 — 방장이 끊기면 목록에서 저절로 사라지고,
 // 유령 방을 청소하는 코드도, 하트비트도 필요 없다.
 let hub=null, hubRooms=[], netPublic=true;
-function hubJoin(){
-  if(!supaReady()) return false;
-  if(hub) return true;
-  hub=getSupa().channel('jelly:lobby');
-  hub.on('presence',{event:'sync'},()=>{ hubRooms=hubRead(); renderRoomList(); });
-  hub.subscribe(st=>{ if(st==='SUBSCRIBED'){ hubRooms=hubRead(); renderRoomList(); hubAdvertise(); } });
+let hubT=null, hubSynced=false;
+// 로비에 붙고, 내 방이 있으면 등록까지 한다. SDK가 아직 안 왔으면 올 때까지 다시 시도한다.
+// (예전에는 SDK 전에 한 번 부르고 끝이라 목록이 영원히 비어 있었다)
+function hubEnsure(){
+  if(hubT){ clearTimeout(hubT); hubT=null; }
+  if(!supaReady()){
+    if(!sdkT0) sdkT0=performance.now();
+    if(performance.now()-sdkT0 < SDK_WAIT_MS){ hubT=setTimeout(hubEnsure,600); }
+    renderRoomList(); return false;
+  }
+  if(!hub){
+    hubSynced=false;
+    hub=getSupa().channel('jelly:lobby');
+    hub.on('presence',{event:'sync'},()=>{ hubSynced=true; hubRooms=hubRead(); renderRoomList(); });
+    hub.subscribe(st=>{
+      if(st==='SUBSCRIBED'){ hubSynced=true; hubRooms=hubRead(); renderRoomList(); hubAdvertise(); }
+      else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED'){ hub=null; hubT=setTimeout(hubEnsure,1500); }
+    });
+  } else hubAdvertise();          // 이미 붙어 있으면 등록만 다시 — 이게 없어서 방이 안 떴다
   return true;
 }
+function hubJoin(){ return hubEnsure(); }
 function hubRead(){
   if(!hub) return [];
   let st={}; try{ st=hub.presenceState()||{}; }catch(e){ return []; }
@@ -2190,7 +2218,9 @@ function hubRead(){
   Object.keys(st).forEach(k=>(st[k]||[]).forEach(p=>{ if(p&&p.room&&p.room!==net.room) out.push(p); }));
   return out;
 }
-function hubLeave(){ if(hub){ try{ hub.untrack(); }catch(e){} try{ getSupa().removeChannel(hub); }catch(e){} hub=null; } hubRooms=[]; }
+function hubLeave(){ if(hubT){ clearTimeout(hubT); hubT=null; }
+  if(hub){ try{ hub.untrack(); }catch(e){} try{ getSupa().removeChannel(hub); }catch(e){} hub=null; }
+  hubRooms=[]; hubSynced=false; }
 // 내 방을 목록에 올린다 / 내린다
 function hubAdvertise(){
   if(!hub||!net.room||!net.host||!netPublic||aiOn) return;
@@ -2199,7 +2229,14 @@ function hubAdvertise(){
 function hubUnadvertise(){ if(hub){ try{ hub.untrack(); }catch(e){} } }
 function renderRoomList(){
   const box=$('roomList'); if(!box||$('netScreen').classList.contains('hide')) return;
-  if(!supaReady()){ box.innerHTML='<div class="empty">'+netWhyOffline()+'</div>'; return; }
+  if(!supaReady()){
+    // 아직 불러오는 중일 수도 있다. '오프라인'이라고 단정하면 다 된 건데도 포기하게 된다.
+    const waiting=(!window.supabase && sdkT0 && performance.now()-sdkT0<SDK_WAIT_MS);
+    box.innerHTML='<div class="empty">'+(waiting
+      ? '온라인 기능 불러오는 중… ('+sdkLeftSec()+'초 남음)'
+      : netWhyOffline())+'</div>';
+    return; }
+  if(!hubSynced){ box.innerHTML='<div class="empty">열린 방을 찾는 중… 🔍</div>'; return; }
   const rooms=hubRooms.filter(r=>r.game===netGame);
   if(!rooms.length){ box.innerHTML='<div class="empty">아직 열린 방이 없어요.<br>방을 만들면 친구가 여기서 찾아 들어올 수 있어요 🌱</div>'; return; }
   box.innerHTML='';
@@ -2217,21 +2254,31 @@ function renderRoomList(){
   });
 }
 // 🎲 랜덤 매칭 — 열린 방이 있으면 그리로, 없으면 방을 열고 기다린다
+let randT=null;
+function netRandomStop(){ if(randT){ clearTimeout(randT); randT=null; } }
 function netRandom(){
   if(!nickOrPrompt()) return;
-  if(!supaReady()){ toast(netWhyOffline()); return; }
-  hubJoin();
+  netRandomStop();
+  if(!hubEnsure()){ toast('온라인 기능을 불러오는 중이에요 — 잠시만 기다려 주세요'); return; }
   const pick=()=>{
     const rooms=hubRooms.filter(r=>r.game===netGame);
     if(rooms.length){ const r=rooms[Math.floor(Math.random()*rooms.length)];
       toast('🎲 '+escapeHtml(r.name)+'님의 방으로!'); netEnterRoom(r.room,false); return true; }
     return false;
   };
-  if(pick()) return;
-  // 아직 목록이 안 왔을 수 있으니 잠깐 기다렸다 다시 본다
+  if(hubSynced&&pick()) return;
+  // 목록(presence sync)이 올 때까지 기다린다. 최대 7초. 그래도 없으면 내가 방을 연다.
   toast('🎲 상대를 찾는 중…');
-  setTimeout(()=>{ if(!$('netScreen').classList.contains('hide')&&!pick()){
-    netPublic=true; syncPublicBtn(); toast('기다리는 사람이 없어 방을 열었어요 — 곧 누가 올 거예요!'); netCreate(); } },1200);
+  let tries=0;
+  const tick=()=>{
+    randT=null;
+    if($('netScreen').classList.contains('hide')) return;          // 화면을 떠났으면 그만
+    if(hubSynced&&pick()) return;
+    if(++tries<14){ randT=setTimeout(tick,500); return; }
+    netPublic=true; syncPublicBtn();
+    toast('기다리는 사람이 없어 방을 열었어요 — 곧 누가 올 거예요!'); netCreate();
+  };
+  randT=setTimeout(tick,500);
 }
 function syncPublicBtn(){ const b=$('netPublicBtn'); if(!b)return;
   b.textContent=netPublic?'켜짐':'꺼짐'; b.classList.toggle('off',!netPublic); }
@@ -2424,6 +2471,7 @@ function aiTick(){
 
 // ---- 방 만들기 / 참가 ----
 function openNetMode(game){
+  netRandomStop();
   netGame=(game==='throw')?'throw':'dungeon';
   showScreen('netScreen'); syncNickInputs();
   $('netTitle').textContent=gameLabel();
@@ -2432,7 +2480,7 @@ function openNetMode(game){
     : '둘이 똑같은 판을 동시에 플레이해요. 상대 점수가 실시간으로 보이고, 더 오래 버티며 많이 터뜨린 쪽이 승리! 게이지가 차면 방해 젤리를 한 번씩 보낼 수 있어요.';
   $('netRoleCard').classList.toggle('hide',netGame!=='throw');
   buildRoleOpts(); syncPublicBtn(); buildAiOpts();
-  renderRoomList(); hubJoin();
+  renderRoomList(); hubEnsure();
 }
 function buildRoleOpts(){
   const o=$('netRoleOpts'); o.innerHTML='';
@@ -2445,11 +2493,17 @@ function netCreate(){
   netSeed=(Math.random()*1e9)>>>0; netModeName=mode;
   net.timeLimit=(netGame==='throw')?90:120;
   netEnterRoom(makeCode(),true);
-  if(netPublic) hubJoin();
+}
+// 초대 링크를 그대로 붙여넣어도, 소문자·공백·하이픈이 섞여도 알아듣게 한다.
+function parseRoomCode(raw){
+  let v=String(raw||'').trim();
+  const m=v.match(/[?&#]r=([A-Za-z0-9]{4,6})/);   // 링크를 붙여넣은 경우
+  if(m) v=m[1];
+  return v.replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,6);
 }
 function netJoinByCode(){
-  const code=($('netCodeInput').value||'').trim().toUpperCase();
-  if(code.length<4){ toast('방 코드를 확인해주세요'); return; }
+  const code=parseRoomCode($('netCodeInput').value);
+  if(code.length<4){ toast('방 코드를 확인해주세요 (링크를 붙여넣어도 돼요)'); return; }
   if(!nickOrPrompt()) return;
   netEnterRoom(code,false);
 }
@@ -2458,7 +2512,7 @@ function netJoinByCode(){
 // 닉네임도 대기실 안에서 받는다 — 첫 방문자는 닉네임이 없다.
 function checkRoomURL(){
   const r=new URLSearchParams(location.search).get('r'); if(!r) return;
-  const code=String(r).trim().toUpperCase().slice(0,6);
+  const code=parseRoomCode(r);
   if(code.length<4){ toast('초대 코드가 올바르지 않아요 😢'); return; }
   netEnterRoom(code,false);
 }
@@ -3135,7 +3189,8 @@ $('netBackBtn').onclick=()=>{ hubLeave(); openStart(); };
 $('netRandomBtn').onclick=netRandom;
 $('netAiBtn').onclick=aiMatch;
 $('aiBtn').onclick=openAiScreen; $('aiStartBtn').onclick=aiGo; $('aiBackBtn').onclick=openStart;
-$('roomRefreshBtn').onclick=()=>{ if(hub){ hubRooms=hubRead(); renderRoomList(); } else hubJoin(); toast('🔄 목록을 새로 읽었어요'); };
+$('roomRefreshBtn').onclick=()=>{ hubEnsure(); if(hub){ hubRooms=hubRead(); } renderRoomList();
+  toast('🔄 목록을 새로 읽었어요'); };
 $('netPublicBtn').onclick=()=>{ netPublic=!netPublic; syncPublicBtn();
   if(netPublic){ hubJoin(); hubAdvertise(); } else hubUnadvertise();
   toast(netPublic?'🌍 목록에 공개해요':'🔒 코드를 아는 사람만 들어와요'); };
