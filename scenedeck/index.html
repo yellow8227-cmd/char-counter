@@ -934,7 +934,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <summary>🎨 전체 화면 룩 — 모든 컷에 공통으로 붙는 값 <span class="tagx">고급</span></summary>
       <div class="fa">
       <div class="grid g3">
-        <label class="f"><span>비주얼 스타일</span><select id="v-look"></select></label>
+        <label class="f"><span>비주얼 스타일 <b style="color:var(--tx3);font-weight:600">— 매체를 「선언 없음」으로 둘 때만</b></span><select id="v-look"></select></label>
         <label class="f"><span>화면비</span><select id="v-ar"></select></label>
         <label class="f enfield"><span>색감 · 팔레트</span><input type="text" id="v-palette" placeholder="teal and amber, desaturated"></label>
       </div>
@@ -956,6 +956,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
         <span class="mini" id="p-scenehint" style="margin:0"></span>
       </div>
       <div class="cutnav" id="cutnav"></div>
+      <p class="mini" id="shotnote" style="margin:2px 0 0"></p>
       <div class="row">
         <button class="btn" id="p-prev">← 이전</button>
         <button class="btn" id="p-next">다음 →</button>
@@ -997,6 +998,37 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
           <button class="btn" data-copy="o-mj">📋 복사만</button>
           <button class="btn gh" id="mjside">🪟 옆에 띄워두고 작업</button>
         </div>
+
+        <div class="rule">무엇으로 보이게 할까요 — 이게 결과를 가장 크게 바꿉니다</div>
+        <div class="grid g4">
+          <label class="f"><span>매체 · 장르</span><select id="v-medium"></select></label>
+          <label class="f"><span>카메라 · 필름</span><select id="v-cam"></select></label>
+          <label class="f"><span>시대</span><select id="v-era"></select></label>
+          <label class="f"><span>구도</span><select id="v-comp"></select></label>
+        </div>
+        <p class="mini" id="mjhead" style="margin:-4px 0 0"></p>
+
+        <details class="faq" style="margin:14px 0 0">
+          <summary>🎯 같은 스타일로 계속 뽑기 — <code>--sref</code> · <code>--oref</code> <span class="tagx">일관성</span></summary>
+          <div class="fa" style="padding:0 18px 18px">
+            <label class="f"><span>스타일 코드 (--sref)</span>
+              <input type="text" id="mj-sref" placeholder="469710847   또는   469710847 1234567  (여러 개는 띄어쓰기)"></label>
+            <div class="row" style="margin:-8px 0 14px">
+              <button class="btn sm" id="mj-srefrand">🎲 random 넣기</button>
+              <span class="mini" style="margin:0">마음에 드는 그림이 나오면 그 코드를 적어두세요 — 다음 컷도 같은 화풍이 됩니다</span>
+            </div>
+            <label class="f"><span>인물 사진 주소 (--oref)</span>
+              <input type="text" id="mj-oref" placeholder="https://… 미드저니에 올린 인물 사진 주소"></label>
+            <div class="opt"><span>닮은 정도</span><div class="row" id="mj-ow">
+              <label class="chip" data-ow="70">70 — 옷·상황은 자유롭게</label>
+              <label class="chip" data-ow="100">100 — 기본</label>
+              <label class="chip" data-ow="300">300 — 얼굴을 꽉 붙잡기</label>
+            </div></div>
+            <p class="mini"><b>--sref</b> 는 <b>화풍</b>을, <b>--oref</b> 는 <b>인물</b>을 붙잡습니다. 둘을 같이 쓰면 화풍과 얼굴이 함께 유지돼요.
+            코드를 <b>두 개 섞으면</b> 어디에도 없는 자기만의 톤이 나옵니다.
+            <b>--oref 는 미드저니 v7 이상</b>에서 동작하고, 인물 사진은 미드저니에 먼저 올려 그 주소를 넣어야 합니다.</p>
+          </div>
+        </details>
 
         <div class="rule">미드저니 설정 — 고르면 뒤에 자동으로 붙습니다</div>
         <div class="opt"><span>화면비</span><div class="row" id="mj-ar"></div></div>
@@ -1353,6 +1385,81 @@ const MOOD = {
   '공포':'dread, horror atmosphere','희망':'hopeful, uplifting','분노':'furious, aggressive energy',
   '유머':'light, playful tone','몽환':'dreamlike, surreal atmosphere','장엄':'epic, grand scale'
 };
+/* 매체 선언 — 프롬프트 맨 앞에 무엇으로 볼 것인지 못 박는다.
+   같은 장면이라도 「영화 스틸」인지 「스토리보드 스케치」인지에 따라 완전히 달라진다.
+   head: 맨 앞 / tail: 끝에 붙는 화질·질감 선언 / raw: --style raw 권장 여부 */
+const MEDIUM = {
+  '🎬 영화 스틸':        {head:'cinematic, film still',                 tail:'hyper-realistic',                         raw:true},
+  '📼 90년대 DVD 화면':  {head:'DVD screengrab, movie still',           tail:'hyper-realistic, detailed style',         raw:true},
+  '📷 다큐 사진':        {head:'documentary photograph',                tail:'natural light, unposed, photojournalism', raw:true},
+  '✏️ 스토리보드 스케치': {head:'pencil sketch for storyboard',          tail:'rough hatching, black and white',         raw:false},
+  '🖍️ 콘티 마커화':      {head:'storyboard panel, marker sketch',       tail:'loose linework, limited color',           raw:false},
+  '🎨 플랫 벡터 일러스트':{head:'flat vector graphic illustration',      tail:'simple shapes and lines, flat colors',    raw:false},
+  '🖼️ 콘셉트 아트':      {head:'cinematic concept art',                 tail:'digital matte painting, highly detailed', raw:false},
+  '🌸 애니메이션 스틸':   {head:'anime film still',                      tail:'cel shaded, detailed background art',     raw:false},
+  '📺 광고 · 제품 컷':   {head:'commercial photography still',          tail:'studio lighting, ultra detailed',         raw:true},
+  '(선언 없음)':         {head:'',                                      tail:'',                                        raw:false}
+};
+/* 카메라 · 필름 — 필기의 「shot on Hasselblad」 「shot on Nikon FA」.
+   미드저니는 실제 기종의 화각·계조·입자를 알아듣는다. */
+const CAM = {
+  '':'',
+  '해셀블라드 (중형·정밀)':'shot on Hasselblad',
+  '해셀블라드 35mm':'shot on Hasselblad 35mm',
+  'ARRI Alexa (디지털 시네마)':'shot on ARRI Alexa',
+  '니콘 FA (필름·90년대)':'shot on Nikon FA',
+  '라이카 M (다큐)':'shot on Leica M',
+  '코닥 포트라 400 (인물·따뜻)':'shot on Kodak Portra 400 film',
+  '코닥 비전3 (영화 필름)':'shot on Kodak Vision3 film',
+  '후지 벨비아 (풍경·진한 색)':'shot on Fujifilm Velvia',
+  '35mm 필름':'shot on 35mm film',
+  '16mm 필름 (거친 입자)':'shot on 16mm film, visible grain',
+  '폴라로이드':'Polaroid photograph',
+  '스마트폰':'shot on smartphone, casual'
+};
+/* 시대 — 「in the style of 1990s」 하나로 의상·소품·색감이 통째로 바뀐다 */
+const ERA = {
+  '':'',
+  '1970년대':'in the style of 1970s, retro film look',
+  '1980년대':'in the style of 1980s',
+  '1990년대':'in the style of 1990s, 1990s style movie',
+  'Y2K (2000년대 초)':'in the style of early 2000s, Y2K aesthetic',
+  '2010년대':'in the style of 2010s',
+  '현재':'contemporary, present day',
+  '근미래':'near-future, subtle sci-fi details'
+};
+/* 구도 — 필기의 3등분 법칙 · 《햄넷》의 중심선 구도 */
+const COMP = {
+  '':'',
+  '3등분 법칙':'rule of thirds composition',
+  '정중앙 (중심선)':'centered composition, subject on the central axis',
+  '중심선에서 밀려남 (불안)':'subject pushed to the frame edge, off-balance composition',
+  '대칭':'symmetrical composition',
+  '프레임 속 프레임':'frame within a frame composition',
+  '리딩 라인':'leading lines drawing the eye to the subject',
+  '여백 강조 (고독)':'negative space dominating the frame, small subject'
+};
+/* 앵글이 주는 인상 — 고를 때 무엇이 달라지는지 알려준다 (필기 12쪽) */
+const ANGLE_NOTE = {
+  '아이레벨':'자연스럽고 친숙함 · 1인칭 시점 · 인물과의 교감 · 캐릭터 소개에',
+  '로우앵글':'고압적 · 지배적 · 위협적 · 권위 · 영웅심 · 감정 고조',
+  '하이앵글':'약자 · 관찰당함 · 취약함',
+  "버드아이 (부감)":'운명 · 무력함 · 상황을 내려다봄',
+  "웜즈아이 (앙각)":'압도 · 경외 · 비현실감',
+  '더치앵글':'불안 · 균형이 무너진 심리',
+  '오버헤드 (직부감)':'질서 · 도표처럼 상황을 보여줌',
+  'POV (주관)':'내가 그 장면을 바라보는 듯 — 몰입',
+  '프로파일 (측면)':'거리 두기 · 관찰'
+};
+const SHOT_NOTE = {
+  '익스트림 롱샷':'넓은 환경에 놓인 인물 — 취약성 · 외로움 · 목적지 없음',
+  '롱샷 (풀샷)':'장소와 인물을 함께 — 상황 설명',
+  '클로즈업':'감정의 최전선 — 표정이 전부',
+  '익스트림 클로즈업':'한 부분에 시선을 못 박음 — 긴장',
+  '미디엄 클로즈업':'대사와 표정 — 대화의 기본',
+  '투샷':'두 인물의 관계와 거리'
+};
+
 const LOOK = {
   '실사 시네마틱':'photorealistic cinematic film still, shot on 35mm film',
   '다큐멘터리':'documentary photography, natural and unposed',
@@ -1413,6 +1520,7 @@ function blank(){
   return {title:'',
     story:{logline:'',genre:'',tone:'',format:'',synopsis:'',act1:'',act2:'',act3:'',theme:'',ref:''},
     style:{look:'실사 시네마틱',ar:'16:9 (가로)',palette:'',extra:'',mj:'--ar 16:9 --style raw',
+           medium:'🎬 영화 스틸',cam:'',era:'',comp:'',
            neg:'text, watermark, extra fingers, deformed hands, blurry, lowres'},
     chars:[],scenes:[],sel:{scene:'',cut:''}};
 }
@@ -3388,10 +3496,14 @@ $('rapply').addEventListener('click',()=>{
 });
 
 /* ---------- 프롬프트 ---------- */
-const STYLE_FIELDS=['look','ar','palette','extra','mj','neg'];
+const STYLE_FIELDS=['look','ar','palette','extra','mj','neg','medium','cam','era','comp'];
 function fillStyle(){
   $('v-look').innerHTML=opts(LOOK,S.style.look);
   $('v-ar').innerHTML=opts(AR,S.style.ar);
+  if($('v-medium')) $('v-medium').innerHTML=opts(MEDIUM,S.style.medium||'🎬 영화 스틸');
+  if($('v-cam'))    $('v-cam').innerHTML=opts(CAM,S.style.cam||'');
+  if($('v-era'))    $('v-era').innerHTML=opts(ERA,S.style.era||'');
+  if($('v-comp'))   $('v-comp').innerHTML=opts(COMP,S.style.comp||'');
   ['palette','extra','mj','neg'].forEach(k=>$('v-'+k).value=S.style[k]||'');
 }
 STYLE_FIELDS.forEach(k=>{
@@ -3529,16 +3641,32 @@ document.addEventListener('keydown',e=>{
   if(e.key==='ArrowRight'){ step(1); e.preventDefault(); }
 });
 function cutChars(c){ return c.chars.map(id=>S.chars.find(x=>x.id===id)).filter(Boolean); }
-function styleBits(){ return [LOOK[S.style.look]||'',S.style.palette,S.style.extra].filter(Boolean); }
+function styleBits(){
+  // 매체를 골랐으면 그것이 화풍을 정한다. 옛 「비주얼 스타일」을 함께 넣으면
+  // 스케치인데 photorealistic 이 붙는 식으로 서로 부딪친다.
+  const m=medium();
+  const look = m.head ? '' : (LOOK[S.style.look]||'');
+  return [look,S.style.palette,S.style.extra].filter(Boolean);
+}
 
+/* 미드저니 프롬프트 조립.
+   순서는 수업 필기의 실제 예시를 따른다 —
+   [매체 선언] → [샷·앵글·구도] → [인물] → [행동] → [배경] → [시대] → [시간·조명·분위기]
+   → [카메라·렌즈] → [화질 선언] → [파라미터]
+   앞에 무엇을 두느냐가 결과를 가장 크게 좌우하므로 매체 선언을 맨 앞에 못 박는다. */
+function medium(){ return MEDIUM[S.style.medium]||MEDIUM['🎬 영화 스틸']; }
 function buildMJ(s,c){
-  const p=[];
-  p.push(c.descEn||c.desc||'');
+  const m=medium(), p=[];
+  if(m.head) p.push(m.head);
+  [SHOT[c.shot],ANGLE[c.angle],COMP[S.style.comp]].forEach(x=>{ if(x) p.push(x); });
   cutChars(c).forEach(ch=>{ const l=charLock(ch); if(l) p.push(l); });
+  p.push(c.descEn||c.desc||'');
   if(s.locEn||s.loc) p.push(s.locEn||s.loc);
-  if(TIME[s.time]) p.push(TIME[s.time]);
-  [SHOT[c.shot],ANGLE[c.angle],LENS[c.lens],LIGHT[c.light],MOOD[c.mood]].forEach(x=>{ if(x) p.push(x); });
+  if(ERA[S.style.era]) p.push(ERA[S.style.era]);
+  [TIME[s.time],LIGHT[c.light],MOOD[c.mood]].forEach(x=>{ if(x) p.push(x); });
+  [CAM[S.style.cam],LENS[c.lens]].forEach(x=>{ if(x) p.push(x); });
   styleBits().forEach(x=>p.push(x));
+  if(m.tail) p.push(m.tail);
   return (dedupe(p).join(', ')+' '+(S.style.mj||'')).trim();
 }
 function buildVEO(s,c){
@@ -3557,8 +3685,9 @@ function buildVEO(s,c){
   if(subj) L.push('Action: '+subj+'.');
   const setting=[s.locEn||s.loc,TIME[s.time]].filter(Boolean).join(' ');
   if(setting) L.push('Setting: '+setting+'.');
-  const cam=[SHOT[c.shot],ANGLE[c.angle],LENS[c.lens]].filter(Boolean).join(', ');
+  const cam=[SHOT[c.shot],ANGLE[c.angle],COMP[S.style.comp],LENS[c.lens],CAM[S.style.cam]].filter(Boolean).join(', ');
   if(cam) L.push('Camera: '+cam+'.');
+  if(ERA[S.style.era]) L.push('Era: '+ERA[S.style.era]+'.');
   if(LIGHT[c.light]) L.push('Lighting: '+LIGHT[c.light]+'.');
   if(MOOD[c.mood]) L.push('Mood: '+MOOD[c.mood]+'.');
   const st=dedupe(styleBits()).join(', ');
@@ -3571,13 +3700,17 @@ function buildVEO(s,c){
   return L.join('\n');
 }
 function buildGEN(s,c){
-  const p=[];
+  const m=medium(), p=[];
+  if(m.head) p.push(m.head);
   p.push(c.descEn||c.desc||'');
   cutChars(c).forEach(ch=>{ const l=charLock(ch); if(l) p.push(l); });
   if(s.locEn||s.loc) p.push(s.locEn||s.loc);
+  if(ERA[S.style.era]) p.push(ERA[S.style.era]);
   if(TIME[s.time]) p.push(TIME[s.time]);
-  [SHOT[c.shot],ANGLE[c.angle],LENS[c.lens],LIGHT[c.light],MOOD[c.mood]].forEach(x=>{ if(x) p.push(x); });
+  [SHOT[c.shot],ANGLE[c.angle],COMP[S.style.comp],LENS[c.lens],LIGHT[c.light],MOOD[c.mood]].forEach(x=>{ if(x) p.push(x); });
+  if(CAM[S.style.cam]) p.push(CAM[S.style.cam]);
   styleBits().forEach(x=>p.push(x));
+  if(m.tail) p.push(m.tail);
   let out=dedupe(p).join(', ');
   out+='\n\n[화면비] '+(AR[S.style.ar]||'16:9');
   if(S.style.neg) out+='\n[네거티브] '+S.style.neg;
@@ -3693,12 +3826,18 @@ document.addEventListener('click',e=>{
 });
 
 /* ---------- 미드저니 파라미터를 버튼으로 ---------- */
-function mjOpt(){ if(!S.mj) S.mj={look:'raw',sty:'mid',ver:'7'}; return S.mj; }
+function mjOpt(){ if(!S.mj) S.mj={look:'raw',sty:'mid',ver:'7'}; if(!S.mj.ow) S.mj.ow='100'; return S.mj; }
 function mjParams(){
   const o=mjOpt(), p=['--ar '+(AR[S.style.ar]||'16:9')];
   if(o.look==='raw'&&o.ver!=='niji') p.push('--style raw');
   if(o.sty==='low')  p.push('--stylize 50');
   if(o.sty==='high') p.push('--stylize 600');
+  // 화풍 고정 — 코드를 여러 개 적으면 섞인다
+  const sref=String(o.sref||'').trim();
+  if(sref) p.push('--sref '+sref.split(/\s+/).join(' '));
+  // 인물 고정 (v7 이상)
+  const oref=String(o.oref||'').trim();
+  if(oref){ p.push('--oref '+oref); if(o.ow&&o.ow!=='100') p.push('--ow '+o.ow); }
   p.push(o.ver==='niji'?'--niji 6':'--v '+o.ver);
   return p.join(' ');
 }
@@ -3712,9 +3851,28 @@ function paintMJ(){
     x.classList.toggle('on', k==='ar' ? S.style.ar===v : o[k]===v);
   });
   const p=$('mjparam'); if(p) p.textContent=S.style.mj||mjParams();
+  const m=medium(), hd=$('mjhead');
+  if(hd) hd.innerHTML = m.head
+    ? `맨 앞에 <code>${esc(m.head)}</code>${m.tail?` , 끝에 <code>${esc(m.tail)}</code>`:''} 가 붙습니다`
+    : '매체 선언 없이 내용만 나갑니다';
+  if($('mj-sref')&&document.activeElement!==$('mj-sref')) $('mj-sref').value=o.sref||'';
+  if($('mj-oref')&&document.activeElement!==$('mj-oref')) $('mj-oref').value=o.oref||'';
+  document.querySelectorAll('[data-ow]').forEach(x=>x.classList.toggle('on',(o.ow||'100')===x.dataset.ow));
   // 니지 버전에서는 「느낌」이 적용되지 않는다 — 흐리게 해서 헷갈리지 않게
   const lr=$('mj-look').closest('.opt'); if(lr) lr.classList.toggle('off',o.ver==='niji');
 }
+['mj-sref','mj-oref'].forEach(id=>{
+  const el=$(id); if(!el) return;
+  el.addEventListener('input',()=>{ mjOpt()[id==='mj-sref'?'sref':'oref']=el.value; mjSync(); save(); renderPrompt(); });
+});
+$('mj-srefrand').addEventListener('click',()=>{
+  $('mj-sref').value='random'; mjOpt().sref='random'; mjSync(); save(); renderPrompt();
+  toast('--sref random — 매번 새 화풍이 걸립니다. 마음에 들면 그때 나온 코드를 적어두세요');
+});
+$('mj-ow').addEventListener('click',e=>{
+  const c=e.target.closest('[data-ow]'); if(!c) return;
+  mjOpt().ow=c.dataset.ow; mjSync(); save(); renderPrompt();
+});
 function pickMJ(e){
   const c=e.target.closest('[data-mj]'); if(!c) return;
   const parts=c.dataset.mj.split('|'), k=parts[0], v=parts[1];
@@ -3811,7 +3969,18 @@ function renderPrompt(){
   paintAfter();
 }
 /* 출력이 바뀔 때마다 대상 카드 · 미드저니 설정 · 한글 경고를 맞춘다 */
+/* 지금 고른 샷·앵글이 어떤 인상을 주는지 — 수업 필기의 정리를 그대로 보여준다 */
+function paintShotNote(){
+  const el=$('shotnote'); if(!el) return;
+  const hit=pQuick?quickPair():curCut();
+  if(!hit){ el.textContent=''; return; }
+  const bits=[];
+  if(SHOT_NOTE[hit.c.shot])  bits.push(`<b>${esc(hit.c.shot)}</b> — ${SHOT_NOTE[hit.c.shot]}`);
+  if(ANGLE_NOTE[hit.c.angle]) bits.push(`<b>${esc(hit.c.angle)}</b> — ${ANGLE_NOTE[hit.c.angle]}`);
+  el.innerHTML=bits.join(' &nbsp;·&nbsp; ');
+}
 function paintAfter(){
+  paintShotNote();
   if(!S.style.mj || !/--v |--niji /.test(S.style.mj)) mjSync();
   paintMJ();
   setTarget(S.tg||'mj');
