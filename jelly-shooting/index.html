@@ -514,6 +514,7 @@
   /* 홈 버튼은 위 줄 안에 둔다. absolute로 띄워 두면 상태바 아래로 들어가 눌러도
      iOS가 터치를 먹어 '안 눌리는 버튼'이 된다(실제로 그랬다). */
   #tTop{width:100%;display:flex;align-items:center;gap:8px;}
+  #tAudio{flex:0 0 auto;display:flex;gap:6px;}
   #throwerHomeBtn{flex:0 0 auto;}
   /* 무기는 눈에 확 보여야 한다. 구석의 작은 칩으로는 아무도 못 찾는다. */
   #spdBar{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;}
@@ -612,6 +613,11 @@
         <span class="ti" id="tiTime">⏱ 90초</span>
         <span class="ti" id="tiHit">뚫음 0/0</span>
         <span class="ti grow"><i id="tiEnergyFill"></i><em id="tiEnergyTxt">⚡ 100</em></span>
+      </div>
+      <!-- 이 화면에도 음악이 나오므로 끌 수단이 있어야 한다 (판 화면의 #audioBar 는 여기 없다) -->
+      <div id="tAudio">
+        <button class="iconbtn" id="tSoundBtn" title="효과음">🔊</button>
+        <button class="iconbtn" id="tBgmBtn" title="배경음악">🎵</button>
       </div>
     </div>
     <div class="tpanel grow">
@@ -1028,18 +1034,73 @@ function playLevelUp(){ if(!soundOn||!AC)return; const t0=AC.currentTime,notes=[
   notes.forEach((f,i)=>{const t=t0+i*0.09,o=AC.createOscillator(),g=AC.createGain();o.type='triangle';o.frequency.value=f;
     g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.3,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+0.18);
     o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+0.2);}); }
-$('soundBtn').addEventListener('click',()=>{soundOn=!soundOn;ensureAudio();$('soundBtn').textContent=soundOn?'🔊':'🔇';});
-// BGM
-let bgmOn=true,bgmNext=0,bgmStep=0,bgmGain=null; const STEP=0.26;
+$('soundBtn').addEventListener('click',toggleSound);
+// ================= BGM =================
+// 두 곡을 쓴다.
+//  · 터트리는 쪽·혼자 하기 = 밝은 다장조 아르페지오. 젤리가 쏟아지는 신나는 느낌.
+//  · 던지는 쪽 = 라단조 그루브. 이쪽은 '내가 언제 던질까' 를 노리는 역할이라
+//    쏟아지는 느낌이 아니라 숨죽여 노리는 리듬이 맞다. 낮은 플럭 베이스 + 엇박 스탭 + 셰이커.
+// 예전에는 bgmTick 이 running 만 봤고 frameLoop 에서만 불려서, 던지는 사람 화면
+// (mirrorLoop · throwerAlive)에서는 음악이 아예 나오지 않았다.
+let bgmOn=true,bgmNext=0,bgmStep=0,bgmGain=null,bgmCur=null;
+const STEP=0.26;
 const MELODY=[523,659,784,659,587,698,587,0,523,659,784,880,784,659,523,0,587,740,880,740,659,784,659,0,523,659,784,1046,880,784,659,0];
 const BASS=[131,0,196,0,147,0,196,0,131,0,196,0,165,0,196,0,147,0,220,0,165,0,196,0,131,0,196,0,165,0,131,0];
+// 던지는 쪽 — 라단조 5음. 베이스는 엇박으로 통통 튀고, 멜로디는 드물게 한 방씩.
+const T_STEP=0.15;
+const T_BASS=[147,0,147,0,110,0,147,0,175,0,175,0,131,0,110,0,
+              147,0,147,0,110,0,147,0,196,0,175,0,165,0,131,0];
+const T_MEL =[0,0,587,0,0,698,0,0,0,0,880,0,0,784,0,0,
+              0,0,587,0,0,698,0,0,0,0,1047,0,0,880,0,784];
+const TRACKS={
+  main :{mel:MELODY,bass:BASS, step:STEP,   melType:'triangle',bassType:'sine',
+         melVol:0.5, bassVol:0.6, hat:0},
+  throw:{mel:T_MEL, bass:T_BASS,step:T_STEP,melType:'triangle',bassType:'square',
+         melVol:0.34,bassVol:0.30,hat:2},   // hat: 몇 스텝마다 셰이커를 넣는가
+};
 function bgmNote(freq,t,type,vol,dur){ if(!freq)return; const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=freq;
   g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+0.03);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
   o.connect(g);g.connect(bgmGain);o.start(t);o.stop(t+dur+0.02); }
-function bgmTick(){ if(!AC||!bgmOn||!running)return; if(!bgmGain){bgmGain=AC.createGain();bgmGain.gain.value=0.15;bgmGain.connect(AC.destination);}
-  if(bgmNext<AC.currentTime)bgmNext=AC.currentTime+0.05;
-  while(bgmNext<AC.currentTime+0.3){const i=bgmStep%MELODY.length;bgmNote(MELODY[i],bgmNext,'triangle',0.5,STEP*0.9);bgmNote(BASS[i],bgmNext,'sine',0.6,STEP*0.9);bgmNext+=STEP;bgmStep++;} }
-$('bgmBtn').addEventListener('click',()=>{bgmOn=!bgmOn;ensureAudio();$('bgmBtn').textContent=bgmOn?'🎵':'🚫';if(bgmGain)bgmGain.gain.value=bgmOn?0.15:0;});
+// 셰이커 — 아주 짧은 잡음. 리듬만 잡아 주면 되니 0.03초면 충분하다.
+function bgmHat(t,vol){
+  const len=Math.max(1,Math.floor(AC.sampleRate*0.03));
+  const buf=AC.createBuffer(1,len,AC.sampleRate), d=buf.getChannelData(0);
+  for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*(1-i/len);
+  const n=AC.createBufferSource(); n.buffer=buf;
+  const hp=AC.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=5200;
+  const g=AC.createGain(); g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.035);
+  n.connect(hp); hp.connect(g); g.connect(bgmGain); n.start(t);
+}
+function bgmVol(){ return bgmCur==='throw'?0.13:0.15; }
+function bgmTick(){
+  if(!AC||!bgmOn) return;
+  const want = throwerAlive ? 'throw' : (running ? 'main' : null);
+  if(!want) return;
+  if(!bgmGain){ bgmGain=AC.createGain(); bgmGain.gain.value=0.15; bgmGain.connect(AC.destination); }
+  // 곡이 바뀌면 마디 처음부터 다시 — 안 그러면 역할이 바뀔 때 중간부터 튀어나온다
+  if(bgmCur!==want){ bgmCur=want; bgmStep=0; bgmNext=AC.currentTime+0.05; bgmGain.gain.value=bgmVol(); }
+  const tr=TRACKS[want];
+  if(bgmNext<AC.currentTime) bgmNext=AC.currentTime+0.05;
+  while(bgmNext<AC.currentTime+0.3){
+    const i=bgmStep%tr.mel.length;
+    bgmNote(tr.mel[i], bgmNext, tr.melType, tr.melVol, tr.step*0.9);
+    bgmNote(tr.bass[i],bgmNext, tr.bassType,tr.bassVol, tr.step*0.9);
+    if(tr.hat && bgmStep%tr.hat===0) bgmHat(bgmNext, bgmStep%(tr.hat*4)===0?0.10:0.05);
+    bgmNext+=tr.step; bgmStep++;
+  }
+}
+function toggleBgm(){ bgmOn=!bgmOn; ensureAudio();
+  const label=bgmOn?'🎵':'🚫';
+  ['bgmBtn','tBgmBtn'].forEach(id=>{ const b=$(id); if(b) b.textContent=label; });
+  if(bgmGain) bgmGain.gain.value=bgmOn?bgmVol():0;
+  if(typeof syncSettingsUI==='function') syncSettingsUI(); }
+function toggleSound(){ soundOn=!soundOn; ensureAudio();
+  const label=soundOn?'🔊':'🔇';
+  ['soundBtn','tSoundBtn'].forEach(id=>{ const b=$(id); if(b) b.textContent=label; });
+  if(typeof syncSettingsUI==='function') syncSettingsUI(); }
+$('bgmBtn').addEventListener('click',toggleBgm);
+$('tBgmBtn').addEventListener('click',toggleBgm);
+$('tSoundBtn').addEventListener('click',toggleSound);
 
 // ================= Character =================
 // 'human' 은 남자아이다. 이미 저장된 캐릭터가 'human'이라 id를 바꾸지 않는다(그러면 기존 사용자가 고양이로 초기화된다).
@@ -1964,8 +2025,8 @@ function giveUpNow(){
 function pauseGame(){ if(!running||paused)return;
   if(netMode){ if(giveUpArmed) giveUpNow(); else armGiveUp(); return; }   // 대전은 포기하고 나가기
   paused=true; $('pauseScreen').classList.remove('hide'); if(bgmGain)bgmGain.gain.value=0; }
-function resumeGame(){ if(!paused)return; paused=false; lastT=0; $('pauseScreen').classList.add('hide'); if(bgmGain&&bgmOn)bgmGain.gain.value=0.15; }
-function quitGame(){ paused=false; running=false; $('pauseScreen').classList.add('hide'); $('hud').classList.add('hide'); $('audioBar').classList.add('hide'); $('itemBar').classList.add('hide'); $('pauseBtn').classList.add('hide'); if(bgmGain&&bgmOn)bgmGain.gain.value=0.15; openStart(); }
+function resumeGame(){ if(!paused)return; paused=false; lastT=0; $('pauseScreen').classList.add('hide'); if(bgmGain&&bgmOn)bgmGain.gain.value=bgmVol(); }
+function quitGame(){ paused=false; running=false; $('pauseScreen').classList.add('hide'); $('hud').classList.add('hide'); $('audioBar').classList.add('hide'); $('itemBar').classList.add('hide'); $('pauseBtn').classList.add('hide'); if(bgmGain&&bgmOn)bgmGain.gain.value=bgmVol(); openStart(); }
 
 function startGame(){
   // 난이도를 먼저 확정한다. 순서가 바뀌면 목숨 수가 내 지난 판 난이도로 정해져서
@@ -3471,7 +3532,7 @@ function mirrorLoop(now){
   if(steps>=5) mAcc=0;
   mframe++;
   if(!throwerAlive) return;
-  drawMirror(); drawMyPad(); updateTInfo();
+  drawMirror(); drawMyPad(); updateTInfo(); bgmTick();
   mirrorRAF=requestAnimationFrame(mirrorLoop);
 }
 function drawMirror(){
@@ -3883,8 +3944,8 @@ $('sendChBtn').onclick=sendChallenge;
 $('overNickOk').onclick=()=>{ saveNick($('nickInputO').value); if(!nick){toast('닉네임을 입력해주세요 🙋');return;}
   $('overNickCard').classList.add('hide'); sendChallenge(); };
 window.addEventListener('keydown',e=>{ if(e.key==='Escape'&&running){ paused?resumeGame():pauseGame(); } });
-$('setSound').onclick=()=>{ soundOn=!soundOn; ensureAudio(); $('soundBtn').textContent=soundOn?'🔊':'🔇'; syncSettingsUI(); };
-$('setBgm').onclick=()=>{ bgmOn=!bgmOn; ensureAudio(); $('bgmBtn').textContent=bgmOn?'🎵':'🚫'; if(bgmGain)bgmGain.gain.value=bgmOn?0.15:0; syncSettingsUI(); };
+$('setSound').onclick=toggleSound;
+$('setBgm').onclick=toggleBgm;
 $('resetScores').onclick=resetScores;
 $('resetAll').onclick=resetAll;
 $('backBtn').onclick=()=>openStart();
