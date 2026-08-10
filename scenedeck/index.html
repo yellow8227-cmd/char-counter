@@ -232,10 +232,37 @@ input::placeholder,textarea::placeholder{color:var(--ph)}
 .prog i{height:3px;flex:1;background:var(--line);border-radius:2px;transition:background .2s}
 .prog i.on{background:var(--acc)}
 
+/* 프롬프트 출력 카드 — 고른 것만 펼쳐 둔다 */
+.pcard .tgbar{cursor:pointer;margin-bottom:0}
+.pcard .tgbar b::before{content:"▾ ";color:var(--tx3);font-size:11px}
+.pcard.fold .tgbar b::before{content:"▸ "}
+.pcard.fold{background:transparent}
+.pcard.fold .tgbody{display:none}
+.pcard .tgbody{margin-top:14px}
+.opt{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:9px}
+.opt>span{flex:none;width:82px;font-size:10.5px;font-weight:700;letter-spacing:.08em;
+  color:var(--tx3);text-transform:uppercase}
+code{font-family:var(--mono);font-size:11.5px;background:var(--s2);border:1px solid var(--line);
+  border-radius:5px;padding:2px 7px;color:var(--acc2)}
+#lookcard>.fa,#askcard>.fa{padding:0 18px 18px}
+
+/* 합쳐진 탭 안의 섹션 바로가기 */
+.subnav{display:flex;gap:7px;flex-wrap:wrap;margin:-8px 0 22px}
+.subnav button{background:var(--s1);border:1px solid var(--line);border-radius:999px;
+  padding:6px 14px;font-size:12px;font-weight:600;color:var(--tx2);cursor:pointer;transition:.14s}
+.subnav button:hover{border-color:var(--acc);color:var(--acc)}
+
+/* 이 탭에서 할 일이 끝나면 다음으로 */
+.nextbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:flex-end;
+  margin-top:30px;padding-top:22px;border-top:1px solid var(--line)}
+.nextbar span{font-size:12.5px;color:var(--tx3)}
+
 /* 프롬프트 탭 — 빠른 입력일 땐 결과를 입력칸 바로 아래로 끌어올린다 */
 #t-prompt.on{display:flex;flex-direction:column}
 #t-prompt>*{order:2}
-#t-prompt.quick>#lookcard{order:8}
+#t-prompt>#lookcard{order:7}
+#t-prompt>#askcard{order:8}
+.opt.off{opacity:.4}
 
 /* 컷 빠른 선택 바 */
 .cutnav{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px}
@@ -426,13 +453,10 @@ footer{border-top:1px solid var(--line);background:var(--s1);margin-top:70px}
   <div class="navwrap">
     <nav id="nav" aria-label="주요 메뉴">
       <button data-t="home" class="on">🏠 홈</button>
-      <button data-t="story">📖 스토리</button>
-      <button data-t="script">📄 대본</button>
-      <button data-t="char">👤 캐릭터</button>
-      <button data-t="scene">🎬 씬 · 컷</button>
+      <button data-t="plan">✍️ 기획</button>
+      <button data-t="cut">🎬 대본 · 컷</button>
       <button data-t="prompt">✨ 프롬프트</button>
-      <button data-t="board">🖼️ 보드</button>
-      <button data-t="data">📦 설정</button>
+      <button data-t="data">⚙️ 설정</button>
     </nav>
   </div>
 </header>
@@ -447,9 +471,9 @@ footer{border-top:1px solid var(--line);background:var(--s1);margin-top:70px}
       <p class="lead"><b>원고를 올리면 씬으로 나뉘고, 버튼 하나면 컷까지 만들어집니다.</b> 급할 땐 한 줄만 적어 프롬프트만 뽑을 수도 있어요.
       캐릭터 <b>외형 고정 블록</b>은 모든 컷에 토씨 하나 안 틀리고 들어가서, 컷마다 인물이 딴 사람이 되는 사고를 막아줍니다.</p>
       <div class="cta">
-        <button class="btn pri lg" data-go="story">▶ 새 작품 시작하기</button>
-        <button class="btn lg" data-go="script">📄 이미 쓴 원고 올리기</button>
-        <button class="btn gh lg" data-go="data">📦 백업 · 내보내기</button>
+        <button class="btn pri lg" data-go="cut">📄 원고 올리고 시작하기</button>
+        <button class="btn lg" data-go="prompt" data-pmset="quick">⚡ 한 줄만 적고 프롬프트만</button>
+        <button class="btn gh lg" data-go="plan">✍️ 이야기부터 만들기</button>
       </div>
       <div class="herofoot" id="homestat"></div>
       <p class="mini" id="homeproj" style="margin-top:12px"></p>
@@ -458,8 +482,8 @@ footer{border-top:1px solid var(--line);background:var(--s1);margin-top:70px}
     <div class="steps">
       <div class="stepbox">
         <div class="n">1</div>
-        <h4>쓰거나 · 올리거나</h4>
-        <p>로그라인부터 차근차근 쓰셔도 되고, 이미 있는 원고 파일을 끌어다 놓으면 <b>씬 단위로 자동 분해</b>됩니다.</p>
+        <h4>원고를 끌어다 놓기</h4>
+        <p>「대본 · 컷」 탭에 파일을 떨구면 <b>씬 단위로 자동 분해</b>됩니다. 이야기부터 만들고 싶으면 「기획」에서 시작해도 돼요.</p>
       </div>
       <div class="stepbox">
         <div class="n">2</div>
@@ -479,38 +503,23 @@ footer{border-top:1px solid var(--line);background:var(--s1);margin-top:70px}
       <p>카드를 누르면 그 작업 화면으로 바로 이동합니다.</p>
     </div>
     <div class="fgrid">
-      <button class="fcard" data-go="story">
-        <span class="ic">📖</span><h4>스토리 디벨롭</h4>
-        <p>로그라인 · 시놉시스 · 3막 구조 · 씬 리스트. 단계마다 <b>AI 질문지</b>를 만들어 복사해 줍니다.</p>
-        <span class="go">스토리 열기 →</span>
-      </button>
-      <button class="fcard" data-go="script">
-        <span class="ic">📄</span><h4>대본 불러오기 · 고치기</h4>
-        <p>txt · docx · pdf · fdx 원고를 씬으로 자동 분해. 이어서 <b>전 씬을 컷까지 한 번에</b> 만들 수 있습니다.</p>
-        <span class="go">대본 열기 →</span>
-      </button>
-      <button class="fcard" data-go="char">
-        <span class="ic">👤</span><h4>캐릭터 바이블</h4>
-        <p>나이 · 머리 · 눈 · 체형을 고르면 영문 <b>외형 고정 블록</b>이 자동 생성돼 모든 컷에 똑같이 박힙니다.</p>
-        <span class="go">캐릭터 열기 →</span>
-      </button>
-      <button class="fcard" data-go="scene">
-        <span class="ic">🎬</span><h4>씬 · 컷 분해</h4>
-        <p>씬 안에 컷을 쌓고 샷 · 앵글 · 렌즈 · 조명 · 길이를 지정합니다. 순서 이동과 복제도 한 번에.</p>
-        <span class="go">씬 · 컷 열기 →</span>
+      <button class="fcard" data-go="cut">
+        <span class="ic">🎬</span><h4>대본 · 컷 <span class="tagx">여기서 시작</span></h4>
+        <p>원고 파일을 올리면 씬으로 나뉘고, <b>버튼 하나로 전 씬이 컷까지</b> 만들어집니다. 샷·조명도 자동으로 채워져요.</p>
+        <span class="go">원고 올리러 가기 →</span>
       </button>
       <button class="fcard" data-go="prompt">
-        <span class="ic">✨</span><h4>프롬프트 빌더</h4>
-        <p>미드저니 · Veo(Flow) · 범용 이미지 3종을 동시에 출력. <b>「빠른 입력」</b>을 켜면 씬·컷 없이 한 줄만 적어도 나옵니다.</p>
-        <span class="go">프롬프트 열기 →</span>
+        <span class="ic">✨</span><h4>프롬프트</h4>
+        <p>미드저니 · Veo(Flow) · 범용 이미지를 동시에. <b>복사하고 미드저니 열기</b> 버튼 하나로 바로 작업할 수 있어요.</p>
+        <span class="go">프롬프트 뽑기 →</span>
       </button>
-      <button class="fcard" data-go="board">
-        <span class="ic">🖼️</span><h4>스토리보드</h4>
-        <p>뽑아온 이미지를 컷에 붙여 한눈에 봅니다. 이미지는 IndexedDB에 따로 저장돼 용량 걱정이 없어요.</p>
-        <span class="go">보드 열기 →</span>
+      <button class="fcard" data-go="plan">
+        <span class="ic">✍️</span><h4>기획 <span class="tagx">선택</span></h4>
+        <p>이야기부터 만들 때. 로그라인 · 시놉시스 · 3막 · 씬 리스트, 그리고 캐릭터 <b>외형 고정 블록</b>.</p>
+        <span class="go">기획 열기 →</span>
       </button>
       <button class="fcard" data-go="data">
-        <span class="ic">📦</span><h4>백업 · 내보내기</h4>
+        <span class="ic">⚙️</span><h4>설정 · 내보내기</h4>
         <p>JSON 백업 하나에 이미지까지 전부. 촬영 스케줄표 · 콜시트 · 컷 리스트 CSV와 대본 TXT도 뽑힙니다.</p>
         <span class="go">설정 열기 →</span>
       </button>
@@ -519,14 +528,14 @@ footer{border-top:1px solid var(--line);background:var(--s1);margin-top:70px}
     <div class="shd">
       <h3>핵심 — 외형 고정 블록</h3>
       <p>AI 영상의 최대 난관은 <b>캐릭터가 매 컷마다 딴 사람이 되는 것</b>입니다.
-      「캐릭터」 탭에서 항목을 고르면 아래 같은 영문 블록이 만들어지고, 컷에서 등장인물 칩만 켜두면 <b>모든 프롬프트에 똑같이</b> 들어갑니다.</p>
+      「기획 → 캐릭터」에서 항목을 고르면 아래 같은 영문 블록이 만들어지고, 컷에서 등장인물 칩만 켜두면 <b>모든 프롬프트에 똑같이</b> 들어갑니다.</p>
     </div>
     <div class="out">a man in his forties, short black hair, dark brown eyes,
 slender build, worn grey trench coat, scar through left eyebrow</div>
 
     <div class="shd">
       <h3>가져오기 · 내보내기</h3>
-      <p>이미 쓴 원고가 있다면 「대본」 탭에 파일을 끌어다 놓으세요. 결과물은 「설정」 탭에서 내보냅니다.</p>
+      <p>이미 쓴 원고가 있다면 「대본 · 컷」 탭에 파일을 끌어다 놓으세요. 결과물은 「설정」 탭에서 내보냅니다.</p>
     </div>
     <div class="split">
       <div class="tblwrap">
@@ -566,7 +575,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       무슨 일이 벌어지는지 한 줄만 적으면 세 가지 프롬프트가 바로 나옵니다. 씬도 컷도 만들 필요 없어요.
       마음에 들면 <b>「이 내용을 컷으로 저장」</b>으로 나중에 이어서 쓸 수도 있습니다.</p></details>
     <details class="faq"><summary>원고를 올렸는데 컷을 하나하나 만들어야 하나요?</summary>
-      <p class="fa">아닙니다. 원고를 적용하면 「대본」 탭에 <b>⚡ 컷까지 한 번에</b> 카드가 나타납니다.
+      <p class="fa">아닙니다. 원고를 적용하면 「대본 · 컷」 탭에 <b>⚡ 컷까지 한 번에</b> 카드가 나타납니다.
       「모든 씬을 컷으로 쪼개기」 한 번이면 전 씬이 컷으로 나뉘고, <b>샷·조명 자동 배분</b>까지 켜져 있어
       프롬프트가 곧바로 쓸 만한 문장으로 나옵니다. 이미 컷이 있는 씬은 건드리지 않아요.</p></details>
     <details class="faq"><summary>AI가 자동으로 연결되나요?</summary>
@@ -582,13 +591,24 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <p class="fa">제목용 손글씨체(Griun 602)는 이 PC에 설치돼 있거나 <b>fonts/ 폴더가 파일 옆에 있을 때만</b> 적용됩니다.
       없으면 시스템 고딕으로 자동 대체되며, 기능에는 아무 영향이 없습니다.</p></details>
   </section>
-  <!-- ===== 스토리 ===== -->
-  <section class="tab" id="t-story">
+
+
+
+
+  <!-- ===== 기획 (스토리 + 캐릭터) ===== -->
+  <section class="tab" id="t-plan">
     <div class="pghd">
-      <h2>스토리 디벨롭</h2>
-      <p>위에서 아래로 채워 내려갑니다. 각 단계의 <b>「AI 질문지 복사」</b>를 누르면 지금까지 쓴 내용을 전부 담은 질문이 복사돼요 — Claude나 ChatGPT에 붙여넣으세요.</p>
-      <div class="prog" id="storyprog"></div>
+      <h2>기획</h2>
+      <p>이야기와 등장인물을 잡는 곳입니다. <b>이미 원고가 있으면 건너뛰고 「대본 · 컷」으로 가세요.</b></p>
     </div>
+    <div class="subnav">
+      <button data-jumpto="sec-story">📖 스토리</button>
+      <button data-jumpto="sec-char">👤 캐릭터</button>
+    </div>
+
+    <div id="sec-story">
+      <div class="rule">📖 스토리 — 로그라인에서 씬 리스트까지</div>
+      <div class="prog" id="storyprog"></div>
 
     <div class="card">
       <h3><span class="step">1</span>로그라인 <span class="tagx">한 문장</span></h3>
@@ -644,14 +664,32 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
         <button class="btn gh" data-ask="full">📋 작품 전체 브리핑</button>
       </div>
     </div>
+    </div>
+
+    <div id="sec-char">
+      <div class="rule">👤 캐릭터 — 외형 고정 블록</div>
+      <p class="mini" style="margin:0 0 14px">AI 영상의 최대 난관은 <b>캐릭터가 매 컷마다 딴 사람이 되는 것</b>입니다.
+      아래를 채우면 <b>외형 고정 블록</b>이 자동으로 만들어지고, 모든 프롬프트에 토씨 하나 안 틀리고 삽입돼요.</p>
+    <div class="row" style="margin-bottom:18px"><button class="btn pri" id="addchar">＋ 캐릭터 추가</button></div>
+    <div id="charlist"></div>
+    </div>
+
+    <div class="nextbar"><span>다 됐으면</span><button class="btn pri" data-go="cut">🎬 대본 · 컷으로 →</button></div>
   </section>
 
-  <!-- ===== 대본 ===== -->
-  <section class="tab" id="t-script">
+  <!-- ===== 대본 · 컷 (대본 + 씬·컷 + 보드) ===== -->
+  <section class="tab" id="t-cut">
     <div class="pghd">
-      <h2>대본</h2>
-      <p>이미 쓰신 원고를 <b>파일로 올리면 씬 단위로 자동 분해</b>됩니다. 여기서 고친 내용은 씬·컷·프롬프트에 그대로 이어져요.</p>
+      <h2>대본 · 컷</h2>
+      <p>원고를 올리면 <b>씬으로 나뉘고, 버튼 하나로 컷까지</b> 만들어집니다. 여기까지 하면 프롬프트는 자동이에요.</p>
     </div>
+    <div class="subnav">
+      <button data-jumpto="sec-script">📄 원고 · 씬</button>
+      <button data-jumpto="sec-scene">🎬 씬 · 컷 손보기</button>
+      <button data-jumpto="sec-board">🖼️ 스토리보드</button>
+    </div>
+
+    <div id="sec-script">
 
     <div class="card" id="dropzone">
       <h3>📂 원고 불러오기</h3>
@@ -738,24 +776,10 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       </div>
       <p class="mini">요청문을 AI에 붙여넣고, 받은 수정본을 「고친 대본 붙여넣기」로 되돌려 넣으면 씬이 갱신됩니다.</p>
     </div>
-  </section>
-
-  <!-- ===== 캐릭터 ===== -->
-  <section class="tab" id="t-char">
-    <div class="pghd">
-      <h2>캐릭터 바이블</h2>
-      <p>AI 영상의 최대 난관은 <b>캐릭터가 매 컷마다 딴 사람이 되는 것</b>입니다. 아래를 채우면 <b>외형 고정 블록</b>이 자동으로 만들어지고, 모든 프롬프트에 토씨 하나 안 틀리고 삽입돼요.</p>
     </div>
-    <div class="row" style="margin-bottom:18px"><button class="btn pri" id="addchar">＋ 캐릭터 추가</button></div>
-    <div id="charlist"></div>
-  </section>
 
-  <!-- ===== 씬 · 컷 ===== -->
-  <section class="tab" id="t-scene">
-    <div class="pghd">
-      <h2>씬 · 컷 분해</h2>
-      <p>씬을 만들고 그 안에 컷을 쌓습니다. 컷마다 샷 사이즈 · 앵글 · 렌즈 · 조명을 지정해두면 「프롬프트」 탭에서 문장이 자동으로 조립돼요.</p>
-    </div>
+    <div id="sec-scene">
+      <div class="rule">🎬 씬 · 컷 손보기 — 필요할 때만</div>
     <div class="row" style="margin-bottom:18px">
       <button class="btn pri" id="addscene">＋ 씬 추가</button>
       <button class="btn" id="openpaste2">📥 표로 한 번에 넣기</button>
@@ -764,13 +788,21 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <span class="mini" id="cutstat" style="margin:0"></span>
     </div>
     <div id="scenelist"></div>
+    </div>
+
+    <div id="sec-board">
+      <div class="rule">🖼️ 스토리보드 — 뽑아온 이미지 붙이기</div>
+    <div id="boardwrap"></div>
+    </div>
+
+    <div class="nextbar"><span>컷이 준비됐으면</span><button class="btn pri" data-go="prompt">✨ 프롬프트 뽑으러 →</button></div>
   </section>
 
   <!-- ===== 프롬프트 ===== -->
   <section class="tab" id="t-prompt">
     <div class="pghd">
       <h2>프롬프트 빌더</h2>
-      <p>컷을 고르면 <b>미드저니 · Veo(Flow) · 범용 이미지</b> 세 문법으로 동시에 만들어줍니다. 「전체 화면 룩」은 모든 컷에 공통으로 붙는 값이에요.</p>
+      <p>컷을 고르면 프롬프트가 자동으로 조립됩니다. <b>쓰실 곳을 하나 고르고 「복사하고 열기」를 누르면 끝</b>이에요.</p>
     </div>
 
     <div class="row" id="pmode" style="margin-bottom:18px">
@@ -807,8 +839,9 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       </div>
     </div>
 
-    <div class="card" id="lookcard">
-      <h3>🎨 전체 화면 룩 <span class="tagx">모든 컷 공통</span></h3>
+    <details class="faq" id="lookcard">
+      <summary>🎨 전체 화면 룩 — 모든 컷에 공통으로 붙는 값 <span class="tagx">고급</span></summary>
+      <div class="fa">
       <div class="grid g3">
         <label class="f"><span>비주얼 스타일</span><select id="v-look"></select></label>
         <label class="f"><span>화면비</span><select id="v-ar"></select></label>
@@ -819,7 +852,8 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
         <label class="f enfield"><span>미드저니 파라미터</span><input type="text" id="v-mj" placeholder="--ar 16:9 --style raw"></label>
       </div>
       <label class="f enfield"><span>네거티브 프롬프트</span><input type="text" id="v-neg" placeholder="text, watermark, deformed hands"></label>
-    </div>
+      </div>
+    </details>
 
     <div class="card" id="cutcard">
       <h3>🎯 컷 선택 <span class="tagx" id="curlabel">—</span></h3>
@@ -833,42 +867,85 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="outhd"><b>🖼️ 미드저니</b><span class="k">키워드 나열형 · 스틸</span></div>
-      <div class="out empty2" id="o-mj">컷을 선택하세요</div>
-      <div class="row" style="margin-top:11px"><button class="btn sm" data-copy="o-mj">📋 복사</button></div>
+    <div class="row" id="tgpick" style="margin-bottom:14px">
+      <span class="mini" style="margin:0 4px 0 0">어디에 쓰실 건가요</span>
+      <label class="chip on" data-tgset="mj">🖼️ 미드저니</label>
+      <label class="chip" data-tgset="veo">🎬 Veo / Flow</label>
+      <label class="chip" data-tgset="gen">🎨 그 외 이미지 AI</label>
     </div>
 
-    <div class="card">
-      <div class="outhd"><b>🎬 Veo / Flow</b><span class="k">서술형 · 움직임과 소리 포함</span></div>
-      <div class="out empty2" id="o-veo">컷을 선택하세요</div>
-      <div class="row" style="margin-top:11px">
-        <button class="btn sm" data-copy="o-veo">📋 복사</button>
-        <span class="mini" style="margin:0">Flow에선 캐릭터 이미지를 <b>Ingredients</b>로 함께 넣으세요</span>
+    <div class="card pcard" data-tg="mj">
+      <div class="outhd tgbar"><b>🖼️ 미드저니</b><span class="k">키워드 나열형 · 스틸</span></div>
+      <div class="tgbody">
+        <div class="out empty2" id="o-mj">컷을 선택하세요</div>
+        <div class="warn" id="mjhangul" style="display:none;margin:12px 0 0">
+          한글이 섞여 있어요 — 미드저니는 영어를 훨씬 잘 알아듣습니다.
+          <button class="btn sm" id="mjtrans" style="margin-left:8px">🌐 영문으로 바꾸기</button>
+        </div>
+        <div class="row" style="margin-top:13px">
+          <button class="btn pri" id="mjgo">📋 복사하고 미드저니 열기</button>
+          <button class="btn" data-copy="o-mj">📋 복사만</button>
+          <button class="btn gh" id="mjside">🪟 옆에 띄워두고 작업</button>
+        </div>
+
+        <div class="rule">미드저니 설정 — 고르면 뒤에 자동으로 붙습니다</div>
+        <div class="opt"><span>화면비</span><div class="row" id="mj-ar"></div></div>
+        <div class="opt"><span>느낌</span><div class="row" id="mj-look">
+          <label class="chip" data-mj="look|raw">📷 사진처럼</label>
+          <label class="chip" data-mj="look|art">🎨 그림처럼</label>
+        </div></div>
+        <div class="opt"><span>스타일 강도</span><div class="row" id="mj-sty">
+          <label class="chip" data-mj="sty|low">약하게 — 시킨 대로</label>
+          <label class="chip" data-mj="sty|mid">보통</label>
+          <label class="chip" data-mj="sty|high">강하게 — 예쁘게</label>
+        </div></div>
+        <div class="opt"><span>버전</span><div class="row" id="mj-ver">
+          <label class="chip" data-mj="ver|7">v7 (기본)</label>
+          <label class="chip" data-mj="ver|6.1">v6.1</label>
+          <label class="chip" data-mj="ver|niji">니지 — 애니메이션</label>
+        </div></div>
+        <p class="mini">붙는 값 → <code id="mjparam">—</code></p>
+
+        <details class="faq" style="margin-top:14px">
+          <summary>미드저니가 처음이신가요? — 4단계</summary>
+          <p class="fa"><b>1.</b> 「복사하고 미드저니 열기」를 누르면 프롬프트가 복사되고 미드저니 창이 새로 열립니다. (첫 방문이면 로그인이 필요해요 — 디스코드 계정으로 됩니다)<br>
+          <b>2.</b> 미드저니의 입력창을 클릭하고 <kbd>Ctrl</kbd>+<kbd>V</kbd>(맥은 <kbd>⌘</kbd>+<kbd>V</kbd>)로 붙여넣은 뒤 <kbd>Enter</kbd>.<br>
+          <b>3.</b> 이미지 4장이 나오면 마음에 드는 것을 골라 <b>Upscale</b>로 키웁니다.<br>
+          <b>4.</b> 다시 이 창으로 와서 <kbd>←</kbd> <kbd>→</kbd> 키로 다음 컷으로 넘기고 반복하세요.
+          「🪟 옆에 띄워두고 작업」을 쓰면 두 창을 나란히 놓고 오갈 수 있습니다.</p>
+        </details>
       </div>
     </div>
 
-    <div class="card">
-      <div class="outhd"><b>🎨 범용 이미지</b><span class="k">Nano Banana · ImageFX · SD 계열</span></div>
-      <div class="out empty2" id="o-gen">컷을 선택하세요</div>
-      <div class="row" style="margin-top:11px"><button class="btn sm" data-copy="o-gen">📋 복사</button></div>
+    <div class="card pcard fold" data-tg="veo">
+      <div class="outhd tgbar"><b>🎬 Veo / Flow</b><span class="k">서술형 · 움직임과 소리 포함</span></div>
+      <div class="tgbody">
+        <div class="out empty2" id="o-veo">컷을 선택하세요</div>
+        <div class="row" style="margin-top:13px">
+          <button class="btn pri" id="veogo">📋 복사하고 Flow 열기</button>
+          <button class="btn" data-copy="o-veo">📋 복사만</button>
+          <span class="mini" style="margin:0">Flow에선 캐릭터 이미지를 <b>Ingredients</b>로 함께 넣으세요</span>
+        </div>
+      </div>
     </div>
 
-    <div class="card">
-      <div class="outhd"><b>🤖 AI 다듬기</b><span class="k">프롬프트를 더 좋게</span></div>
-      <div class="row"><button class="btn" data-ask="prompt">📋 이 컷 개선 요청문 복사</button></div>
-      <p class="mini">AI에 붙여넣으면 이 컷의 맥락을 이해한 상태로 프롬프트를 손봐줍니다.</p>
+    <div class="card pcard fold" data-tg="gen">
+      <div class="outhd tgbar"><b>🎨 그 외 이미지 AI</b><span class="k">Nano Banana · ImageFX · SD 계열</span></div>
+      <div class="tgbody">
+        <div class="out empty2" id="o-gen">컷을 선택하세요</div>
+        <div class="row" style="margin-top:13px"><button class="btn" data-copy="o-gen">📋 복사</button></div>
+      </div>
     </div>
+
+    <details class="faq" id="askcard">
+      <summary>🤖 AI로 프롬프트 더 다듬기</summary>
+      <div class="fa">
+        <p style="margin:0 0 10px">AI에 붙여넣으면 이 컷의 맥락을 이해한 상태로 프롬프트를 손봐줍니다.</p>
+        <button class="btn" data-ask="prompt">📋 이 컷 개선 요청문 복사</button>
+      </div>
+    </details>
   </section>
 
-  <!-- ===== 보드 ===== -->
-  <section class="tab" id="t-board">
-    <div class="pghd">
-      <h2>스토리보드</h2>
-      <p>AI로 뽑은 이미지를 컷에 붙여 한눈에 봅니다. 이미지는 <b>IndexedDB</b>에 따로 저장돼서 용량 걱정 없이 넣을 수 있어요.</p>
-    </div>
-    <div id="boardwrap"></div>
-  </section>
 
   <!-- ===== 설정 ===== -->
   <section class="tab" id="t-data">
@@ -928,15 +1005,15 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     </div>
     <div class="fnav">
       <b>만들기</b>
-      <button data-go="story">스토리 디벨롭</button>
-      <button data-go="script">대본 불러오기</button>
-      <button data-go="char">캐릭터 바이블</button>
+      <button data-go="plan">스토리 디벨롭</button>
+      <button data-go="cut">대본 불러오기</button>
+      <button data-go="plan">캐릭터 바이블</button>
     </div>
     <div class="fnav">
       <b>연출</b>
-      <button data-go="scene">씬 · 컷 분해</button>
+      <button data-go="cut">씬 · 컷 분해</button>
       <button data-go="prompt">프롬프트 빌더</button>
-      <button data-go="board">스토리보드</button>
+      <button data-go="cut">스토리보드</button>
     </div>
     <div class="fnav">
       <b>관리</b>
@@ -1437,8 +1514,8 @@ $('nav').addEventListener('click',e=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
   $('t-'+b.dataset.t).classList.add('on');
   if(b.dataset.t==='prompt') renderPrompt();
-  if(b.dataset.t==='script') renderScript();
-  if(b.dataset.t==='board') renderBoard();
+  if(b.dataset.t==='plan') renderChars();
+  if(b.dataset.t==='cut'){ renderScript(); renderScenes(); renderBoard(); paintOneshot(); }
   if(b.dataset.t==='data'){ updQuota(); mtProbe(); }
   window.scrollTo(0,0);
 });
@@ -1631,7 +1708,7 @@ function renderScenes(){
   const w=$('scenelist');
   $('cutstat').textContent=statLine();
   if(!S.scenes.length){
-    w.innerHTML=`<div class="empty"><b>아직 씬이 없어요</b><p>「스토리」 탭에서 씬 리스트 질문지를 받아 표를 붙여넣으면 한 번에 만들어집니다.</p><button class="btn pri" data-newscene>＋ 첫 씬 만들기</button></div>`;
+    w.innerHTML=`<div class="empty"><b>아직 씬이 없어요</b><p>위쪽에서 원고를 올리면 씬이 자동으로 만들어집니다. 직접 만들어도 돼요.</p><button class="btn pri" data-newscene>＋ 첫 씬 만들기</button></div>`;
     return;
   }
   w.innerHTML=S.scenes.map((s,si)=>`
@@ -1715,7 +1792,7 @@ function cutHTML(s,c,si,ci){
         <label class="f"><span>무드</span><select data-kf="mood">${opts(MOOD,c.mood)}</select></label>
       </div>
       ${S.chars.length?`<label class="f"><span>등장 캐릭터 — 클릭해서 켜고 끄기</span><div class="row">${chips}</div></label>`
-        :`<p class="mini">「캐릭터」 탭에서 인물을 먼저 만들면 여기서 골라 고정 블록을 자동으로 붙일 수 있어요</p>`}
+        :`<p class="mini">「기획 → 캐릭터」에서 인물을 먼저 만들면 여기서 골라 고정 블록을 자동으로 붙일 수 있어요</p>`}
       <div class="grid g2">
         <label class="f"><span>대사</span><textarea data-kf="dialogue" placeholder="지훈: 이제 그만하자."></textarea></label>
         <label class="f"><span>사운드 (Veo용)</span><textarea data-kf="audio" placeholder="빗소리, 멀리서 지나는 차"></textarea></label>
@@ -2672,7 +2749,7 @@ function fillStyle(){
 }
 STYLE_FIELDS.forEach(k=>{
   const el=$('v-'+k); if(!el) return;
-  const h=()=>{ S.style[k]=el.value; if(k==='ar') syncAR(); save(); renderPrompt(); };
+  const h=()=>{ S.style[k]=el.value; if(k==='ar') mjSync(); save(); renderPrompt(); };
   el.addEventListener('input',h); el.addEventListener('change',h);
 });
 function syncAR(){
@@ -2691,8 +2768,8 @@ function renderCutNav(){
   if(!list.length){
     nav.innerHTML='<span class="mini" style="margin:0 8px 0 0">아직 컷이 없어요 —</span>'
       +'<button class="btn sm pri" data-pmset="quick">⚡ 빠른 입력으로 바로 뽑기</button>'
-      +'<button class="btn sm" data-go="script">📄 원고 올리기</button>'
-      +'<button class="btn sm" data-go="scene">＋ 씬 · 컷 만들기</button>';
+      +'<button class="btn sm" data-go="cut">📄 원고 올리기</button>'
+      +'<button class="btn sm" data-go="cut">＋ 씬 · 컷 만들기</button>';
     $('curlabel').textContent='—'; return;
   }
   if(!list.some(x=>x.c.id===S.sel.cut)) S.sel={scene:list[0].s.id,cut:list[0].c.id};
@@ -2811,7 +2888,7 @@ function fillQuick(){
   const w=$('qchars');
   w.innerHTML = S.chars.length
     ? S.chars.map(c=>`<label class="chip${q.chars.indexOf(c.id)>=0?' on':''}" data-qch="${c.id}">${esc(c.name||'이름 없음')}</label>`).join('')
-    : '<span class="mini" style="margin:0">「캐릭터」 탭에서 인물을 만들면 여기에 나타납니다 — 외형이 매 컷 똑같이 유지돼요</span>';
+    : '<span class="mini" style="margin:0">「기획 → 캐릭터」에서 인물을 만들면 여기에 나타납니다 — 외형이 매 컷 똑같이 유지돼요</span>';
 }
 
 function quickPair(){
@@ -2870,6 +2947,80 @@ $('q-save').addEventListener('click',()=>{
     {label:'되돌리기',fn:()=>{ S.scenes=S.scenes.filter(x=>x.id!==sc.id); save(); renderAll(); paintOneshot(); toast('되돌렸어요 ✓'); }});
 });
 
+/* =========================================================
+   출력 대상 — 고른 곳 하나만 펼쳐서 헤매지 않게 한다.
+   ========================================================= */
+const MJ_URL='https://www.midjourney.com/imagine';
+const FLOW_URL='https://labs.google/fx/tools/flow';
+
+function setTarget(t){
+  S.tg=t;
+  document.querySelectorAll('#tgpick .chip').forEach(x=>x.classList.toggle('on',x.dataset.tgset===t));
+  document.querySelectorAll('.pcard').forEach(x=>x.classList.toggle('fold',x.dataset.tg!==t));
+}
+document.addEventListener('click',e=>{
+  const c=e.target.closest('[data-tgset]');
+  if(c){ setTarget(c.dataset.tgset); save(); return; }
+  const bar=e.target.closest('.pcard .tgbar');
+  if(bar){ setTarget(bar.closest('.pcard').dataset.tg); save(); }
+});
+
+/* ---------- 미드저니 파라미터를 버튼으로 ---------- */
+function mjOpt(){ if(!S.mj) S.mj={look:'raw',sty:'mid',ver:'7'}; return S.mj; }
+function mjParams(){
+  const o=mjOpt(), p=['--ar '+(AR[S.style.ar]||'16:9')];
+  if(o.look==='raw'&&o.ver!=='niji') p.push('--style raw');
+  if(o.sty==='low')  p.push('--stylize 50');
+  if(o.sty==='high') p.push('--stylize 600');
+  p.push(o.ver==='niji'?'--niji 6':'--v '+o.ver);
+  return p.join(' ');
+}
+function mjSync(){ S.style.mj=mjParams(); const el=$('v-mj'); if(el) el.value=S.style.mj; }
+function paintMJ(){
+  const o=mjOpt(), bar=$('mj-ar');
+  if(bar && !bar.children.length)
+    bar.innerHTML=Object.keys(AR).map(k=>`<label class="chip" data-mj="ar|${esc(k)}">${esc(k)}</label>`).join('');
+  document.querySelectorAll('[data-mj]').forEach(x=>{
+    const parts=x.dataset.mj.split('|'), k=parts[0], v=parts[1];
+    x.classList.toggle('on', k==='ar' ? S.style.ar===v : o[k]===v);
+  });
+  const p=$('mjparam'); if(p) p.textContent=S.style.mj||mjParams();
+  // 니지 버전에서는 「느낌」이 적용되지 않는다 — 흐리게 해서 헷갈리지 않게
+  const lr=$('mj-look').closest('.opt'); if(lr) lr.classList.toggle('off',o.ver==='niji');
+}
+function pickMJ(e){
+  const c=e.target.closest('[data-mj]'); if(!c) return;
+  const parts=c.dataset.mj.split('|'), k=parts[0], v=parts[1];
+  if(k==='ar') S.style.ar=v; else mjOpt()[k]=v;
+  mjSync(); save(); fillStyle(); renderPrompt();
+}
+['mj-ar','mj-look','mj-sty','mj-ver'].forEach(id=>$(id).addEventListener('click',pickMJ));
+
+/* ---------- 바로 작업하러 가기 ---------- */
+function outText(id){ const el=$(id); return el.classList.contains('empty2')?'':el.textContent; }
+$('mjgo').addEventListener('click',()=>{
+  const t=outText('o-mj');
+  if(!t){ toast('먼저 컷을 고르거나 내용을 적어주세요'); return; }
+  copy(t,'복사했어요 — 미드저니 입력창에 붙여넣기(Ctrl+V)');
+  window.open(MJ_URL,'_blank','noopener');
+});
+$('veogo').addEventListener('click',()=>{
+  const t=outText('o-veo');
+  if(!t){ toast('먼저 컷을 고르거나 내용을 적어주세요'); return; }
+  copy(t,'복사했어요 — Flow 입력창에 붙여넣기(Ctrl+V)');
+  window.open(FLOW_URL,'_blank','noopener');
+});
+$('mjside').addEventListener('click',()=>{
+  const t=outText('o-mj');
+  if(t) copy(t,'복사해뒀어요 — 오른쪽 창에 붙여넣기(Ctrl+V)');
+  const w=Math.max(560,Math.floor(screen.availWidth/2));
+  const win=window.open(MJ_URL,'scenedeck_mj',
+    `width=${w},height=${screen.availHeight},left=${screen.availWidth-w},top=0`);
+  if(!win){ toast('팝업이 막혀 있어요 — 주소창 오른쪽에서 허용해주세요'); return; }
+  if(!t) toast('미드저니를 옆에 띄웠어요 — 이 창은 왼쪽에 두고 쓰세요');
+});
+$('mjtrans').addEventListener('click',()=>$('openmt').click());
+
 function renderPrompt(){
   fillStyle();
   $('qcard').style.display = pQuick?'block':'none';
@@ -2888,15 +3039,27 @@ function renderPrompt(){
     set('o-mj', ok?buildMJ(s,c):'', hint);
     set('o-veo',ok?buildVEO(s,c):'',hint);
     set('o-gen',ok?buildGEN(s,c):'',hint);
+    paintAfter();
     return;
   }
   renderCutNav();
   const hit=curCut();
   const hint='컷을 선택하고 내용을 채우면 여기에 나타납니다';
-  if(!hit){ set('o-mj','',hint); set('o-veo','',hint); set('o-gen','',hint); return; }
-  set('o-mj',buildMJ(hit.s,hit.c),hint);
-  set('o-veo',buildVEO(hit.s,hit.c),hint);
-  set('o-gen',buildGEN(hit.s,hit.c),hint);
+  if(hit){
+    set('o-mj',buildMJ(hit.s,hit.c),hint);
+    set('o-veo',buildVEO(hit.s,hit.c),hint);
+    set('o-gen',buildGEN(hit.s,hit.c),hint);
+  }else{
+    set('o-mj','',hint); set('o-veo','',hint); set('o-gen','',hint);
+  }
+  paintAfter();
+}
+/* 출력이 바뀔 때마다 대상 카드 · 미드저니 설정 · 한글 경고를 맞춘다 */
+function paintAfter(){
+  if(!S.style.mj || !/--v |--niji /.test(S.style.mj)) mjSync();
+  paintMJ();
+  setTarget(S.tg||'mj');
+  $('mjhangul').style.display = /[가-힣]/.test(outText('o-mj')) ? 'block' : 'none';
 }
 document.addEventListener('click',e=>{
   const id=e.target.dataset&&e.target.dataset.copy;
@@ -3053,7 +3216,7 @@ document.addEventListener('click',e=>{
 function renderBoard(){
   const w=$('boardwrap');
   if(!allCuts().length){
-    w.innerHTML=`<div class="empty"><b>보드에 올릴 컷이 없어요</b><p>「씬 · 컷」 탭에서 컷을 먼저 만들어주세요.</p></div>`; return;
+    w.innerHTML=`<div class="empty"><b>보드에 올릴 컷이 없어요</b><p>위쪽 「원고 · 씬」에서 원고를 올리면 컷까지 한 번에 만들어집니다.</p></div>`; return;
   }
   w.innerHTML=S.scenes.filter(s=>s.cuts.length).map((s,si)=>`
     <div class="card">
@@ -3289,10 +3452,20 @@ function applyTheme(t){
    ========================================================= */
 const TABKEY='scenedeck_tab';
 
-function goTab(t){
+/* 탭을 합치기 전 주소(#story, #board …)로 들어와도 새 탭으로 보낸다 */
+const TABMAP={story:'plan',char:'plan',script:'cut',scene:'cut',board:'cut'};
+function goTab(t,sec){
+  t=TABMAP[t]||t;
   const b=document.querySelector('#nav button[data-t="'+t+'"]');
-  if(b) b.click();
+  if(!b) return;
+  b.click();
+  if(sec){ const el=$(sec); if(el) setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),60); }
 }
+/* 합쳐진 탭 안에서 섹션으로 건너뛰기 */
+document.addEventListener('click',e=>{
+  const j=e.target.closest('[data-jumpto]'); if(!j) return;
+  const el=$(j.dataset.jumpto); if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+});
 
 /* 홈 카드 · 푸터 · 로고 등 어디서든 [data-go]로 탭 이동 */
 document.addEventListener('click',e=>{
@@ -3312,10 +3485,11 @@ $('nav').addEventListener('click',e=>{
 function bootRoute(){
   let t=(location.hash||'').replace(/^#/,'');
   if(!t){ try{ t=localStorage.getItem(TABKEY)||''; }catch(e){} }
+  t=TABMAP[t]||t;
   if(t && t!=='home' && document.querySelector('#nav button[data-t="'+t+'"]')) goTab(t);
   else renderHome();
   window.addEventListener('hashchange',()=>{
-    const hh=(location.hash||'').replace(/^#/,'');
+    const hh=TABMAP[(location.hash||'').replace(/^#/,'')]||(location.hash||'').replace(/^#/,'');
     if(hh && hh!==curTab()) goTab(hh);
   });
 }
