@@ -89,12 +89,15 @@
   @keyframes screenIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
   .hide{display:none!important;}
 
-  .logo{font-family:var(--font-title);font-size:clamp(54px,15vw,96px);letter-spacing:0;line-height:.9;
+  /* 줄 간격은 '글자 + 테두리(4px) + 흰 그림자(4px)'가 다 들어갈 만큼 둬야 한다.
+     .9로 조여 두면 윗줄의 흰 그림자가 아랫줄 글자를 덮어 아랫줄이 속 빈 것처럼 보였다. */
+  .logo{font-family:var(--font-title);font-size:clamp(50px,13.5vw,92px);letter-spacing:0;line-height:1.10;
     background:linear-gradient(180deg,#ff7aa8,#ff4d84 60%,#e63e72);-webkit-background-clip:text;background-clip:text;color:transparent;
     -webkit-text-stroke:4px #ff5c8a;paint-order:stroke;                 /* 두껍게 */
-    filter:drop-shadow(0 5px 0 #fff) drop-shadow(0 8px 12px rgba(230,62,114,0.35));}
+    filter:drop-shadow(0 4px 0 #fff) drop-shadow(0 8px 12px rgba(230,62,114,0.35));}
   .logo .dot{display:inline-block;animation:wob 1.4s ease-in-out infinite;}
-  @keyframes wob{0%,100%{transform:translateY(0) rotate(-3deg) scale(1)}50%{transform:translateY(-6px) rotate(3deg) scale(1.05)}}
+  /* 위로 6px 튀면 윗줄에 닿는다. 좌우로 살짝 기우는 정도로만 */
+  @keyframes wob{0%,100%{transform:translateY(0) rotate(-2deg) scale(1)}50%{transform:translateY(-2px) rotate(2deg) scale(1.03)}}
   .tag{font-size:clamp(15px,4vw,19px);font-weight:800;color:var(--ink);max-width:340px;line-height:1.5;}
   .tag2{font-size:14px;font-weight:700;color:var(--ink2);margin-top:-4px;}
   #heroCanvas{filter:drop-shadow(0 10px 14px rgba(190,120,160,0.3));}
