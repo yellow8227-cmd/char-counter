@@ -843,11 +843,14 @@
     <div class="fld">
       <label>다른 사람과 나누기</label>
       <p class="desc">작업은 이 브라우저에만 있습니다. 다른 컴퓨터나 조감독에게 넘기려면
-      <b>파일</b>로 내보내거나, 머리말의 <b>🔗 공유</b>로 링크를 만드세요.</p>
+      <b>파일</b>로 내보내거나, 머리말의 <b>🔗 공유</b>로 링크를 만드세요.<br>
+      <b>「이어서 하기」</b>는 내보낸 <code>.json</code> 은 물론, 이 도구로 저장한
+      <b>PNG 그림</b>도 받습니다 — 그림 안에 작업이 통째로 들어 있어서, 열면
+      배치가 그대로 살아납니다. 창에 끌어다 놓아도 됩니다.</p>
       <div class="row">
         <button id="bExport">📦 파일로 내보내기</button>
-        <button id="bImport">📥 파일 불러오기</button>
-        <input type="file" id="fImport" accept=".json,application/json" style="display:none">
+        <button id="bImport">📥 이어서 하기</button>
+        <input type="file" id="fImport" accept=".json,.png,application/json,image/png" style="display:none">
       </div>
       <div class="row" style="margin-top:7px">
         <button class="mini" id="bCopyJson">📋 작품 JSON 복사</button>
@@ -4223,6 +4226,9 @@ function sheetCanvas(){
   const footY = B - mm(2);
   line(L, footY - mm(3), R, footY - mm(3), '#999', mm(.2));
   text(S.foot, L, footY, 7.5, 400, '#555');
+  /* 이 그림 파일 안에 작품이 들어 있다는 것을 그림 위에도 적어 둔다 */
+  text('이 PNG 파일에는 작업이 들어 있습니다 — 「이어서 하기」로 그대로 열립니다',
+       (L + R)/2, footY, 7.5, 400, '#888', 'center');
   text('촬영 배치도 · Shot Planner', R, footY, 7.5, 400, '#555', 'right');
   return cv;
 }
@@ -4231,7 +4237,8 @@ const sceneTag  = () => 'S' + String(state.no || '1').replace(/[^A-Za-z0-9]+/g, 
 async function savePngOf(cv, tag){
   const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
   if(!blob){ toast('그림을 만들지 못했어요'); return; }
-  await saveFile(safeName(sheetStem(), '.png', sceneTag() + '_' + tag), blob);
+  await saveFile(safeName(sheetStem(), '.png', sceneTag() + '_' + tag),
+                 await pngWithProject(blob));
 }
 /* 카메라 뷰·조감도는 화면 것보다 크게 다시 그려서 준다 (300dpi 기준 폭 160mm) */
 document.getElementById('bCamPng').addEventListener('click', () => {
@@ -4247,7 +4254,8 @@ async function saveSheetPng(){
   const cv = sheetCanvas();
   const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
   if(!blob){ toast('도면을 만들지 못했어요'); return; }
-  await saveFile(safeName(sheetStem(), '.png', sceneTag() + '_sheet'), blob);
+  await saveFile(safeName(sheetStem(), '.png', sceneTag() + '_sheet'),
+                 await pngWithProject(blob));
 }
 
 /* 인쇄가 실제로 열렸는지는 beforeprint 로만 알 수 있다.
@@ -4280,6 +4288,70 @@ const unb64url = t => {
   for(let i=0;i<b.length;i++) u[i] = b.charCodeAt(i);
   return u;
 };
+/* ── 그림 속에 작업을 넣어 두기 ─────────────────────────────
+   PNG 에는 규격상 글자를 담는 칸(tEXt)이 있고, 그림 보기에는 아무 영향이 없다.
+   내보낸 그림에 작품을 통째로 압축해 넣어 두면, 나중에 그 그림을 도로
+   불러오는 것만으로 편집하던 상태가 그대로 돌아온다. */
+const PNG_KEY = 'shotplan';
+const CRC_T = (() => {
+  const t = new Uint32Array(256);
+  for(let n=0;n<256;n++){ let c = n;
+    for(let k=0;k<8;k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[n] = c >>> 0; }
+  return t;
+})();
+function crc32(u8, from, to){
+  let c = 0xFFFFFFFF;
+  for(let i=from;i<to;i++) c = CRC_T[(c ^ u8[i]) & 255] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+const isPng = u8 => u8.length > 8 && u8[0] === 0x89 && u8[1] === 0x50 && u8[2] === 0x4E;
+/* PNG 덩어리들을 차례로 훑는다 — [길이 4][이름 4][내용][CRC 4] */
+function* pngChunks(u8){
+  let p = 8;
+  while(p + 8 <= u8.length){
+    const len = ((u8[p]<<24) | (u8[p+1]<<16) | (u8[p+2]<<8) | u8[p+3]) >>> 0;
+    const type = String.fromCharCode(u8[p+4], u8[p+5], u8[p+6], u8[p+7]);
+    yield {at:p, len, type};
+    if(type === 'IEND') return;
+    p += 12 + len;
+  }
+}
+async function pngWithProject(blob){
+  try{
+    const u8 = new Uint8Array(await blob.arrayBuffer());
+    if(!isPng(u8)) return blob;
+    let end = -1;
+    for(const c of pngChunks(u8)) if(c.type === 'IEND') end = c.at;
+    if(end < 0) return blob;
+    const body = new TextEncoder().encode(PNG_KEY + '\u0000' + await packProject());
+    const chunk = new Uint8Array(12 + body.length);
+    const dv = new DataView(chunk.buffer);
+    dv.setUint32(0, body.length);
+    chunk.set([0x74, 0x45, 0x58, 0x74], 4);          // 'tEXt'
+    chunk.set(body, 8);
+    dv.setUint32(8 + body.length, crc32(chunk, 4, 8 + body.length));
+    const out = new Uint8Array(u8.length + chunk.length);
+    out.set(u8.subarray(0, end));
+    out.set(chunk, end);
+    out.set(u8.subarray(end), end + chunk.length);
+    return new Blob([out], {type:'image/png'});
+  }catch(e){ return blob; }         // 못 넣어도 그림은 그림대로 나가야 한다
+}
+async function projectFromPng(file){
+  const u8 = new Uint8Array(await file.arrayBuffer());
+  if(!isPng(u8)) return null;
+  const latin = new TextDecoder('latin1');
+  for(const c of pngChunks(u8)){
+    if(c.type !== 'tEXt') continue;
+    const seg = u8.subarray(c.at + 8, c.at + 8 + c.len);
+    const z = seg.indexOf(0);
+    if(z < 0 || latin.decode(seg.subarray(0, z)) !== PNG_KEY) continue;
+    return await unpackProject(latin.decode(seg.subarray(z + 1)));
+  }
+  return null;
+}
+
 async function packProject(){
   const json = new TextEncoder().encode(JSON.stringify(project));
   if(typeof CompressionStream === 'undefined') return 'r' + b64url(json);
@@ -4329,17 +4401,40 @@ document.getElementById('bExport').addEventListener('click', () => {
 });
 document.getElementById('bCopyJson').addEventListener('click', copyProjectJson);
 document.getElementById('bPasteJson').addEventListener('click', pasteProjectJson);
-document.getElementById('bImport').addEventListener('click', () => document.getElementById('fImport').click());
+/* 어떤 곳에서는 파일 고르기 창 자체가 열리지 않는다. 창이 열리면 이 화면은
+   초점을 잃으므로, 잠깐 뒤에도 초점이 그대로면 막힌 것으로 보고 다른 길을 연다. */
+document.getElementById('bImport').addEventListener('click', () => {
+  const fi = document.getElementById('fImport');
+  let left = false, picked = false;
+  const onBlur = () => { left = true; };
+  const onPick = () => { picked = true; };
+  window.addEventListener('blur', onBlur);
+  fi.addEventListener('change', onPick, {once:true});
+  fi.click();
+  setTimeout(() => {
+    window.removeEventListener('blur', onBlur);
+    fi.removeEventListener('change', onPick);
+    if(left || picked) return;
+    toast('파일 창이 안 열리네요 — 파일을 이 창에 끌어다 놓거나, 아래 붙여넣기를 쓰세요');
+    pasteProjectJson();
+  }, 1200);
+});
 async function openProjectFile(f){
   if(!f) return;
+  const png = /\.png$/i.test(f.name) || f.type === 'image/png';
+  let p2 = null;
   try{
-    const p2 = JSON.parse(await f.text());
-    if(!p2 || !Array.isArray(p2.scenes) || !p2.scenes.length) throw new Error('형식 오류');
-    if(!await askOverwrite(p2, '📥 ' + f.name)) return;
-    adoptProject(p2);
-    closePrefs(); resetView(); fitBird(); refreshAll();
-    toast('📥 불러왔어요');
-  }catch(err){ toast('이 파일은 읽지 못했어요 — 내보내 둔 .json 이 맞나요?'); }
+    p2 = png ? await projectFromPng(f) : JSON.parse(await f.text());
+  }catch(err){ p2 = null; }
+  if(!p2 || !Array.isArray(p2.scenes) || !p2.scenes.length){
+    toast(png ? '이 그림에는 작업이 들어 있지 않아요 — 이 도구에서 내보낸 PNG 여야 합니다'
+              : '이 파일은 읽지 못했어요 — 내보내 둔 .json 이나 PNG 를 골라 주세요');
+    return;
+  }
+  if(!await askOverwrite(p2, '📥 ' + f.name)) return;
+  adoptProject(p2);
+  closePrefs(); resetView(); fitBird(); refreshAll();
+  toast(png ? '🖼 그림 속 작업을 그대로 열었어요' : '📥 불러왔어요');
 }
 document.getElementById('fImport').addEventListener('change', async e => {
   await openProjectFile(e.target.files && e.target.files[0]);
@@ -4583,7 +4678,8 @@ document.getElementById('bPng').addEventListener('click', () => {
   g.fillStyle = '#7a8494'; g.font = '400 13px system-ui,sans-serif';
   g.fillText('빨간 영역 = 180° 선을 넘는 쪽 · 파란 부채꼴 = 심도 범위 · 점선 화살표 = 카메라 무브', 40, y0+124);
 
-  cv.toBlob(bl => { if(bl) saveFile(safeName(sheetStem(), '.png', sceneTag() + '_plan'), bl); }, 'image/png');
+  cv.toBlob(async bl => { if(bl) saveFile(safeName(sheetStem(), '.png', sceneTag() + '_plan'),
+                                          await pngWithProject(bl)); }, 'image/png');
 });
 
 document.getElementById('bList').addEventListener('click', () => {
