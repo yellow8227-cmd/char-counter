@@ -750,6 +750,11 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
         <button class="btn" id="sc-apply" disabled>✓ 적용</button>
         <span class="mini" id="sc-count" style="margin:0"></span>
       </div>
+      <div class="row" id="sc-fallback" style="display:none;margin-top:10px">
+        <span class="mini" style="margin:0">머리글이 없어도 넣을 수 있어요 —</span>
+        <button class="btn" id="sc-byblank">빈 줄로 나누기</button>
+        <button class="btn" id="sc-asone">통째로 한 씬으로</button>
+      </div>
       <div class="out empty2" id="sc-preview" style="margin-top:12px;max-height:260px;overflow:auto">원고를 넣고 「분해 미리보기」를 누르세요</div>
     </div>
 
@@ -2605,8 +2610,29 @@ async function readScriptFile(file){
 
 /* --- 씬 머리글 인식 ---
    S#1. / S #1 / 씬 1 / #1 / 1. / INT. / EXT. / 실내. 를 모두 받아준다. */
-const HEAD_RE=/^\s*(?:(?:S\s*#?\s*|씬\s*|#\s*|SCENE\s*)(\d+)|(\d{1,3}))\s*[.．)、]?\s*(.*)$/i;
-const INTEXT_RE=/^\s*(INT\.?|EXT\.?|I\/E\.?|실내|실외)[\s.．,/-]+(.*)$/i;
+/* 머리글 인식.
+   사람마다 쓰는 방식이 제각각이라(S#1 · S1 · 씬1 · 씬#1 · 제1씬 · SC 1 · 장면 1 · #7 · 1.),
+   AI가 준 답을 그대로 붙여넣으면 마크다운(## · ** · -)이나 괄호([S#1])까지 얹혀 온다.
+   그래서 먼저 장식을 걷어낸 다음 넉넉한 규칙으로 맞춘다. */
+function headNorm(line){
+  let s=String(line||'').trim();
+  s=s.replace(/[\uFF01-\uFF5E]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)); // 전각 → 반각
+  s=s.replace(/^[>*\-–—•·\s]+/,'');          // 인용부호 · 글머리표
+  s=s.replace(/^#{1,6}\s+/,'');              // 마크다운 제목 (## 뒤 공백 — 「#1」은 살린다)
+  s=s.replace(/\*\*|__|~~|`/g,'');           // 굵게 · 기울임 · 코드표시
+  s=s.replace(/^[\[\(<{【〔「『]+\s*/,'');      // 여는 괄호
+  s=s.replace(/\s*[\]\)>}】〕」』]+\s*$/,'');  // 줄 끝 닫는 괄호
+  return s.trim();
+}
+const HEAD_RE=new RegExp(
+   '^(?:'
+ + '(?:SCENE|SC|S|씬|장면)\\s*[#\\-_.:]?\\s*(\\d{1,3})'   // S#1 · S-1 · SC 1 · 씬1 · 장면 1
+ + '|제\\s*(\\d{1,3})\\s*(?:씬|장면)'                        // 제1씬
+ + '|#\\s*(\\d{1,3})'                                      // #7
+ + '|(\\d{1,3})\\s*(?:씬|장면)'                              // 1씬
+ + '|(\\d{1,3})\\s*(?=[.．)、:：])'                          // 1.  12)  — 구분자가 있어야 인정
+ + ')\\s*(?:씬|장면)?\\s*[.．)、:：|\\-–—/\\]\\}>】〕」』]*\\s*(.*)$','i');
+const INTEXT_RE=/^(INT\.?|EXT\.?|I\/E\.?|실내|실외)[\s.．,/-]+(.*)$/i;
 const TIMEWORDS=[['새벽','새벽'],['아침','아침'],['정오','정오'],['오후','오후'],['해질녘','해질녘'],['해 질 녘','해질녘'],
   ['노을','해질녘'],['저녁','해질녘'],['심야','심야'],['한밤','심야'],['밤','밤'],['낮','정오'],
   ['NIGHT','밤'],['DAY','정오'],['DAWN','새벽'],['DUSK','해질녘'],['EVENING','해질녘'],['MORNING','아침']];
@@ -2627,13 +2653,27 @@ function splitHeading(tail){
   if(time) loc=loc.replace(new RegExp(time,'g'),'').trim();
   return {loc:loc||tail.trim(), time};
 }
+/* 머리글이 하나도 없을 때의 대안 —
+   mode 'blank' 빈 줄 기준으로 토막내기 / mode 'one' 통째로 한 씬 */
+function parseLoose(text,mode){
+  const t=String(text||'').replace(/\r\n?/g,'\n').trim();
+  if(!t) return Object.assign([],{front:''});
+  const blocks = mode==='one' ? [t] : t.split(/\n\s*\n+/).map(x=>x.trim()).filter(Boolean);
+  const out=blocks.map((body,i)=>{
+    const first=headNorm(body.split('\n')[0]||'').slice(0,40);
+    const {loc,time}=splitHeading(first);
+    return {heading:`S#${i+1}. ${first||'제목 없음'}`, loc:loc||'', time:time||'', script:body};
+  });
+  out.front='';
+  return out;
+}
 function parseScript(text){
   const lines=String(text||'').replace(/\r\n?/g,'\n').split('\n');
   const scenes=[];
   let cur=null;
   const push=()=>{ if(cur){ cur.script=cur.buf.join('\n').replace(/\n{3,}/g,'\n\n').trim(); delete cur.buf; scenes.push(cur); } };
   lines.forEach(raw=>{
-    const line=raw.trim();
+    const line=headNorm(raw);
     let head=null;
     const ie=line.match(INTEXT_RE);
     if(ie){
@@ -2641,9 +2681,10 @@ function parseScript(text){
       head={heading:line,loc,time};
     }else{
       const m=line.match(HEAD_RE);
-      // "1. 문장이 길게 이어지는 지문" 을 씬으로 오해하지 않도록 뒤가 짧을 때만 인정
-      if(m && (m[1]||(m[2]&&(m[3]||'').length<=40))){
-        const tail=(m[3]||'').trim();
+      const tail=m?(m[6]||'').trim():'';
+      const marked=m&&(m[1]||m[2]||m[3]||m[4]);   // 앞에 S·씬·# 같은 표시가 붙은 형태
+      // "1. 문장이 길게 이어지는 지문" 을 씬으로 오해하지 않도록 맨 번호는 뒤가 짧을 때만 인정
+      if(m && (marked || (m[5] && tail.length<=40))){
         const {loc,time}=splitHeading(tail);
         head={heading:line,loc,time};
       }
@@ -2738,12 +2779,18 @@ dbox.addEventListener('click',()=>$('sc-file').click());
 window.addEventListener('dragover',e=>e.preventDefault());
 window.addEventListener('drop',e=>e.preventDefault());
 
-$('sc-parse').addEventListener('click',()=>{
-  scParsed=parseScript($('sc-raw').value);
+function showParsed(how){
   const pv=$('sc-preview');
   if(!scParsed.length){
-    pv.textContent='씬을 찾지 못했습니다. 머리글 형식을 확인해 주세요.';
-    pv.classList.add('empty2'); $('sc-apply').disabled=true; $('sc-count').textContent=''; return;
+    const head=$('sc-raw').value.split('\n').map(l=>l.trim()).filter(Boolean).slice(0,3).join('  /  ');
+    pv.textContent='씬 머리글을 찾지 못했습니다.\n'
+      +'「S#1.」 「S1」 「씬 1」 「제1씬」 「SC 1」 「#7」 「1.」 「INT.」 같은 줄을 찾습니다.\n\n'
+      +'원고 첫 줄들: '+(head||'(비어 있음)')+'\n\n'
+      +'그래도 넣고 싶으면 아래 「빈 줄로 나누기」나 「통째로 한 씬으로」를 쓰세요.';
+    pv.classList.add('empty2');
+    $('sc-apply').disabled=true; $('sc-count').textContent='';
+    $('sc-fallback').style.display='';
+    return;
   }
   pv.classList.remove('empty2');
   const body=scParsed.map((s,i)=>{
@@ -2752,9 +2799,25 @@ $('sc-parse').addEventListener('click',()=>{
   }).join('\n');
   const front=scParsed.front
     ? `※ 맨 앞 "${scParsed.front.replace(/\n/g,' ').slice(0,30)}" 는 제목·앞부분으로 보고 건너뜁니다.\n\n` : '';
-  pv.textContent=front+body;
+  pv.textContent=(how?how+'\n\n':'')+front+body;
   $('sc-count').textContent=`씬 ${scParsed.length}개 인식`;
   $('sc-apply').disabled=false;
+  $('sc-fallback').style.display='';
+}
+$('sc-parse').addEventListener('click',()=>{
+  $('sc-raw-wrap').style.display='block';
+  scParsed=parseScript($('sc-raw').value);
+  showParsed();
+});
+$('sc-byblank').addEventListener('click',()=>{
+  scParsed=parseLoose($('sc-raw').value,'blank');
+  if(!scParsed.length){ toast('나눌 내용이 없어요'); return; }
+  showParsed('※ 머리글 대신 빈 줄을 기준으로 나눴습니다. 첫 줄을 씬 제목으로 삼았어요.');
+});
+$('sc-asone').addEventListener('click',()=>{
+  scParsed=parseLoose($('sc-raw').value,'one');
+  if(!scParsed.length){ toast('넣을 내용이 없어요'); return; }
+  showParsed('※ 나누지 않고 통째로 한 씬에 넣습니다.');
 });
 $('sc-apply').addEventListener('click',()=>{
   if(!scParsed.length) return;
