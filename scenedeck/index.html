@@ -948,8 +948,9 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <h3>🎯 씬 · 컷 선택 <span class="tagx" id="curlabel">—</span></h3>
       <div class="row" style="margin-bottom:11px">
         <select id="p-scene" style="max-width:360px"></select>
-        <button class="btn sm pri" id="p-mkcuts" style="display:none">🎬 문단마다 컷으로 쪼개기</button>
-        <button class="btn sm" id="p-mkwhole" style="display:none">📄 씬 전문을 한 컷으로</button>
+        <span class="mini" id="p-modelbl" style="margin:0 2px 0 6px;display:none">이 씬 나누기</span>
+        <label class="chip" id="p-msplit" data-cmode="split" style="display:none">문단마다 한 컷</label>
+        <label class="chip" id="p-mwhole" data-cmode="whole" style="display:none">씬 전문 한 컷</label>
         <span class="mini" id="p-scenehint" style="margin:0"></span>
       </div>
       <div class="cutnav" id="cutnav"></div>
@@ -1083,6 +1084,23 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     <div class="card">
       <h3>💾 저장 용량</h3>
       <div id="quota"></div>
+    </div>
+
+    <div class="card">
+      <h3>🔗 지금 상태 그대로 공유하기</h3>
+      <div class="row">
+        <button class="btn pri" id="sh-make">🔗 공유 링크 만들기</button>
+        <button class="btn" id="sh-copy" style="display:none">📋 링크 복사</button>
+        <button class="btn gh" id="sh-open" style="display:none">↗ 열어보기</button>
+        <span class="mini" id="sh-info" style="margin:0"></span>
+      </div>
+      <div class="out empty2" id="sh-url" style="margin-top:11px;font-size:11.5px;max-height:120px;overflow:auto">
+        「공유 링크 만들기」를 누르면 여기에 주소가 나옵니다</div>
+      <p class="mini">지금 씬 · 컷 · 캐릭터 · 프롬프트 설정이 <b>주소 안에 통째로 담깁니다.</b>
+      받은 사람은 링크만 열면 같은 화면을 봅니다 — 파일을 주고받을 필요가 없어요.
+      <b>내용은 주소에만 들어가고 서버로는 올라가지 않습니다.</b></p>
+      <p class="mini">⚠️ <b>이미지는 빠집니다</b>(주소에 담기엔 너무 큽니다). 이미지까지 넘기려면 아래 <b>JSON 백업</b> 파일을 보내세요.
+      작업이 아주 크면 링크가 너무 길어져 만들지 못할 수 있는데, 그때도 알려드립니다.</p>
     </div>
 
     <div class="card">
@@ -3214,6 +3232,7 @@ $('sc-tocuts').addEventListener('click',()=>{
   const before=s.cuts.slice();
   const n=fillCuts(s,$('sc-autoshot').checked,true,$('sc-mode2').value);
   if(!n){ toast('쪼갤 내용이 없어요'); return; }
+  s.cutMode=$('sc-mode2').value;
   save(); renderAll();
   toast(`컷 ${n}개를 만들었어요 ✓`,
     {label:'되돌리기',fn:()=>{ s.cuts=before; save(); renderAll(); toast('되돌렸어요 ✓'); }});
@@ -3228,7 +3247,7 @@ $('sc-allcuts').addEventListener('click',()=>{
   S.scenes.forEach(s=>{
     if(s.cuts.length){ skipped++; return; }
     const n=fillCuts(s,auto,false,mode);
-    if(n){ cuts+=n; done++; }
+    if(n){ cuts+=n; done++; s.cutMode=mode; }
   });
   if(!cuts){
     toast(skipped?'모든 씬에 이미 컷이 있어요':'쪼갤 본문이 없어요');
@@ -3353,12 +3372,13 @@ function curCut(){
   return c?{s,c}:null;
 }
 function renderCutNav(){
-  const list=allCuts(), nav=$('cutnav'), sel=$('p-scene'), mk=$('p-mkcuts'), hint=$('p-scenehint');
+  const list=allCuts(), nav=$('cutnav'), sel=$('p-scene'), hint=$('p-scenehint');
 
   // 씬 고르개 — 컷이 없어도 씬은 여기서 고를 수 있어야 한다
   if(!S.scenes.length){
     sel.innerHTML='<option>씬이 없습니다</option>'; sel.disabled=true;
-    mk.style.display='none'; hint.textContent='';
+    ['p-modelbl','p-msplit','p-mwhole'].forEach(id=>$(id).style.display='none');
+    hint.textContent='';
     nav.innerHTML='<span class="mini" style="margin:0 8px 0 0">아직 씬도 컷도 없어요 —</span>'
       +'<button class="btn sm pri" data-pmset="quick">⚡ 빠른 입력으로 바로 뽑기</button>'
       +'<button class="btn sm" data-go="cut">📄 원고 올리기</button>';
@@ -3372,14 +3392,17 @@ function renderCutNav(){
   const cur=S.scenes.find(x=>x.id===S.sel.scene);
   const bare=cur && !cur.cuts.length;
   const hasText = cur && ((cur.script||'').trim() || (cur.summary||'').trim());
-  const whole=$('p-mkwhole');
-  mk.style.display    = (bare&&hasText)?'':'none';
-  whole.style.display = hasText?'':'none';
-  whole.textContent   = bare ? '📄 씬 전문을 한 컷으로' : '📄 씬 전문을 한 컷으로 다시 만들기';
+  // 두 방식을 언제든 오갈 수 있게 — 눌러보고 마음에 안 들면 바로 되돌아온다
+  const show=hasText?'':'none';
+  $('p-modelbl').style.display=show;
+  $('p-msplit').style.display=show; $('p-mwhole').style.display=show;
+  const mode=(cur&&cur.cutMode)|| (bare?'':'split');
+  $('p-msplit').classList.toggle('on',mode==='split');
+  $('p-mwhole').classList.toggle('on',mode==='whole');
   hint.textContent = bare
-    ? (hasText ? '이 씬은 아직 컷이 없어요 — 잘게 나눌지, 전문을 한 컷으로 할지 고르세요'
+    ? (hasText ? '아직 컷이 없어요 — 위에서 나누는 방식을 고르세요'
                : '이 씬엔 본문이 없어요. 「대본 · 컷」에서 원고를 넣어주세요')
-    : '';
+    : (hasText ? '두 방식을 눌러가며 비교해도 됩니다 — 고친 내용은 각각 기억해 둡니다' : '');
 
   if(bare){
     nav.innerHTML='<span class="mini" style="margin:0">'
@@ -3417,21 +3440,33 @@ $('p-scene').addEventListener('change',()=>{
 });
 /* 씬만 있고 컷이 없을 때, 프롬프트 탭을 떠나지 않고 그 자리에서 만든다.
    replace=true 면 이미 있는 컷을 갈아끼운다 (씬 전문 한 컷으로 다시 만들 때). */
-function mkCutsHere(mode,replace){
+/* 방식을 바꿔도 이전 것을 버리지 않는다 — 손본 내용까지 그대로 기억해 두었다가 되돌려준다.
+   (이번에 연 동안만 기억한다. 다시 열면 원고에서 새로 만든다) */
+const cutMemo=new Map();
+function setSceneMode(mode){
   const s=S.scenes.find(x=>x.id===$('p-scene').value); if(!s) return;
-  const before=s.cuts.slice();
-  if(replace) s.cuts=[];
-  const n=fillCuts(s,true,true,mode);
-  if(!n){ s.cuts=before; toast('이 씬엔 만들 내용이 없어요'); return; }
+  const now=s.cutMode||'split';
+  if(s.cuts.length && now===mode){ toast('이미 그 방식이에요'); return; }
+  if(s.cuts.length) cutMemo.set(s.id+'|'+now, JSON.parse(JSON.stringify(s.cuts)));
+
+  const saved=cutMemo.get(s.id+'|'+mode);
+  if(saved && saved.length){
+    s.cuts=JSON.parse(JSON.stringify(saved));
+  }else{
+    const before=s.cuts.slice();
+    s.cuts=[];
+    if(!fillCuts(s,true,true,mode)){ s.cuts=before; toast('이 씬엔 만들 내용이 없어요'); return; }
+  }
+  s.cutMode=mode;
   S.sel={scene:s.id,cut:s.cuts[0].id};
   save(); renderAll(); renderPrompt();
-  toast(mode==='whole' ? '씬 전문을 컷 하나로 만들었어요 ✓' : `컷 ${n}개를 만들었어요 ✓`,
-    {label:'되돌리기',fn:()=>{ s.cuts=before; save(); renderAll(); renderPrompt(); toast('되돌렸어요 ✓'); }});
+  toast(mode==='whole'
+    ? `씬 전문을 컷 하나로 — 다시 「문단마다 한 컷」을 누르면 돌아옵니다`
+    : `문단마다 한 컷 — 컷 ${s.cuts.length}개`);
 }
-$('p-mkcuts').addEventListener('click',()=>mkCutsHere('split',false));
-$('p-mkwhole').addEventListener('click',function(){
-  const s=S.scenes.find(x=>x.id===$('p-scene').value);
-  mkCutsHere('whole', !!(s&&s.cuts.length));
+document.addEventListener('click',e=>{
+  const c=e.target.closest('[data-cmode]'); if(!c) return;
+  setSceneMode(c.dataset.cmode);
 });
 $('cutnav').addEventListener('click',e=>{
   const b=e.target.closest('[data-jump]'); if(!b) return;
@@ -3947,6 +3982,85 @@ $('d-export').addEventListener('click',async()=>{
   dl(fileName('backup','json'),JSON.stringify(out,null,2),'application/json;charset=utf-8');
   toast('내보냈어요 ✓');
 });
+/* =========================================================
+   상태를 통째로 담은 공유 링크
+   내용을 압축해 주소의 # 뒤에 넣는다. # 뒤는 서버로 전송되지 않으므로
+   「아무것도 밖으로 안 보낸다」는 원칙이 그대로 지켜진다.
+   ========================================================= */
+const B64=u8=>{ let s=''; const CH=0x8000;
+  for(let i=0;i<u8.length;i+=CH) s+=String.fromCharCode.apply(null,u8.subarray(i,i+CH));
+  return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); };
+const UNB64=str=>{ const s=atob(str.replace(/-/g,'+').replace(/_/g,'/'));
+  const u=new Uint8Array(s.length); for(let i=0;i<s.length;i++) u[i]=s.charCodeAt(i); return u; };
+
+async function packState(){
+  const out=JSON.parse(JSON.stringify(S));
+  delete out.__images;
+  const bytes=new TextEncoder().encode(JSON.stringify(out));
+  const cs=new CompressionStream('deflate-raw');
+  const buf=await new Response(new Blob([bytes]).stream().pipeThrough(cs)).arrayBuffer();
+  return B64(new Uint8Array(buf));
+}
+async function unpackState(param){
+  const ds=new DecompressionStream('deflate-raw');
+  const buf=await new Response(new Blob([UNB64(param)]).stream().pipeThrough(ds)).arrayBuffer();
+  return JSON.parse(new TextDecoder().decode(buf));
+}
+let shareURL='';
+$('sh-make').addEventListener('click',async()=>{
+  try{
+    toast('링크 만드는 중…');
+    const p=await packState();
+    const base=location.href.split('#')[0];
+    const url=base+'#p='+p;
+    const kb=Math.round(url.length/1024);
+    if(url.length>60000){
+      $('sh-url').textContent='';
+      $('sh-info').innerHTML=`<b class="bad">작업이 너무 커서(${kb}KB) 링크로 못 담습니다</b> — 아래 JSON 백업 파일을 보내주세요.`;
+      toast('작업이 커서 링크로는 안 돼요 — JSON 백업을 쓰세요');
+      return;
+    }
+    shareURL=url;
+    const el=$('sh-url'); el.textContent=url; el.classList.remove('empty2');
+    $('sh-copy').style.display=''; $('sh-open').style.display='';
+    const imgs=allCuts().filter(x=>x.c.hasImg).length;
+    $('sh-info').innerHTML=`길이 ${kb}KB · 씬 ${S.scenes.length} · 컷 ${allCuts().length} · 캐릭터 ${S.chars.length}`
+      +(imgs?` <b class="bad">· 이미지 ${imgs}장은 빠집니다</b>`:'');
+    copy(url,'링크를 복사했어요 — 붙여넣어 보내세요');
+  }catch(e){ toast('링크를 만들지 못했어요: '+e.message); }
+});
+$('sh-copy').addEventListener('click',()=>copy(shareURL,'링크를 복사했어요 ✓'));
+$('sh-open').addEventListener('click',()=>{ if(shareURL) window.open(shareURL,'_blank','noopener'); });
+
+/* 공유 링크로 들어왔을 때 — 지금 작업을 함부로 덮지 않는다 */
+async function loadShared(param){
+  let d;
+  try{ d=await unpackState(param); }
+  catch(e){ toast('공유 링크를 읽지 못했어요'); return false; }
+  if(!d||typeof d!=='object'||!('story' in d)){ toast('공유 링크의 내용이 이상해요'); return false; }
+  const sum=[d.title&&`「${d.title}」`,(d.scenes||[]).length&&`씬 ${d.scenes.length}개`,
+             (d.chars||[]).length&&`캐릭터 ${d.chars.length}명`].filter(Boolean).join(' · ')||'내용 없음';
+  const mine=workSummary();
+  const k=await ask('공유받은 작업을 열까요?',
+    `받은 것: <b>${esc(sum)}</b><br>지금 이 브라우저에 있는 것: <b>${mine}</b><br><br>
+     열면 <b>지금 작업이 받은 것으로 바뀝니다.</b> 먼저 백업해두면 언제든 되돌릴 수 있어요.<br>
+     <span class="mini" style="display:block;margin-top:8px">※ 공유 링크에는 이미지가 들어 있지 않습니다.</span>`,
+    [{key:'backup',label:'💾 내 작업 백업하고 열기',cls:'pri'},{key:'go',label:'그냥 열기'}]);
+  if(!k) return false;
+  if(k==='backup'){ $('d-export').click(); await new Promise(r=>setTimeout(r,700)); }
+  try{ for(const key of (await IDB.keys())||[]) await IDB.del(key); }catch(e){}
+  urlCache.forEach(u=>URL.revokeObjectURL(u)); urlCache.clear();
+  S=Object.assign(blank(),d);
+  S.story=Object.assign(blank().story,d.story||{});
+  S.style=Object.assign(blank().style,d.style||{});
+  S.sel=Object.assign({scene:'',cut:''},d.sel||{});
+  S.chars=d.chars||[]; S.scenes=d.scenes||[];
+  S.scenes.forEach(s=>s.cuts.forEach(c=>{ c.hasImg=false; delete c.img; }));
+  save(); renderAll(); paintOneshot();
+  toast('공유받은 작업을 열었어요 ✓');
+  return true;
+}
+
 $('d-import').addEventListener('click',()=>$('d-file').click());
 $('d-file').addEventListener('change',()=>{
   const f=$('d-file').files[0]; if(!f) return;
@@ -4237,7 +4351,14 @@ $('nav').addEventListener('click',e=>{
 });
 
 function bootRoute(){
-  let t=(location.hash||'').replace(/^#/,'');
+  const raw=location.hash||'';
+  const shared=/^#p=(.+)$/.exec(raw);
+  if(shared){
+    try{ history.replaceState(null,'',location.href.split('#')[0]); }catch(e){}
+    loadShared(shared[1]).then(ok=>goTab(ok?'cut':'home'));
+    return;
+  }
+  let t=raw.replace(/^#/,'');
   if(!t){ try{ t=localStorage.getItem(TABKEY)||''; }catch(e){} }
   t=TABMAP[t]||t;
   if(t && t!=='home' && document.querySelector('#nav button[data-t="'+t+'"]')) goTab(t);
