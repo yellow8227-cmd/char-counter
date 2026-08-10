@@ -148,9 +148,23 @@ const AUDIT = String.raw`(() => {
   const seenOv = new Set();      // 같은 쌍을 화면마다 다시 알리지 않는다
   function overlaps() {
     const VH = window.innerHeight, out = [];
+    // 떠 있는 요소 자신뿐 아니라 '떠 있는 것 안에 담긴 내용'도 본다.
+    //   예: #hud를 absolute 컨테이너 안에 넣어 static으로 바꾸면, 자기 좌표는 그대로인데
+    //   검사 대상에서 빠져 오른쪽 위 버튼이 그 위를 덮어도 조용히 통과했다(실제로 그랬다).
+    const isFull = b => b.width >= VW * 0.9 && b.height >= VH * 0.9;
+    const floating = el => {
+      for (let p = el; p && p !== document.body; p = p.parentElement) {
+        const ps = getComputedStyle(p);
+        if (ps.position !== 'absolute' && ps.position !== 'fixed') continue;
+        // 첫 번째로 만난 '떠 있는 조상'이 화면을 통째로 덮는 층(화면 전환 레이어)이면
+        // 그건 오버레이가 아니라 페이지다. 그 안의 본문끼리는 정상 배치이므로 세지 않는다.
+        return !isFull(p.getBoundingClientRect());
+      }
+      return false;
+    };
     const floats = [...document.querySelectorAll('body *')].filter(el => {
       const st = getComputedStyle(el);
-      if (st.position !== 'absolute' && st.position !== 'fixed') return false;
+      if (!floating(el)) return false;
       if (st.display === 'none' || st.visibility === 'hidden' || +st.opacity === 0) return false;
       const b = el.getBoundingClientRect();
       if (b.width < 10 || b.height < 10) return false;
