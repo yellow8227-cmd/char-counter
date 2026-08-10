@@ -185,6 +185,8 @@
   button.danger{ color:var(--warn) }
   button.danger:hover{ border-color:var(--warn); background:var(--badge-bad-bg); color:var(--badge-bad-ink) }
   button.mini{ padding:4px 9px; min-height:26px; font-size:calc(var(--fs) - 2px) }
+  button:disabled{ opacity:.4; cursor:default; box-shadow:none }
+  button:disabled:hover{ background:var(--panel2); border-color:var(--line); color:var(--ink2) }
   button.icon{ padding:0; width:32px; min-height:32px; font-size:calc(var(--fs) + 2px) }
 
   /* 세그먼트 (라디오 대용) — 살짝 파인 홈 위에 얹힌 알약 */
@@ -208,6 +210,7 @@
 
   /* ── 레이아웃 ─────────────────────────────────────────── */
   main{
+    scroll-margin-top:58px;             /* 붙박이 머리말에 가려지지 않게 */
     display:grid; grid-template-columns:308px minmax(0,1fr) 352px;
     gap:14px; padding:14px 18px 28px; align-items:start;
     max-width:1920px; margin:0 auto;
@@ -565,6 +568,31 @@
   .adcopy .ln{ display:block }
   .adcopy .ln.sp{ margin-top:1.15em }
   .adcopy .kick{ color:var(--ink); font-weight:650 }
+  /* ── 노트북에서 배치도를 크게 ─────────────────────────
+     배치도 높이를 화면에 맞춘다. 4:3 고정이던 때는 세로가 남아도
+     도면이 작게 머물렀다. 빼는 값은 머리말·도구줄·안내띠 몫. */
+  #plan{
+    height:clamp(300px, calc(100vh - 268px), 860px);
+    aspect-ratio:auto;
+  }
+  @media (max-width:940px){
+    #plan{ height:auto; aspect-ratio:4/3 }
+  }
+
+  /* 선택한 요소를 오른쪽 단 맨 위에 둔다 — 배치도와 같은 줄에 나란히 놓이도록.
+     붙박이로 만들면 아래 카메라 뷰를 덮어 버려서 그냥 흐르게 두었다. */
+  .card-insp{ order:-1 }
+
+  /* 넓게 보기 — 세팅용 왼쪽 칸을 접는다 */
+  #app.wide main{ grid-template-columns:minmax(0,1fr) 352px }
+  #app.wide .col-setup{ display:none }
+  @media (max-width:1360px){
+    #app.wide main{ grid-template-columns:minmax(0,1fr) 320px }
+  }
+  @media (max-width:940px){
+    #app.wide main{ grid-template-columns:1fr }
+    #app.wide .col-setup{ display:flex }
+  }
 </style>
 <div id="app">
 
@@ -694,7 +722,7 @@
     </div>
   </section>
 
-  <div class="toolhead" id="tool">
+  <div class="toolhead">
     <div class="wrap">
       <span class="eyebrow">작업 화면</span>
       <h3>여기서부터는 손으로</h3>
@@ -797,9 +825,9 @@
 
 <div class="tabs" id="sceneTabs"></div>
 
-<main>
+<main id="tool">
   <!-- ───────── 왼쪽 ───────── -->
-  <div class="col">
+  <div class="col col-setup">
     <section class="card">
       <h2>씬 정보</h2>
       <div class="row">
@@ -860,11 +888,6 @@
     </section>
 
     <section class="card">
-      <h2>선택한 요소</h2>
-      <div id="insp"><div class="empty">배치도에서 요소를 클릭하세요.</div></div>
-    </section>
-
-    <section class="card">
       <h2>장비 설정</h2>
       <div class="row">
         <div class="slot" style="width:100%"><label>렌즈</label>
@@ -904,6 +927,7 @@
           <button id="bFit" class="sq" title="화면에 맞추기 (0)">⤢</button>
         </div>
         <button id="bDup" title="고른 것 복제 (Ctrl+D)">📑 복제</button>
+        <button id="bWide" title="왼쪽 칸을 접어 배치도를 넓게 씁니다">◧ 넓게</button>
       </div>
       <canvas id="plan"></canvas>
       <div class="legend">
@@ -929,7 +953,11 @@
   </div>
 
   <!-- ───────── 오른쪽 ───────── -->
-  <div class="col">
+  <div class="col col-side">
+    <section class="card card-insp">
+      <h2>선택한 요소</h2>
+      <div id="insp"><div class="empty">배치도에서 요소를 클릭하세요.</div></div>
+    </section>
     <section class="card">
       <h2>카메라 뷰</h2>
       <canvas id="cam"></canvas>
@@ -994,7 +1022,7 @@ const ACCENTS = [
   {id:'purple', light:'#7a5ad6', dark:'#b394ff'},
   {id:'rose',   light:'#bc3c60', dark:'#ff8fb0'},
 ];
-const DEFAULT_PREFS = {theme:'auto', accent:'amber', fs:13, paper:'theme', snap:5, angle:15};
+const DEFAULT_PREFS = {theme:'auto', accent:'amber', fs:13, paper:'theme', snap:5, angle:15, wide:false};
 let prefs = {...DEFAULT_PREFS};
 
 /* 배치도(2D 도면)에 쓰는 색. CSS 변수와 별개로 캔버스는 여기서 가져다 쓴다. */
@@ -1091,6 +1119,7 @@ function loadPrefs(){
     if(raw) prefs = Object.assign({...DEFAULT_PREFS}, JSON.parse(raw));
   }catch(e){ prefs = {...DEFAULT_PREFS}; }
   prefs.snap = [1,5,10,25].includes(+prefs.snap) ? +prefs.snap : 5;
+  prefs.wide = !!prefs.wide;
   prefs.angle = [5,15,45,90].includes(+prefs.angle) ? +prefs.angle : 15;
   prefs.fs = [12,13,15].includes(+prefs.fs) ? +prefs.fs : 13;
 }
@@ -1168,6 +1197,19 @@ const syncState = () => { state = project.scenes[project.active]; };
 /* 프롭 정의 조회 — 기본 + 사용자가 만든 것 */
 const getProp = kind => BUILTIN_PROPS[kind] || project.customProps[kind] || null;
 const propName = kind => { const P = getProp(kind); return P ? P.name : '?'; };
+/* 이 소품 하나의 실제 치수.
+   종류의 기본 치수 위에, 이 물건에만 준 값(w·d·h)을 덮어쓴다.
+   같은 '의자'라도 하나만 크게 만들 수 있도록. */
+function propOf(o){
+  const P = getProp(o.kind);
+  if(!P) return null;
+  if(o.w == null && o.d == null && o.h == null) return P;
+  return {...P, w: o.w != null ? o.w : P.w,
+                d: o.d != null ? o.d : P.d,
+                h: o.h != null ? o.h : P.h};
+}
+/* 이 소품이 종류 기본값에서 벗어나 있나 */
+const propResized = o => o.w != null || o.d != null || o.h != null;
 
 /* all() = 3D로 그려지는 요소들. 벽은 별도로 다룬다(선/좌표 두 개라 성격이 다름). */
 const all = () => [...state.props, ...state.actors, ...state.lights, ...state.cams];
@@ -1384,7 +1426,7 @@ function lightPrims(l){
 
 function primsOf(o){
   let ps, rot = 0;
-  if(o.type === 'prop'){ const P = getProp(o.kind); if(!P) return []; ps = propPrims(o.kind, P); rot = o.rot; }
+  if(o.type === 'prop'){ const P = propOf(o); if(!P) return []; ps = propPrims(o.kind, P); rot = o.rot; }
   else if(o.type === 'actor'){ ps = actorPrims(o); rot = o.rot; }
   else if(o.type === 'cam'){ ps = camPrims(o); rot = o.pan; }
   else if(o.type === 'light'){ ps = lightPrims(o); rot = o.pan; }
@@ -1636,7 +1678,7 @@ function radiusOf(o){
   if(o.type === 'actor') return 26;
   if(o.type === 'cam')   return 32;
   if(o.type === 'light') return 24;
-  const P = getProp(o.kind); return P ? Math.max(P.w, P.d)/2 : 30;
+  const P = propOf(o); return P ? Math.max(P.w, P.d)/2 : 30;
 }
 
 function drawPlan(target, tw, th){
@@ -1917,7 +1959,7 @@ function label(g, txt, x, y, col, size){
 }
 
 function drawProp2D(g, o){
-  const P = getProp(o.kind); if(!P) return;
+  const P = propOf(o); if(!P) return;
   const c = w2s(o.x,o.y), isSel = state.sel === o.id;
   g.save(); g.translate(c[0],c[1]); g.rotate(o.rot);
   const w = P.w*PT.s, d = P.d*PT.s;
@@ -2225,7 +2267,7 @@ function hitCandidates(wx, wy){
     if(d <= wtol) out.push({o:w, rank:1, key:d});
   }
   for(const o of state.props){
-    const P = getProp(o.kind); if(!P) continue;
+    const P = propOf(o); if(!P) continue;
     const a = -o.rot, dx = wx-o.x, dy = wy-o.y;
     const lx = dx*Math.cos(a) - dy*Math.sin(a), ly = dx*Math.sin(a) + dy*Math.cos(a);
     if(Math.abs(lx) <= P.w/2 && Math.abs(ly) <= P.d/2) out.push({o, rank:2, key:P.w*P.d});
@@ -2250,7 +2292,7 @@ function hitCandidates(wx, wy){
 function bboxOf(o){
   if(!o) return {w:0, d:0};
   if(o.type === 'prop'){
-    const P = getProp(o.kind); if(!P) return {w:0, d:0};
+    const P = propOf(o); if(!P) return {w:0, d:0};
     const c = Math.abs(Math.cos(o.rot||0)), s = Math.abs(Math.sin(o.rot||0));
     return {w: P.w*c + P.d*s, d: P.w*s + P.d*c};
   }
@@ -2786,9 +2828,22 @@ function renderInsp(){
          '<span style="font-size:11px;color:var(--sub)">'+ (o.kelvin<3500?'텅스텐 계열':(o.kelvin<5000?'중간':'데이라이트 계열')) +'</span></div>';
   }
   else {
-    const P = getProp(o.kind);
-    h += '<div class="row"><label>이름</label><input id="i_label" class="wide" placeholder="'+esc(P?P.name:'')+'" value="'+esc(o.label||'')+'"></div>';
-    if(P) h += '<p class="hint">'+esc(P.name)+' · '+P.w+'×'+P.d+'×'+P.h+'cm'+(P.custom?' (직접 만든 소품)':'')+'</p>';
+    const P = propOf(o), B = getProp(o.kind);
+    h += '<div class="dims"><label><span>이름</span>' +
+         '<input id="i_label" placeholder="'+esc(B?B.name:'')+'" value="'+esc(o.label||'')+'"></label></div>';
+    if(P){
+      h += '<div class="row" style="margin-top:8px"><label class="fieldlab">크기 <span>cm</span></label>' +
+           '<span style="flex:1"></span>' +
+           '<button class="mini" id="i_sizeReset"' + (propResized(o) ? '' : ' disabled') + '>↺ 기본값</button>' +
+           '</div>';
+      h += '<div class="grid3 dims">' +
+        '<label><span>가로</span><input type="number" id="i_pw" min="1" max="2000" step="5" value="'+Math.round(P.w)+'"></label>' +
+        '<label><span>세로</span><input type="number" id="i_pd" min="1" max="2000" step="5" value="'+Math.round(P.d)+'"></label>' +
+        '<label><span>높이</span><input type="number" id="i_ph" min="1" max="2000" step="5" value="'+Math.round(P.h)+'"></label>' +
+        '</div>';
+      h += '<p class="hint">이 소품 하나만 바뀝니다. 같은 종류의 다른 것들은 그대로예요' +
+           (B ? ' (' + esc(B.name) + ' 기본값 ' + B.w + '×' + B.d + '×' + B.h + ')' : '') + '.</p>';
+    }
   }
 
   h += '<div class="grid3" style="margin-top:7px">';
@@ -2807,6 +2862,18 @@ function renderInsp(){
   on('i_ref','click', S(() => { state.refCam = o.id; redraw(); }));
   on('i_axA','click', S(() => { state.axis.a = state.axis.a===o.id ? null : o.id; redraw(); }));
   on('i_axB','click', S(() => { state.axis.b = state.axis.b===o.id ? null : o.id; redraw(); }));
+  const setSize = () => {
+    o.w = clamp(nv('i_pw')||1, 1, 2000);
+    o.d = clamp(nv('i_pd')||1, 1, 2000);
+    o.h = clamp(nv('i_ph')||1, 1, 2000);
+    drawPlan(); drawCamView(); drawBird();     // 패널은 그대로 두고 그림만 다시 그린다
+  };
+  ['i_pw','i_pd','i_ph'].forEach(id => {
+    on(id,'focus', () => snapshot());          // 되돌리기 지점은 만지기 시작할 때 한 번
+    on(id,'input', setSize);
+  });
+  on('i_sizeReset','click', S(() => { delete o.w; delete o.d; delete o.h; redraw(); }));
+  ['i_x','i_y','i_rot'].forEach(id => on(id,'focus', () => snapshot()));
   on('i_x','input', () => { o.x = nv('i_x'); redraw(); });
   on('i_y','input', () => { o.y = nv('i_y'); redraw(); });
   on('i_rot','input', () => { const r = toRad(nv('i_rot'));
@@ -3182,6 +3249,20 @@ document.getElementById('bZoomOut').addEventListener('click', () => {
   const r = planCv.getBoundingClientRect(); zoomAt(r.width/2, r.height/2, 1/1.3); redraw();
 });
 document.getElementById('bDup').addEventListener('click', duplicateSel);
+/* 넓게 보기 — 세팅 칸을 접어 배치도에 폭을 넘긴다. 접힘 여부는 이 컴퓨터에 기억해 둔다. */
+function applyWide(){
+  const on = !!prefs.wide;
+  document.getElementById('app').classList.toggle('wide', on);
+  const b = document.getElementById('bWide');
+  b.classList.toggle('on', on);
+  b.textContent = on ? '◨ 좁게' : '◧ 넓게';
+  b.title = on ? '왼쪽 칸을 다시 펼칩니다' : '왼쪽 칸을 접어 배치도를 넓게 씁니다';
+  redraw();
+}
+document.getElementById('bWide').addEventListener('click', () => {
+  prefs.wide = !prefs.wide; savePrefs(); applyWide();
+  toast(prefs.wide ? '◧ 배치도를 넓게 씁니다' : '왼쪽 칸을 다시 폈어요');
+});
 document.getElementById('bAddCam').addEventListener('click', () => { setMode('select'); startPlacing('camera'); });
 document.getElementById('bDupCam').addEventListener('click', () => {
   const c = activeCam(); if(!c) return toast('복제할 셋업이 없어요');
@@ -3461,7 +3542,7 @@ document.querySelectorAll('.site a[href^="#"]').forEach(a => a.addEventListener(
   t.scrollIntoView({behavior: soft ? 'smooth' : 'auto', block:'start'});
 }));
 
-loadPrefs(); applyPrefs();
+loadPrefs(); applyPrefs(); applyWide();
 project = newProject(); syncState();
 if(!load(false)){ demo(); }
 refreshAll();
