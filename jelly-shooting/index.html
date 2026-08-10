@@ -219,6 +219,7 @@
   #countNum{font-family:var(--font-title);font-size:clamp(90px,26vw,140px);color:#ff4d84;
     filter:drop-shadow(0 6px 0 #fff) drop-shadow(0 10px 16px rgba(230,62,114,0.4));}
   .codebig{font-size:34px;font-weight:900;color:var(--pink-d);letter-spacing:5px;}
+  .needfill{border-color:var(--pink)!important;animation:dpulse .8s ease-in-out 2;}
 </style>
 </head>
 <body>
@@ -413,10 +414,16 @@
   <div id="lobbyScreen" class="screen hide">
     <div class="h2">🔴 대기실</div>
     <div class="card">
-      <div class="label">🚪 방 코드</div>
+      <div class="label">🚪 방 코드 — 이걸 친구에게 보내세요</div>
       <div class="codebig" id="lobbyCode">------</div>
-      <div class="tag2" id="lobbyRole" style="margin-top:2px;"></div>
+      <div class="tag2" id="lobbyLink" style="margin-top:4px;word-break:break-all;"></div>
+      <div class="tag2" id="lobbyRole" style="margin-top:4px;"></div>
       <button class="setbtn" id="lobbyCopyBtn">📋 코드·링크 복사해서 친구에게 보내기</button>
+    </div>
+    <div class="card">
+      <div class="label">🔌 연결 상태</div>
+      <div class="tag2" id="lobbyStatus" style="text-align:left;white-space:pre-line;"></div>
+      <button class="setbtn hide" id="lobbyRetryBtn">🔄 다시 연결하기</button>
     </div>
     <div class="card">
       <div class="label">👥 참가자</div>
@@ -456,6 +463,11 @@
     <div class="scoreBig"><span id="finalScore">0</span> <small>점</small></div>
     <div class="coinbadge" id="overCoins">🪙 +0</div>
     <div class="tag2" id="overMsg"></div>
+    <!-- 판이 끝나면 제일 보고 싶은 건 '남들과 비교한 내 순위'다 -->
+    <div class="rank" id="overLbBox" style="width:min(94vw,340px);">
+      <div class="t" id="overLbTitle">🌍 온라인 랭킹</div>
+      <div id="overLb"></div>
+    </div>
     <div class="rank" id="rankBox"></div>
 
     <!-- 도전장을 보낼 때 닉네임이 없으면 여기서 바로 받는다 -->
@@ -548,7 +560,7 @@ function getScores(){try{return JSON.parse(localStorage.getItem('jelly_scores'))
 function addScore(s){const a=getScores();a.push(s);a.sort((x,y)=>y-x);const top=a.slice(0,5);try{localStorage.setItem('jelly_scores',JSON.stringify(top));}catch(e){}return top;}
 function bestScore(){const a=getScores();return a.length?a[0]:0;}
 const MEDALS=['🥇','🥈','🥉','4','5'];
-function renderRank(top,my){let r='<div class="t">🏆 최고 기록 TOP 5</div>';if(!top.length)r+='<div class="rrow">아직 기록이 없어요!</div>';let used=false;
+function renderRank(top,my){let r='<div class="t">🏅 내 최고 기록 TOP 5 <span style="font-weight:700;opacity:.65;">(이 기기)</span></div>';if(!top.length)r+='<div class="rrow">아직 기록이 없어요!</div>';let used=false;
   top.forEach((s,i)=>{const me=!used&&s===my;if(me)used=true;r+=`<div class="rrow${me?' me':''}"><span>${MEDALS[i]} ${me?'나':''}</span><span>⭐ ${s}</span></div>`;});$('rankBox').innerHTML=r;}
 
 // 종류마다 실루엣·눈·볼 위치를 다르게 준다.
@@ -1081,7 +1093,10 @@ function gameOver(){ running=false;paused=false;$('hud').classList.add('hide');$
   $('netBar').classList.add('hide'); $('throwWrap').classList.add('hide');
   if(net.watchT){clearInterval(net.watchT);net.watchT=null;}
   // 대전 점수는 상대 방해를 받으므로 단독 랭킹에 올리지 않는다
-  coins+=runCoins; saveEconomy(); if(!wasNet) submitScore();
+  coins+=runCoins; saveEconomy();
+  const playedMode=mode;
+  // 내 점수를 먼저 올린 뒤에 읽어야 방금 기록이 순위에 반영된다
+  if(!wasNet) submitScore().then(()=>renderOverOnline(playedMode)); else renderOverOnline(playedMode);
   const prev=bestScore(),top=addScore(score),isBest=score>prev&&score>0;
   $('finalScore').textContent=score; $('newBestWrap').classList.toggle('hide',!isBest);
   $('overCoins').textContent='🪙 +'+runCoins+'  (총 '+coins+')';
@@ -1175,6 +1190,34 @@ async function loadLeaderboard(){
     box.innerHTML=h;
   }catch(e){ box.innerHTML='<div class="rrow">랭킹 로드 실패 😢</div>'; }
 }
+// 결과 화면용 — 그 난이도의 남들 순위와 내 위치를 보여준다.
+// 로컬 TOP 5는 내 기록일 뿐이라 따로 표시한다(라벨을 분명히 했다).
+async function renderOverOnline(m){
+  const box=$('overLb'); if(!MODES[m]) m='normal';
+  $('overLbTitle').textContent='🌍 온라인 랭킹 · '+MODES[m].emoji+MODES[m].name;
+  if(!supaReady()){ box.innerHTML='<div class="rrow">'+netWhyOffline()+'</div>'; return; }
+  if(!nick){ box.innerHTML='<div class="rrow">닉네임을 정하면 순위에 올라가요 🙋</div>'; return; }
+  box.innerHTML='<div class="rrow">불러오는 중...</div>';
+  try{
+    const { data, error } = await getSupa().from('scores').select('name,score')
+      .eq('mode',m).order('score',{ascending:false}).limit(300);
+    if(error) throw error;
+    const best=new Map();
+    (data||[]).forEach(r=>{ const n=(r.name||'').trim(); if(!n)return;
+      if(!best.has(n)||best.get(n)<r.score) best.set(n,r.score); });
+    const rows=[...best.entries()].sort((a,b)=>b[1]-a[1]);
+    if(!rows.length){ box.innerHTML='<div class="rrow">아직 기록이 없어요. 1등이 되어보세요! 🥇</div>'; return; }
+    const mine=rows.findIndex(e=>e[0]===nick);
+    let h='';
+    rows.slice(0,5).forEach((e,i)=>{ const me=(i===mine);
+      h+='<div class="rrow'+(me?' me':'')+'"><span>'+(['🥇','🥈','🥉'][i]||((i+1)+'.'))+' '+
+         escapeHtml(e[0])+(me?' (나)':'')+'</span><span>⭐ '+e[1]+'</span></div>'; });
+    if(mine>=5) h+='<div class="rrow me"><span>'+(mine+1)+'. '+escapeHtml(nick)+' (나)</span><span>⭐ '+rows[mine][1]+'</span></div>';
+    h+='<div class="tag2" style="margin-top:6px;">'+
+       (mine>=0?('내 순위 '+(mine+1)+'위 / '+rows.length+'명'):(rows.length+'명 참가 중'))+'</div>';
+    box.innerHTML=h;
+  }catch(e){ box.innerHTML='<div class="rrow">랭킹을 불러오지 못했어요 😢</div>'; }
+}
 async function submitScore(){
   if(!nick||!supaReady()||score<=0) return;
   try{ await getSupa().from('scores').insert({name:nick,score:score,mode:mode}); }catch(e){}
@@ -1188,22 +1231,48 @@ const THROW_COST=10, BOMB_COST=25;
 let net={ch:null,room:'',host:false,foe:null,ready:false,foeReady:false,
          foeStat:{score:0,lives:0,combo:1,level:1},lastFoe:0,
          myOver:false,myScore:0,myReason:'',foeOver:false,foeScore:0,foeReason:'',
-         foeGone:false,watchT:null,timeLimit:120};
+         foeGone:false,watchT:null,timeLimit:120,status:'',statusMsg:''};
 
 function netSend(o){ if(net.ch){ try{ net.ch.send({type:'broadcast',event:'msg',payload:o}); }catch(e){} } }
 function netLeave(){
   if(net.ch){ netSend({t:'bye'}); try{ getSupa().removeChannel(net.ch); }catch(e){} net.ch=null; }
   if(net.watchT){ clearInterval(net.watchT); net.watchT=null; }
   netMode=false; net.foe=null; net.ready=false; net.foeReady=false; net.foeGone=false;
+  net.status=''; net.statusMsg='';
 }
-function netJoin(code,asHost){
-  if(!supaReady()){ toast(netWhyOffline()); return false; }
+// 방에 들어간다 — 코드는 로컬에서 만들므로 연결을 기다리지 않고 먼저 보여준다.
+// 예전엔 연결 실패 시 대기실을 아예 열지 않아서 '방 만들기'가 아무 일도 안 한 것처럼 보였다.
+function netEnterRoom(code,asHost){
   netLeave();
-  net.room=code; net.host=asHost; net.lastFoe=performance.now();
-  net.ch=getSupa().channel('jelly:room:'+code);
+  net.room=code; net.host=asHost; net.foe=null; net.ready=false; net.foeReady=false;
+  openLobby();      // ← 코드 먼저
+  netConnect();     // ← 연결은 뒤에서
+}
+function netConnect(){
+  if(!net.room) return;
+  net.status='connecting'; net.statusMsg=''; renderLobby();
+  if(!supaReady()){ net.status='fail'; net.statusMsg=netWhyOffline(); renderLobby(); return; }
+  if(net.ch){ try{ getSupa().removeChannel(net.ch); }catch(e){} net.ch=null; }
+  net.lastFoe=performance.now();
+  net.ch=getSupa().channel('jelly:room:'+net.room);
   net.ch.on('broadcast',{event:'msg'},p=>netOnMsg(p&&p.payload));
-  net.ch.subscribe(st=>{ if(st==='SUBSCRIBED') netSend({t:'hello',name:nick,char:character}); });
-  return true;
+  net.ch.subscribe(st=>{
+    if(st==='SUBSCRIBED'){ net.status='ok'; net.statusMsg=''; netSend({t:'hello',name:nick,char:character}); }
+    else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED'){
+      net.status='fail';
+      net.statusMsg='서버에 연결하지 못했어요 (Supabase Realtime 설정을 확인하세요)';
+    }
+    renderLobby();
+  });
+}
+// 닉네임이 없으면 토스트만 띄우고 끝내지 않고, 입력칸으로 데려가서 눈에 띄게 한다
+function nickOrPrompt(){
+  if(nick) return true;
+  const el=$('nickInput3');
+  if(el){ try{ el.scrollIntoView({block:'center'}); }catch(e){} el.focus();
+    el.classList.add('needfill'); setTimeout(()=>el.classList.remove('needfill'),1700); }
+  toast('닉네임을 먼저 정해주세요! 🙋');
+  return false;
 }
 function netOnMsg(m){
   if(!m||!m.t) return;
@@ -1226,15 +1295,15 @@ function netOnMsg(m){
 
 // ---- 방 만들기 / 참가 ----
 function netCreate(){
-  if(!nick){ toast('먼저 닉네임을 정해주세요! 🙋'); return; }
+  if(!nickOrPrompt()) return;
   netSeed=(Math.random()*1e9)>>>0; netModeName=mode;
-  if(netJoin(makeCode(),true)) openLobby();
+  netEnterRoom(makeCode(),true);
 }
 function netJoinByCode(){
   const code=($('netCodeInput').value||'').trim().toUpperCase();
   if(code.length<4){ toast('방 코드를 확인해주세요'); return; }
-  if(!nick){ toast('먼저 닉네임을 정해주세요! 🙋'); return; }
-  if(netJoin(code,false)) openLobby();
+  if(!nickOrPrompt()) return;
+  netEnterRoom(code,false);
 }
 let netUrlTry=0;
 function checkRoomURL(){
@@ -1242,14 +1311,15 @@ function checkRoomURL(){
   if(!window.supabase){ if(netUrlTry++<20) setTimeout(checkRoomURL,300); return; }   // SDK 대기 (무한 재시도 금지)
   const code=r.toUpperCase();
   if(!nick){ openBattle(); $('netCodeInput').value=code; toast('닉네임을 정하고 "입장!"을 눌러주세요 🙋'); return; }
-  if(netJoin(code,false)) openLobby();
+  netEnterRoom(code,false);
 }
 
 // ---- 대기실 ----
 function openLobby(){ showScreen('lobbyScreen'); renderLobby(); }
 function renderLobby(){
   if($('lobbyScreen').classList.contains('hide')) return;
-  $('lobbyCode').textContent=net.room;
+  $('lobbyCode').textContent=net.room||'------';
+  $('lobbyLink').textContent=net.room?(location.origin+location.pathname+'?r='+net.room):'';
   $('lobbyRole').textContent=net.host?'🏠 내가 방장 — 난이도·시간을 내가 정해요':'🚪 참가자 — 방장 설정을 따라요';
   const foe=net.foe;
   let h='<div class="rrow me"><span>🙋 '+escapeHtml(nick||'나')+' (나)</span><span>'+(net.ready?'✅ 준비완료':'⌛ 준비중')+'</span></div>';
@@ -1258,9 +1328,16 @@ function renderLobby(){
   $('lobbyPlayers').innerHTML=h;
   const m=MODES[netModeName]||MODES.normal;
   $('lobbyInfo').textContent='난이도 '+m.emoji+m.name+' · 제한시간 '+net.timeLimit+'초 · 목숨 '+m.lives+'개';
-  const rb=$('lobbyReadyBtn');
-  rb.disabled=!foe||net.ready;
-  rb.textContent=net.ready?'✅ 준비 완료':(foe?'준비 완료!':'친구를 기다려요…');
+  // 코드는 이미 위에 떠 있다. 연결이 안 됐으면 그 사실만 정확히 알린다.
+  const st=$('lobbyStatus');
+  if(net.status==='ok') st.textContent=foe?'✅ 연결됨':'✅ 연결됨 — 친구가 코드를 넣으면 아래에 떠요';
+  else if(net.status==='connecting') st.textContent='🔌 서버에 연결 중…';
+  else st.textContent='⚠️ '+(net.statusMsg||'아직 연결되지 않았어요')+
+       '\n코드는 위에 있으니 먼저 친구에게 보내두세요. 연결되면 대전을 시작할 수 있어요.';
+  $('lobbyRetryBtn').classList.toggle('hide',net.status==='ok'||net.status==='connecting');
+  const rb=$('lobbyReadyBtn'), ok=(net.status==='ok');
+  rb.disabled=!ok||!foe||net.ready;
+  rb.textContent=net.ready?'✅ 준비 완료':(!ok?'연결을 기다려요…':(foe?'준비 완료!':'친구를 기다려요…'));
 }
 function lobbyReady(){
   if(!net.foe||net.ready) return;
@@ -1366,6 +1443,9 @@ function netResolve(){
 // ================= 대전: 도전장 (같은 판 점수 승부) =================
 let battleMode=null, battleSeed=0, battleId='', battleHostName='', battleHostScore=0, pendingChallenge=null;
 let lastRun=null;   // 직전 판 {seed,mode,score} — 결과 화면에서 그대로 도전장이 된다
+// 방 코드 / 도전장 코드. 헷갈리는 글자(I, O, 0, 1)는 빼서 받아 적기 쉽게 한다.
+function makeCode(){ const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s='';
+  for(let i=0;i<6;i++)s+=c[(Math.random()*c.length)|0]; return s; }
 
 // ---- 복사 / 공유 ----
 function fallbackCopy(s,okMsg){ try{ const ta=document.createElement('textarea'); ta.value=s;
@@ -1486,6 +1566,7 @@ $('netCreateBtn').onclick=netCreate;
 $('netJoinBtn').onclick=netJoinByCode;
 $('lobbyReadyBtn').onclick=lobbyReady;
 $('lobbyCopyBtn').onclick=()=>copyText(location.origin+location.pathname+'?r='+net.room+'\n방 코드: '+net.room,'📋 복사됨! 친구에게 보내세요');
+$('lobbyRetryBtn').onclick=netConnect;
 $('lobbyLeaveBtn').onclick=()=>{ netLeave(); openBattle(); };
 $('throwBtn').onclick=doThrow;
 $('lbRefresh').onclick=loadLeaderboard;
