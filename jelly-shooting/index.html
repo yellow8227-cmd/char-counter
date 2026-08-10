@@ -250,11 +250,31 @@
   .tpanel.grow{flex:1;min-height:0;}
   .tlabel{font-size:11.5px;font-weight:900;color:var(--ink2);background:rgba(255,255,255,0.72);
     padding:3px 12px;border-radius:999px;box-shadow:var(--shadow);}
-  #mirrorCanvas{height:100%;max-height:100%;max-width:100%;aspect-ratio:480/720;border-radius:18px;
+  /* height:100%는 라벨 높이만큼 넘쳐서 아래 패널을 덮는다. 남은 공간을 flex로 받는다. */
+  #mirrorCanvas{flex:1 1 auto;min-height:0;height:auto;width:auto;max-width:100%;max-height:100%;
+    aspect-ratio:480/720;align-self:center;border-radius:18px;
     box-shadow:var(--shadow);cursor:crosshair;touch-action:none;}
-  #myPadCanvas{width:min(100%,340px);aspect-ratio:480/200;border-radius:16px;box-shadow:var(--shadow);}
+  #myPadCanvas{width:min(100%,340px);aspect-ratio:480/170;border-radius:16px;box-shadow:var(--shadow);}
   #throwerHomeBtn{position:absolute;top:10px;left:10px;z-index:8;}
-  #throwKindBtn{position:absolute;top:10px;right:10px;z-index:8;}
+  /* 무기는 눈에 확 보여야 한다. 구석의 작은 칩으로는 아무도 못 찾는다. */
+  #spdBar{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;}
+  /* 4개가 한 줄에 들어가야 한다. 좁은 폰에서는 flex-wrap이 두 줄로 접어준다. */
+  .spdbtn{border:none;cursor:pointer;font-family:var(--font);font-weight:900;font-size:10.5px;
+    padding:5px 8px;border-radius:11px;background:#fff2f8;color:#b0567c;box-shadow:0 3px 0 #f2cddd;
+    white-space:nowrap;}
+  .spdbtn:active{transform:translateY(3px);box-shadow:none;}
+  .spdbtn.on{background:linear-gradient(180deg,#ffb08a,#ff8a5c);color:#fff;box-shadow:0 3px 0 #e0691a;}
+  #throwBar{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
+  .twbtn{position:relative;border:none;cursor:pointer;width:62px;padding:7px 2px;border-radius:16px;
+    background:rgba(255,255,255,0.93);font-family:var(--font);transition:transform .08s;
+    box-shadow:0 4px 10px rgba(190,120,160,.3),inset 0 0 0 2px rgba(255,255,255,.85);
+    display:flex;flex-direction:column;align-items:center;gap:1px;}
+  .twbtn:active{transform:scale(.9);}
+  .twbtn .e{font-size:21px;line-height:1.05;}
+  .twbtn .n{font-size:10.5px;font-weight:900;color:var(--ink);}
+  .twbtn .c{font-size:9.5px;font-weight:800;color:#8a5cff;}
+  .twbtn.on{box-shadow:0 5px 14px rgba(138,92,255,.55),inset 0 0 0 3px #8a5cff;}
+  .twbtn.no{opacity:.42;filter:grayscale(.65);}
   .needfill{border-color:var(--pink)!important;animation:dpulse .8s ease-in-out 2;}
   /* 친구를 기다리는 동안 글씨에 빛이 흘러가게 — 멈춘 화면처럼 보이지 않게 한다 */
   .wait{background-image:linear-gradient(90deg,var(--ink2) 0%,var(--ink2) 38%,var(--pink) 50%,var(--ink2) 62%,var(--ink2) 100%);
@@ -297,14 +317,15 @@
   <!-- 🎯 던지는 사람 화면 — 상대 화면과 내 화면을 같이 본다 -->
   <div id="throwerView" class="hide">
     <button class="iconbtn" id="throwerHomeBtn" title="홈으로">🏠</button>
-    <button class="chip" id="throwKindBtn">🍡 일반</button>
     <div class="tpanel grow">
       <div class="tlabel">🎯 상대 화면 — 여기를 눌러 던져요</div>
       <canvas id="mirrorCanvas" width="480" height="720"></canvas>
     </div>
     <div class="tpanel">
       <div class="tlabel">🙋 내 화면</div>
-      <canvas id="myPadCanvas" width="480" height="200"></canvas>
+      <canvas id="myPadCanvas" width="480" height="170"></canvas>
+      <div id="spdBar"></div>
+      <div id="throwBar"></div>
     </div>
   </div>
   <button class="iconbtn hide" id="pauseBtn" title="일시정지">⏸️</button>
@@ -513,7 +534,7 @@
       <div class="tag2" id="lobbyInfo" style="margin-top:8px;text-align:left;"></div>
       <div class="tag2" id="lobbyWaitInfo" style="margin-top:4px;text-align:left;"></div>
     </div>
-    <div class="tag2">젤리를 터뜨리면 게이지가 차고, 🎯 버튼으로 <b>상대 화면에 젤리를 던집니다.</b><br>둘 다 준비하면 카운트다운 후 동시에 시작해요!</div>
+    <div class="tag2" id="lobbyTip"></div>
     <button class="btn lg" id="lobbyReadyBtn">준비 완료!</button>
     <button class="btn ghost" id="lobbyLeaveBtn">← 홈으로</button>
   </div>
@@ -1075,7 +1096,11 @@ function hit(mx,my){ if(!running||paused)return; ensureAudio();
   else popGood(j);
   updateHud(); }
 function popGood(j){ j.dead=true;combo=Math.min(combo+1,9);comboTimer=magnetTimer>0?999:90;
-  const mult=x2Timer>0?(x2Lv>=4?3:2):1, g=j.pts*combo*mult; score+=g;
+  const mult=x2Timer>0?(x2Lv>=4?3:2):1;
+  // 던지기 게임에서는 양쪽이 같은 기준(기본 40 · 콤보 상한 5)으로 계산한다.
+  // 젤리 크기로 점수가 갈리면 던지는 쪽이 통제할 수 없는 변수가 생긴다.
+  const g=(netMode&&netGame==='throw') ? POP_BASE*Math.min(5,combo)*mult : j.pts*combo*mult;
+  score+=g;
   const cGain=j.gold?12:1; runCoins+=cGain;
   burst(j.x,j.y,j.color,j.gold?34:24); burst(j.x,j.y,'#ffffff',6);
   ring(j.x,j.y,j.gold?'#ffce3d':j.color,j.r*3.4,6);
@@ -1096,6 +1121,7 @@ function heartStr(){ const max=MODES[mode].lives; return '❤️'.repeat(Math.ma
 function updateHud(){ $('score').textContent=score;$('combo').textContent='x'+combo;$('level').textContent=level;$('runCoinHud').textContent=runCoins;$('lives').textContent=heartStr(); }
 
 function drawJelly(j){ ctx.save();ctx.translate(j.x,j.y);
+  if(j.ghost)ctx.globalAlpha=0.42;   // 👻 유령 젤리 — restore()가 알파를 되돌려준다
   if(j.bomb){ const pulse=1+Math.sin(frame*0.2)*0.08;
     ctx.beginPath();ctx.arc(0,0,j.r*1.5*pulse,0,7);ctx.fillStyle='rgba(255,60,60,'+(0.18+Math.sin(frame*0.2)*0.08)+')';ctx.fill();
     ctx.fillStyle='#3a3340';const sp=10;ctx.beginPath();for(let i=0;i<sp*2;i++){const a=i/(sp*2)*Math.PI*2+j.wob*0.2,rr=i%2?j.r*1.32:j.r;ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);}ctx.closePath();ctx.fill();
@@ -1140,7 +1166,7 @@ function foeRing(j){ ctx.strokeStyle='rgba(150,90,255,0.95)';ctx.lineWidth=3;ctx
   ctx.beginPath();ctx.arc(0,0,j.r+5,0,7);ctx.stroke();ctx.setLineDash([]); }
 
 function update(){ elapsed++; updateLevel();
-  if(netMode){ if(elapsed%30===0)netSend({t:'stat',score:score,lives:lives,combo:combo,level:level});
+  if(netMode){ if(elapsed%30===0)netSend({t:'stat',score:score,lives:lives,combo:combo,level:level,px:Math.round(player.x)});
     if(elapsed>=net.timeLimit*60){ gameOver(); return; } }
   if(slowTimer>0)slowTimer--; if(x2Timer>0)x2Timer--; if(bombBan>0)bombBan--;
   if(magnetTimer>0){magnetTimer--;if(magnetTimer===0)comboTimer=Math.min(comboTimer,90);}
@@ -1235,7 +1261,7 @@ function startGame(){ score=0;combo=1;comboTimer=0;level=1;lives=MODES[mode].liv
   gspawn = mulberry32(runSeed);
   jellies=[];particles=[];floaters=[];rings=[];shots=[];drops=[];banner=null;callout=null;flash=0;spawnTimer=0;elapsed=0;shake=0;frame=0;
   slowTimer=0;x2Timer=0;magnetTimer=0;bombBan=0;slowLv=1;x2Lv=1;magnetLv=1;
-  runCoins=0;dropTimer=Math.round(srand(8,12)*60);paused=false;
+  runCoins=0;dropTimer=Math.round(srand(8,12)*60);paused=false;pPopped=0;pMissed=0;
   player={x:W/2,targetX:W/2,mood:'idle',moodTimer:0,recoil:0};updateHud();
   markAttend();
   showScreen(null);$('hud').classList.remove('hide');$('audioBar').classList.remove('hide');$('pauseBtn').classList.remove('hide');
@@ -1488,7 +1514,9 @@ function netOnMsg(m){
   else if(m.t==='stat'){ net.foeStat=m;
     if(throwerAlive) popStat={score:m.score|0,lives:m.lives|0,combo:m.combo||1};
     else updateFoeHud(); }
+  else if(m.t==='jkind'){ /* 예약 */ }
   else if(m.t==='over'){ net.foeOver=true; net.foeScore=m.score|0; net.foeReason=m.reason||'time';
+    if(m.popped!=null){ net.foePopped=m.popped|0; net.foeMissed=m.missed|0; }
     if(throwerAlive){ throwerFinish(); return; }                 // 터트리는 사람이 끝났으면 나도 끝
     netResolve(); }
   else if(m.t==='bye'){
@@ -1505,7 +1533,7 @@ function openNetMode(game){
   showScreen('netScreen'); syncNickInputs();
   $('netTitle').textContent=gameLabel();
   $('netDesc').textContent = netGame==='throw'
-    ? '한 사람은 젤리를 던지고, 한 사람은 터뜨려요. 던지는 사람은 상대 화면을 보면서 조준합니다!'
+    ? '한 사람은 젤리를 던지고, 한 사람은 터뜨려요. 던지는 사람은 무기(👻유령·💣폭탄·🌧️젤리비)와 낙하 속도(🐢~🚀)를 골라 상대 화면을 보면서 조준합니다!'
     : '둘이 동시에 플레이하면서 서로의 화면에 젤리를 던져요.';
   $('netRoleCard').classList.toggle('hide',netGame!=='throw');
   buildRoleOpts();
@@ -1557,6 +1585,11 @@ function renderLobby(){
   $('lobbyPlayers').innerHTML=h;
   const m=MODES[netModeName]||MODES.normal;
   $('lobbyInfo').textContent='난이도 '+m.emoji+m.name+' · 제한시간 '+net.timeLimit+'초 · 목숨 '+m.lives+'개';
+  $('lobbyTip').innerHTML = netGame==='throw'
+    ? (myRole==='thrower'
+        ? '🎯 <b>던지는 사람</b> — 상대 화면을 보며 눌러서 던져요. 무기는 ⚡에너지로, <b>낙하 속도(🐢느리게~🚀초고속)는 공짜로</b> 바꿀 수 있어요. 상대가 놓칠수록 콤보가 쌓여요!'
+        : '💥 <b>터트리는 사람</b> — 젤리가 저절로 안 나와요. 상대가 던진 것만 내려옵니다. 90초를 버티면 승리!')
+    : '젤리를 터뜨리면 게이지가 차고, 🎯 버튼으로 <b>상대 화면에 젤리를 던집니다.</b><br>둘 다 준비하면 카운트다운 후 동시에 시작해요!';
   // 코드는 이미 위에 떠 있다. 연결이 안 됐으면 그 사실만 정확히 알린다.
   const st=$('lobbyStatus');
   if(net.status==='ok') st.textContent=foe?'✅ 연결됨':'✅ 연결됨 — 친구가 코드를 넣으면 아래에 떠요';
@@ -1669,11 +1702,14 @@ function recvJelly(m){
   jellies.push({netId:m.id,x:Math.max(r+6,Math.min(W-r-6,m.x|0)),y:-r,vx:0,
     vy:(+m.vy)||diff().vy,r,color:m.bomb?'#4a4450':(m.color||'#ff8fb8'),
     face:m.face||'happy',shape:m.bomb?'round':(m.shape||'round'),
-    pts:Math.round(40-r)+6,bomb:!!m.bomb,gold:false,wob:Math.random()*7,dead:false,foe:true});
+    pts:Math.round(40-r)+6,bomb:!!m.bomb,ghost:!!m.ghost,gold:false,
+    wob:Math.random()*7,dead:false,foe:true});
 }
 // 던진 사람에게 그 젤리가 어떻게 됐는지 알려준다
+let pPopped=0,pMissed=0;
 function jGone(j,why){
   if(!(netMode&&netGame==='throw')||!j.netId) return;
+  if(why==='pop') pPopped++; else if(why==='miss'||why==='bomb') pMissed++;
   netSend({t:'jgone',id:j.netId,why:why,pscore:score,plives:lives});
 }
 function recvThrow(items){
@@ -1710,10 +1746,34 @@ function doThrow(){
 // 미러를 눌러 그 자리에 젤리를 떨어뜨린다.
 // 미러는 '내가 던진 젤리'만으로 만들어지므로 좌표를 통째로 주고받을 필요가 없다.
 // 상대는 젤리가 어떻게 됐는지(jgone)만 알려주면 된다.
-const THROW_CD=42, TBOMB_CD=150;      // 프레임 (0.7초 / 2.5초)
+// 던질 무기 — 에너지를 써서 고른다. 일반 젤리는 무료라 할 일이 끊기지 않는다.
+const TW={
+  normal:{name:'일반',  emoji:'🍡', cost:0,  cd:42, desc:'기본 젤리'},
+  ghost :{name:'유령',  emoji:'👻', cost:26, cd:66, desc:'반투명해서 잘 안 보여요'},
+  bomb  :{name:'폭탄',  emoji:'💣', cost:18, cd:66, desc:'터뜨리면 목숨이 깎여요'},
+  rain  :{name:'젤리비',emoji:'🌧️', cost:35, cd:96, desc:'한 번에 5개!'},
+};
+const TW_ORDER=['normal','ghost','bomb','rain'];
+// 속도는 던지는 사람이 직접 돌린다. 공짜로 바꿀 수 있어야 '조절하는 재미'가 생긴다.
+const TSPD=[{n:'느리게',e:'🐢',m:0.8},{n:'보통',e:'🚶',m:1.15},{n:'빠르게',e:'🏃',m:1.6},{n:'초고속',e:'🚀',m:2.2}];
+let tSpd=1;
+// ── 점수 균형 ──
+// 터트리는 쪽은 젤리마다 점수를 먹고, 던지는 쪽은 '놓칠 때만' 먹는다.
+// 잘하는 상대는 놓치는 것보다 6배 정도 더 많이 터뜨리므로, 그만큼 가중치를 준다.
+const POP_BASE=40, MISS_WEIGHT=6, BOMB_BONUS=1.4;
+// 속도가 빠르면 뚫기는 쉬워진다. 그래서 빠를수록 값을 덜 준다.
+// 이게 없으면 '초고속 도배'가 항상 정답이 되어 조절할 이유가 사라진다.
+const SPD_PAY=[1.35,1.0,0.75,0.55];
+let tThrown=0,tPopped=0,tMissed=0;
+// 예전에는 diff()를 썼는데, 던지는 사람의 level은 올라가지 않아서 낙하 속도가
+// 계속 1레벨 값에 묶여 있었다. 그래서 상대가 "너무 느리다"고 느꼈다.
+function throwVy(){ const md=MODES[mode]||MODES.normal;
+  return (md.vy0+1.6)*TSPD[tSpd].m + rand(0,0.4); }
+const ENERGY_MAX=100, ENERGY_GAIN=0.14;   // 초당 약 8.4
 let throwerAlive=false, mirror=[], mirrorRAF=null, mframe=0;
-let throwCd=0, throwScore=0, nextBomb=false, jidSeq=0;
-let popStat={score:0,lives:0,combo:1};
+let throwCd=0, throwScore=0, jidSeq=0;
+let tKind='normal', tEnergy=ENERGY_MAX, tCombo=1, tMsg=null, twEls={};
+let popStat={score:0,lives:0,combo:1}, popX=240;
 const mBg={};
 let mcv=null,mctx=null,pcv=null,pctx2=null;
 function mirrorInit(){ if(mcv)return; mcv=$('mirrorCanvas'); mctx=mcv.getContext('2d');
@@ -1721,11 +1781,36 @@ function mirrorInit(){ if(mcv)return; mcv=$('mirrorCanvas'); mctx=mcv.getContext
   mcv.addEventListener('pointerdown',e=>{ if(!throwerAlive)return; e.preventDefault();
     const r=mcv.getBoundingClientRect(); throwAt((e.clientX-r.left)*(480/r.width)); }); }
 function foeAvatar(){ return (net.foe&&net.foe.char)?net.foe.char:character; }
+function buildSpdBar(){
+  const bar=$('spdBar'); bar.innerHTML='';
+  TSPD.forEach((sp,i)=>{ const b=document.createElement('button');
+    b.className='spdbtn'+(tSpd===i?' on':''); b.textContent=sp.e+sp.n+' ×'+SPD_PAY[i];
+    b.onclick=()=>{ tSpd=i; buildSpdBar(); toast(sp.e+' 낙하 속도: '+sp.n); };
+    bar.appendChild(b); });
+}
+function buildThrowBar(){
+  const bar=$('throwBar'); bar.innerHTML=''; twEls={};
+  TW_ORDER.forEach(k=>{ const w=TW[k];
+    const b=document.createElement('button'); b.className='twbtn'; b.title=w.name+' — '+w.desc;
+    b.innerHTML=`<span class="e">${w.emoji}</span><span class="n">${w.name}</span>`+
+      `<span class="c">${w.cost?('⚡'+w.cost):'무료'}</span>`;
+    b.onclick=()=>{ tKind=k; refreshThrowBar(); toast(w.emoji+' '+w.name+' — '+w.desc); };
+    bar.appendChild(b); twEls[k]=b; });
+  refreshThrowBar();
+}
+function refreshThrowBar(){
+  TW_ORDER.forEach(k=>{ const b=twEls[k]; if(!b)return;
+    b.classList.toggle('on',tKind===k);
+    b.classList.toggle('no',tEnergy<TW[k].cost); });
+}
 
 function startThrower(){
   mirrorInit();
   running=false; paused=false; throwerAlive=true;
-  mirror=[]; throwCd=0; throwScore=0; nextBomb=false; jidSeq=0; elapsed=0; mframe=0;
+  mirror=[]; throwCd=0; throwScore=0; jidSeq=0; elapsed=0; mframe=0;
+  tKind='normal'; tEnergy=ENERGY_MAX; tCombo=1; tMsg=null; popX=240; tSpd=1;
+  tThrown=0; tPopped=0; tMissed=0;
+  buildThrowBar(); buildSpdBar();
   popStat={score:0,lives:MODES[netModeName]?MODES[netModeName].lives:MODES[mode].lives,combo:1};
   if(MODES[netModeName]) mode=netModeName;
   net.myOver=false; net.foeOver=false; net.foeGone=false; net.lastFoe=performance.now();
@@ -1733,40 +1818,66 @@ function startThrower(){
   ['hud','audioBar','itemBar','pauseBtn','netBar','throwWrap'].forEach(id=>$(id).classList.add('hide'));
   canvas.style.display='none';
   $('throwerView').classList.remove('hide');
-  $('throwKindBtn').textContent='🍡 일반';
   ensureAudio();
   if(net.watchT)clearInterval(net.watchT); net.watchT=setInterval(netWatch,1000);
   if(mirrorRAF)cancelAnimationFrame(mirrorRAF);
   mirrorRAF=requestAnimationFrame(mirrorLoop);
 }
 function throwAt(x){
-  if(!throwerAlive) return;
-  if(throwCd>0){ floater(0,0,'','#000'); return; }   // 쿨다운 중엔 아무 일도 없음
-  const bomb=nextBomb, pal=curTheme().jelly;
+  if(!throwerAlive||throwCd>0) return;
+  const w=TW[tKind]||TW.normal;
+  if(tEnergy<w.cost){ toast('⚡ 에너지가 부족해요 ('+Math.floor(tEnergy)+'/'+w.cost+')'); return; }
+  tEnergy-=w.cost;
+  // 젤리비는 한 번에 다섯 개를 좌우로 흩뿌린다
+  const n=(tKind==='rain')?5:1;
+  for(let i=0;i<n;i++){
+    const off=(n===1)?0:(i-2)*Math.round(rand(52,74));
+    throwOne(x+off, tKind);
+  }
+  throwCd=w.cd; refreshThrowBar();
+  playSquish(tKind==='bomb'?1:(tKind==='rain'?6:3));
+}
+function throwOne(x,kind){
+  const bomb=(kind==='bomb'), pal=curTheme().jelly;
   const r=bomb?27:Math.round(rand(24,32));
   const id=++jidSeq;
-  const it={id,x:Math.round(Math.max(r+8,Math.min(480-r-8,x))),r,bomb,
+  const it={id,r,bomb,ghost:(kind==='ghost'),
+    x:Math.round(Math.max(r+8,Math.min(480-r-8,x))),
     color:bomb?'#4a4450':pal[Math.floor(Math.random()*pal.length)],
     face:['happy','wink','star'][Math.floor(Math.random()*3)],
     shape:bomb?'round':['round','round','bean','bear'][Math.floor(Math.random()*4)],
-    vy:diff().vy+rand(0,0.6)};
+    vy:throwVy()};
   mirror.push({netId:id,x:it.x,y:-r,vx:0,vy:it.vy,r,color:it.color,face:it.face,shape:it.shape,
-    bomb:bomb,gold:false,pts:Math.round(40-r)+6,wob:Math.random()*7,dead:false,foe:true});
+    bomb:bomb,ghost:it.ghost,gold:false,pts:Math.round(40-r)+6,wob:Math.random()*7,dead:false,foe:true,
+    pay:SPD_PAY[tSpd]});
+  tThrown++;
   netSend(Object.assign({t:'jthrow'},it));
-  throwCd = bomb?TBOMB_CD:THROW_CD;
-  playSquish(bomb?1:3);
 }
 function throwerOnGone(m){
   if(!throwerAlive) return;
   const j=mirror.find(o=>o.netId===m.id); if(j)j.dead=true;
   popStat.score=m.pscore|0; popStat.lives=m.plives|0;
-  if(m.why==='miss'){ throwScore+=40; }
-  else if(m.why==='bomb'){ throwScore+=60; }
+  if(m.why==='miss'||m.why==='bomb'){
+    tMissed++;
+    tCombo=Math.min(5,tCombo+1);
+    const pay=(j&&j.pay)||1;
+    const got=Math.round(POP_BASE*MISS_WEIGHT*tCombo*pay*((m.why==='bomb')?BOMB_BONUS:1));
+    throwScore+=got;
+    tEnergy=Math.min(ENERGY_MAX,tEnergy+((m.why==='bomb')?12:7));   // 잘 맞히면 다음 무기가 빨리 찬다
+    tMsg={text:(m.why==='bomb'?'💥 폭탄 명중!':'🎯 뚫었다!')+' +'+got+(tCombo>1?('  x'+tCombo):''),
+          color:(m.why==='bomb')?'#ff5a6e':'#8a5cff', life:1};
+    refreshThrowBar();
+  } else if(m.why==='pop'){ tPopped++; tCombo=1; }   // 터뜨렸으면 콤보 끊김
 }
 function mirrorLoop(){
   if(!throwerAlive) return;
   mframe++; frame++; elapsed++;
   if(throwCd>0) throwCd--;
+  const before=tEnergy;
+  tEnergy=Math.min(ENERGY_MAX,tEnergy+ENERGY_GAIN);
+  if(mframe%10===0||(before<ENERGY_MAX&&tEnergy>=ENERGY_MAX)) refreshThrowBar();
+  if(tMsg){ tMsg.life-=0.012; if(tMsg.life<=0)tMsg=null; }
+  popX+=((net.foeStat&&net.foeStat.px!=null?net.foeStat.px:240)-popX)*0.18;
   for(const j of mirror){ if(j.dead)continue; j.wob+=0.12; j.y+=j.vy; if(j.y-j.r>720)j.dead=true; }
   mirror=mirror.filter(j=>!j.dead);
   drawMirror(); drawMyPad();
@@ -1780,8 +1891,11 @@ function drawMirror(){
   if(!bg){ bg=g.createLinearGradient(0,0,0,720); bg.addColorStop(0,th.bg[0]); bg.addColorStop(0.55,th.bg[1]); bg.addColorStop(1,th.bg[2]); mBg[th.name]=bg; }
   g.fillStyle=bg; g.fillRect(0,0,480,720);
   for(let i=0;i<6;i++){const yy=((mframe*0.3+i*130)%760)-20;g.fillStyle=th.dot;g.beginPath();g.arc(60+i*75,yy,10+(i%3)*4,0,7);g.fill();}
+  // 상대가 서 있는 자리에 조준선 — 어디로 던질지 판단할 근거가 생긴다
+  g.save(); g.strokeStyle='rgba(138,92,255,0.35)'; g.lineWidth=2; g.setLineDash([7,7]);
+  g.beginPath(); g.moveTo(popX,0); g.lineTo(popX,640); g.stroke(); g.restore();
   withCtx(g,()=>{ for(const j of mirror) if(!j.dead&&j.y-j.r<=720) drawJelly(j); });
-  drawAvatar(g,240,668,40,foeAvatar(),'idle',mframe);
+  drawAvatar(g,popX,668,40,foeAvatar(),'idle',mframe);
   // 상대 상태
   g.fillStyle='rgba(255,255,255,0.88)';
   if(g.roundRect){g.beginPath();g.roundRect(12,12,456,46,15);g.fill();}else g.fillRect(12,12,456,46);
@@ -1789,22 +1903,43 @@ function drawMirror(){
   g.fillStyle='#5b3550'; g.font="900 21px 'Donguri','Apple SD Gothic Neo',sans-serif";
   g.textAlign='left';  g.fillText('💥 '+(net.foe?net.foe.name:'친구'),26,43);
   g.textAlign='right'; g.fillText('⭐ '+(popStat.score|0)+'  '+'❤️'.repeat(lv)+'🤍'.repeat(max-lv),454,43);
+  if(tMsg){ g.save(); g.globalAlpha=Math.min(1,tMsg.life*2.2);
+    g.font="900 34px 'Nolto','Donguri',sans-serif"; g.textAlign='center';
+    g.fillStyle=tMsg.color; g.shadowColor='rgba(255,255,255,0.95)'; g.shadowBlur=12;
+    g.fillText(tMsg.text,240,250-(1-tMsg.life)*40); g.restore(); }
 }
 function drawMyPad(){
-  const g=pctx2;
-  g.clearRect(0,0,480,200);
-  g.fillStyle='rgba(255,255,255,0.72)'; g.fillRect(0,0,480,200);
-  drawAvatar(g,86,132,42,character,throwCd>0?'idle':'happy',mframe);
-  withCtx(g,()=>drawJelly({x:196,y:76,r:26,color:nextBomb?'#4a4450':'#ff8fb8',
-    face:'happy',shape:'round',bomb:nextBomb,gold:false,wob:mframe*0.06,dead:false}));
-  const cd=nextBomb?TBOMB_CD:THROW_CD, pct=1-Math.min(1,throwCd/cd);
-  g.fillStyle='rgba(240,225,235,0.95)'; g.fillRect(252,120,204,18);
-  g.fillStyle=throwCd>0?'#b28cff':'#4fc65f'; g.fillRect(252,120,204*pct,18);
-  g.fillStyle='#5b3550'; g.font="900 20px 'Donguri','Apple SD Gothic Neo',sans-serif"; g.textAlign='left';
-  g.fillText('던진 점수 ⭐ '+throwScore,252,52);
-  g.font="800 16px 'Donguri','Apple SD Gothic Neo',sans-serif";
-  g.fillText('⏱ '+Math.max(0,Math.ceil((net.timeLimit*60-elapsed)/60))+'초 남음',252,84);
-  g.fillText(throwCd>0?'준비 중…':(nextBomb?'💣 폭탄 준비 완료!':'🍡 던질 수 있어요!'),252,168);
+  const g=pctx2, w=TW[tKind]||TW.normal;
+  g.clearRect(0,0,480,170);
+  g.fillStyle='rgba(255,255,255,0.72)'; g.fillRect(0,0,480,170);
+  drawAvatar(g,72,112,38,character,throwCd>0?'idle':'happy',mframe);
+  // 지금 고른 무기를 크게
+  withCtx(g,()=>drawJelly({x:172,y:66,r:26,
+    color:(tKind==='bomb')?'#4a4450':'#ff8fb8',face:'happy',shape:'round',
+    bomb:(tKind==='bomb'),ghost:(tKind==='ghost'),gold:false,wob:mframe*0.06,dead:false}));
+  g.fillStyle='#5b3550'; g.textAlign='center';
+  g.font="900 13px 'Donguri','Apple SD Gothic Neo',sans-serif";
+  g.fillText(w.emoji+' '+w.name,172,118);
+  g.fillText(TSPD[tSpd].e+' '+TSPD[tSpd].n,172,136);
+  g.textAlign='left';
+  g.font="900 19px 'Donguri','Apple SD Gothic Neo',sans-serif";
+  g.fillText('⭐ '+throwScore+(tCombo>1?('   🔥x'+tCombo):''),228,40);
+  g.font="800 15px 'Donguri','Apple SD Gothic Neo',sans-serif";
+  g.fillText('⏱ '+Math.max(0,Math.ceil((net.timeLimit*60-elapsed)/60))+'초'+
+    '   뚫음 '+tMissed+'/'+tThrown,228,66);
+  // 에너지
+  g.fillStyle='#7a4a63'; g.font="800 12px 'Donguri',sans-serif";
+  g.fillText('⚡ 에너지 '+Math.floor(tEnergy),228,90);
+  g.fillStyle='rgba(240,225,235,0.95)'; g.fillRect(228,96,224,14);
+  g.fillStyle='#8a5cff'; g.fillRect(228,96,224*(tEnergy/ENERGY_MAX),14);
+  if(w.cost){ const need=228+224*(w.cost/ENERGY_MAX);
+    g.strokeStyle='#ff5c8a'; g.lineWidth=2; g.beginPath(); g.moveTo(need,93); g.lineTo(need,113); g.stroke(); }
+  // 쿨다운
+  const pct=1-Math.min(1,throwCd/w.cd);
+  g.fillStyle='rgba(240,225,235,0.95)'; g.fillRect(228,120,224,14);
+  g.fillStyle=throwCd>0?'#b28cff':'#4fc65f'; g.fillRect(228,120,224*pct,14);
+  g.fillStyle='#5b3550'; g.font="800 13px 'Donguri',sans-serif";
+  g.fillText(throwCd>0?'준비 중…':(tEnergy<w.cost?'에너지 모으는 중…':'던질 수 있어요!'),228,152);
 }
 function throwerFinish(){
   if(!throwerAlive) return;
@@ -1838,7 +1973,7 @@ function throwerQuit(){
 // ---- 승패 ----
 function netFinish(){
   net.myOver=true; net.myScore=score; net.myReason=(lives<=0)?'dead':'time';
-  netSend({t:'over',score:score,reason:net.myReason});
+  netSend({t:'over',score:score,reason:net.myReason,popped:pPopped,missed:pMissed});
   netResolve();
 }
 function netResolve(){
@@ -1851,9 +1986,13 @@ function netResolve(){
     const iAmThrower=(myRole==='thrower');
     const popperDied = iAmThrower ? (net.foeReason==='dead') : (net.myReason==='dead');
     const w = iAmThrower ? popperDied : !popperDied;
+    // 점수 규모가 서로 다르니 '막아낸 비율'을 같이 보여준다. 이게 실력 지표다.
+    const pk=iAmThrower?(net.foePopped|0):pPopped, ms=iAmThrower?(net.foeMissed|0):pMissed;
+    const tot=pk+ms, rate=tot?Math.round(pk/tot*100):0;
     showBattleResult(w?'🏆 승리! 🎉':'😢 아쉽게 패배...',
       roleLabel(myRole)+' '+me+'  '+net.myScore+'점\nvs\n'+
       roleLabel(iAmThrower?'popper':'thrower')+' '+nm+'  '+net.foeScore+'점\n'+
+      '막아낸 비율 '+rate+'%  ('+pk+'/'+tot+'개)\n'+
       (popperDied?'목숨을 다 잃었어요':'끝까지 버텨냈어요'),null,false,null);
     return;
   }
@@ -1991,7 +2130,7 @@ $('throwGameBtn').onclick=()=>openNetMode('throw');
 $('netBackBtn').onclick=()=>openStart();
 $('nickInputN').addEventListener('input',e=>saveNick(e.target.value));
 $('throwerHomeBtn').onclick=throwerQuit;
-$('throwKindBtn').onclick=()=>{ nextBomb=!nextBomb; $('throwKindBtn').textContent=nextBomb?'💣 폭탄':'🍡 일반'; };
+// 무기 버튼은 buildThrowBar()에서 만든다
 $('rankBackBtn').onclick=()=>openStart();
 $('battleBtn').onclick=openBattle;
 $('battleBackBtn').onclick=()=>openStart();
