@@ -1041,9 +1041,14 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     </div>
 
     <div class="card">
-      <h3>🗑️ 초기화</h3>
-      <div class="row"><button class="btn dgr" id="d-reset">전체 삭제하고 새로 시작</button></div>
-      <p class="mini">되돌릴 수 없습니다. 먼저 JSON으로 백업하세요.</p>
+      <h3>🆕 새로 시작</h3>
+      <div class="row">
+        <button class="btn pri" id="d-new">🆕 새 작품 시작</button>
+        <button class="btn dgr" id="d-reset">🗑️ 전부 지우기</button>
+      </div>
+      <p class="mini">둘 다 지금 작업을 비웁니다. 누르면 <b>지금 무엇이 지워지는지 보여주고</b>,
+      <b>「백업하고 시작」</b>을 고르면 JSON을 먼저 내려받은 뒤 비웁니다.
+      백업 파일은 「JSON 불러오기」로 언제든 되살릴 수 있어요.</p>
     </div>
   </section>
 </main>
@@ -1153,6 +1158,17 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <button class="btn pri" id="rapply">✓ 반영하기</button>
       <span class="mini" id="rcount" style="margin:0"></span>
     </div>
+  </div>
+</div>
+
+<!-- ===== 확인 모달 =====
+     브라우저 confirm()은 iframe(아티팩트·임베드) 안에서 조용히 false를 돌려준다.
+     그러면 「초기화」·「JSON 불러오기」가 아무 반응 없이 먹통이 된다. 그래서 직접 만든다. -->
+<div class="mask" id="askmask">
+  <div class="modal" style="max-width:480px">
+    <h3 id="askttl">확인</h3>
+    <p id="askmsg" style="margin:6px 0 0"></p>
+    <div class="row" id="askbtns" style="justify-content:flex-end;margin-top:22px"></div>
   </div>
 </div>
 
@@ -1578,6 +1594,34 @@ async function quickTranslate(ko,apply,fallbackText,after){
     catch(e){ toast('자동 번역 실패 — 요청문을 복사합니다'); }
   }
   copy(fallbackText,'요청문 복사 ✓ — AI에 붙여넣으세요');
+}
+
+/* ---------- 확인 모달 ----------
+   ask('제목','설명',[{key,label,cls}]) → 고른 key, 취소하면 null */
+function ask(title,msg,btns){
+  return new Promise(res=>{
+    const m=$('askmask'), row=$('askbtns');
+    $('askttl').textContent=title;
+    $('askmsg').innerHTML=msg;
+    row.innerHTML='<button class="btn gh" data-k="">취소</button>'
+      +btns.map(b=>`<button class="btn ${b.cls||''}" data-k="${b.key}">${b.label}</button>`).join('');
+    let done=false;
+    const finish=v=>{
+      if(done) return; done=true;
+      m.classList.remove('on');
+      row.removeEventListener('click',onClick);
+      m.removeEventListener('click',onBg);
+      document.removeEventListener('keydown',onKey);
+      res(v);
+    };
+    const onClick=e=>{ const b=e.target.closest('[data-k]'); if(b) finish(b.dataset.k||null); };
+    const onBg=e=>{ if(e.target===m) finish(null); };
+    const onKey=e=>{ if(e.key==='Escape') finish(null); };
+    row.addEventListener('click',onClick);
+    m.addEventListener('click',onBg);
+    document.addEventListener('keydown',onKey);
+    m.classList.add('on');
+  });
 }
 
 /* ---------- 모달 공통 ---------- */
@@ -2453,7 +2497,9 @@ function readFdx(text){
     const txt=[...p.getElementsByTagName('Text')].map(t=>t.textContent).join('').trim();
     if(!txt) { out.push(''); continue; }
     if(type==='Scene Heading') out.push('\n'+txt);
-    else if(type==='Character') out.push('\n@@'+txt);       // 다음 줄 대사와 합칠 표식
+    // 앞에 '\n'을 붙이면 아래 startsWith('@@') 검사가 빗나가 인물·대사가 합쳐지지 않는다.
+    // 문단 구분은 빈 줄을 따로 넣어 유지한다.
+    else if(type==='Character'){ out.push(''); out.push('@@'+txt); }   // 다음 줄 대사와 합칠 표식
     else if(type==='Dialogue') out.push('@@D'+txt);
     else out.push(txt);
   }
@@ -3486,7 +3532,9 @@ $('d-file').addEventListener('change',()=>{
     try{
       const d=JSON.parse(rd.result);
       if(!d||typeof d!=='object'||!('story' in d)) throw new Error('형식이 다릅니다');
-      if(!confirm('지금 작업 내용을 덮어씁니다. 계속할까요?')) return;
+      if(!await ask('불러온 파일로 덮어쓸까요?',
+          `지금 작업 중인 것: <b>${workSummary()}</b><br><br>이 내용이 <b>파일 속 작업으로 완전히 바뀝니다.</b>`,
+          [{key:'go',label:'덮어쓰기',cls:'pri'}])) return;
       const imgs=d.__images||{}; delete d.__images;
       S=Object.assign(blank(),d);
       S.story=Object.assign(blank().story,d.story||{});
@@ -3505,7 +3553,7 @@ $('d-file').addEventListener('change',()=>{
         }
       }
       save(); renderAll(); toast('불러왔어요 ✓');
-    }catch(err){ alert('불러오지 못했습니다: '+err.message); }
+    }catch(err){ toast('불러오지 못했습니다: '+err.message); }
     $('d-file').value='';
   };
   rd.readAsText(f);
@@ -3596,14 +3644,43 @@ $('d-txt').addEventListener('click',()=>{
   dl(fileName('prompts','txt'),out);
   toast('TXT로 내보냈어요 ✓');
 });
-$('d-reset').addEventListener('click',async()=>{
-  if(!confirm('정말 전부 삭제할까요? 되돌릴 수 없습니다.')) return;
-  if(!confirm('마지막 확인입니다. JSON 백업은 하셨나요?')) return;
+async function wipeAll(){
   try{ localStorage.removeItem(KEY); }catch(e){}
   try{ for(const k of (await IDB.keys())||[]) await IDB.del(k); }catch(e){}
   urlCache.forEach(u=>URL.revokeObjectURL(u)); urlCache.clear();
-  S=blank(); save(); renderAll(); toast('초기화했습니다');
-});
+  S=blank(); S.quick={chars:[]};
+  save(); renderAll(); paintOneshot(); renderPrompt();
+  goTab('home');
+}
+function workSummary(){
+  const c=allCuts().length;
+  const bits=[];
+  if(S.title) bits.push(`「${esc(S.title)}」`);
+  if(S.scenes.length) bits.push(`씬 ${S.scenes.length}개`);
+  if(c) bits.push(`컷 ${c}개`);
+  if(S.chars.length) bits.push(`캐릭터 ${S.chars.length}명`);
+  return bits.length?bits.join(' · '):'아직 저장된 작업이 거의 없습니다';
+}
+async function startFresh(title,msg){
+  const k=await ask(title,msg,[
+    {key:'backup',label:'💾 백업하고 시작',cls:'pri'},
+    {key:'go',label:'백업 없이 시작',cls:'dgr'}
+  ]);
+  if(!k) return;
+  if(k==='backup'){ $('d-export').click(); await new Promise(r=>setTimeout(r,700)); }
+  await wipeAll();
+  toast(k==='backup'?'백업을 내려받고 새로 시작합니다 ✓':'새로 시작합니다 ✓');
+}
+$('d-reset').addEventListener('click',()=>startFresh(
+  '전부 지우고 새로 시작할까요?',
+  `지금 저장된 것: <b>${workSummary()}</b><br><br>
+   텍스트와 <b>넣어둔 이미지까지 전부</b> 지워집니다. <b>되돌릴 수 없습니다.</b><br>
+   먼저 JSON으로 받아두면 나중에 그대로 되살릴 수 있어요.`));
+$('d-new').addEventListener('click',()=>startFresh(
+  '새 작품을 시작할까요?',
+  `지금 작업 중인 것: <b>${workSummary()}</b><br><br>
+   새 작품을 시작하면 <b>이 내용은 지워집니다.</b>
+   JSON으로 받아두면 언제든 「JSON 불러오기」로 되돌아올 수 있어요.`));
 async function updQuota(){
   const el=$('quota'); if(!el) return;
   let txt=0;
