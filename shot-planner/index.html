@@ -839,6 +839,12 @@
         <button id="bImport">📥 파일 불러오기</button>
         <input type="file" id="fImport" accept=".json,application/json" style="display:none">
       </div>
+      <div class="row" style="margin-top:7px">
+        <button class="mini" id="bCopyJson">📋 작품 JSON 복사</button>
+        <button class="mini" id="bPasteJson">📥 JSON 붙여넣기</button>
+      </div>
+      <p class="desc" style="margin-top:7px">웹에서 열어 쓰는 중이라면 파일 저장이 막혀 있을 수 있습니다.
+      그럴 땐 <b>복사 / 붙여넣기</b>나 머리말의 <b>🔗 공유</b>를 쓰세요 — 어디서든 됩니다.</p>
     </div>
 
     <div class="fld">
@@ -3817,14 +3823,73 @@ function safeName(stem, ext){
   const d = new Date(), pad = n => String(n).padStart(2,'0');
   const stamp = d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate());
   const asciiOk = clean && /^[\x20-\x7E]+$/.test(clean);
-  return (asciiOk ? clean : 'shotplan_' + stamp) + ext;
+  return (asciiOk ? clean : 'shotplan_' + stamp) + ext;   // 한글 제목이면 날짜로 대신한다
 }
-function saveBlob(blob, name){
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = name;
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+/* 이 도구를 웹에 올려 두면 샌드박스 안에서 돌기 때문에 <a download> 가
+   아무 말 없이 막힌다. 브라우저가 내주는 저장 통로를 먼저 쓰고,
+   파일을 직접 열어 쓸 때(그럴 땐 통로가 없다)만 예전 방식으로 떨어진다. */
+async function saveFile(name, data){
+  const D = (typeof window !== 'undefined' && window.claude && window.claude.downloads) || null;
+  if(D){
+    try{
+      await D.save({filename:name, data});
+      toast('💾 ' + name + ' 내려받았어요');
+      return true;
+    }catch(e){
+      const code = e && e.code;
+      if(code === 'declined'){ toast('저장을 취소했어요'); return false; }
+      if(code === 'too_large'){ toast('파일이 너무 커요 (16MB 넘음)'); return false; }
+      if(code === 'rate_limited'){ toast('잠깐 뒤에 다시 눌러 주세요'); return false; }
+      if(code === 'rejected_extension' || code === 'extension_not_enabled'){
+        toast('이 형식은 저장할 수 없어요'); return false;
+      }
+      // unavailable · not_granted 등은 아래 예전 방식으로 한 번 더
+    }
+  }
+  try{
+    const blob = data instanceof Blob ? data : new Blob([data]);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    toast('💾 ' + name + ' 내려받았어요');
+    return true;
+  }catch(e){
+    toast('내려받기가 막혀 있어요 — 🔗 공유 링크나 📋 복사를 쓰세요');
+    return false;
+  }
+}
+/* 웹에 올려 둔 상태에서는 파일 저장이 막힐 수 있다.
+   그럴 때도 작업을 꺼낼 길은 있어야 해서 클립보드 통로를 따로 둔다. */
+async function copyProjectJson(){
+  const txt = JSON.stringify(project, null, 1);
+  try{
+    await navigator.clipboard.writeText(txt);
+    toast('📋 작품 전체를 복사했어요 (' + Math.round(txt.length/1024) + 'KB) — 메모장에 붙여 .json 으로 저장하세요');
+  }catch(e){
+    toast('복사가 막혔어요 — 🔗 공유 링크를 쓰세요');
+  }
+}
+async function pasteProjectJson(){
+  let txt = '';
+  try{ txt = await navigator.clipboard.readText(); }catch(e){}
+  if(!txt) txt = prompt('내보내 둔 작품 JSON 을 붙여넣으세요') || '';
+  if(!txt.trim()) return;
+  try{
+    const p2 = JSON.parse(txt);
+    if(!p2 || !Array.isArray(p2.scenes) || !p2.scenes.length) throw new Error('형식 오류');
+    if(!confirm('「' + (p2.title||'무제') + '」 · 씬 ' + p2.scenes.length + '개\n\n지금 작업 중인 것을 덮고 열까요?')) return;
+    snapshot();
+    project = Object.assign(newProject(), p2);
+    project.scenes = p2.scenes.map(x => Object.assign(newScene(), x));
+    project.active = clamp(p2.active|0, 0, project.scenes.length-1);
+    syncState();
+    uid = 1 + Math.max(0, ...project.scenes.flatMap(sc =>
+      [...sc.props, ...sc.actors, ...sc.lights, ...sc.cams, ...(sc.walls||[])].map(o => +o.id || 0)));
+    closePrefs(); resetView(); fitBird(); refreshAll();
+    toast('📥 붙여넣은 작품을 열었어요');
+  }catch(e){ toast('읽지 못했어요 — 작품 JSON 이 맞는지 확인해 주세요'); }
 }
 /* 도면 위에 치수선과 방위표를 얹는다 — 인쇄본에서만 쓴다 */
 function drawSheetExtras(g, cw, ch){
@@ -3982,10 +4047,10 @@ async function loadFromHash(){
 
 /* ── 파일로 주고받기 ── */
 document.getElementById('bExport').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(project, null, 1)], {type:'application/json'});
-  saveBlob(blob, safeName(project.title, '.shotplan.json'));
-  toast('📦 파일로 내보냈어요 — 이 파일 하나에 전부 들어 있습니다');
+  saveFile(safeName(project.title ? project.title + '_shotplan' : '', '.json'), JSON.stringify(project, null, 1));
 });
+document.getElementById('bCopyJson').addEventListener('click', copyProjectJson);
+document.getElementById('bPasteJson').addEventListener('click', pasteProjectJson);
 document.getElementById('bImport').addEventListener('click', () => document.getElementById('fImport').click());
 document.getElementById('fImport').addEventListener('change', async e => {
   const f = e.target.files && e.target.files[0]; if(!f) return;
@@ -4183,10 +4248,7 @@ document.getElementById('bPng').addEventListener('click', () => {
   g.fillStyle = '#7a8494'; g.font = '400 13px system-ui,sans-serif';
   g.fillText('빨간 영역 = 180° 선을 넘는 쪽 · 파란 부채꼴 = 심도 범위 · 점선 화살표 = 카메라 무브', 40, y0+124);
 
-  cv.toBlob(bl => {
-    if(bl) saveBlob(bl, safeName('plan_S' + (state.no||'1'), '.png'));
-    toast('🖼 PNG를 내려받았어요');
-  }, 'image/png');
+  cv.toBlob(bl => { if(bl) saveFile(safeName('plan_S' + (state.no||'1'), '.png'), bl); }, 'image/png');
 });
 
 document.getElementById('bList').addEventListener('click', () => {
@@ -4206,8 +4268,8 @@ document.getElementById('bList').addEventListener('click', () => {
   }
   const txt = project.title + '\n' + rows.map(r => r.join('\t')).join('\n');
   navigator.clipboard.writeText(txt)
-    .then(() => toast('📋 전체 씬 샷 리스트를 복사했어요'))
-    .catch(() => { console.log(txt); toast('복사 실패 — 콘솔에 출력했어요'); });
+    .then(() => toast('📋 전체 씬 샷 리스트를 복사했어요 — 엑셀에 그대로 붙습니다'))
+    .catch(() => saveFile(safeName('shotlist', '.txt'), txt));
 });
 
 /* ============================================================
