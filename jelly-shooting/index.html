@@ -36,10 +36,13 @@
     border-radius:26px;box-shadow:var(--shadow);max-width:100%;max-height:100%;cursor:crosshair;}
 
   /* ===== HUD ===== */
-  #hud{position:absolute;top:14px;left:50%;transform:translateX(-50%);display:flex;gap:8px;
-    pointer-events:none;z-index:6;flex-wrap:wrap;justify-content:center;width:94%;}
-  .stat{background:var(--card);backdrop-filter:blur(8px);padding:7px 14px;border-radius:16px;
-    box-shadow:var(--shadow);display:flex;align-items:center;gap:6px;font-weight:800;font-size:16px;color:var(--ink);}
+  /* ⏸️(왼쪽 위 58px)와 🔊🎵(오른쪽 위 110px) 자리를 비워 둔다.
+     예전에는 94% 폭이라 코인 칩이 음향 버튼 뒤로 숨었다. */
+  #hud{position:absolute;top:14px;left:60px;right:112px;display:flex;gap:6px;
+    pointer-events:none;z-index:6;flex-wrap:wrap;justify-content:center;}
+  /* 양옆 버튼 자리를 비우고 남은 폭에 다섯 칩이 두 줄로 들어가도록 조금 작게 */
+  .stat{background:var(--card);backdrop-filter:blur(8px);padding:5px 10px;border-radius:14px;
+    box-shadow:var(--shadow);display:flex;align-items:center;gap:5px;font-weight:800;font-size:14.5px;color:var(--ink);}
   .stat b{color:var(--pink-d);}
   #comboStat.pop{animation:pop .25s ease;}
   @keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.28)}100%{transform:scale(1)}}
@@ -141,6 +144,9 @@
   #toast{position:absolute;top:22%;left:50%;transform:translateX(-50%);z-index:30;background:rgba(60,30,50,0.9);color:#fff;
     font-weight:800;padding:14px 24px;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,0.3);font-size:17px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+  /* 게임 중에는 아래쪽으로 — 22%는 젤리가 내려오는 길목이라 시야를 가렸다 */
+  #toast.low{top:auto;bottom:19%;}
+  #toast.low.show{transform:translateX(-50%) translateY(6px);}
 
   /* creator form */
   .mini{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;}
@@ -217,20 +223,26 @@
   .actgap{height:2px;}
 
   /* ===== 🔴 실시간 대전 ===== */
-  #netBar{position:absolute;top:58px;left:50%;transform:translateX(-50%);z-index:6;pointer-events:none;}
+  /* HUD 두 줄(14+27+6+27=74) 아래에 둔다 — 예전에는 58px이라 내 목숨 칩을 덮었다 */
+  #netBar{position:absolute;top:82px;left:50%;transform:translateX(-50%);z-index:6;pointer-events:none;}
   #foeHud{display:flex;align-items:center;gap:10px;background:rgba(138,92,255,0.92);color:#fff;
     padding:6px 14px;border-radius:14px;box-shadow:var(--shadow);font-weight:800;font-size:14px;white-space:nowrap;}
   /* 던지기는 아이템 바(왼쪽 아래)와 반대쪽에 둔다 — 급할 때 오폭하면 안 된다 */
-  #throwWrap{position:absolute;right:12px;bottom:14px;display:flex;flex-direction:column;align-items:center;gap:7px;z-index:7;}
-  .gauge{width:58px;height:9px;border-radius:999px;background:rgba(255,255,255,0.75);overflow:hidden;box-shadow:var(--shadow);}
+  #throwWrap{position:absolute;right:12px;bottom:14px;display:flex;flex-direction:column;align-items:flex-end;gap:6px;z-index:7;}
+  .gauge{width:92px;height:9px;border-radius:999px;background:rgba(255,255,255,0.75);overflow:hidden;box-shadow:var(--shadow);}
   .gauge i{display:block;height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,#b28cff,#8a5cff);transition:width .18s;}
-  .throwbtn{pointer-events:auto;cursor:pointer;border:none;width:58px;height:58px;border-radius:20px;font-size:26px;
+  /* 방해 아이템 6종 — 2열로 쌓아 화면을 덜 가린다 */
+  #hexGrid{display:grid;grid-template-columns:repeat(2,43px);gap:6px;}
+  .throwbtn{pointer-events:auto;cursor:pointer;position:relative;border:none;width:43px;height:43px;border-radius:15px;font-size:20px;
     background:linear-gradient(180deg,rgba(255,255,255,0.95),rgba(242,236,255,0.9));backdrop-filter:blur(8px);
     box-shadow:0 5px 14px rgba(120,80,200,0.3),inset 0 0 0 2px rgba(255,255,255,0.8);
-    transition:transform .1s;filter:grayscale(.75);opacity:.5;}
+    transition:transform .1s;filter:grayscale(.8);opacity:.42;}
   .throwbtn.on{filter:none;opacity:1;box-shadow:0 5px 18px rgba(138,92,255,0.6),inset 0 0 0 2px #b28cff;
     animation:dpulse 1s ease-in-out infinite;}
   .throwbtn:active{transform:scale(.88);}
+  .throwbtn .c{position:absolute;bottom:-4px;right:-4px;background:rgba(255,255,255,0.95);color:#7a52c8;
+    font-family:var(--font);font-size:10px;font-weight:900;padding:0 4px;border-radius:8px;
+    box-shadow:0 2px 5px rgba(0,0,0,.2);}
   #countWrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:20;
     background:radial-gradient(120% 120% at 50% 50%,rgba(255,255,255,0.5),rgba(255,220,238,0.62));backdrop-filter:blur(6px);}
   #countNum{font-family:var(--font-title);font-size:clamp(90px,26vw,140px);color:#ff4d84;
@@ -265,6 +277,9 @@
   .modebtn.throwg {background:linear-gradient(180deg,#ff9a5c,#ff6f3d);box-shadow:0 6px 0 #d94f1e,0 12px 22px rgba(230,110,50,.35);}
   .modebtn.rankm  {background:linear-gradient(180deg,#8fb6ff,#5c7cff);box-shadow:0 6px 0 #3e56db,0 12px 22px rgba(60,80,220,.35);}
   .modebtn.chalm  {background:linear-gradient(180deg,#ff8ab4,#ff5c8a);box-shadow:0 6px 0 var(--pink-d),0 12px 22px rgba(230,62,114,.35);}
+  .modebtn.aim    {background:linear-gradient(180deg,#5ad6b0,#22b98c);box-shadow:0 6px 0 #159a72,0 12px 22px rgba(20,160,120,.35);
+    grid-column:1/-1;flex-direction:row;gap:10px;padding:11px 8px;}
+  .modebtn.aim .d{opacity:.95;}
 
   /* ===== 던지는 사람 화면: 두 창 ===== */
   #throwerView{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;
@@ -333,7 +348,7 @@
   <div id="netBar" class="hide"><div id="foeHud"></div></div>
   <div id="throwWrap" class="hide">
     <div class="gauge"><i id="gaugeFill"></i></div>
-    <button class="throwbtn" id="throwBtn" title="상대에게 젤리 던지기">🎯</button>
+    <div id="hexGrid"></div>
   </div>
   <div id="countWrap" class="hide"><div id="countNum">3</div></div>
 
@@ -383,6 +398,7 @@
       <button class="modebtn throwg" id="throwGameBtn"><span class="e">🎯</span><span class="n">던지기 게임</span><span class="d">역할 정해서 대결</span></button>
       <button class="modebtn rankm" id="rankBtn"><span class="e">🏆</span><span class="n">랭킹</span><span class="d">난이도별 순위</span></button>
       <button class="modebtn chalm" id="battleBtn"><span class="e">📮</span><span class="n">도전장</span><span class="d">같은 판 점수 승부</span></button>
+      <button class="modebtn aim" id="aiBtn"><span class="e">🤖</span><span class="n">AI와 대결</span><span class="d">인터넷 없이 바로 붙기</span></button>
     </div>
     <div class="rowbtn">
       <button class="btn ghost" id="shopBtn" style="padding:12px 26px;font-size:16px;">🛒 창작소</button>
@@ -528,8 +544,8 @@
     </div>
     <div class="card">
       <div class="label">🤖 AI 실력 고르기</div>
-      <div class="opts" id="aiTierOpts"></div>
-      <div class="tag2" id="aiTierDesc" style="text-align:left;margin-top:8px;"></div>
+      <div class="opts aiTierOpts" id="aiTierOpts"></div>
+      <div class="tag2 aiTierDesc" id="aiTierDesc" style="text-align:left;margin-top:8px;"></div>
     </div>
     <div class="card">
       <div class="label" style="display:flex;justify-content:space-between;align-items:center;">
@@ -552,6 +568,28 @@
       <div class="tag2" style="text-align:left;margin-top:8px;">온라인 기능은 배포된 주소(https)에서 동작해요. AI 대결은 인터넷 없이도 됩니다.</div>
     </div>
     <button class="btn ghost" id="netBackBtn">← 홈으로</button>
+  </div>
+
+  <!-- 🤖 AI와 대결 (홈에서 바로) -->
+  <div id="aiScreen" class="screen hide">
+    <div class="h2">🤖 AI와 대결</div>
+    <div class="tag2">인터넷 없이 혼자서 바로 붙어요. 이기면 실력에 따라 코인을 줍니다!</div>
+    <div class="card">
+      <div class="label">🎮 어떤 게임으로?</div>
+      <div class="opts" id="aiGameOpts"></div>
+      <div class="tag2" id="aiGameDesc" style="text-align:left;margin-top:8px;"></div>
+    </div>
+    <div class="card hide" id="aiRoleCard">
+      <div class="label">🎭 내 역할</div>
+      <div class="opts" id="aiRoleOpts"></div>
+    </div>
+    <div class="card">
+      <div class="label">🤖 AI 실력 고르기</div>
+      <div class="opts aiTierOpts"></div>
+      <div class="tag2 aiTierDesc" style="text-align:left;margin-top:8px;"></div>
+    </div>
+    <button class="btn lg" id="aiStartBtn">▶ 대결 시작!</button>
+    <button class="btn ghost" id="aiBackBtn">← 홈으로</button>
   </div>
 
   <!-- 🔴 실시간 대전 대기실 -->
@@ -1037,7 +1075,8 @@ function createCustom(){
 }
 // ---- toast + 일일 보너스 ----
 let toastTimer=null;
-function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); if(toastTimer)clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),1900); }
+function toast(msg){ const t=$('toast'); t.textContent=msg;
+  t.classList.toggle('low',!!running&&!paused); t.classList.add('show'); if(toastTimer)clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),1900); }
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 function isYesterday(last,today){const p=last.split('-').map(Number),q=today.split('-').map(Number);const d1=new Date(p[0],p[1]-1,p[2]),d2=new Date(q[0],q[1]-1,q[2]);return Math.round((d2-d1)/86400000)===1;}
 function checkDaily(){ const last=localStorage.getItem('jelly_daily'); $('dailyBtn').style.display=(last!==todayStr())?'':'none'; }
@@ -1224,7 +1263,9 @@ function update(){ elapsed++; updateLevel();
     if(elapsed>=net.timeLimit*60){ gameOver(); return; } }
   if(slowTimer>0)slowTimer--; if(x2Timer>0)x2Timer--; if(bombBan>0)bombBan--;
   if(magnetTimer>0){magnetTimer--;if(magnetTimer===0)comboTimer=Math.min(comboTimer,90);}
-  const slowF=slowTimer>0?(0.40-0.03*slowLv):1;   // Lv1 0.37 … Lv5 0.25 (높을수록 더 느려진다)
+  for(const k in hexT) if(hexT[k]>0) hexT[k]--;
+  // ⚡ 스피드업은 슬로우와 곱해진다 — 슬로우를 켜 두면 버틸 수 있게
+  const slowF=(slowTimer>0?(0.40-0.03*slowLv):1)*(hexT.rush>0?1.7:1);
   // 던지기 게임에서는 젤리가 저절로 나오지 않는다. 전부 상대가 던진 것이다.
   if(!(netMode&&netGame==='throw')){
     spawnTimer++;const d=diff();if(spawnTimer>=d.spawn){spawnTimer=0;spawnJelly();}
@@ -1232,7 +1273,10 @@ function update(){ elapsed++; updateLevel();
   }
   if(magnetTimer>0)comboTimer=999;
   if(comboTimer>0){comboTimer--;if(comboTimer===0){combo=1;updateHud();}}
-  for(const j of jellies){ if(j.dead)continue;j.wob+=0.12;j.x+=j.vx*slowF;j.y+=j.vy*slowF;if(j.x<j.r||j.x>W-j.r)j.vx*=-1;
+  for(const j of jellies){ if(j.dead)continue;j.wob+=0.12;j.x+=j.vx*slowF;j.y+=j.vy*slowF;
+    // 🌀 지그재그: 좌우로 크게 흔들려 조준이 어려워진다
+    if(hexT.zig>0){ j.x+=Math.sin(elapsed*0.09+j.wob)*2.4; j.x=Math.max(j.r,Math.min(W-j.r,j.x)); }
+    if(j.x<j.r||j.x>W-j.r)j.vx*=-1;
     if(j.y-j.r>H){j.dead=true;
       // 마지막 목숨이면 loseLife -> gameOver -> netMode=false 가 되어 보고가 사라진다.
       // 그래서 먼저 알린다.
@@ -1270,6 +1314,7 @@ function render(){ ctx.clearRect(0,0,W,H);
   ctx.fillStyle=bgG; ctx.fillRect(0,0,W,H);
   if(slowTimer>0){ ctx.fillStyle='rgba(90,160,255,0.14)'; ctx.fillRect(0,0,W,H); }   // ⏱️ 슬로우 = 파란 화면
   if(x2Timer>0){ ctx.fillStyle='rgba(255,200,60,0.09)'; ctx.fillRect(0,0,W,H); }      // 🌟 2배 = 금빛
+  if(hexT.rush>0){ ctx.fillStyle='rgba(255,90,90,0.10)'; ctx.fillRect(0,0,W,H); }     // ⚡ 스피드업 = 붉은 기
   ctx.save();if(shake>0)ctx.translate(rand(-shake,shake)*0.4,rand(-shake,shake)*0.4);
   for(let i=0;i<6;i++){const yy=((elapsed*0.3+i*130)%(H+40))-20;ctx.fillStyle=th.dot;ctx.beginPath();ctx.arc(60+i*75,yy,10+(i%3)*4,0,7);ctx.fill();}
   for(const j of jellies){if(!j.dead&&j.y-j.r<=H)drawJelly(j);}
@@ -1282,7 +1327,20 @@ function render(){ ctx.clearRect(0,0,W,H);
   ctx.save();ctx.translate(player.x,H-52-player.recoil);ctx.rotate(aim);drawAvatar(ctx,0,0,40,character,player.mood,frame);ctx.restore();
   if(player.recoil>1){ctx.globalAlpha=Math.min(1,player.recoil/8);ctx.fillStyle='rgba(255,240,180,0.92)';ctx.beginPath();ctx.arc(player.x,H-86-player.recoil,7+player.recoil,0,7);ctx.fill();ctx.globalAlpha=1;}
   // 활성 부스트 배지 (효과 켜진 걸 눈으로 확인!)
+  // 🌫️ 안개 — 완전히 가리지 않는다. 흐릿한 덩어리가 떠다녀 시야를 방해한다
+  if(hexT.fog>0){ const a=Math.min(1,hexT.fog/40), y0=H*0.24, y1=H*0.66;
+    ctx.save();
+    const g=ctx.createLinearGradient(0,y0,0,y1);            // 위아래는 투명 — 젤리가 안개를 통과해 나온다
+    g.addColorStop(0,'rgba(230,234,246,0)'); g.addColorStop(0.32,'rgba(230,234,246,0.92)');
+    g.addColorStop(0.7,'rgba(230,234,246,0.92)'); g.addColorStop(1,'rgba(230,234,246,0)');
+    ctx.globalAlpha=0.72*a; ctx.fillStyle=g; ctx.fillRect(0,y0,W,y1-y0);
+    ctx.globalAlpha=0.4*a; ctx.fillStyle='#fff';
+    for(let i=0;i<6;i++){ const x=(i*151+elapsed*0.7)%(W+220)-110, y=y0+46+((i*83)%(y1-y0-92));
+      ctx.beginPath(); ctx.ellipse(x,y,108,42,0,0,7); ctx.fill(); }
+    ctx.restore(); }
   const afx=[]; if(x2Timer>0)afx.push(['🌟',x2Timer,'#ff9c3d']); if(slowTimer>0)afx.push(['⏱️',slowTimer,'#4fa8ff']); if(magnetTimer>0)afx.push(['🧲',magnetTimer,'#8a5cff']);
+  // 걸린 방해도 같이 보여준다 — 왜 안 맞는지 눈으로 알아야 억울하지 않다
+  HEX_ORDER.forEach(k=>{ if(HEX_SEC[k]&&hexT[k]>0) afx.push([HEX[k].e,hexT[k],'#8a5cff']); });
   if(afx.length){ const bw=52, x0=W/2-(afx.length-1)*bw/2, y=64, pp=1+Math.sin(frame*0.15)*0.05;
     afx.forEach((f,i)=>{ const x=x0+i*bw; ctx.save(); ctx.translate(x,y); ctx.scale(pp,pp);
       ctx.fillStyle='rgba(255,255,255,0.92)'; ctx.strokeStyle=f[2]; ctx.lineWidth=2.5; ctx.beginPath();
@@ -1321,7 +1379,7 @@ function startGame(){
           : ((Math.random()*1e9)>>>0);
   gspawn = mulberry32(runSeed);
   jellies=[];particles=[];floaters=[];rings=[];shots=[];drops=[];banner=null;callout=null;flash=0;spawnTimer=0;elapsed=0;shake=0;frame=0;
-  slowTimer=0;x2Timer=0;magnetTimer=0;bombBan=0;slowLv=1;x2Lv=1;magnetLv=1;
+  slowTimer=0;x2Timer=0;magnetTimer=0;bombBan=0;slowLv=1;x2Lv=1;magnetLv=1;hexT={zig:0,fog:0,rush:0};hexSeen={};
   runCoins=0;dropTimer=Math.round(srand(8,12)*60);paused=false;pPopped=0;pMissed=0;
   player={x:W/2,targetX:W/2,mood:'idle',moodTimer:0,recoil:0};updateHud();
   markAttend();
@@ -1358,7 +1416,7 @@ function gameOver(){
   showScreen('overScreen'); lockOverActions(); startAttract(); }
 
 // ================= Screens & flow =================
-const SCREENS=['startScreen','setupScreen','shopScreen','settingsScreen','attendScreen','rankScreen','battleScreen','netScreen','lobbyScreen','acceptScreen','pauseScreen','overScreen'];
+const SCREENS=['startScreen','setupScreen','shopScreen','settingsScreen','attendScreen','rankScreen','battleScreen','netScreen','aiScreen','lobbyScreen','acceptScreen','pauseScreen','overScreen'];
 function showScreen(id){ if(id!=='overScreen')clearOverLock(); SCREENS.forEach(s=>$(s).classList.add('hide')); if(id)$(id).classList.remove('hide'); }
 // ---- 결과 화면 실수 탭 방지 ----
 // 죽는 순간 화면에 있던 손가락이 '다시 하기'를 눌러 판이 새로 시작되는 사고를 막는다.
@@ -1660,7 +1718,22 @@ let netGame='dungeon', hostRole='thrower', myRole='popper';
 function computeRole(){ myRole = net.host ? hostRole : (hostRole==='thrower'?'popper':'thrower'); }
 function gameLabel(){ return netGame==='throw'?'🎯 던지기 게임':'⚔️ 실시간 던전'; }
 function roleLabel(r){ return r==='thrower'?'🎯 던지는 사람':'💥 터트리는 사람'; }
-const THROW_COST=10, BOMB_COST=25;
+// ⚔️ 실시간 던전 방해 아이템 — 콤보로 차는 게이지를 써서 상대를 괴롭힌다.
+// 던지는 것(젤리)과 거는 것(효과)을 섞어 두면 어떤 걸 아낄지 고민이 생긴다.
+const HEX={
+  jelly:{e:'🍡',n:'젤리 3개',cost:10,d:'젤리 3개를 떨어뜨려요'},
+  ghost:{e:'👻',n:'유령 젤리',cost:18,d:'거의 안 보이는 젤리 4개'},
+  zig  :{e:'🌀',n:'지그재그',cost:20,d:'6초간 젤리가 좌우로 크게 흔들려요'},
+  fog  :{e:'🌫️',n:'안개',cost:22,d:'4초간 상대 화면이 흐려져요'},
+  bomb :{e:'💣',n:'폭탄 세트',cost:25,d:'폭탄 1개 + 젤리 5개'},
+  rush :{e:'⚡',n:'스피드업',cost:30,d:'6초간 젤리가 1.7배 빨라져요'},
+};
+const HEX_ORDER=['jelly','ghost','zig','fog','bomb','rush'];
+const HEX_SEC={zig:6,fog:4,rush:6};                  // 효과형 아이템의 지속 시간(초)
+const HEX_MAX=Math.max(...HEX_ORDER.map(k=>HEX[k].cost));
+const THROW_COST=HEX.jelly.cost, BOMB_COST=HEX.bomb.cost;
+let hexT={zig:0,fog:0,rush:0};                       // 내가 걸린 효과의 남은 프레임
+let hexSeen={};                                      // 이 판에서 이미 설명을 본 방해 종류
 let net={ch:null,room:'',host:false,foe:null,ready:false,foeReady:false,
          foeStat:{score:0,lives:0,combo:1,level:1},lastFoe:0,
          myOver:false,myScore:0,myReason:'',foeOver:false,foeScore:0,foeReason:'',
@@ -1761,6 +1834,7 @@ function netOnMsg(m){
   else if(m.t==='ready'){ net.foeReady=true; renderLobby(); if(net.host&&net.ready) netStartMatch(); }
   else if(m.t==='start'){ if(!net.host) netBeginCountdown(); }
   else if(m.t==='throw'){ recvThrow(m.items||[]); }
+  else if(m.t==='hex'){ recvHex(m.kind); }                       // 실시간 던전: 효과형 방해
   else if(m.t==='jthrow'){ recvJelly(m); }                       // 던지기 게임: 젤리 1개 도착
   else if(m.t==='jgone'){ throwerOnGone(m); }                    // 던지기 게임: 그 젤리가 어떻게 됐는지
   else if(m.t==='tstat'){ net.foeStat={score:m.score|0,lives:0,combo:1}; updateFoeHud(); }
@@ -1882,14 +1956,36 @@ function aiCfg(){ return AI_TIERS.find(t=>t.id===aiTier)||AI_TIERS[1]; }
 let aiOn=false, aiT=null, aiS={};
 function aiChar(){ return Object.assign({},AI_LOOK[aiTier]||AI_LOOK.normal); }
 function buildAiOpts(){
-  const o=$('aiTierOpts'); if(!o) return; o.innerHTML='';
-  AI_TIERS.forEach(t=>{ const b=document.createElement('button');
-    b.className='chip'+(aiTier===t.id?' on':''); b.textContent=t.name;
-    b.onclick=()=>{ aiTier=t.id; localStorage.setItem('jelly_aitier',t.id); buildAiOpts(); };
-    o.appendChild(b); });
-  const c=aiCfg(), d=$('aiTierDesc');
-  if(d) d.innerHTML=escapeHtml(c.desc)+' · 격파하면 <b>🪙 +'+c.prize+'코인</b>';
+  document.querySelectorAll('.aiTierOpts').forEach(o=>{ o.innerHTML='';
+    AI_TIERS.forEach(t=>{ const b=document.createElement('button');
+      b.className='chip'+(aiTier===t.id?' on':''); b.textContent=t.name;
+      b.onclick=()=>{ aiTier=t.id; localStorage.setItem('jelly_aitier',t.id); buildAiOpts(); };
+      o.appendChild(b); }); });
+  const c=aiCfg();
+  document.querySelectorAll('.aiTierDesc').forEach(d=>{
+    d.innerHTML=escapeHtml(c.desc)+' · 격파하면 <b>🪙 +'+c.prize+'코인</b>'; });
 }
+// 홈에서 바로 들어오는 AI 대결 — 게임과 역할을 여기서 고른다
+let aiGame='throw', aiRole='popper';
+function openAiScreen(){ showScreen('aiScreen'); buildAiGameOpts(); buildAiOpts(); }
+function buildAiGameOpts(){
+  const o=$('aiGameOpts'); if(!o) return; o.innerHTML='';
+  [['throw','🎯 던지기 게임'],['dungeon','⚔️ 실시간 던전']].forEach(([id,label])=>{
+    const b=document.createElement('button'); b.className='chip'+(aiGame===id?' on':''); b.textContent=label;
+    b.onclick=()=>{ aiGame=id; buildAiGameOpts(); }; o.appendChild(b); });
+  $('aiGameDesc').textContent = aiGame==='throw'
+    ? '한 사람은 던지고 한 사람은 터뜨려요. 역할을 골라주세요.'
+    : '같은 판을 동시에 플레이하는 점수 대결. 게이지가 차면 방해 아이템으로 AI를 괴롭힐 수 있어요!';
+  $('aiRoleCard').classList.toggle('hide',aiGame!=='throw');
+  buildAiRoleOpts();
+}
+function buildAiRoleOpts(){
+  const o=$('aiRoleOpts'); if(!o) return; o.innerHTML='';
+  ['thrower','popper'].forEach(id=>{ const b=document.createElement('button');
+    b.className='chip'+(aiRole===id?' on':''); b.textContent=roleLabel(id);
+    b.onclick=()=>{ aiRole=id; buildAiRoleOpts(); }; o.appendChild(b); });
+}
+function aiGo(){ netGame=aiGame; hostRole=(aiGame==='throw')?aiRole:'thrower'; aiMatch(); }
 function aiStart(){
   aiOn=true;
   net.foe={name:aiCfg().name,char:aiChar()};
@@ -1971,11 +2067,17 @@ function aiTick(){
     if(aiS.t=(aiS.t||0)+1, aiS.t%5===0)
       netOnMsg({t:'stat',score:aiS.score,lives:aiS.lives,combo:1,level:level,px:Math.round(rand(60,420))});
     if(Math.random()<t.thr){
-      const pal=curTheme().jelly, n=1+Math.floor(Math.random()*t.tn), items=[];
+      const pal=curTheme().jelly, n=1+Math.floor(Math.random()*t.tn), items=[],
+            gh=Math.random()<0.25*t.acc;                  // 잘하는 AI는 유령 젤리를 섞는다
       for(let i=0;i<n;i++){ const r=Math.round(rand(24,32));
         items.push({x:Math.round(rand(r+12,480-r-12)),r,color:pal[Math.floor(Math.random()*pal.length)],
-          face:'happy',shape:'round',bomb:Math.random()<0.2}); }
+          face:'happy',shape:'round',bomb:Math.random()<0.2,ghost:gh}); }
       netOnMsg({t:'throw',items});
+    }
+    // 효과형 방해도 쓴다. 실력이 높을수록 자주 건다.
+    if(Math.random()<t.thr*0.45){
+      const ks=HEX_ORDER.filter(k=>HEX_SEC[k]);
+      netOnMsg({t:'hex',kind:ks[Math.floor(Math.random()*ks.length)]});
     }
     if(aiS.lives<=0) netOnMsg({t:'over',score:aiS.score,reason:'dead'});
   } else {                                                 // 던지기 게임에서 AI가 터뜨리는 쪽
@@ -2144,20 +2246,26 @@ function updateFoeHud(){
   $('foeHud').innerHTML='<b>🙋 '+escapeHtml(nm)+'</b><span>⭐ '+(f.score|0)+'</span><span>'+
     '❤️'.repeat(lv)+'🤍'.repeat(max-lv)+'</span>';
 }
+function buildHexBar(){
+  const g=$('hexGrid'); if(!g) return; g.innerHTML='';
+  HEX_ORDER.forEach(id=>{ const h=HEX[id], b=document.createElement('button');
+    b.className='throwbtn'; b.id='hex_'+id; b.title=h.n+' — '+h.d+' (게이지 '+h.cost+')';
+    b.innerHTML='<span>'+h.e+'</span><span class="c">'+h.cost+'</span>';
+    b.onclick=()=>doHex(id); g.appendChild(b); });
+  updateGauge();
+}
 function updateGauge(){
-  $('gaugeFill').style.width=Math.min(100,Math.round(throwGauge/BOMB_COST*100))+'%';
-  const b=$('throwBtn');
-  b.classList.toggle('on',throwGauge>=THROW_COST);
-  b.textContent=throwGauge>=BOMB_COST?'💣':'🎯';
+  const f=$('gaugeFill'); if(f) f.style.width=Math.min(100,Math.round(throwGauge/HEX_MAX*100))+'%';
+  HEX_ORDER.forEach(id=>{ const b=$('hex_'+id); if(b) b.classList.toggle('on',throwGauge>=HEX[id].cost); });
 }
 // 던질 젤리는 보내는 쪽에서 좌표까지 확정한다. 받는 쪽이 임의로 만들면 억울하다.
 // 주의: 여기서는 srnd()를 쓰지 않는다 — 시드 스트림을 소비하면 양쪽 기본 판이 갈라진다.
-function makeThrowItems(n,withBomb){
+function makeThrowItems(n,withBomb,ghost){
   const pal=curTheme().jelly, items=[];
   for(let i=0;i<n;i++){ const r=Math.round(rand(24,32));
     items.push({x:Math.round(rand(r+12,W-r-12)),r,color:pal[Math.floor(Math.random()*pal.length)],
       face:['happy','wink','star'][Math.floor(Math.random()*3)],
-      shape:['round','round','bean','bear'][Math.floor(Math.random()*4)],bomb:false}); }
+      shape:['round','round','bean','bear'][Math.floor(Math.random()*4)],bomb:false,ghost:!!ghost}); }
   if(withBomb) items.push({x:Math.round(rand(39,W-39)),r:27,color:'#4a4450',face:'happy',shape:'round',bomb:true});
   return items;
 }
@@ -2187,24 +2295,36 @@ function recvThrow(items){
     jellies.push({x:Math.max(r+6,Math.min(W-r-6,it.x|0)),y:-r-i*40,vx:rand(-0.7,0.7),
       vy:d.vy+rand(0,0.7),r,color:it.bomb?'#4a4450':(it.color||'#ff8fb8'),
       face:it.face||'happy',shape:it.bomb?'round':(it.shape||'round'),
-      pts:Math.round(40-r)+6,bomb:!!it.bomb,gold:false,wob:Math.random()*7,dead:false,foe:true});
+      pts:Math.round(40-r)+6,bomb:!!it.bomb,ghost:!!it.ghost,gold:false,wob:Math.random()*7,dead:false,foe:true});
   });
   flash=0.7; shake=Math.max(shake,6);
-  showCallout('받았다! 🟣','#8a5cff');
-  toast('🟣 '+(net.foe?net.foe.name:'친구')+'가 젤리 '+items.length+'개를 던졌어요!');
+  const gh=items.some(it=>it.ghost);
+  showCallout(gh?'유령이다! 👻':'받았다! 🟣','#8a5cff');
+  toast((gh?'👻 ':'🟣 ')+(net.foe?net.foe.name:'친구')+'가 '+(gh?'유령 ':'')+'젤리 '+items.length+'개를 던졌어요!');
 }
-function doThrow(){
-  if(!netMode||!running||paused) return;
+// 효과형 방해 아이템이 도착했다 — 남은 시간은 프레임으로 센다(일시정지에도 안 흐른다)
+function recvHex(kind){
+  if(!running) return;
+  const h=HEX[kind], sec=HEX_SEC[kind];
+  if(!h||!sec) return;
+  hexT[kind]=Math.max(hexT[kind],sec*60);
+  flash=0.8; shake=Math.max(shake,8); playBomb();
+  showCallout(h.e+' '+h.n+'!','#8a5cff');
+  // 설명 토스트는 한 판에 종류별로 한 번만. 매번 띄우면 가운데가 가려져 젤리를 놓친다.
+  if(!hexSeen[kind]){ hexSeen[kind]=1; toast(h.e+' '+h.n+' — '+h.d); }
+}
+function doHex(id){
+  const h=HEX[id];
+  if(!h||!netMode||netGame!=='dungeon'||!running||paused) return;
+  if(throwGauge<h.cost){
+    toast(h.e+' '+h.n+'은 게이지 '+h.cost+'이 필요해요 (지금 '+Math.floor(throwGauge)+')'); return; }
   ensureAudio();
-  if(throwGauge>=BOMB_COST){
-    netSend({t:'throw',items:makeThrowItems(5,true)}); throwGauge-=BOMB_COST;
-    floater(W/2,H*0.52,'💣 폭탄 포함 6개 던짐!','#8a5cff'); showCallout('THROW! 💣','#8a5cff');
-  } else if(throwGauge>=THROW_COST){
-    netSend({t:'throw',items:makeThrowItems(3,false)}); throwGauge-=THROW_COST;
-    floater(W/2,H*0.52,'🎯 젤리 3개 던짐!','#8a5cff'); showCallout('THROW! 🎯','#8a5cff');
-  } else {
-    toast('게이지가 아직 안 찼어요 ('+Math.floor(throwGauge)+'/'+THROW_COST+')'); return;
-  }
+  if(id==='jelly')      netSend({t:'throw',items:makeThrowItems(3,false)});
+  else if(id==='ghost') netSend({t:'throw',items:makeThrowItems(4,false,true)});
+  else if(id==='bomb')  netSend({t:'throw',items:makeThrowItems(5,true)});
+  else                  netSend({t:'hex',kind:id});
+  throwGauge-=h.cost;
+  floater(W/2,H*0.52,h.e+' '+h.n+'!','#8a5cff'); showCallout('THROW! '+h.e,'#8a5cff');
   playLevelUp(); updateGauge();
 }
 
@@ -2627,6 +2747,7 @@ $('throwGameBtn').onclick=()=>openNetMode('throw');
 $('netBackBtn').onclick=()=>{ hubLeave(); openStart(); };
 $('netRandomBtn').onclick=netRandom;
 $('netAiBtn').onclick=aiMatch;
+$('aiBtn').onclick=openAiScreen; $('aiStartBtn').onclick=aiGo; $('aiBackBtn').onclick=openStart;
 $('roomRefreshBtn').onclick=()=>{ if(hub){ hubRooms=hubRead(); renderRoomList(); } else hubJoin(); toast('🔄 목록을 새로 읽었어요'); };
 $('netPublicBtn').onclick=()=>{ netPublic=!netPublic; syncPublicBtn();
   if(netPublic){ hubJoin(); hubAdvertise(); } else hubUnadvertise();
@@ -2646,7 +2767,7 @@ $('lobbyCopyBtn').onclick=()=>copyText(
   '\n(안 열리면 방 코드 '+net.room+' 직접 입력)','🔗 복사됨! 붙여넣어 보내세요');
 $('lobbyRetryBtn').onclick=()=>{ sdkT0=0; sdkAltIdx=-1; netConnect(); };
 $('lobbyLeaveBtn').onclick=()=>{ netLeave(); openStart(); };
-$('throwBtn').onclick=doThrow;
+buildHexBar();
 $('lbRefresh').onclick=loadLeaderboard;
 $('joinChBtn').onclick=()=>joinByCode($('chCodeInput').value);
 $('acceptStartBtn').onclick=startAcceptChallenge;
@@ -2691,6 +2812,7 @@ window.__auditEach=function(scan){
     overScreen:()=>{renderRank([32831,11224,10085],10085);
       $('overLb').innerHTML='<div class="rrow">🥇 젤리왕 <span>⭐ 32831</span></div>';},
     acceptScreen:()=>{pendingChallenge={host_name:'젤리왕',host_score:1234,seed:1,mode:'spicy'};openAccept();},
+    aiScreen:()=>{openAiScreen();},
   };
   if(!nick) saveNick('카미');
   coins=99999;
@@ -2706,7 +2828,8 @@ window.__auditEach=function(scan){
   // 게임 중 오버레이
   const ov=['hud','audioBar','itemBar','netBar','throwWrap','pauseBtn'];
   ov.forEach(id=>$(id).classList.remove('hide'));
-  buildItemBar(); net.foeStat={score:900,lives:2}; updateFoeHud(); updateGauge();
+  buildItemBar(); buildHexBar(); throwGauge=HEX_MAX;
+  net.foeStat={score:900,lives:2}; updateFoeHud(); updateGauge();
   ov.forEach(id=>scan('게임중 '+id,$(id)));
   ov.forEach(id=>$(id).classList.add('hide'));
   showScreen('startScreen');

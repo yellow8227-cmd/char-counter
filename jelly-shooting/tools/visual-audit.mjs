@@ -139,7 +139,39 @@ const AUDIT = String.raw`(() => {
     }
     if (root.scrollHeight > root.clientHeight + 2 && getComputedStyle(root).overflowY === 'hidden')
       push('세로잘림 ' + name + ' 내용 ' + root.scrollHeight + ' > 화면 ' + root.clientHeight);
+    for (const m of overlaps()) push(m);
     return bad;
+  }
+
+  // ② 겹침 — 떠 있는(absolute/fixed) 요소끼리 겹치면 뒤에 있는 쪽 글자가 안 보인다.
+  //    넘침 검사로는 절대 안 잡힌다. 각 요소는 제 자리에 얌전히 있고, 서로를 덮을 뿐이다.
+  const seenOv = new Set();      // 같은 쌍을 화면마다 다시 알리지 않는다
+  function overlaps() {
+    const VH = window.innerHeight, out = [];
+    const floats = [...document.querySelectorAll('body *')].filter(el => {
+      const st = getComputedStyle(el);
+      if (st.position !== 'absolute' && st.position !== 'fixed') return false;
+      if (st.display === 'none' || st.visibility === 'hidden' || +st.opacity === 0) return false;
+      const b = el.getBoundingClientRect();
+      if (b.width < 10 || b.height < 10) return false;
+      // 화면을 통째로 덮는 것(화면 전환, 카운트다운)은 일부러 그런 것이다
+      if (b.width >= VW * 0.9 && b.height >= VH * 0.9) return false;
+      // 장식용 빈 요소는 겹쳐도 상관없다. 글자나 조작 요소가 있는 것만 본다.
+      return el.matches('button,input,a,select,textarea') || !!el.textContent.trim();
+    });
+    for (let i = 0; i < floats.length; i++) for (let j = i + 1; j < floats.length; j++) {
+      const A = floats[i], B = floats[j];
+      if (A.contains(B) || B.contains(A)) continue;            // 부모-자식은 당연히 겹친다
+      const a = A.getBoundingClientRect(), b = B.getBoundingClientRect();
+      const w = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+      const h = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+      if (w <= 6 || h <= 6) continue;
+      const key = label(A) + '|' + label(B);
+      if (seenOv.has(key)) continue;
+      seenOv.add(key);
+      out.push('겹침 ' + label(A) + ' ↔ ' + label(B) + ' → ' + Math.round(w) + 'x' + Math.round(h) + 'px');
+    }
+    return out;
   }
 
   // 화면은 한 번에 하나만 보인다. 숨은 요소는 크기가 0이라 검사할 수 없으므로
