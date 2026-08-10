@@ -43,6 +43,12 @@
     --font:'Donguri','Apple SD Gothic Neo','Segoe UI',system-ui,sans-serif;
     --font-title:'Nolto','Donguri',sans-serif;
   }
+  /* ===== 아이폰 안전영역 =====
+     viewport-fit=cover + black-translucent 이라 화면이 상태바(시계·배터리) 아래까지
+     늘어난다. 그 자리에 버튼을 두면 눌러도 iOS가 먼저 먹어서 '클릭이 안 되는' 버튼이
+     된다(실제로 던지는 사람 🏠 버튼이 그랬다). 위·아래·좌우 여백을 항상 더해 준다. */
+  :root{ --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+         --sal:env(safe-area-inset-left,0px); --sar:env(safe-area-inset-right,0px); }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{height:100%;overflow:hidden;font-family:var(--font);user-select:none;touch-action:none;
     background:linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 55%,var(--bg3) 100%);color:var(--ink);}
@@ -52,7 +58,8 @@
      가릴 수 없다. 판은 남은 높이에 맞춰 줄어들지만 480x720 전체가 항상 보인다.
      정보·아이템이 다 숨으면(메뉴 화면) 두 띠는 높이 0으로 접히고 판이 다시 커진다. */
   #playCol{position:relative;width:100%;height:100%;display:flex;flex-direction:column;
-    align-items:center;padding:8px 7px;gap:6px;}
+    align-items:center;gap:6px;
+    padding:calc(8px + var(--sat)) calc(7px + var(--sar)) calc(8px + var(--sab)) calc(7px + var(--sal));}
   #topBand{flex:0 0 auto;width:100%;display:flex;flex-direction:column;align-items:center;gap:6px;}
   /* 버튼 줄 — 왼쪽 ⏸️/🏳️, 오른쪽 🔊🎵. 둘 다 숨으면 높이 0으로 접힌다 */
   #topRow{width:100%;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
@@ -107,7 +114,8 @@
 
   /* ===== Screens ===== */
   .screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
-    text-align:center;gap:16px;padding:26px 20px;z-index:10;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    text-align:center;gap:16px;z-index:10;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    padding:calc(26px + var(--sat)) calc(20px + var(--sar)) calc(26px + var(--sab)) calc(20px + var(--sal));
     /* 설탕가루: 아주 옅은 점을 두 겹 엇갈리게 깔아 빈 여백이 밋밋하지 않게 한다 */
     background:
       radial-gradient(rgba(255,255,255,0.5) 1.1px,transparent 1.2px) 0 0/22px 22px,
@@ -287,7 +295,7 @@
     box-shadow:0 4px 0 #e0691a,0 10px 16px -10px rgba(224,105,26,0.6),var(--rim);transition:transform .08s;}
   .setbtn.danger{background:linear-gradient(180deg,#ff8a9c,#ff5a6e);box-shadow:0 4px 0 #d63b50;}
   .setbtn:active{transform:translateY(4px);box-shadow:none;}
-  #openSetBtn{position:absolute;top:16px;right:16px;}
+  #openSetBtn{position:absolute;top:calc(16px + var(--sat));right:calc(16px + var(--sar));}
   /* 출석부 달력 */
   #calBox{width:min(94vw,380px);}
   .calhead{font-family:var(--font-title);font-size:20px;color:var(--pink-d);margin-bottom:10px;}
@@ -384,7 +392,7 @@
     font-family:var(--font);font-size:10px;font-weight:900;padding:0 4px;border-radius:8px;
     box-shadow:0 2px 5px rgba(0,0,0,.2);}
   /* 🔔 알림 — 게임 중에도 위에서 내려온다. 젤리 길목(가운데)을 피해 위쪽에 둔다. */
-  #invite{position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  #invite{position:absolute;top:calc(10px + var(--sat));left:50%;transform:translateX(-50%);
     z-index:28;width:min(92vw,420px);display:flex;flex-direction:column;gap:9px;align-items:center;
     padding:13px 15px;border-radius:20px;
     background:var(--glass);border:1.5px solid var(--edge);
@@ -442,7 +450,7 @@
 
   /* ===== 던지는 사람 화면: 두 창 ===== */
   #throwerView{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;
-    gap:10px;padding:52px 8px 12px;}
+    gap:10px;padding:calc(10px + var(--sat)) calc(8px + var(--sar)) calc(12px + var(--sab)) calc(8px + var(--sal));}
   .tpanel{width:100%;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:0;}
   .tpanel.grow{flex:1;min-height:0;}
   .tlabel{font-size:11.5px;font-weight:900;color:var(--ink2);background:rgba(255,255,255,0.72);
@@ -465,10 +473,11 @@
      예전에는 내 정보판(120px)과 속도바 두 줄(73px)이 자리를 먹어 상대 화면이 236px까지
      쪼그라들었다. 조준하는 화면이 그만큼 작으면 게임이 안 된다. PC는 그대로 둔다. */
   @media (max-width:600px){
-    #throwerView{padding:44px 6px 8px;gap:6px;}
+    #throwerView{gap:6px;
+      padding:calc(8px + var(--sat)) calc(6px + var(--sar)) calc(8px + var(--sab)) calc(6px + var(--sal));}
     #myPadCanvas,#tPadLabel{display:none;}
     /* 아주 좁은 폰(320px)에서는 칩 넷이 한 줄에 안 들어가 좌우로 삐져나갔다 — 줄바꿈 허용 */
-    #tInfoBar{display:flex;gap:5px;flex-wrap:wrap;width:100%;justify-content:center;}
+    #tInfoBar{display:flex;gap:5px;flex-wrap:wrap;flex:1 1 auto;min-width:0;justify-content:center;}
     #tInfoBar .ti{min-width:0;}
     #tInfoBar .ti.grow{flex:1 1 70px;min-width:70px;}
     /* 그림만 남기면 폭이 29px로 줄어 손가락으로 누르기 어렵다 — 최소 폭을 준다 */
@@ -478,7 +487,10 @@
     .twbtn .e{font-size:19px;} .twbtn .n{font-size:9.5px;} .twbtn .c{font-size:9px;}
     #mirrorCanvas{border-radius:14px;}
   }
-  #throwerHomeBtn{position:absolute;top:10px;left:10px;z-index:8;}
+  /* 홈 버튼은 위 줄 안에 둔다. absolute로 띄워 두면 상태바 아래로 들어가 눌러도
+     iOS가 터치를 먹어 '안 눌리는 버튼'이 된다(실제로 그랬다). */
+  #tTop{width:100%;display:flex;align-items:center;gap:8px;}
+  #throwerHomeBtn{flex:0 0 auto;}
   /* 무기는 눈에 확 보여야 한다. 구석의 작은 칩으로는 아무도 못 찾는다. */
   #spdBar{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;}
   /* 4개가 한 줄에 들어가야 한다. 좁은 폰에서는 flex-wrap이 두 줄로 접어준다. */
@@ -565,15 +577,11 @@
 
   <!-- 🎯 던지는 사람 화면 — 상대 화면과 내 화면을 같이 본다 -->
   <div id="throwerView" class="hide">
-    <button class="iconbtn" id="throwerHomeBtn" title="홈으로">🏠</button>
-    <div class="tpanel grow">
-      <div class="tlabel">🎯 상대 화면 — 여기를 눌러 던져요</div>
-      <canvas id="mirrorCanvas" width="480" height="720"></canvas>
-    </div>
-    <div class="tpanel">
-      <div class="tlabel" id="tPadLabel">🙋 내 화면</div>
-      <canvas id="myPadCanvas" width="480" height="170"></canvas>
-      <!-- 폰에서는 위 캔버스(120px) 대신 이 띠를 쓴다. 그만큼 상대 화면이 커진다. -->
+    <!-- 던전과 같은 3단: 위(홈·내 정보) · 가운데(상대 화면) · 아래(속도·무기).
+         예전에는 내 정보가 캔버스 아래에 있어서 아래쪽이 세 줄로 붐볐다. -->
+    <div id="tTop">
+      <button class="iconbtn" id="throwerHomeBtn" title="홈으로">🏠</button>
+      <!-- 폰에서는 아래 '내 화면' 캔버스(120px) 대신 이 띠를 쓴다. 그만큼 상대 화면이 커진다. -->
       <div id="tInfoBar">
         <span class="ti"><b id="tiScore">⭐ 0</b></span>
         <span class="ti" id="tiCombo">🔥 x1</span>
@@ -581,6 +589,14 @@
         <span class="ti" id="tiHit">뚫음 0/0</span>
         <span class="ti grow"><i id="tiEnergyFill"></i><em id="tiEnergyTxt">⚡ 100</em></span>
       </div>
+    </div>
+    <div class="tpanel grow">
+      <div class="tlabel">🎯 상대 화면 — 여기를 눌러 던져요</div>
+      <canvas id="mirrorCanvas" width="480" height="720"></canvas>
+    </div>
+    <div class="tpanel">
+      <div class="tlabel" id="tPadLabel">🙋 내 화면</div>
+      <canvas id="myPadCanvas" width="480" height="170"></canvas>
       <div id="spdBar"></div>
       <div id="throwBar"></div>
     </div>
