@@ -27,7 +27,10 @@
 
 ### 👉 https://yellow8227-cmd.github.io/char-counter/
 
-`gh-pages` 가지의 내용이 그대로 사이트가 됩니다. `shot-planner/index.html` 을 고친 뒤
+링크를 카톡·슬랙에 붙이면 미리보기 카드가 뜹니다 — `og.png` 와 `index.html` 머리말의
+Open Graph 태그가 그 카드입니다. 카드 그림은 도구에서 실제 도면을 뽑아 얹어 만듭니다.
+
+`gh-pages` 가지의 내용이 그대로 사이트가 됩니다. `shot-planner/` 를 고친 뒤
 사이트에 반영하려면 그 폴더를 `gh-pages` 뿌리로 올리면 됩니다.
 
 ```bash
