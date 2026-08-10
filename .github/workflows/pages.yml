@@ -1,0 +1,38 @@
+# 촬영 배치도를 GitHub Pages 로 띄운다.
+#
+# 아티팩트 안에서는 창(iframe)에 끼워져 돌기 때문에 저장·인쇄·공유 주소가
+# 서로 발목을 잡는다. 여기서는 이 페이지가 곧 최상위 문서라서 그런 제약이 없다.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'shot-planner/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      # shot-planner 폴더가 사이트의 뿌리가 된다 — 주소가 곧 도구다
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: shot-planner
+      - id: deploy
+        uses: actions/deploy-pages@v4
