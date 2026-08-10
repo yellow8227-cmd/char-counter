@@ -2766,19 +2766,19 @@ function syncPublicBtn(){ const b=$('netPublicBtn'); if(!b)return;
 // prize    : 이겼을 때 받는 코인
 const AI_TIERS=[
   {id:'baby', name:'🍼 뉴비 AI',  desc:'자주 놓쳐요. 이기는 맛 보기용',    prize:15,
-   acc:0.52,  early:[0.70,0.95], bombErr:0.22,  gap:[820,1500], spd:1, bombRate:0.10,
+   acc:0.52,  early:[0.80,0.97], bombErr:0.22,  gap:[820,1500], spd:1, bombRate:0.10,
    arms:{normal:0.90,bomb:0.07,ghost:0.03,rain:0.00},
    dps:[8,26],   risk:0.055, thr:0.030, tn:1, combo:2},
   {id:'normal',name:'🙂 보통 AI',  desc:'적당히 잘해요. 기본값',            prize:40,
-   acc:0.80,  early:[0.45,0.85], bombErr:0.11,  gap:[520,1050], spd:2, bombRate:0.16,
+   acc:0.80,  early:[0.66,0.92], bombErr:0.11,  gap:[520,1050], spd:2, bombRate:0.16,
    arms:{normal:0.66,bomb:0.14,ghost:0.11,rain:0.09},
    dps:[20,62],  risk:0.024, thr:0.060, tn:3, combo:4},
   {id:'smart', name:'🤓 개똑똑 AI',desc:'거의 안 놓쳐요. 각오하세요',       prize:90,
-   acc:0.94,  early:[0.26,0.55], bombErr:0.04,  gap:[380,760],  spd:3, bombRate:0.24,
+   acc:0.94,  early:[0.56,0.82], bombErr:0.04,  gap:[380,760],  spd:3, bombRate:0.24,
    arms:{normal:0.54,bomb:0.18,ghost:0.14,rain:0.14},
    dps:[44,100], risk:0.010, thr:0.100, tn:4, combo:5},
   {id:'alpha', name:'🏆 알파고 AI',desc:'다 터뜨려요. 최고 난이도!',        prize:200,
-   acc:0.995, early:[0.12,0.30], bombErr:0.005, gap:[260,520],  spd:3, bombRate:0.30,
+   acc:0.995, early:[0.48,0.72], bombErr:0.005, gap:[260,520],  spd:3, bombRate:0.30,
    arms:{normal:0.44,bomb:0.20,ghost:0.16,rain:0.20}, vyBoost:1.25,
    dps:[72,155], risk:0.003, thr:0.150, tn:5, combo:5},
 ];
@@ -2876,13 +2876,17 @@ function aiPopLater(m){
     else { why='fell'; at=fallMs; }
   } else if(Math.random()<t.acc){ why='pop'; at=fallMs*rand(e[0],e[1]); }
   else { why='miss'; at=fallMs; }
+  // 아무리 잘하는 AI라도 젤리가 화면 절반은 내려온 뒤에 터뜨린다.
+  // 이 바닥을 안 두면 낙하 속도를 🚀로 올릴수록 터지는 지점이 위로 올라가
+  // (250ms 고정 하한 때문에) 젤리가 던진 직후 사라진다.
+  at=Math.max(at, fallMs*0.46);
   setTimeout(()=>{
     if(!aiOn) return;
     if(why==='pop'){ aiS.combo=Math.min(aiCfg().combo,aiS.combo+1); aiS.score+=POP_BASE*aiS.combo; aiS.pop++; }
     else { aiS.combo=1; if(why!=='fell'){ aiS.lives=Math.max(0,aiS.lives-1); aiS.miss++; } }
     netOnMsg({t:'jgone',id:m.id,why:why,pscore:aiS.score,plives:aiS.lives});
     if(aiS.lives<=0) netOnMsg({t:'over',score:aiS.score,reason:'dead',popped:aiS.pop,missed:aiS.miss});
-  }, Math.max(250,at));
+  }, Math.max(340,at));
 }
 function aiTick(){
   if(!aiOn) return;
