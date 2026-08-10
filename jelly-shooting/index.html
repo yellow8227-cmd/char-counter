@@ -939,6 +939,10 @@ const MODES={
   fire:  {name:'핵불닭',emoji:'🔥',desc:'지옥의 속도',color:'#ff3b5c',lives:2,vy0:3.2,vyL:0.95,spawn0:40,spawnL:5,spawnMin:11,bomb0:0.15,bombL:0.022,lvl:420},
 };
 let mode=localStorage.getItem('jelly_mode')||'normal'; if(!MODES[mode])mode='normal';
+// 대전은 상대(방장)의 난이도로 판을 맞춰야 해서 mode를 덮어쓴다. 그런데 그게 그대로 남아
+// 다음 혼자 하기까지 바뀌어 버렸다. 내가 고른 난이도는 여기 따로 둔다.
+let userMode=mode;
+function restoreMode(){ if(MODES[userMode]&&mode!==userMode) mode=userMode; }
 
 // ================= Economy: coins / items / shop =================
 function loadNum(k){const v=parseInt(localStorage.getItem(k));return isNaN(v)?0:v;}
@@ -1105,7 +1109,7 @@ function buildSetupUI(){
   const mo=$('modeOpts');mo.innerHTML='';Object.keys(MODES).forEach(id=>{const m=MODES[id];const b=document.createElement('button');b.className='mode'+(mode===id?' on':'');
     if(mode===id)b.style.background='linear-gradient(180deg,'+shade(m.color,25)+','+m.color+')';
     b.innerHTML=`<span class="emo">${m.emoji}</span><span class="nm">${m.name}</span><span class="ds">${m.desc}</span>`;
-    b.onclick=()=>{mode=id;localStorage.setItem('jelly_mode',id);buildSetupUI();};mo.appendChild(b);});
+    b.onclick=()=>{mode=userMode=id;localStorage.setItem('jelly_mode',id);buildSetupUI();};mo.appendChild(b);});
 }
 // 메뉴에서는 천천히 통통. 프레임마다 1씩 올리면 초당 4번 튀어서 눈이 어지럽다.
 const MENU_ANIM=0.22;   // 한 번 튀는 데 약 0.6초
@@ -1405,6 +1409,9 @@ function gameOver(){
   if(!running) return;
   running=false;paused=false;$('hud').classList.add('hide');$('audioBar').classList.add('hide');$('itemBar').classList.add('hide');$('pauseBtn').classList.add('hide');
   const wasNet=netMode, wasAi=aiOn; netMode=false;
+  // 걸린 방해·방어·충전은 판이 끝나는 지금 정리한다. 다음 판 시작(resetRun)까지
+  // 미뤄 두면 결과 화면에 남은 상태가 그려지고, 그 사이 다른 화면이 그것을 읽는다.
+  hexT={zig:0,fog:0,rush:0}; hexSeen={}; shieldT=0; revealT=0; bolt=0; throwGauge=0;
   $('netBar').classList.add('hide'); $('throwWrap').classList.add('hide');
   if(net.watchT){clearInterval(net.watchT);net.watchT=null;}
   coins+=runCoins; saveEconomy();
@@ -1413,12 +1420,17 @@ function gameOver(){
   // 내 점수를 먼저 올린 뒤에 읽어야 방금 기록이 순위에 반영된다
   if(wasAi) noRankMsg();
   else submitScore(board,score).then(()=>renderOverOnline(board));
-  const prev=bestScore(),top=addScore(score),isBest=score>prev&&score>0;
+  // 혼자 하기 기록(최고기록·TOP5)에 대전 점수를 섞지 않는다 — 점수 규모가 아예 다르다
+  const prev=bestScore();
+  const top=wasNet?getScores():addScore(score);
+  const isBest=!wasNet&&score>prev&&score>0;
   $('finalScore').textContent=score; $('newBestWrap').classList.toggle('hide',!isBest);
   $('overCoins').textContent='🪙 +'+runCoins+'  (총 '+coins+')';
   let msg=isBest?'역대 최고 점수예요! 대단해요 💗':score>=800?'우와 젤리 마스터! 🏆':score>=350?'아주 잘했어요! 👏':'조금만 더! 다시 도전해봐요 ✨';
-  $('overMsg').textContent=msg+' (Lv.'+level+' · '+MODES[mode].emoji+MODES[mode].name+')';
-  renderRank(top,score);
+  $('overMsg').textContent = wasNet
+    ? (gameLabel()+(netGame==='throw'?(' · '+roleLabel(myRole)):'')+' · '+MODES[mode].emoji+MODES[mode].name)
+    : (msg+' (Lv.'+level+' · '+MODES[mode].emoji+MODES[mode].name+')');
+  renderRank(top,wasNet?-1:score);
   lastRun={seed:runSeed,mode:mode,score:score,net:wasNet};   // 결과 화면에서 이 판을 도전장으로 보낼 수 있게
   const bm=battleMode; battleMode=null; gspawn=null;
   $('battleResult').classList.add('hide'); $('overNickCard').classList.add('hide');
@@ -1427,6 +1439,8 @@ function gameOver(){
   $('sendChBtn').classList.toggle('hide',wasNet);
   if(bm==='accept') finishAccept();
   if(wasNet) netFinish();
+  lastPlay={kind:wasNet?(wasAi?'ai':'online'):'solo',game:netGame,role:myRole};
+  syncAgainBtn(); restoreMode();
   showScreen('overScreen'); lockOverActions(); startAttract(); }
 
 // ================= Screens & flow =================
@@ -1763,6 +1777,8 @@ function qrDraw(cv,text){
 // '상태 요약'만 주고받는다. 젤리가 위에서 아래로 내려오는 데 2~3초가 걸리므로
 // 200~300ms 지연은 체감되지 않는다 — 이 게임 구조가 지연에 관대한 덕이다.
 let netMode=false, netSeed=0, netModeName='normal', throwGauge=0;
+// 방금 한 판이 무엇이었는지. '다시 하기'가 엉뚱하게 혼자 하기로 빠지지 않게.
+let lastPlay={kind:'solo',game:'dungeon',role:'popper'};
 // 온라인 모드 두 가지 — 'dungeon'(같은 판을 동시에 플레이하는 점수 대결) / 'throw'(역할을 나눈 던지기 게임)
 let netGame='dungeon', hostRole='thrower', myRole='popper';
 function computeRole(){ myRole = net.host ? hostRole : (hostRole==='thrower'?'popper':'thrower'); }
@@ -2651,6 +2667,8 @@ function throwerFinish(){
   if(aiOn) noRankMsg();
   else submitScore('throw_thrower',throwScore).then(()=>renderOverOnline('throw_thrower'));
   lastRun={seed:0,mode:mode,score:throwScore,net:true};
+  lastPlay={kind:aiOn?'ai':'online',game:'throw',role:'thrower'};
+  syncAgainBtn(); restoreMode();
   showScreen('overScreen'); lockOverActions(); startAttract();
   netResolve();
 }
@@ -2719,10 +2737,26 @@ function fallbackCopy(s,okMsg){ try{ const ta=document.createElement('textarea')
 function copyText(s,okMsg){ if(navigator.clipboard&&navigator.clipboard.writeText)
     navigator.clipboard.writeText(s).then(()=>toast(okMsg)).catch(()=>fallbackCopy(s,okMsg));
   else fallbackCopy(s,okMsg); }
+// 혼자 하기면 그대로 다시, AI면 같은 설정으로 재대결, 온라인이면 상대가 있어야 하니 매칭 화면으로.
+function syncAgainBtn(){
+  const b=$('againBtn'); if(!b) return;
+  b.textContent = lastPlay.kind==='ai' ? '🤖 AI와 다시'
+                : lastPlay.kind==='online' ? '🔁 다시 매칭'
+                : '🔁 다시 하기';
+}
+function playAgain(){
+  if(lastPlay.kind==='ai'){
+    netGame=lastPlay.game; hostRole=lastPlay.role||'thrower';
+    restoreMode(); aiMatch(); return; }
+  if(lastPlay.kind==='online'){ restoreMode(); openNetMode(lastPlay.game); return; }
+  restoreMode(); startGame();
+}
 function shareResult(){
   const r=lastRun||{mode:mode,score:score}, m=MODES[r.mode]||MODES.normal;
   const url=location.origin+location.pathname;
-  const text='🍡 젤리슈팅 '+m.emoji+m.name+' '+r.score+'점! 이겨볼래? 😎';
+  const what=(lastPlay.kind==='solo')?(m.emoji+m.name)
+    : ((lastPlay.game==='throw'?'🎯 던지기 게임 '+roleLabel(lastPlay.role):'⚔️ 실시간 던전'));
+  const text='🍡 젤리슈팅 '+what+' '+r.score+'점! 이겨볼래? 😎';
   if(navigator.share){ navigator.share({title:'Jelly Shooting',text:text,url:url}).catch(()=>{}); return; }
   copyText(text+'\n'+url,'📋 결과를 복사했어요! 붙여넣어 자랑하세요');
 }
@@ -2750,7 +2784,8 @@ function startAcceptChallenge(){
   if(!pendingChallenge||!nick){ toast('닉네임을 정해주세요! 🙋'); return; }
   battleMode='accept'; battleSeed=pendingChallenge.seed>>>0; battleId=pendingChallenge.id;
   battleHostName=pendingChallenge.host_name; battleHostScore=pendingChallenge.host_score;
-  mode = MODES[pendingChallenge.mode] ? pendingChallenge.mode : 'normal'; localStorage.setItem('jelly_mode',mode);
+  // 도전장은 같은 판이어야 하므로 그 판의 난이도로 한 판만 맞춘다(내 기본 난이도는 그대로)
+  mode = MODES[pendingChallenge.mode] ? pendingChallenge.mode : 'normal';
   startGame();
 }
 async function finishAccept(){
@@ -2815,6 +2850,7 @@ function openStart(){
   netLeave(); hubLeave();
   if(throwerAlive){ throwerAlive=false; if(mirrorRAF){cancelAnimationFrame(mirrorRAF);mirrorRAF=null;} }
   $('throwerView').classList.add('hide'); canvas.style.display='';
+  restoreMode();
   showScreen('startScreen'); $('battleResult').classList.add('hide'); const b=bestScore(),el=$('startBest'); if(b>0){el.textContent='🏆 최고기록 '+b+'점';el.classList.remove('hide');}else el.classList.add('hide'); $('startCoins').textContent='🪙 '+coins; checkDaily(); loopHero(); startAttract(); }
 function openSetup(){ showScreen('setupScreen'); buildSetupUI(); loopPreview(); }
 $('playBtn').onclick=()=>{ensureAudio();openSetup();};
@@ -2879,7 +2915,7 @@ $('resetAll').onclick=resetAll;
 $('backBtn').onclick=()=>openStart();
 $('startGameBtn').onclick=()=>{saveChar();startGame();};
 $('randomBtn').onclick=()=>{character.kind=KINDS[Math.floor(Math.random()*KINDS.length)].id;character.color=COLORS[Math.floor(Math.random()*COLORS.length)];character.acc=ACCS[Math.floor(Math.random()*ACCS.length)].id;character.accColor=['#ff5c8a','#8fc9ff','#ffd166','#c792ff'][Math.floor(Math.random()*4)];saveChar();buildSetupUI();};
-$('againBtn').onclick=startGame;
+$('againBtn').onclick=playAgain;
 $('editBtn').onclick=()=>openSetup();
 
 // input
