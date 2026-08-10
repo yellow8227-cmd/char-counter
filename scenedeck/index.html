@@ -732,14 +732,19 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     <div class="card" id="sc-oneshot" style="display:none">
       <h3>⚡ 컷까지 한 번에 <span class="tagx">프롬프트 바로 쓰기</span></h3>
       <div class="row">
-        <button class="btn pri" id="sc-allcuts">🎬 모든 씬을 컷으로 쪼개기</button>
+        <button class="btn pri" id="sc-allcuts">🎬 모든 씬을 컷으로 만들기</button>
+        <select id="sc-mode2" style="max-width:230px">
+          <option value="split">문단 · 대사마다 한 컷</option>
+          <option value="whole">씬 하나당 한 컷 (전문 통째로)</option>
+        </select>
         <label class="chip on" id="sc-autochip"><input type="checkbox" id="sc-autoshot" checked style="width:auto;margin-right:5px">샷 · 조명 자동 배분</label>
         <button class="btn" id="sc-tomt">🌐 영문 칸 채우기</button>
         <button class="btn" data-go="prompt">✨ 프롬프트 뽑으러 가기</button>
         <div class="hsp"></div>
         <span class="mini" id="sc-allstat" style="margin:0"></span>
       </div>
-      <p class="mini">지문 문단 하나 = 컷 하나, 대사 한 줄 = 컷 하나로 <b>전 씬을 한 번에</b> 만듭니다.
+      <p class="mini"><b>문단 · 대사마다 한 컷</b>은 지문 문단 하나 = 컷 하나, 대사 한 줄 = 컷 하나로 잘게 나눕니다.
+      <b>씬 하나당 한 컷</b>은 씬 전문을 합쳐 <b>프롬프트 한 개</b>로 만듭니다 — 한 장면을 한 장으로 뽑을 때 쓰세요.
       <b>샷 · 조명 자동 배분</b>을 켜두면 첫 컷은 장소를 보여주는 롱샷, 대사 컷은 인물 클로즈업, 조명은 씬의 시간대에 맞춰 채워져서
       <b>프롬프트가 곧바로 쓸 만한 문장</b>으로 나옵니다. 나중에 언제든 고칠 수 있어요.</p>
       <p class="mini">이미 컷이 있는 씬은 <b>건드리지 않습니다.</b>
@@ -864,7 +869,8 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <h3>🎯 씬 · 컷 선택 <span class="tagx" id="curlabel">—</span></h3>
       <div class="row" style="margin-bottom:11px">
         <select id="p-scene" style="max-width:360px"></select>
-        <button class="btn sm pri" id="p-mkcuts" style="display:none">🎬 이 씬을 컷으로 쪼개기</button>
+        <button class="btn sm pri" id="p-mkcuts" style="display:none">🎬 문단마다 컷으로 쪼개기</button>
+        <button class="btn sm" id="p-mkwhole" style="display:none">📄 씬 전문을 한 컷으로</button>
         <span class="mini" id="p-scenehint" style="margin:0"></span>
       </div>
       <div class="cutnav" id="cutnav"></div>
@@ -889,8 +895,11 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <div class="tgbody">
         <div class="out empty2" id="o-mj">컷을 선택하세요</div>
         <div class="warn" id="mjhangul" style="display:none;margin:12px 0 0">
-          한글이 섞여 있어요 — 미드저니는 영어를 훨씬 잘 알아듣습니다.
-          <button class="btn sm" id="mjtrans" style="margin-left:8px">🌐 영문으로 바꾸기</button>
+          <div id="mjhtext">한글이 섞여 있어요 — 미드저니는 영어를 훨씬 잘 알아듣습니다.</div>
+          <div class="row" style="margin-top:9px">
+            <button class="btn sm" id="mjtrans">🌐 영문으로 바꾸기</button>
+            <button class="btn sm" id="mjtpaste" style="display:none">📥 AI 답변 붙여넣기</button>
+          </div>
         </div>
         <div class="row" style="margin-top:13px">
           <button class="btn pri" data-open="mj">📋 복사하고 미드저니 열기</button>
@@ -1513,18 +1522,25 @@ ${T.map((t,i)=>`${i+1} → (영어)`).join('\n')}`;
 $('openmt').addEventListener('click',()=>{ $('mtmask').classList.add('on'); mtRefresh(); mtProbe(); });
 $('mtreqcopy').addEventListener('click',()=>copy($('mtreq').textContent,'요청문 복사 ✓ — AI에 붙여넣으세요'));
 $('mtcheck').addEventListener('click',()=>mtProbe(true));
-$('mtauto').addEventListener('click',async()=>{
+async function mtRunAuto(btn,label){
   const T=mtRefresh();
-  if(!T.length){ toast('번역할 항목이 없어요'); return; }
-  if(!await mtProbe()){ toast('자동 번역을 쓸 수 없어요 — 아래 붙여넣기 방식을 이용하세요'); return; }
-  const btn=$('mtauto'); btn.disabled=true; let ok=0;
+  if(!T.length){ toast('번역할 한글 항목이 없어요'); return false; }
+  if(!await mtProbe()){ toast('이 브라우저는 자동 번역이 안 돼요'); return false; }
+  const old=btn?btn.textContent:'';
+  if(btn){ btn.disabled=true; }
+  let ok=0;
   try{
-    for(const t of T){ t.set((await mtTranslate(t.ko)).trim()); ok++; btn.textContent=`번역 중… ${ok}/${T.length}`; }
+    for(const t of T){
+      t.set((await mtTranslate(t.ko)).trim()); ok++;
+      if(btn) btn.textContent=`번역 중… ${ok}/${T.length}`;
+    }
     toast(`${ok}개 번역해서 채웠어요 ✓`);
   }catch(e){ toast((ok?ok+'개까지 채웠어요. ':'')+'중단: '+e.message); }
   save(); renderAll(); mtRefresh();
-  btn.disabled=false; btn.textContent='⚡ 자동 번역 실행';
-});
+  if(btn){ btn.disabled=false; btn.textContent=label||old; }
+  return ok>0;
+}
+$('mtauto').addEventListener('click',()=>mtRunAuto($('mtauto'),'⚡ 자동 번역 실행'));
 $('mtapply').addEventListener('click',()=>{
   const T=mtTargets();
   if(!T.length){ toast('적용할 대상이 없어요'); return; }
@@ -2691,8 +2707,15 @@ function lightFor(time){
 
 /* 샷·앵글·렌즈·길이를 컷 순서에 맞춰 채운다.
    첫 컷은 장소를 보여주는 롱샷, 대사 컷은 인물 클로즈업, 마지막은 한 번 더 붙는다. */
-function autoDirect(scene,cuts){
+function autoDirect(scene,cuts,mode){
   const lm=lightFor(scene.time);
+  if(mode==='whole'){
+    const c=cuts[0]; if(!c) return;
+    c.shot='미디엄 롱샷'; c.angle='아이레벨'; c.move='고정'; c.lens='35mm';
+    c.light=lm.light; if(lm.mood) c.mood=lm.mood;
+    c.dur=Math.max(4,Math.min(20,Math.round((c.desc||'').length/12)||6));
+    return;
+  }
   cuts.forEach((c,i)=>{
     const last=(i===cuts.length-1), dlg=!!c.dialogue;
     if(dlg){
@@ -2712,16 +2735,28 @@ function autoDirect(scene,cuts){
   });
 }
 
-/* 씬 하나를 컷으로 채운다. 이미 컷이 있으면 건드리지 않는다. */
-function fillCuts(s,auto,force){
+/* 씬 하나를 컷으로 채운다. 이미 컷이 있으면 건드리지 않는다(force로 무시).
+   mode='split' 문단·대사마다 한 컷 / mode='whole' 씬 전체를 한 컷으로. */
+function fillCuts(s,auto,force,mode){
   if(!force && s.cuts.length) return 0;
   const made=cutBlocks(s.script);
-  if(!made.length) return 0;
-  const cuts=made.map(b=>{
-    const c=newCut(); c.desc=b.desc; c.dialogue=b.dialogue; c.open=false;
-    fleshOut(c,b.who); return c;
-  });
-  if(auto) autoDirect(s,cuts);
+  let cuts;
+  if(mode==='whole'){
+    const desc=made.map(b=>b.desc).filter(Boolean).join(' ') || (s.summary||'').trim();
+    const dlg =made.map(b=>b.dialogue).filter(Boolean).join('  /  ');
+    if(!desc && !dlg) return 0;
+    const c=newCut();
+    c.desc=desc; c.dialogue=dlg; c.open=false;
+    fleshOut(c, made.find(b=>b.who) ? made.find(b=>b.who).who : '');
+    cuts=[c];
+  }else{
+    if(!made.length) return 0;
+    cuts=made.map(b=>{
+      const c=newCut(); c.desc=b.desc; c.dialogue=b.dialogue; c.open=false;
+      fleshOut(c,b.who); return c;
+    });
+  }
+  if(auto) autoDirect(s,cuts,mode);
   s.cuts=s.cuts.concat(cuts);
   return cuts.length;
 }
@@ -2730,7 +2765,7 @@ $('sc-tocuts').addEventListener('click',()=>{
   const s=S.scenes.find(x=>x.id===scCur);
   if(!s||!(s.script||'').trim()){ toast('본문이 비어 있어요'); return; }
   const before=s.cuts.slice();
-  const n=fillCuts(s,$('sc-autoshot').checked,true);
+  const n=fillCuts(s,$('sc-autoshot').checked,true,$('sc-mode2').value);
   if(!n){ toast('쪼갤 내용이 없어요'); return; }
   save(); renderAll();
   toast(`컷 ${n}개를 만들었어요 ✓`,
@@ -2740,12 +2775,12 @@ $('sc-tocuts').addEventListener('click',()=>{
 /* 전 씬을 한 번에 */
 $('sc-allcuts').addEventListener('click',()=>{
   if(!S.scenes.length){ toast('먼저 원고를 올려 씬을 만들어주세요'); return; }
-  const auto=$('sc-autoshot').checked;
+  const auto=$('sc-autoshot').checked, mode=$('sc-mode2').value;
   const before=JSON.parse(JSON.stringify(S.scenes));
   let cuts=0, done=0, skipped=0;
   S.scenes.forEach(s=>{
     if(s.cuts.length){ skipped++; return; }
-    const n=fillCuts(s,auto,false);
+    const n=fillCuts(s,auto,false,mode);
     if(n){ cuts+=n; done++; }
   });
   if(!cuts){
@@ -2854,14 +2889,19 @@ function renderCutNav(){
 
   const cur=S.scenes.find(x=>x.id===S.sel.scene);
   const bare=cur && !cur.cuts.length;
-  mk.style.display = bare?'':'none';
+  const hasText = cur && ((cur.script||'').trim() || (cur.summary||'').trim());
+  const whole=$('p-mkwhole');
+  mk.style.display    = (bare&&hasText)?'':'none';
+  whole.style.display = hasText?'':'none';
+  whole.textContent   = bare ? '📄 씬 전문을 한 컷으로' : '📄 씬 전문을 한 컷으로 다시 만들기';
   hint.textContent = bare
-    ? ((cur.script||'').trim() ? '이 씬은 아직 컷이 없어요 — 한 번 누르면 본문이 컷으로 나뉩니다'
-                               : '이 씬엔 본문이 없어요. 「대본 · 컷」에서 원고를 넣어주세요')
+    ? (hasText ? '이 씬은 아직 컷이 없어요 — 잘게 나눌지, 전문을 한 컷으로 할지 고르세요'
+               : '이 씬엔 본문이 없어요. 「대본 · 컷」에서 원고를 넣어주세요')
     : '';
 
   if(bare){
-    nav.innerHTML='<span class="mini" style="margin:0">위 버튼을 누르면 이 씬의 컷이 여기에 나타납니다</span>';
+    nav.innerHTML='<span class="mini" style="margin:0">'
+      +(hasText?'위 버튼을 누르면 이 씬의 컷이 여기에 나타납니다':'이 씬엔 아직 내용이 없습니다')+'</span>';
     $('curlabel').textContent='—';
     return;
   }
@@ -2893,17 +2933,23 @@ $('p-scene').addEventListener('change',()=>{
   if(s.cuts.length) S.sel.cut=s.cuts[0].id;
   save(); renderPrompt();
 });
-/* 씬만 있고 컷이 없을 때, 프롬프트 탭을 떠나지 않고 그 자리에서 만든다 */
-$('p-mkcuts').addEventListener('click',()=>{
+/* 씬만 있고 컷이 없을 때, 프롬프트 탭을 떠나지 않고 그 자리에서 만든다.
+   replace=true 면 이미 있는 컷을 갈아끼운다 (씬 전문 한 컷으로 다시 만들 때). */
+function mkCutsHere(mode,replace){
   const s=S.scenes.find(x=>x.id===$('p-scene').value); if(!s) return;
-  if(!(s.script||'').trim()){ toast('이 씬엔 쪼갤 본문이 없어요'); return; }
   const before=s.cuts.slice();
-  const n=fillCuts(s,true,true);
-  if(!n){ toast('쪼갤 내용이 없어요'); return; }
+  if(replace) s.cuts=[];
+  const n=fillCuts(s,true,true,mode);
+  if(!n){ s.cuts=before; toast('이 씬엔 만들 내용이 없어요'); return; }
   S.sel={scene:s.id,cut:s.cuts[0].id};
   save(); renderAll(); renderPrompt();
-  toast(`컷 ${n}개를 만들었어요 ✓`,
+  toast(mode==='whole' ? '씬 전문을 컷 하나로 만들었어요 ✓' : `컷 ${n}개를 만들었어요 ✓`,
     {label:'되돌리기',fn:()=>{ s.cuts=before; save(); renderAll(); renderPrompt(); toast('되돌렸어요 ✓'); }});
+}
+$('p-mkcuts').addEventListener('click',()=>mkCutsHere('split',false));
+$('p-mkwhole').addEventListener('click',function(){
+  const s=S.scenes.find(x=>x.id===$('p-scene').value);
+  mkCutsHere('whole', !!(s&&s.cuts.length));
 });
 $('cutnav').addEventListener('click',e=>{
   const b=e.target.closest('[data-jump]'); if(!b) return;
@@ -3140,7 +3186,39 @@ $('mjside').addEventListener('click',()=>{
   if(!win){ toast('팝업이 막혀 있어요 — 주소창 오른쪽에서 허용해주세요'); return; }
   if(!t) toast('미드저니를 옆에 띄웠어요 — 이 창은 왼쪽에 두고 쓰세요');
 });
-$('mjtrans').addEventListener('click',()=>$('openmt').click());
+/* 자동 번역이 되면 버튼 한 번으로 끝내고,
+   안 되는 브라우저에서는 「복사 → AI → 되돌려 넣기」임을 미리 알려준다.
+   버튼을 눌러야 비로소 막다른 길임을 아는 상황을 없앤다. */
+function paintHangulWarn(){
+  const box=$('mjhangul'); if(box.style.display==='none') return;
+  const txt=$('mjhtext'), go=$('mjtrans'), ps=$('mjtpaste');
+  if(MT.state==='ok'){
+    txt.innerHTML='한글이 섞여 있어요 — <b>버튼 한 번이면</b> 영문 칸을 채워 프롬프트가 영어로 바뀝니다.'
+      +(/언어팩/.test(MT.reason)?' <span class="mini" style="margin:0">(처음 한 번은 언어팩을 받느라 조금 걸립니다)</span>':'');
+    go.textContent='🌐 영문으로 바꾸기'; go.disabled=false; ps.style.display='none';
+  }else if(MT.state==='checking'||MT.state==='unknown'){
+    txt.textContent='한글이 섞여 있어요 — 자동 번역이 되는 브라우저인지 확인 중…';
+    go.disabled=true; ps.style.display='none';
+  }else{
+    txt.innerHTML='한글이 섞여 있어요. <b>이 브라우저는 자동 번역을 지원하지 않습니다</b>(크롬 138 이상에서만 됩니다) — '
+      +'요청문을 복사해 AI에 붙여넣고, 받은 답을 되돌려 넣으면 영문 칸이 한 번에 채워집니다.';
+    go.textContent='📋 번역 요청문 복사'; go.disabled=false; ps.style.display='';
+  }
+}
+$('mjtrans').addEventListener('click',async()=>{
+  if(MT.state==='ok'){
+    if(await mtRunAuto($('mjtrans'),'🌐 영문으로 바꾸기')) renderPrompt();
+    return;
+  }
+  const T=mtRefresh();
+  if(!T.length){ toast('번역할 한글 항목이 없어요'); return; }
+  copy($('mtreq').textContent,`요청문 복사 ✓ (${T.length}개) — AI에 붙여넣고 답을 받아오세요`);
+  $('mjtpaste').style.display='';
+});
+$('mjtpaste').addEventListener('click',()=>{
+  $('openmt').click();
+  setTimeout(()=>{ const el=$('mtres'); if(el){ el.focus(); el.scrollIntoView({block:'center'}); } },80);
+});
 
 function renderPrompt(){
   fillStyle();
@@ -3180,7 +3258,12 @@ function paintAfter(){
   if(!S.style.mj || !/--v |--niji /.test(S.style.mj)) mjSync();
   paintMJ();
   setTarget(S.tg||'mj');
-  $('mjhangul').style.display = /[가-힣]/.test(outText('o-mj')) ? 'block' : 'none';
+  const hasKo=/[가-힣]/.test(outText('o-mj'));
+  $('mjhangul').style.display = hasKo ? 'block' : 'none';
+  if(hasKo){
+    paintHangulWarn();
+    if(MT.state==='unknown') mtProbe().then(paintHangulWarn);
+  }
 }
 document.addEventListener('click',e=>{
   const id=e.target.dataset&&e.target.dataset.copy;
