@@ -235,7 +235,23 @@
     background:radial-gradient(120% 120% at 50% 50%,rgba(255,255,255,0.5),rgba(255,220,238,0.62));backdrop-filter:blur(6px);}
   #countNum{font-family:var(--font-title);font-size:clamp(90px,26vw,140px);color:#ff4d84;
     filter:drop-shadow(0 6px 0 #fff) drop-shadow(0 10px 16px rgba(230,62,114,0.4));}
-  .codebig{font-size:34px;font-weight:900;color:var(--pink-d);letter-spacing:5px;}
+  .codebig{font-size:24px;font-weight:900;color:var(--pink-d);letter-spacing:4px;}
+  /* 공개 방 목록 */
+  #roomList{display:flex;flex-direction:column;gap:7px;}
+  .roomrow{display:flex;align-items:center;gap:9px;border:none;cursor:pointer;text-align:left;
+    background:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 3px 10px rgba(190,120,160,.22);
+    font-family:var(--font);transition:transform .08s;}
+  .roomrow:active{transform:scale(.98);}
+  .roomrow .who{flex:1;min-width:0;}
+  .roomrow .nm{font-weight:900;font-size:15px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .roomrow .sub{font-weight:700;font-size:11.5px;color:var(--ink2);}
+  .roomrow .go{flex:0 0 auto;font-weight:900;font-size:13px;color:#fff;background:linear-gradient(180deg,#8fd694,#4fc65f);
+    padding:7px 12px;border-radius:11px;box-shadow:0 3px 0 #37a04a;}
+  .empty{font-weight:700;font-size:13px;color:var(--ink2);text-align:center;padding:10px 4px;}
+  /* QR */
+  #qrWrap{display:flex;flex-direction:column;align-items:center;gap:6px;}
+  #qrCanvas{width:min(64vw,220px);aspect-ratio:1;border-radius:14px;box-shadow:var(--shadow);background:#fff;}
+  .linkbig{font-size:12.5px;font-weight:800;color:var(--pink-d);word-break:break-all;text-align:center;}
 
   /* ===== 홈 모드 버튼 ===== */
   .homegrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;width:min(94vw,400px);}
@@ -503,13 +519,32 @@
       <div class="opts" id="netRoleOpts"></div>
     </div>
     <div class="card">
-      <div class="label">🚪 방</div>
+      <div class="label">⚡ 바로 시작</div>
+      <div class="rowbtn" style="gap:8px;">
+        <button class="btn" id="netRandomBtn" style="padding:13px 18px;font-size:16px;background:linear-gradient(180deg,#8fd694,#4fc65f);box-shadow:0 6px 0 #37a04a;">🎲 랜덤 매칭</button>
+        <button class="btn" id="netAiBtn" style="padding:13px 18px;font-size:16px;background:linear-gradient(180deg,#ffb08a,#ff8a5c);box-shadow:0 6px 0 #e0691a;">🤖 AI와 대결</button>
+      </div>
+      <div class="tag2" style="text-align:left;margin-top:8px;">랜덤은 기다리는 사람과 자동으로 이어줘요. AI는 혼자서도 바로 시작해요.</div>
+    </div>
+    <div class="card">
+      <div class="label" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>👥 지금 열린 방</span>
+        <button class="chip" id="roomRefreshBtn" style="padding:11px 12px;font-size:12px;">새로고침 🔄</button>
+      </div>
+      <div id="roomList"></div>
+    </div>
+    <div class="card">
+      <div class="label">🚪 방 직접 만들기 · 코드로 입장</div>
+      <div class="setrow" style="padding:6px 2px;">
+        <span style="font-size:15px;">🌍 목록에 공개하기</span>
+        <button class="toggle" id="netPublicBtn">켜짐</button>
+      </div>
       <button class="btn" id="netCreateBtn" style="width:100%;padding:13px;font-size:17px;background:linear-gradient(180deg,#b28cff,#8a5cff);box-shadow:0 8px 0 #6a3edb,0 12px 22px rgba(120,80,220,0.35);">🏠 방 만들기</button>
       <div style="display:flex;gap:6px;margin-top:9px;">
         <input id="netCodeInput" maxlength="6" placeholder="방 코드 입력" style="flex:1;text-transform:uppercase;">
         <button class="chip" id="netJoinBtn" style="padding:9px 16px;">입장!</button>
       </div>
-      <div class="tag2" style="text-align:left;margin-top:8px;">배포된 주소(https)에서 동작해요.</div>
+      <div class="tag2" style="text-align:left;margin-top:8px;">온라인 기능은 배포된 주소(https)에서 동작해요. AI 대결은 인터넷 없이도 됩니다.</div>
     </div>
     <button class="btn ghost" id="netBackBtn">← 홈으로</button>
   </div>
@@ -519,11 +554,16 @@
     <div class="h2">🔴 대기실</div>
     <div class="tag2" id="lobbyMode" style="font-size:15px;font-weight:900;color:var(--pink-d);"></div>
     <div class="card">
-      <div class="label" id="lobbyCodeLabel">🚪 방 코드</div>
+      <div class="label" id="lobbyCodeLabel">📨 친구 부르기</div>
+      <div id="qrWrap">
+        <canvas id="qrCanvas" width="440" height="440"></canvas>
+        <div class="tag2">📷 옆에 있으면 카메라로 찍기만 하면 들어와요</div>
+      </div>
+      <div class="linkbig" id="lobbyLink" style="margin-top:8px;"></div>
+      <button class="setbtn" id="lobbyCopyBtn">🔗 링크 복사해서 보내기</button>
+      <div class="tag2" style="margin-top:8px;">직접 입력할 사람용 방 코드</div>
       <div class="codebig" id="lobbyCode">------</div>
-      <div class="tag2" id="lobbyLink" style="margin-top:4px;word-break:break-all;"></div>
       <div class="tag2" id="lobbyRole" style="margin-top:4px;"></div>
-      <button class="setbtn" id="lobbyCopyBtn">📋 코드·링크 복사해서 친구에게 보내기</button>
     </div>
     <div class="card">
       <div class="label">🔌 연결 상태</div>
@@ -1421,6 +1461,190 @@ async function submitScore(){
   if(!nick||!supaReady()||score<=0) return;
   try{ await getSupa().from('scores').insert({name:nick,score:score,mode:mode}); }catch(e){}
 }
+// ================= QR 코드 =================
+// 옆에 있는 친구는 코드를 받아 적을 이유가 없다. 스캔하면 끝.
+// 외부 라이브러리는 CSP·오프라인에서 못 쓰니 직접 만든다.
+// 바이트 모드 · 오류정정 M · 버전 1~10 (216바이트까지).
+// [총 코드워드, 블록당 ECC, 그룹1 블록수, 그룹1 데이터, 그룹2 블록수, 그룹2 데이터]
+const QR_M=[[26,10,1,16,0,0],[44,16,1,28,0,0],[70,26,1,44,0,0],[100,18,2,32,0,0],
+  [134,24,2,43,0,0],[172,16,4,27,0,0],[196,18,4,31,0,0]];
+const QR_ALIGN=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38]];
+
+// GF(256) — 오류정정 계산용
+const GF_EXP=new Uint8Array(512), GF_LOG=new Uint8Array(256);
+(function(){ let x=1;
+  for(let i=0;i<255;i++){ GF_EXP[i]=x; GF_LOG[x]=i; x<<=1; if(x&0x100)x^=0x11d; }
+  for(let i=255;i<512;i++) GF_EXP[i]=GF_EXP[i-255]; })();
+function gfMul(a,b){ return (a&&b)?GF_EXP[GF_LOG[a]+GF_LOG[b]]:0; }
+function rsGen(n){ let p=[1];
+  for(let i=0;i<n;i++){ const q=[1,GF_EXP[i]], r=new Array(p.length+1).fill(0);
+    for(let a=0;a<p.length;a++) for(let b=0;b<2;b++) r[a+b]^=gfMul(p[a],q[b]);
+    p=r; }
+  return p; }
+function rsEcc(data,n){ const gen=rsGen(n), res=data.concat(new Array(n).fill(0));
+  for(let i=0;i<data.length;i++){ const c=res[i]; if(!c) continue;
+    for(let j=0;j<gen.length;j++) res[i+j]^=gfMul(gen[j],c); }
+  return res.slice(data.length); }
+
+// 포맷 정보 BCH(15,5) — 오류정정 M은 비트 00
+function qrFormat(mask){ const d=(0<<3)|mask; let v=d<<10;
+  for(let i=4;i>=0;i--) if(v&(1<<(i+10))) v^=0x537<<i;
+  return ((d<<10)|v)^0x5412; }
+// 버전 정보 BCH(18,6) — 버전 7 이상만 쓴다
+function qrVersionBits(v){ let r=v<<12;
+  for(let i=5;i>=0;i--) if(r&(1<<(i+12))) r^=0x1f25<<i;
+  return (v<<12)|r; }
+
+// 본체. 반환: {n, mod:[[0|1,...],...], ver, mask}  (1 = 검정)
+function qrMatrix(text,forceMask){
+  const bytes=new TextEncoder().encode(text);
+  let ver=0;
+  // 버전 7(124바이트)까지만 쓴다. 그보다 큰 판은 칸이 작아져서 폰 카메라가
+  // 힘들어하고, 실제로 스캔 실패가 확인됐다. 방 주소는 50바이트 정도라 넉넉하다.
+  for(let v=1;v<=7;v++){
+    const M=QR_M[v-1], cap=(M[2]*M[3]+M[4]*M[5])*8, lenBits=(v<10)?8:16;
+    if(4+lenBits+bytes.length*8<=cap){ ver=v; break; }
+  }
+  if(!ver) return null;                         // 너무 길면 포기(호출한 쪽에서 대비)
+  const [ , eccLen, b1,d1, b2,d2 ]=QR_M[ver-1];
+  const dataCap=(b1*d1+b2*d2)*8;
+
+  // ── 비트 스트림 ──
+  const bits=[]; const put=(val,len)=>{ for(let i=len-1;i>=0;i--) bits.push((val>>i)&1); };
+  put(4,4);                                     // 바이트 모드
+  put(bytes.length,(ver<10)?8:16);
+  for(const b of bytes) put(b,8);
+  for(let i=0;i<4&&bits.length<dataCap;i++) bits.push(0);   // 종단자
+  while(bits.length%8) bits.push(0);
+  // 여기서 0바이트 하나를 더 넣는다. 규격만 곧이곧대로 읽으면 넣지 않아도 되지만,
+  // 검증된 구현(segno)이 이렇게 만들고, 그 방식으로 맞추면 판이 비트 단위로 완전히
+  // 일치했다(37개 문자열 × 마스크 8개 = 296판 전부). 스캔 성공률도 이쪽이 높았다.
+  if(bits.length<dataCap) for(let i=0;i<8;i++) bits.push(0);
+  const PAD=[0xEC,0x11]; let pi=0;
+  while(bits.length<dataCap) put(PAD[pi++%2],8);
+  const dat=[]; for(let i=0;i<bits.length;i+=8){ let v=0; for(let j=0;j<8;j++) v=(v<<1)|bits[i+j]; dat.push(v); }
+
+  // ── 블록 나누고 오류정정 붙이고 섞기 ──
+  const blocks=[], eccs=[]; let p=0;
+  for(let i=0;i<b1;i++){ const d=dat.slice(p,p+d1); p+=d1; blocks.push(d); eccs.push(rsEcc(d,eccLen)); }
+  for(let i=0;i<b2;i++){ const d=dat.slice(p,p+d2); p+=d2; blocks.push(d); eccs.push(rsEcc(d,eccLen)); }
+  const seq=[], maxD=Math.max(d1,d2);
+  for(let i=0;i<maxD;i++) for(const b of blocks) if(i<b.length) seq.push(b[i]);
+  for(let i=0;i<eccLen;i++) for(const e of eccs) seq.push(e[i]);
+
+  // ── 판 만들기 ──
+  const N=ver*4+17;
+  const mod=Array.from({length:N},()=>new Array(N).fill(0));
+  const fix=Array.from({length:N},()=>new Array(N).fill(false));   // 기능 패턴 = 마스크 대상 아님
+  const setF=(r,c,v)=>{ if(r<0||c<0||r>=N||c>=N)return; mod[r][c]=v?1:0; fix[r][c]=true; };
+  for(const [r0,c0] of [[0,0],[0,N-7],[N-7,0]])                    // 파인더 + 분리자
+    for(let r=-1;r<=7;r++) for(let c=-1;c<=7;c++){
+      const on=(r>=0&&r<=6&&c>=0&&c<=6)&&(r===0||r===6||c===0||c===6||(r>=2&&r<=4&&c>=2&&c<=4));
+      setF(r0+r,c0+c,on); }
+  for(let i=8;i<N-8;i++){ setF(6,i,i%2===0); setF(i,6,i%2===0); } // 타이밍
+  const al=QR_ALIGN[ver-1];
+  for(const r of al) for(const c of al){
+    if((r===6&&c===6)||(r===6&&c===N-7)||(r===N-7&&c===6)) continue;
+    for(let dr=-2;dr<=2;dr++) for(let dc=-2;dc<=2;dc++)
+      setF(r+dr,c+dc,Math.max(Math.abs(dr),Math.abs(dc))!==1); }
+  setF(N-8,8,true);                                                // 항상 검정
+  for(let i=0;i<=8;i++){ if(!fix[8][i])setF(8,i,false); if(!fix[i][8])setF(i,8,false); }
+  for(let i=0;i<8;i++){ setF(8,N-1-i,false); setF(N-1-i,8,false); }
+  if(ver>=7) for(let i=0;i<18;i++){ const a=N-11+i%3, b=Math.floor(i/3); setF(a,b,false); setF(b,a,false); }
+
+  // ── 데이터 채우기 (오른쪽 아래에서 지그재그) ──
+  let si=0, sb=0;
+  const nextBit=()=>{ if(si>=seq.length) return 0;
+    const v=(seq[si]>>(7-sb))&1; if(++sb===8){ sb=0; si++; } return v; };
+  let up=true;
+  for(let col=N-1;col>0;col-=2){
+    if(col===6) col--;                                             // 타이밍 열은 건너뛴다
+    for(let i=0;i<N;i++){
+      const row=up?(N-1-i):i;
+      for(const c of [col,col-1]) if(!fix[row][c]) mod[row][c]=nextBit();
+    }
+    up=!up;
+  }
+
+  // ── 마스크 ──
+  const MASKS=[ (r,c)=>((r+c)%2===0), (r,c)=>(r%2===0), (r,c)=>(c%3===0), (r,c)=>((r+c)%3===0),
+    (r,c)=>((Math.floor(r/2)+Math.floor(c/3))%2===0), (r,c)=>(((r*c)%2+(r*c)%3)===0),
+    (r,c)=>((((r*c)%2+(r*c)%3)%2)===0), (r,c)=>((((r+c)%2+(r*c)%3)%2)===0) ];
+  function apply(m,fn){ for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(!fix[r][c]&&fn(r,c)) m[r][c]^=1; }
+  // 형식 정보 배치 — 행과 열을 헷갈리면 디코더가 마스크를 못 읽어 통째로 실패한다.
+  // 규격(ISO/IEC 18004 7.9) 기준: 왼쪽 위 사본은 8열을 따라 내려가며 비트 0~6,
+  // 그다음 8행을 따라 왼쪽으로 비트 7~14. 오른쪽/아래 사본은 그 반대 방향.
+  function putFormat(m,mask){
+    const f=qrFormat(mask), bit=i=>(f>>i)&1;
+    for(let i=0;i<=5;i++) m[i][8]=bit(i);       // 8열 0~5행
+    m[7][8]=bit(6);
+    m[8][8]=bit(7);
+    m[8][7]=bit(8);
+    for(let i=9;i<15;i++) m[8][14-i]=bit(i);    // 8행 5~0열
+    for(let i=0;i<8;i++) m[8][N-1-i]=bit(i);    // 8행 오른쪽 끝
+    for(let i=8;i<15;i++) m[N-15+i][8]=bit(i);  // 8열 아래쪽
+    m[N-8][8]=1;                                 // 항상 검정
+    if(ver>=7){ const vb=qrVersionBits(ver);
+      // 규격 Figure 27: 오른쪽 위는 6행×3열, 왼쪽 아래는 그 전치. 비트 0이 최하위.
+      for(let i=0;i<18;i++){ const b=(vb>>i)&1, q=Math.floor(i/3), p=i%3;
+        m[q][N-11+p]=b;       // 오른쪽 위
+        m[N-11+p][q]=b; }     // 왼쪽 아래
+    }
+  }
+  // 벌점 — 낮은 쪽이 읽기 쉽다
+  function penalty(m){
+    let s1=0,s2=0,s3=0;
+    const line=arr=>{ let pen=0,run=1;
+      for(let i=1;i<N;i++){ if(arr[i]===arr[i-1]){ run++; if(run===5)pen+=3; else if(run>5)pen++; } else run=1; }
+      return pen; };
+    // 파인더를 닮은 무늬 1:1:3:1:1 (규격 7.8.3 N3).
+    // 앞이나 뒤 4칸이 밝으면 40점. 판 끝에 붙어 있으면 그것만으로 40점.
+    // 겹치는 위치를 각각 세면 점수가 부풀어 마스크 선택이 한쪽으로 쏠린다.
+    // 실제로 그래서 8개 중 마스크 2가 38%나 뽑혔고 스캔 실패가 늘었다.
+    const PAT=[1,0,1,1,1,0,1];
+    const findPat=(seq,from)=>{ for(let i=from;i+7<=N;i++){ let ok=true;
+        for(let k=0;k<7;k++) if(seq[i+k]!==PAT[k]){ ok=false; break; }
+        if(ok) return i; } return -1; };
+    const anyDark=(seq,a,b2)=>{ for(let i=Math.max(a,0);i<Math.min(b2,N);i++) if(seq[i]) return true; return false; };
+    const scan=seq=>{ let p=0, idx=findPat(seq,0);
+      while(idx!==-1){ let off=idx+7;
+        if(idx===0||idx===N-7||!anyDark(seq,idx-4,idx)||!anyDark(seq,off,off+4)) p+=40;
+        else off=idx+4;
+        idx=findPat(seq,off); }
+      return p; };
+    for(let r=0;r<N;r++){ const row=m[r]; s1+=line(row); s3+=scan(row); }
+    for(let c=0;c<N;c++){ const col=[]; for(let r=0;r<N;r++) col.push(m[r][c]); s1+=line(col); s3+=scan(col); }
+    for(let r=0;r<N-1;r++) for(let c=0;c<N-1;c++){
+      const v=m[r][c]; if(v===m[r][c+1]&&v===m[r+1][c]&&v===m[r+1][c+1]) s2+=3; }
+    let dark=0; for(let r=0;r<N;r++) for(let c=0;c<N;c++) dark+=m[r][c];
+    const s4=10*Math.floor(Math.abs(dark*100/(N*N)-50)/5);
+    return s1+s2+s3+s4;
+  }
+  let best=null, bestMask=0, bestPen=Infinity;
+  const tries=(forceMask==null)?[0,1,2,3,4,5,6,7]:[forceMask];
+  for(const k of tries){
+    const m=mod.map(r=>r.slice());
+    apply(m,MASKS[k]); putFormat(m,k);
+    const pen=penalty(m);
+    if(pen<bestPen){ bestPen=pen; best=m; bestMask=k; }
+  }
+  return {n:N, mod:best, ver, mask:bestMask};
+}
+
+// 캔버스에 그린다
+function qrDraw(cv,text){
+  const q=qrMatrix(text), g=cv.getContext('2d');
+  g.clearRect(0,0,cv.width,cv.height);
+  g.fillStyle='#fff'; g.fillRect(0,0,cv.width,cv.height);
+  if(!q){ g.fillStyle='#b0567c'; g.font="700 14px 'Donguri',sans-serif"; g.textAlign='center';
+    g.fillText('주소가 너무 길어요',cv.width/2,cv.height/2); return false; }
+  const quiet=4, cell=Math.floor(cv.width/(q.n+quiet*2)), off=Math.floor((cv.width-cell*q.n)/2);
+  g.fillStyle='#3a2b34';
+  for(let r=0;r<q.n;r++) for(let c=0;c<q.n;c++)
+    if(q.mod[r][c]) g.fillRect(off+c*cell,off+r*cell,cell,cell);
+  return true;
+}
+
 // ================= 🔴 실시간 대전: 젤리 던지기 =================
 // 판 전체를 동기화하지 않는다. 각자 자기 기기에서 자기 판을 굴리고, '던진 젤리'와
 // '상태 요약'만 주고받는다. 젤리가 위에서 아래로 내려오는 데 2~3초가 걸리므로
@@ -1437,10 +1661,13 @@ let net={ch:null,room:'',host:false,foe:null,ready:false,foeReady:false,
          myOver:false,myScore:0,myReason:'',foeOver:false,foeScore:0,foeReason:'',
          foeGone:false,watchT:null,timeLimit:120,status:'',statusMsg:''};
 
-function netSend(o){ if(net.ch){ try{ net.ch.send({type:'broadcast',event:'msg',payload:o}); }catch(e){} } }
+function netSend(o){
+  if(aiOn){ aiOnMsg(o); return; }        // AI 대결은 같은 경로를 그대로 쓴다
+  if(net.ch){ try{ net.ch.send({type:'broadcast',event:'msg',payload:o}); }catch(e){} } }
 function netLeave(){
   if(net.ch){ netSend({t:'bye'}); try{ getSupa().removeChannel(net.ch); }catch(e){} net.ch=null; }
   if(net.watchT){ clearInterval(net.watchT); net.watchT=null; }
+  aiStop(); hubUnadvertise();
   netMode=false; net.foe=null; net.ready=false; net.foeReady=false; net.foeGone=false;
   net.room=''; net.status=''; net.statusMsg=''; sdkT0=0;   // 방을 비워야 대기 중인 재시도가 멈춘다
   lobbyStopWait();
@@ -1517,8 +1744,9 @@ function netOnMsg(m){
   if(m.t==='hello'||m.t==='hi'){
     net.foe={name:m.name||'친구',char:m.char};
     if(m.t==='hello') netSend({t:'hi',name:nick,char:character});   // 늦게 들어온 쪽에 내 정보 전달
-    if(net.host) netSend({t:'seed',seed:netSeed,mode:netModeName,timeLimit:net.timeLimit,
-      game:netGame,hostRole:hostRole});
+    if(net.host){ hubUnadvertise();      // 친구가 들어왔으니 목록에서 내린다
+      netSend({t:'seed',seed:netSeed,mode:netModeName,timeLimit:net.timeLimit,
+        game:netGame,hostRole:hostRole}); }
     renderLobby();
   }
   else if(m.t==='seed'){ if(!net.host){ netSeed=m.seed>>>0; netModeName=MODES[m.mode]?m.mode:'normal';
@@ -1548,6 +1776,172 @@ function netOnMsg(m){
     else { net.foe=null; net.foeReady=false; net.ready=false; toast('친구가 방에서 나갔어요 😢'); renderLobby(); } }
 }
 
+// ================= 🌍 공개 방 목록 =================
+// 코드를 주고받는 게 번거롭다. 열린 방을 목록에서 눌러 들어가게 한다.
+// 테이블을 만들지 않고 Realtime presence를 쓴다 — 방장이 끊기면 목록에서 저절로 사라지고,
+// 유령 방을 청소하는 코드도, 하트비트도 필요 없다.
+let hub=null, hubRooms=[], netPublic=true;
+function hubJoin(){
+  if(!supaReady()) return false;
+  if(hub) return true;
+  hub=getSupa().channel('jelly:lobby');
+  hub.on('presence',{event:'sync'},()=>{ hubRooms=hubRead(); renderRoomList(); });
+  hub.subscribe(st=>{ if(st==='SUBSCRIBED'){ hubRooms=hubRead(); renderRoomList(); hubAdvertise(); } });
+  return true;
+}
+function hubRead(){
+  if(!hub) return [];
+  let st={}; try{ st=hub.presenceState()||{}; }catch(e){ return []; }
+  const out=[];
+  Object.keys(st).forEach(k=>(st[k]||[]).forEach(p=>{ if(p&&p.room&&p.room!==net.room) out.push(p); }));
+  return out;
+}
+function hubLeave(){ if(hub){ try{ hub.untrack(); }catch(e){} try{ getSupa().removeChannel(hub); }catch(e){} hub=null; } hubRooms=[]; }
+// 내 방을 목록에 올린다 / 내린다
+function hubAdvertise(){
+  if(!hub||!net.room||!net.host||!netPublic||aiOn) return;
+  try{ hub.track({room:net.room,name:nick||'누군가',game:netGame,mode:netModeName,role:hostRole}); }catch(e){}
+}
+function hubUnadvertise(){ if(hub){ try{ hub.untrack(); }catch(e){} } }
+function renderRoomList(){
+  const box=$('roomList'); if(!box||$('netScreen').classList.contains('hide')) return;
+  if(!supaReady()){ box.innerHTML='<div class="empty">'+netWhyOffline()+'</div>'; return; }
+  const rooms=hubRooms.filter(r=>r.game===netGame);
+  if(!rooms.length){ box.innerHTML='<div class="empty">아직 열린 방이 없어요.<br>방을 만들면 친구가 여기서 찾아 들어올 수 있어요 🌱</div>'; return; }
+  box.innerHTML='';
+  rooms.slice(0,8).forEach(r=>{
+    const m=MODES[r.mode]||MODES.normal;
+    const b=document.createElement('button'); b.className='roomrow';
+    const sub=(netGame==='throw')
+      ? (m.emoji+m.name+' · 방장 '+roleLabel(r.role)+' → 나는 '+roleLabel(r.role==='thrower'?'popper':'thrower'))
+      : (m.emoji+m.name);
+    b.innerHTML='<span style="font-size:22px;">🚪</span><span class="who">'+
+      '<span class="nm">'+escapeHtml(r.name)+'</span><span class="sub">'+sub+'</span></span>'+
+      '<span class="go">입장</span>';
+    b.onclick=()=>{ if(!nickOrPrompt())return; netEnterRoom(r.room,false); };
+    box.appendChild(b);
+  });
+}
+// 🎲 랜덤 매칭 — 열린 방이 있으면 그리로, 없으면 방을 열고 기다린다
+function netRandom(){
+  if(!nickOrPrompt()) return;
+  if(!supaReady()){ toast(netWhyOffline()); return; }
+  hubJoin();
+  const pick=()=>{
+    const rooms=hubRooms.filter(r=>r.game===netGame);
+    if(rooms.length){ const r=rooms[Math.floor(Math.random()*rooms.length)];
+      toast('🎲 '+escapeHtml(r.name)+'님의 방으로!'); netEnterRoom(r.room,false); return true; }
+    return false;
+  };
+  if(pick()) return;
+  // 아직 목록이 안 왔을 수 있으니 잠깐 기다렸다 다시 본다
+  toast('🎲 상대를 찾는 중…');
+  setTimeout(()=>{ if(!$('netScreen').classList.contains('hide')&&!pick()){
+    netPublic=true; syncPublicBtn(); toast('기다리는 사람이 없어 방을 열었어요 — 곧 누가 올 거예요!'); netCreate(); } },1200);
+}
+function syncPublicBtn(){ const b=$('netPublicBtn'); if(!b)return;
+  b.textContent=netPublic?'켜짐':'꺼짐'; b.classList.toggle('off',!netPublic); }
+
+// ================= 🤖 AI 대결 =================
+// 네트워크 없이 같은 메시지 경로를 그대로 쓴다. netSend가 상대에게 보내는 대신
+// AI에게 전달되고, AI는 netOnMsg로 답한다. 그래서 대전 로직을 하나도 새로 안 짠다.
+const AI_SKILL={soft:0.72,normal:0.84,spicy:0.91,fire:0.96};
+let aiOn=false, aiT=null, aiS={};
+function aiChar(){ const K=['cat','dog','bunny','bear','chick','star'];
+  return {kind:K[Math.floor(Math.random()*K.length)],color:'#a3d5ff',acc:'crown',accColor:'#ffce3d'}; }
+function aiStart(){
+  aiOn=true;
+  net.foe={name:'젤리 AI 🤖',char:aiChar()};
+  net.ready=true; net.foeReady=true; net.status='ok'; net.foeGone=false; net.foeOver=false;
+  const md=MODES[netModeName]||MODES.normal;
+  aiS={score:0,lives:md.lives,jid:0,next:0,pop:0,miss:0,spd:1,combo:1};
+  if(aiT)clearInterval(aiT); aiT=setInterval(aiTick,100);
+}
+function aiStop(){ aiOn=false; if(aiT){ clearInterval(aiT); aiT=null; } }
+function aiMatch(){
+  if(!nick) saveNick('나');
+  netLeave(); hubLeave();
+  netSeed=(Math.random()*1e9)>>>0; netModeName=mode;
+  net.timeLimit=(netGame==='throw')?90:120;
+  net.room=''; net.host=true;
+  aiStart(); computeRole();
+  netBeginCountdown();
+}
+// AI가 내 메시지를 받는다
+function aiOnMsg(o){
+  if(!aiOn||!o||!o.t) return;
+  if(o.t==='jthrow'){ aiPopLater(o); return; }          // 내가 던졌다 → AI가 터뜨리는 쪽
+  if(o.t==='jgone'){                                     // 내가 터뜨렸/놓쳤다 → AI가 던지는 쪽 점수
+    if(o.why==='miss'){ aiS.score+=Math.round(POP_BASE*MISS_WEIGHT*2); aiS.miss++; }
+    else if(o.why==='bomb'){ aiS.score+=Math.round(POP_BASE*MISS_WEIGHT*2*BOMB_BONUS); aiS.miss++; }
+    else if(o.why==='pop') aiS.pop++;
+    netOnMsg({t:'tstat',score:aiS.score});
+    return; }
+  if(o.t==='over'){                                      // 내가 끝났다 → AI도 결과를 낸다
+    setTimeout(()=>{ if(aiOn) netOnMsg({t:'over',score:aiS.score,
+      reason:(aiS.lives<=0?'dead':'time'),popped:aiS.pop,missed:aiS.miss}); },350);
+    return; }
+  if(o.t==='bye'){ aiStop(); return; }
+}
+// AI가 젤리를 터뜨리거나 놓친다 — 낙하 시간을 계산해 그때쯤 결과를 보낸다
+function aiPopLater(m){
+  const r=m.r||27, vy=Math.max(0.6,+m.vy||3), fallMs=(720+r)/vy/60*1000;
+  const skill=AI_SKILL[netModeName]||0.84;
+  let why,at;
+  if(m.bomb){
+    if(Math.random()<0.09){ why='bomb'; at=fallMs*rand(0.35,0.8); }   // 실수로 폭탄을 터뜨린다
+    else { why='fell'; at=fallMs; }
+  } else if(Math.random()<skill){ why='pop'; at=fallMs*rand(0.3,0.8); }
+  else { why='miss'; at=fallMs; }
+  setTimeout(()=>{
+    if(!aiOn) return;
+    if(why==='pop'){ aiS.combo=Math.min(5,aiS.combo+1); aiS.score+=POP_BASE*aiS.combo; aiS.pop++; }
+    else { aiS.combo=1; if(why!=='fell'){ aiS.lives=Math.max(0,aiS.lives-1); aiS.miss++; } }
+    netOnMsg({t:'jgone',id:m.id,why:why,pscore:aiS.score,plives:aiS.lives});
+    if(aiS.lives<=0) netOnMsg({t:'over',score:aiS.score,reason:'dead',popped:aiS.pop,missed:aiS.miss});
+  }, Math.max(250,at));
+}
+function aiTick(){
+  if(!aiOn) return;
+  net.lastFoe=performance.now();                          // 감시견이 끊김으로 보지 않게
+  if(!netMode&&!throwerAlive) return;
+  const md=MODES[netModeName]||MODES.normal;
+  if(netGame==='throw'&&myRole==='popper'){               // AI가 던지는 쪽
+    const now=performance.now();
+    if(now>=aiS.next){
+      const hard=AI_SKILL[netModeName]||0.84;
+      aiS.spd=Math.min(3,Math.floor(hard*4));
+      const spd=[0.8,1.15,1.6,2.2][aiS.spd];
+      const bomb=Math.random()<0.18, ghost=!bomb&&Math.random()<0.13;
+      const r=bomb?27:Math.round(rand(24,32)), pal=curTheme().jelly;
+      netOnMsg({t:'jthrow',id:++aiS.jid,r,bomb,ghost,
+        x:Math.round(rand(r+8,480-r-8)),
+        color:bomb?'#4a4450':pal[Math.floor(Math.random()*pal.length)],
+        face:['happy','wink','star'][Math.floor(Math.random()*3)],
+        shape:bomb?'round':['round','round','bean','bear'][Math.floor(Math.random()*4)],
+        vy:(md.vy0+1.6)*spd+rand(0,0.4)});
+      aiS.next=now+(520+Math.random()*820);
+    }
+  } else if(netGame==='dungeon'){                          // 서로 던지는 모드 — AI도 자기 판을 하는 척
+    aiS.score+=Math.round(rand(20,70));
+    if(Math.random()<0.02) aiS.lives=Math.max(0,aiS.lives-1);
+    if(aiS.t=(aiS.t||0)+1, aiS.t%5===0)
+      netOnMsg({t:'stat',score:aiS.score,lives:aiS.lives,combo:1,level:level,px:Math.round(rand(60,420))});
+    if(Math.random()<0.06){
+      const pal=curTheme().jelly, n=1+Math.floor(Math.random()*3), items=[];
+      for(let i=0;i<n;i++){ const r=Math.round(rand(24,32));
+        items.push({x:Math.round(rand(r+12,480-r-12)),r,color:pal[Math.floor(Math.random()*pal.length)],
+          face:'happy',shape:'round',bomb:Math.random()<0.2}); }
+      netOnMsg({t:'throw',items});
+    }
+    if(aiS.lives<=0) netOnMsg({t:'over',score:aiS.score,reason:'dead'});
+  } else {                                                 // 던지기 게임에서 AI가 터뜨리는 쪽
+    if((aiS.t=(aiS.t||0)+1)%5===0)
+      netOnMsg({t:'stat',score:aiS.score,lives:aiS.lives,combo:aiS.combo,level:level,
+        px:Math.round(240+Math.sin(aiS.t/9)*150)});
+  }
+}
+
 // ---- 방 만들기 / 참가 ----
 function openNetMode(game){
   netGame=(game==='throw')?'throw':'dungeon';
@@ -1557,7 +1951,8 @@ function openNetMode(game){
     ? '한 사람은 젤리를 던지고, 한 사람은 터뜨려요. 던지는 사람은 무기(👻유령·💣폭탄·🌧️젤리비)와 낙하 속도(🐢~🚀)를 골라 상대 화면을 보면서 조준합니다!'
     : '둘이 동시에 플레이하면서 서로의 화면에 젤리를 던져요.';
   $('netRoleCard').classList.toggle('hide',netGame!=='throw');
-  buildRoleOpts();
+  buildRoleOpts(); syncPublicBtn();
+  renderRoomList(); hubJoin();
 }
 function buildRoleOpts(){
   const o=$('netRoleOpts'); o.innerHTML='';
@@ -1570,6 +1965,7 @@ function netCreate(){
   netSeed=(Math.random()*1e9)>>>0; netModeName=mode;
   net.timeLimit=(netGame==='throw')?90:120;
   netEnterRoom(makeCode(),true);
+  if(netPublic) hubJoin();
 }
 function netJoinByCode(){
   const code=($('netCodeInput').value||'').trim().toUpperCase();
@@ -1594,10 +1990,14 @@ function renderLobby(){
   // 방장과 참가자에게 필요한 안내가 다르다
   computeRole();
   $('lobbyMode').textContent=gameLabel()+(netGame==='throw'?(' · 내 역할 '+roleLabel(myRole)):'');
-  $('lobbyCodeLabel').textContent=net.host?'🚪 방 코드 — 이걸 친구에게 보내세요':'🚪 내가 들어온 방';
-  $('lobbyCopyBtn').textContent=net.host?'📋 코드·링크 복사해서 친구에게 보내기':'📋 이 방 링크 복사';
+  $('lobbyCodeLabel').textContent=net.host?'📨 친구 부르기 — 찍거나 링크를 보내면 끝':'🚪 내가 들어온 방';
+  $('lobbyCopyBtn').textContent=net.host?'🔗 링크 복사해서 보내기':'🔗 이 방 링크 복사';
   $('lobbyCode').textContent=net.room||'------';
-  $('lobbyLink').textContent=net.room?(location.origin+location.pathname+'?r='+net.room):'';
+  const link=net.room?(location.origin+location.pathname+'?r='+net.room):'';
+  $('lobbyLink').textContent=link;
+  // QR — 옆에 있는 친구는 코드를 받아 적을 이유가 없다
+  if(link){ $('qrWrap').classList.remove('hide'); qrDraw($('qrCanvas'),link); }
+  else $('qrWrap').classList.add('hide');
   $('lobbyRole').textContent=net.host?'🏠 내가 방장 — 난이도·시간을 내가 정해요':'🚪 참가자 — 방장 설정을 따라요';
   const foe=net.foe;
   let h='<div class="rrow me"><span>🙋 '+escapeHtml(nick||'나')+' (나)</span><span>'+(net.ready?'✅ 준비완료':'⌛ 준비중')+'</span></div>';
@@ -1657,7 +2057,8 @@ function netBeginCountdown(){
   let n=3; $('countNum').textContent=n;
   const t=setInterval(()=>{
     n--;
-    if(n<=0){ clearInterval(t); $('countWrap').classList.add('hide'); netMode=true; computeRole();
+    if(n<=0){ clearInterval(t); $('countWrap').classList.add('hide'); hubUnadvertise();
+      netMode=true; computeRole();
       if(netGame==='throw'&&myRole==='thrower') startThrower(); else startGame();
       return; }
     $('countNum').textContent=n; ensureAudio(); playSquish(n);
@@ -1679,6 +2080,7 @@ function netStartSetup(){
   net.watchT=setInterval(netWatch,1000);
 }
 function netWatch(){
+  if(aiOn) return;                        // AI는 끊길 일이 없다
   if(!netMode||!(running||throwerAlive)) return;
   // 상대가 이미 끝냈거나 나간 건 '끊김'이 아니다. 이걸 구분하지 않아서
   // 한쪽이 죽으면 살아 있는 쪽 게임까지 10초 뒤에 강제로 끝나 버렸다.
@@ -2147,7 +2549,7 @@ function resetAll(){
   resetArmed=false; toast('✨ 전체 초기화 완료!'); syncSettingsUI();
 }
 function openStart(){
-  netLeave();
+  netLeave(); hubLeave();
   if(throwerAlive){ throwerAlive=false; if(mirrorRAF){cancelAnimationFrame(mirrorRAF);mirrorRAF=null;} }
   $('throwerView').classList.add('hide'); canvas.style.display='';
   showScreen('startScreen'); $('battleResult').classList.add('hide'); const b=bestScore(),el=$('startBest'); if(b>0){el.textContent='🏆 최고기록 '+b+'점';el.classList.remove('hide');}else el.classList.add('hide'); $('startCoins').textContent='🪙 '+coins; checkDaily(); loopHero(); startAttract(); }
@@ -2168,7 +2570,13 @@ $('attendBackBtn').onclick=()=>openStart();
 $('rankBtn').onclick=openRank;
 $('dungeonBtn').onclick=()=>openNetMode('dungeon');
 $('throwGameBtn').onclick=()=>openNetMode('throw');
-$('netBackBtn').onclick=()=>openStart();
+$('netBackBtn').onclick=()=>{ hubLeave(); openStart(); };
+$('netRandomBtn').onclick=netRandom;
+$('netAiBtn').onclick=aiMatch;
+$('roomRefreshBtn').onclick=()=>{ if(hub){ hubRooms=hubRead(); renderRoomList(); } else hubJoin(); toast('🔄 목록을 새로 읽었어요'); };
+$('netPublicBtn').onclick=()=>{ netPublic=!netPublic; syncPublicBtn();
+  if(netPublic){ hubJoin(); hubAdvertise(); } else hubUnadvertise();
+  toast(netPublic?'🌍 목록에 공개해요':'🔒 코드를 아는 사람만 들어와요'); };
 $('nickInputN').addEventListener('input',e=>saveNick(e.target.value));
 $('throwerHomeBtn').onclick=throwerQuit;
 // 무기 버튼은 buildThrowBar()에서 만든다
@@ -2179,7 +2587,9 @@ $('battlePlayBtn').onclick=()=>{ensureAudio();openSetup();};
 $('netCreateBtn').onclick=netCreate;
 $('netJoinBtn').onclick=netJoinByCode;
 $('lobbyReadyBtn').onclick=lobbyReady;
-$('lobbyCopyBtn').onclick=()=>copyText(location.origin+location.pathname+'?r='+net.room+'\n방 코드: '+net.room,'📋 복사됨! 친구에게 보내세요');
+$('lobbyCopyBtn').onclick=()=>copyText(
+  '🍡 젤리슈팅 같이 하자!\n'+location.origin+location.pathname+'?r='+net.room+
+  '\n(안 열리면 방 코드 '+net.room+' 직접 입력)','🔗 복사됨! 붙여넣어 보내세요');
 $('lobbyRetryBtn').onclick=()=>{ sdkT0=0; sdkAltIdx=-1; netConnect(); };
 $('lobbyLeaveBtn').onclick=()=>{ netLeave(); openStart(); };
 $('throwBtn').onclick=doThrow;
