@@ -202,6 +202,49 @@ async function run(){
   else if(got!==want) no('상대 차림새가 어긋난다: 받은 것 '+got+' / 보낸 것 '+want);
   else ok('대기실에서 서로 다른 얼굴이 보인다 (나만의 악세서리 ⭐까지 전달: '+got+')');
 
+  // ── 6.7 방 채팅이 실제로 오가는가 ──
+  install(A,'까미'); install(B,'하늘');
+  ev(A,"openNetMode('dungeon')"); ev(B,"openNetMode('dungeon')");
+  ev(A,'netCreate()'); await sleep(150);
+  ev(B,'netEnterRoom("'+ev(A,'net.room')+'",false)');
+  await wait(bothMet,5000);
+  ev(A,'$("roomChatInput").value="안녕 하늘아"; roomChatSay();');
+  const gotB=await wait(()=>ev(B,'roomMsgs.some(m=>m.text==="안녕 하늘아")'),3000);
+  ev(B,'$("roomChatInput").value="ㅎㅇ 까미"; roomChatSay();');
+  const gotA=await wait(()=>ev(A,'roomMsgs.some(m=>m.text==="ㅎㅇ 까미")'),3000);
+  if(!gotB) no('A가 보낸 방 채팅이 B에게 안 갔다');
+  else if(!gotA) no('B가 보낸 방 채팅이 A에게 안 갔다');
+  else {
+    // 보낸 쪽에도 남아야 한다 (broadcast 는 보낸 사람에게 되돌아오지 않는다)
+    const mineA=ev(A,'roomMsgs.filter(m=>m.name==="까미").length');
+    const nameB=ev(B,'roomMsgs.find(m=>m.text==="안녕 하늘아").name');
+    const avaB=ev(B,'!!(roomMsgs.find(m=>m.text==="안녕 하늘아").ch)');
+    if(!mineA) no('보낸 쪽 화면에 내 말이 안 남았다');
+    else if(nameB!=='까미') no('보낸 사람 이름이 틀렸다: '+nameB);
+    else if(!avaB) no('채팅에 차림새(프로필 사진)가 안 실렸다');
+    else ok('방 채팅 왕복 + 보낸 쪽에도 남음 + 프로필 사진 실림 (B가 본 이름 "'+nameB+'")');
+  }
+  // 도배 막기 · 길이 자르기 · 빈 말
+  const before=ev(A,'roomMsgs.length');
+  ev(A,'chatLast=0; $("roomChatInput").value="도배1"; roomChatSay(); $("roomChatInput").value="도배2"; roomChatSay();');
+  const after=ev(A,'roomMsgs.length');
+  if(after-before!==1) no('도배가 안 막혔다 ('+(after-before)+'개 들어감)');
+  else ok('연달아 보내면 한 개만 나간다 (도배 막기)');
+  ev(A,'chatLast=0; $("roomChatInput").value="'+'가'.repeat(90)+'"; roomChatSay();');
+  const len=ev(A,'roomMsgs[roomMsgs.length-1].text.length');
+  if(len!==60) no('길이를 60자로 안 잘랐다: '+len);
+  else ok('90자를 보내면 60자로 자른다');
+  ev(A,'chatLast=0;');
+  const b2=ev(A,'roomMsgs.length');
+  ev(A,'$("roomChatInput").value="   "; roomChatSay();');
+  if(ev(A,'roomMsgs.length')!==b2) no('빈 말이 나갔다');
+  else ok('빈 말·공백만은 안 나간다');
+  // 제어문자·줄바꿈 제거
+  ev(A,'chatLast=0; $("roomChatInput").value="한"+String.fromCharCode(0)+"줄"+String.fromCharCode(10)+"바꿈"; roomChatSay();');
+  const cl=ev(A,'roomMsgs[roomMsgs.length-1].text');
+  if(/[\u0000-\u001f]/.test(cl)) no('제어문자가 그대로 들어갔다: '+JSON.stringify(cl));
+  else ok('제어문자·줄바꿈은 지운다 ("'+cl+'")');
+
   // ── 7. 한 쪽이 나가면 상대가 안다 ──
   install(A,'까미'); install(B,'하늘');
   ev(A,"openNetMode('dungeon')"); ev(B,"openNetMode('dungeon')");
