@@ -1378,8 +1378,11 @@ function jellyGloss(g,R,nf,col,soft){
 //   hairFront 얼굴 다음. 앞머리(뱅) — 이마를 덮어야 하니 얼굴 위에 온다
 //   hairTail  맨 마지막. 머리끈·정수리 뭉치처럼 위에 얹히는 작은 것
 const HAIRS=[{id:'basic',label:'기본 🙂',price:0},
+  {id:'buzz', label:'스포츠머리 🏃',price:1200},
   {id:'crop', label:'짧은머리 ✂️',price:1500},
   {id:'bob',  label:'단발 💇',   price:2500},
+  {id:'perm', label:'곱슬머리 🌀',price:3000},
+  {id:'block',label:'투블럭 💈',  price:3000},
   {id:'braid',label:'땋은머리 🧶',price:3500}];
 const HAIR_PRICE={}; HAIRS.forEach(h=>{ HAIR_PRICE[h.id]=h.price; });
 // 남이 보낸 값일 수도 있다 — 아는 것만 통과시킨다
@@ -1411,6 +1414,15 @@ function hairBack(g,R,cfg,col){
     g.beginPath();g.ellipse(0,-R*0.14,R*1.14,R*1.10,0,0,7);g.fill(); return; }
   if(st==='crop'){    // ✂️ 얼굴 바깥으로 나오는 머리가 거의 없다
     g.beginPath();g.ellipse(0,-R*0.16,R*1.08,R*1.05,0,0,7);g.fill(); return; }
+  if(st==='buzz'){    // 🏃 스포츠머리 — 두피에 딱 붙은 얇은 테두리만
+    g.beginPath();g.ellipse(0,-R*0.19,R*1.04,R*1.02,0,0,7);g.fill(); return; }
+  if(st==='block'){   // 💈 투블럭 — 옆은 짧게 쳐서 귀 위가 드러난다(뒷머리를 얼굴보다 작게)
+    g.beginPath();g.ellipse(0,-R*0.26,R*0.99,R*0.95,0,0,7);g.fill(); return; }
+  if(st==='perm'){    // 🌀 곱슬머리 — 테두리가 울퉁불퉁해야 곱슬로 읽힌다
+    g.beginPath();g.ellipse(0,-R*0.14,R*1.10,R*1.06,0,0,7);g.fill();
+    for(let i=0;i<=12;i++){ const a2=Math.PI*(1+i/12);       // 정수리를 한 바퀴 도는 곱슬 알
+      g.beginPath(); g.arc(Math.cos(a2)*R*1.06,-R*0.14+Math.sin(a2)*R*1.02,R*0.20,0,7); g.fill(); }
+    return; }
   if(cfg.kind==='girl'){ // 👧 기본 — 얼굴 옆을 지나 아래로 흘러내리는 긴 머리
     g.beginPath();
     g.moveTo(-R*1.16,-R*0.10);
@@ -1441,6 +1453,43 @@ function hairFront(g,R,cfg,col){
     g.quadraticCurveTo(-R*0.64,-R*0.34,-R*0.80,-R*0.46);
     g.closePath(); g.fill();
     hairSheen(g,R,[[-0.34,-0.82,0.28,0.080,-0.34,0.28]]); return; }
+  if(st==='buzz'){    // 🏃 짧게 민 머리 — 헤어라인이 높고, 가운데가 살짝 내려온 M자
+    g.beginPath();
+    g.moveTo(-R*0.95,-R*0.34);
+    g.quadraticCurveTo(-R*1.02,-R*0.96,-R*0.16,-R*1.06);
+    g.quadraticCurveTo( R*0.88,-R*0.96, R*0.95,-R*0.36);
+    g.quadraticCurveTo( R*0.74,-R*0.56, R*0.38,-R*0.62);
+    g.quadraticCurveTo( R*0.12,-R*0.66, 0,    -R*0.56);      // 가운데 뾰족 (M자)
+    g.quadraticCurveTo(-R*0.12,-R*0.66,-R*0.38,-R*0.62);
+    g.quadraticCurveTo(-R*0.74,-R*0.56,-R*0.95,-R*0.34);
+    g.closePath(); g.fill();
+    hairSheen(g,R,[[-0.30,-0.84,0.30,0.075,-0.32,0.22]]); return; }
+  if(st==='block'){   // 💈 투블럭 — 위는 볼륨, 옆은 짧게. 넘긴 앞머리가 이 머리의 얼굴이다
+    g.beginPath();
+    g.moveTo(-R*0.92,-R*0.44);
+    g.quadraticCurveTo(-R*1.08,-R*1.10,-R*0.04,-R*1.18);     // 위로 부풀린 정수리
+    g.quadraticCurveTo( R*0.94,-R*1.04, R*1.00,-R*0.42);
+    g.quadraticCurveTo( R*0.86,-R*0.62, R*0.52,-R*0.54);
+    g.quadraticCurveTo( R*0.16,-R*0.46,-R*0.08,-R*0.68);     // 가르마에서 넘긴 앞머리
+    g.quadraticCurveTo(-R*0.50,-R*0.54,-R*0.92,-R*0.44);
+    g.closePath(); g.fill();
+    // 옆을 짧게 쳤다는 '단'을 짧은 선으로 — 이게 없으면 그냥 볼륨 머리다
+    g.strokeStyle=hexA(shade(col,-34),0.55); g.lineWidth=Math.max(1,R*0.030); g.lineCap='round';
+    [-1,1].forEach(sd=>{ g.beginPath();
+      g.moveTo(sd*R*0.90,-R*0.46); g.quadraticCurveTo(sd*R*0.99,-R*0.40,sd*R*1.00,-R*0.30); g.stroke(); });
+    hairSheen(g,R,[[-0.24,-0.92,0.32,0.085,-0.30,0.30]]); return; }
+  if(st==='perm'){    // 🌀 곱슬 앞머리 — 동그란 알을 이어 붙인 밑단
+    g.beginPath();
+    g.moveTo(-R*1.00,-R*0.20);
+    g.quadraticCurveTo(-R*1.08,-R*1.02,-R*0.10,-R*1.12);
+    g.quadraticCurveTo( R*0.98,-R*1.02, R*1.00,-R*0.20);
+    g.quadraticCurveTo( R*0.70,-R*0.34, R*0.40,-R*0.30);
+    g.quadraticCurveTo( R*0.02,-R*0.24,-R*0.34,-R*0.32);
+    g.quadraticCurveTo(-R*0.70,-R*0.36,-R*1.00,-R*0.20);
+    g.closePath(); g.fill();
+    [[-0.72,-0.30,0.17],[-0.40,-0.26,0.16],[-0.06,-0.22,0.17],[0.28,-0.26,0.16],[0.62,-0.30,0.17]]
+      .forEach(([bx,by,br])=>{ g.beginPath(); g.arc(R*bx,R*by,R*br,0,7); g.fill(); });
+    hairSheen(g,R,[[-0.34,-0.82,0.28,0.080,-0.34,0.26],[0.34,-0.82,0.28,0.080,0.34,0.20]]); return; }
   if(st==='bob'){     // 💇 일자 앞머리
     g.beginPath();
     g.moveTo(-R*1.00,-R*0.18);
@@ -2049,8 +2098,11 @@ const EAR_PT={
   dog  :{in:[1.02,-0.34], lobe:[0.86, 0.56]},   // 옆으로 늘어진 귀 → 귀걸이는 그 끝에
   bunny:{in:[0.51,-1.24], lobe:[0.76,-0.64]},   // 위로 솟은 긴 귀
   bear :{in:[0.80,-0.84], lobe:[0.95,-0.54]},   // 머리 위 동그란 귀
-  human:{in:[1.04, 0.05], lobe:[1.00, 0.25]},   // 옆에 붙은 사람 귀 — 얼굴 밖으로 삐져나온 부분을 재서
-  girl :{in:[1.01, 0.07], lobe:[1.00, 0.25]} };
+  // 사람 귀는 얼굴 밖으로 삐져나온 부분을 재서 잡았다. 귓불(lobe)은 '보이는 살색의 가장
+  // 아래'로 재면 안 된다 — 얼굴 타원의 매끈한 테두리(안티에일리어싱)까지 살색으로 세어
+  // 귀보다 0.1R 아래가 나온다. 귀 타원의 실제 아래끝(중심 y + 세로반지름)을 쓴다.
+  human:{in:[1.04, 0.05], lobe:[1.04, 0.07]},
+  girl :{in:[1.01, 0.07], lobe:[1.01, 0.09]} };
 function earPt(kind,which){ const e=EAR_PT[kind]||EAR_PT.cat; return e[which]; }
 
 // 🎵 무선 이어폰 — 귀에 콕 꽂는 작은 것. 대(stem)가 아래로 살짝 내려온다.
