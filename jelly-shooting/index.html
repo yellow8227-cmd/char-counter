@@ -1130,7 +1130,7 @@ $('tSoundBtn').addEventListener('click',toggleSound);
 // 'human' 은 남자아이다. 이미 저장된 캐릭터가 'human'이라 id를 바꾸지 않는다(그러면 기존 사용자가 고양이로 초기화된다).
 const KINDS=[{id:'cat',label:'고양이 🐱'},{id:'dog',label:'강아지 🐶'},{id:'bunny',label:'토끼 🐰'},{id:'bear',label:'곰 🐻'},{id:'human',label:'남자아이 🧒'},{id:'girl',label:'여자아이 👧'}];
 const COLORS=['#ffb3c9','#ffe36e','#ffd59e','#b6e3a0','#a3d5ff','#d9b8ff','#ffffff','#8a6b5a','#5a5566'];
-const ACCS=[{id:'none',label:'없음'},{id:'bow',label:'리본 🎀'},{id:'hat',label:'모자 🎩'},{id:'glasses',label:'안경 👓'},{id:'flower',label:'꽃 🌸'},{id:'crown',label:'왕관 👑'},{id:'horns',label:'뿔 😈'}];
+const ACCS=[{id:'none',label:'없음'},{id:'bow',label:'리본 🎀'},{id:'hat',label:'모자 🎩'},{id:'glasses',label:'안경 👓'},{id:'shades',label:'선글라스 🕶️'},{id:'flower',label:'꽃 🌸'},{id:'crown',label:'왕관 👑'},{id:'horns',label:'뿔 😈'}];
 let character=loadChar()||{kind:'cat',color:'#ffb3c9',acc:'bow',accColor:'#ff5c8a'};
 function saveChar(){try{localStorage.setItem('jelly_char',JSON.stringify(character));}catch(e){}}
 function loadChar(){try{return JSON.parse(localStorage.getItem('jelly_char'));}catch(e){return null;}}
@@ -1596,7 +1596,7 @@ const ACC_WEAR={
   '🎀':'side','🌸':'side','🍓':'side','🦋':'side','🍀':'side','🐚':'side' };
 const WEAR={ crown:{w:0.42,sink:0.06,tilt:0},
              side :{w:0.34,sink:0.12,tilt:0},
-             hat  :{w:0.70,sink:0.22,tilt:-0.05},
+             hat  :{w:0.74,sink:0.30,tilt:-0.05},
              ears :{w:1.06,h:1.16,tilt:0},
              mouth:{w:0.34,tilt:0.22} };
 // 입 높이 — 종류마다 다르다(토끼는 ω 입이 아래, 강아지는 주둥이가 더 아래)
@@ -1664,6 +1664,78 @@ function drawPhones(g,R,cfg,ac){
     g.beginPath(); g.ellipse(cx+sd*cupW*0.30,cy-cupH*0.42,cupW*0.34,cupH*0.16,0,0,7); g.fill();
   });
   g.restore(); }
+// 🎩 모자 — 예전에는 납작한 네모 두 개였다. 브림이 1.0R 폭밖에 안 돼서 2R 짜리 머리
+// 위에 걸터앉은 꼴이었고, 그래서 "머리에서 떠 있다"는 느낌이 났다. 브림을 머리 폭까지
+// 넓히고 정수리보다 아래로 내려 눌러쓴 모양으로 다시 그린다.
+function drawHat(g,R,cfg,ac){
+  const nf=kfx(cfg.kind), top=headCrown(cfg.kind);
+  const brimY=(top+0.19)*R;                                   // 정수리보다 아래 → 눌러쓴 느낌
+  const hw=Math.max(nf.sx*0.99,headHalf(cfg.kind,top+0.26))*R; // 브림은 머리 폭까지
+  const cw=hw*0.62, ch=R*0.50, bandH=R*0.11;
+  g.save();
+  // 브림 아래 그늘 — 이게 있어야 머리에 '닿아' 보인다
+  g.fillStyle='rgba(86,42,68,0.16)';
+  g.beginPath(); g.ellipse(0,brimY+R*0.045,hw*0.9,R*0.075,0,0,7); g.fill();
+  // 크라운(윗통) — 위가 둥근 통
+  const cg=g.createLinearGradient(-cw,0,cw,0);
+  cg.addColorStop(0,shade(ac,-16)); cg.addColorStop(0.42,mixHex(ac,'#ffffff',0.16)); cg.addColorStop(1,shade(ac,-26));
+  g.fillStyle=cg;
+  g.beginPath();
+  g.moveTo(-cw,brimY);
+  g.lineTo(-cw,brimY-ch+R*0.16);
+  g.quadraticCurveTo(-cw,brimY-ch,-cw+R*0.16,brimY-ch);
+  g.lineTo(cw-R*0.16,brimY-ch);
+  g.quadraticCurveTo(cw,brimY-ch,cw,brimY-ch+R*0.16);
+  g.lineTo(cw,brimY); g.closePath(); g.fill();
+  // 밴드 — 크라운과 브림 사이에 한 줄. 없으면 통짜 상자처럼 보인다.
+  g.fillStyle=hexA(shade(ac,-52),0.72);
+  g.fillRect(-cw,brimY-bandH,cw*2,bandH);
+  // 브림 — 머리 폭까지 넓은 타원
+  const bg=g.createLinearGradient(0,brimY-R*0.09,0,brimY+R*0.09);
+  bg.addColorStop(0,mixHex(ac,'#ffffff',0.22)); bg.addColorStop(1,shade(ac,-30));
+  g.fillStyle=bg; g.beginPath(); g.ellipse(0,brimY,hw,R*0.115,0,0,7); g.fill();
+  // 브림 윗면 하이라이트
+  g.fillStyle='rgba(255,255,255,0.28)';
+  g.beginPath(); g.ellipse(0,brimY-R*0.022,hw*0.9,R*0.045,0,0,7); g.fill();
+  g.restore(); }
+
+// 🕶️ 선글라스 — 렌즈를 반투명으로 깔아서 눈이 살짝 비친다.
+// 악세서리는 얼굴보다 나중에 그려지므로, 반투명으로 덮으면 아래 눈이 그대로 배어 나온다.
+function drawShades(g,R,cfg,ac){
+  const nf=kfx(cfg.kind), ex=R*nf.eyeGap, ey=-R*0.04;
+  const lw=R*Math.max(nf.eyeW*1.95,0.235), lh=R*Math.max(nf.eyeH*1.30,0.245);
+  const frame=shade(ac,-58);
+  g.save();
+  // 다리 — 얼굴 옆까지
+  g.strokeStyle=hexA(frame,0.85); g.lineWidth=R*0.052; g.lineCap='round';
+  [-1,1].forEach(sd=>{ g.beginPath(); g.moveTo(sd*(ex+lw*0.9),ey-lh*0.30);
+    g.lineTo(sd*Math.min(nf.sx*1.03,1.16)*R,ey-lh*0.10); g.stroke(); });
+  // 브릿지
+  g.beginPath(); g.moveTo(-ex+lw*0.82,ey-lh*0.34); g.quadraticCurveTo(0,ey-lh*0.62,ex-lw*0.82,ey-lh*0.34); g.stroke();
+  [-1,1].forEach(sd=>{
+    const cx=sd*ex;
+    // 렌즈 — 위는 진하고 아래는 옅게. 아래쪽에서 눈이 비친다.
+    const lg=g.createLinearGradient(cx,ey-lh,cx,ey+lh);
+    lg.addColorStop(0,hexA(shade(ac,-30),0.86));
+    lg.addColorStop(0.55,hexA(ac,0.68));
+    lg.addColorStop(1,hexA(mixHex(ac,'#ffffff',0.30),0.44));
+    g.fillStyle=lg;
+    g.beginPath(); g.ellipse(cx,ey,lw,lh,0,0,7); g.fill();
+    // 유리 반사 — 이게 없으면 눈을 색종이로 가린 것처럼 보인다
+    g.save(); g.beginPath(); g.ellipse(cx,ey,lw,lh,0,0,7); g.clip();
+    g.fillStyle='rgba(255,255,255,0.42)';
+    g.beginPath(); g.moveTo(cx-lw*0.95,ey+lh*0.25); g.lineTo(cx-lw*0.15,ey-lh*1.05);
+    g.lineTo(cx+lw*0.22,ey-lh*1.05); g.lineTo(cx-lw*0.58,ey+lh*0.25); g.closePath(); g.fill();
+    g.fillStyle='rgba(255,255,255,0.22)';
+    g.beginPath(); g.moveTo(cx+lw*0.38,ey+lh*0.25); g.lineTo(cx+lw*0.86,ey-lh*0.62);
+    g.lineTo(cx+lw*1.02,ey-lh*0.40); g.lineTo(cx+lw*0.62,ey+lh*0.30); g.closePath(); g.fill();
+    g.restore();
+    // 테
+    g.strokeStyle=hexA(frame,0.92); g.lineWidth=R*0.042;
+    g.beginPath(); g.ellipse(cx,ey,lw,lh,0,0,7); g.stroke();
+  });
+  g.restore(); }
+
 // 머리 '뒤'에 들어가는 악세서리 자리. 지금은 쓰는 것이 없다(🎧 는 앞에서 직접 그린다).
 function drawAccBack(g,R,cfg){}
 function drawCustomAcc(g,R,cfg,mine,ac){
@@ -1715,7 +1787,8 @@ function drawAcc(g,R,cfg){ const ac=cfg.accColor||'#ff5c8a';
   if(mine){ drawCustomAcc(g,R,cfg,mine,ac); return; }
   // 기본 악세서리 좌표는 고양이 머리에 손으로 맞춘 값이다. 종류마다 정수리 높이와 얼굴
   // 폭이 다르니 그 차이만큼 묶어서 옮기고 키운다 — 개별 값을 여섯 번 고치지 않는다.
-  if(cfg.acc==='glasses'){ drawBuiltinAcc(g,R,cfg,ac); return; }   // 안경은 눈에 쓰는 것이라 그대로
+  // 안경·선글라스는 눈에, 모자는 스스로 정수리를 재서 쓴다 — 묶음으로 옮기지 않는다
+  if(cfg.acc==='glasses'||cfg.acc==='shades'||cfg.acc==='hat'){ drawBuiltinAcc(g,R,cfg,ac); return; }
   const s=kfx(cfg.kind).sx/kfx('cat').sx;
   // 옆에 꽂는 것(리본·꽃)은 정수리가 아니라 '그 위치의 머리선'에 얹어야 한다.
   // 통째로 옮기면 강아지처럼 얼굴이 넓은 애는 리본이 머리 밖 허공에 떠 버렸다.
@@ -1734,8 +1807,14 @@ function drawBuiltinAcc(g,R,cfg,ac){
     g.beginPath();g.moveTo(bx,by);g.lineTo(bx-R*0.34,by-R*0.2);g.lineTo(bx-R*0.34,by+R*0.2);g.closePath();g.fill();
     g.beginPath();g.moveTo(bx,by);g.lineTo(bx+R*0.34,by-R*0.2);g.lineTo(bx+R*0.34,by+R*0.2);g.closePath();g.fill();
     g.fillStyle=shade(ac,-20);g.beginPath();g.arc(bx,by,R*0.1,0,7);g.fill();
-  } else if(cfg.acc==='hat'){ g.fillStyle=ac;g.fillRect(-R*0.5,-R*1.02,R,R*0.16);g.fillRect(-R*0.34,-R*1.5,R*0.68,R*0.5);g.fillStyle=shade(ac,-25);g.fillRect(-R*0.34,-R*1.12,R*0.68,R*0.1);
-  } else if(cfg.acc==='glasses'){ g.strokeStyle='#4a3a44';g.lineWidth=R*0.06;g.beginPath();g.arc(-R*0.34,-R*0.05,R*0.24,0,7);g.stroke();g.beginPath();g.arc(R*0.34,-R*0.05,R*0.24,0,7);g.stroke();g.beginPath();g.moveTo(-R*0.1,-R*0.05);g.lineTo(R*0.1,-R*0.05);g.stroke();
+  } else if(cfg.acc==='hat'){ drawHat(g,R,cfg,ac);
+  } else if(cfg.acc==='shades'){ drawShades(g,R,cfg,ac);
+  } else if(cfg.acc==='glasses'){ const nf=kfx(cfg.kind), ex=R*nf.eyeGap, ey=-R*0.05, rr=R*Math.max(nf.eyeW*1.55,0.20);
+    g.strokeStyle='#4a3a44';g.lineWidth=R*0.055;
+    g.beginPath();g.arc(-ex,ey,rr,0,7);g.stroke();g.beginPath();g.arc(ex,ey,rr,0,7);g.stroke();
+    g.beginPath();g.moveTo(-ex+rr,ey);g.lineTo(ex-rr,ey);g.stroke();
+    [-1,1].forEach(sd=>{ g.beginPath();g.moveTo(sd*(ex+rr),ey);
+      g.lineTo(sd*Math.min(nf.sx*1.02,1.15)*R,ey-R*0.05);g.stroke(); });
   } else if(cfg.acc==='flower'){ const fx=R*0.72,fy=-R*0.62;g.fillStyle=ac;for(let i=0;i<5;i++){const a=i/5*Math.PI*2;g.beginPath();g.arc(fx+Math.cos(a)*R*0.16,fy+Math.sin(a)*R*0.16,R*0.12,0,7);g.fill();}g.fillStyle='#ffe27a';g.beginPath();g.arc(fx,fy,R*0.11,0,7);g.fill();
   } else if(cfg.acc==='crown'){ const cy=-R*0.92;g.fillStyle='#ffce3d';g.beginPath();g.moveTo(-R*0.5,cy);g.lineTo(-R*0.5,cy-R*0.32);g.lineTo(-R*0.25,cy-R*0.08);g.lineTo(0,cy-R*0.42);g.lineTo(R*0.25,cy-R*0.08);g.lineTo(R*0.5,cy-R*0.32);g.lineTo(R*0.5,cy);g.closePath();g.fill();g.fillStyle='#ff5c8a';[-0.3,0,0.3].forEach(dx=>{g.beginPath();g.arc(dx*R,cy-R*0.04,R*0.06,0,7);g.fill();});
   } else if(cfg.acc==='horns'){ g.fillStyle=ac;hornAt(g,-R*0.62,-R*0.72,R,-1);hornAt(g,R*0.62,-R*0.72,R,1); } }
