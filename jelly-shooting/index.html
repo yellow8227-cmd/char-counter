@@ -864,7 +864,8 @@
         이메일은 <b>계정을 잇는 데만</b> 써요 — 광고·알림은 안 보내고, 다른 사람에게도 안 보여요.
         안 넣어도 게임은 그대로 할 수 있어요.</div>
       <div class="tag2" style="text-align:left;margin-top:6px;opacity:.6;">
-        비밀번호를 잊었으면 아래로 — 메일 링크로도 들어올 수 있어요.</div>
+        비밀번호를 잊었으면 아래로 — 메일 링크로도 들어올 수 있어요.
+        (메일은 네이버·다음에서 안 오는 일이 있어요. 그럴 때는 위의 비밀번호 방식을 쓰면 메일이 아예 안 갑니다)</div>
       <div style="display:flex;gap:8px;justify-content:center;margin-top:6px;flex-wrap:wrap;">
         <button class="chip" id="cloudLinkBtn" style="font-size:13px;">📧 메일 링크로 지키기</button>
         <button class="chip" id="cloudInBtn" style="font-size:13px;">📧 메일 링크로 들어오기</button>
@@ -1274,6 +1275,10 @@ function cloudWhy(msg){
   if(/already registered|already been registered|User already/i.test(m))
     return '이미 있는 계정이에요 — 아래 "🔑 로그인" 을 눌러주세요';
   if(/Invalid login credentials/i.test(m)) return '이메일이나 비밀번호가 맞지 않아요';
+  // Supabase 기본 메일은 테스트용이라 네이버·다음 같은 곳이 그냥 버리는 일이 많다.
+  // 그러면 확인 메일을 못 받아 계정이 영영 잠긴다 — Confirm email 을 끄는 게 답이다.
+  if(/Email not confirmed|not confirmed/i.test(m))
+    return '확인 메일을 눌러야 하는 계정이에요. 메일이 안 왔다면 Supabase → Authentication → Email 의 "Confirm email" 을 끄면 바로 됩니다';
   if(/Password should be at least/i.test(m)) return '비밀번호를 6자 이상 적어주세요';
   if(/Signups not allowed|signup is disabled/i.test(m))
     return '가입이 꺼져 있어요 (Supabase → Authentication → Email 을 켜주세요)';
