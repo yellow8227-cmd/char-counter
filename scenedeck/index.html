@@ -183,8 +183,11 @@ main{max-width:1180px;margin:0 auto;padding:42px 30px 96px}
 .pghd p b{color:var(--tx);font-weight:600}
 
 .card{background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:22px;margin-bottom:16px}
-.card>h3{margin:0 0 18px;font-size:12px;font-weight:700;letter-spacing:.12em;
-  display:flex;align-items:center;gap:10px;text-transform:uppercase}
+.card>h3{margin:0 0 18px;font-size:13px;font-weight:700;letter-spacing:.01em;color:var(--tx);
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+/* 핵심 카드 — 위에 굵은 선을 얹고 제목을 키워 한눈에 잡히게 */
+.card.key{border-top:3px solid var(--acc);padding-top:20px}
+.card.key>h3{font-family:var(--disp);font-size:17px;font-weight:700;letter-spacing:.005em;margin-bottom:16px}
 .step{font-family:var(--mono);font-size:10.5px;color:var(--onacc);background:var(--acc);
   width:20px;height:20px;border-radius:0;display:grid;place-items:center;flex:none;letter-spacing:0}
 .tagx{font-size:9px;font-weight:700;letter-spacing:.16em;color:var(--tx3);
@@ -216,8 +219,10 @@ input::placeholder,textarea::placeholder{color:var(--ph)}
   padding:9px 16px;cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.02em;
   transition:background .16s,border-color .16s,color .16s;white-space:nowrap}
 .btn:hover{background:var(--bg);border-color:var(--tx)}
-.btn.pri{background:var(--acc);border-color:var(--acc);color:var(--onacc)}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:var(--onacc);
+  padding:11px 20px;font-weight:700;letter-spacing:.01em}
 .btn.pri:hover{background:var(--acc2);border-color:var(--acc2)}
+.btn.pri.sm{padding:7px 13px;font-size:11.5px}
 .btn.gh{background:transparent;border-color:transparent;color:var(--tx2)}
 .btn.gh:hover{background:transparent;border-color:var(--line2);color:var(--tx)}
 .btn.dgr{color:var(--red);border-color:var(--dgrbd);background:transparent}
@@ -292,6 +297,9 @@ input::placeholder,textarea::placeholder{color:var(--ph)}
 .pcard.fold{background:transparent}
 .pcard.fold .tgbody{display:none}
 .pcard .tgbody{margin-top:15px}
+.pcard:not(.fold){border-top:3px solid var(--acc);padding-top:20px}
+.pcard:not(.fold) .tgbar b{font-family:var(--disp);font-size:16px;letter-spacing:.005em;text-transform:none}
+.pcard .out{border-left:3px solid var(--acc)}
 .opt{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
 .opt>span{flex:none;width:82px;font-size:9.5px;font-weight:700;letter-spacing:.16em;
   color:var(--tx3);text-transform:uppercase}
@@ -397,7 +405,8 @@ kbd{font-family:var(--mono);font-size:11px;background:transparent;border:1px sol
   color:var(--warntx);border-radius:0;padding:11px 14px;font-size:12.5px;margin:0 0 10px}
 
 /* 지금 어디쯤 왔는지 · 다음에 뭘 눌러야 하는지 */
-.steps4{display:flex;gap:0;flex-wrap:wrap;margin:-4px 0 18px;border:1px solid var(--line)}
+.steps4{display:flex;gap:0;flex-wrap:wrap;margin:-4px 0 0;border:1px solid var(--line);
+  border-bottom:0;background:var(--bg)}
 .s4{display:flex;align-items:center;gap:9px;padding:10px 16px;border-radius:0;
   border:0;background:transparent;font-size:12px;font-weight:600;color:var(--tx3);flex:1;min-width:150px}
 .s4+.s4{border-left:1px solid var(--line)}
@@ -405,12 +414,22 @@ kbd{font-family:var(--mono);font-size:11px;background:transparent;border:1px sol
   flex:none;background:var(--s3);color:var(--tx3);font-size:10px}
 .s4.done{color:var(--teal);background:transparent}
 .s4.done b{background:var(--teal);color:var(--bg)}
-.s4.now{color:var(--tx);background:var(--s2)}
+.s4.now{color:var(--tx);background:var(--s2);font-weight:700}
 .s4.now b{background:var(--acc);color:var(--onacc)}
-.nowbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 24px;
-  padding:14px 17px;border:1px solid var(--line);border-left:3px solid var(--tx2);
-  background:var(--s1);border-radius:0}
-.nowbar .t{font-size:13px;font-weight:600;color:var(--tx)}
+/* 단계칸이 없을 때(단독으로 쓰일 때)는 아래 여백을 되살린다 */
+.steps4:last-child{border-bottom:1px solid var(--line);margin-bottom:18px}
+/* 단계 줄 바로 아래에 붙는 「지금 이걸 하세요」 — 화면에서 제일 센 자리 */
+.nowbar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:0 0 26px;
+  padding:16px 20px;border:1px solid var(--acc);background:var(--acc);border-radius:0}
+.nowbar:empty{display:none}
+.nowbar .t{font-size:13.5px;font-weight:600;color:var(--onacc);line-height:1.6}
+.nowbar .t b{color:var(--onacc)}
+.nowbar .btn{background:transparent;border-color:var(--heroline);color:var(--onacc);font-weight:600}
+.nowbar .btn:hover{background:transparent;border-color:var(--onacc)}
+.nowbar .btn.pri{background:var(--onacc);border-color:var(--onacc);color:var(--acc);font-weight:700}
+.nowbar .btn.pri:hover{background:var(--s1);border-color:var(--s1)}
+.nowbar .mini,.nowbar .mini b,.nowbar .t i{color:var(--onacc);opacity:.72;font-style:normal}
+.nowbar .tagx{color:var(--onacc);border-color:var(--onacc);opacity:.8}
 .bad{color:var(--red);font-weight:700}
 @media(max-width:720px){ #hshare .lb{display:none} }
 
@@ -858,7 +877,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       한글 인식에 필요한 데이터만 수십 MB라 파일 하나에 담을 수가 없어요. 대신 위 두 길이 확실합니다.</p>
     </div>
 
-    <div class="card" id="sc-raw-wrap" style="display:none">
+    <div class="card key" id="sc-raw-wrap" style="display:none">
       <h3>씬 분해</h3>
       <textarea id="sc-raw" style="min-height:180px;font-family:var(--mono);font-size:12.5px" placeholder="S#1. 비 내리는 뒷골목 / 밤&#10;&#10;지훈이 우산 없이 걸어 나온다.&#10;&#10;지훈: 이제 그만하자.&#10;&#10;S#2. 기억 상점 / 심야"></textarea>
       <p class="mini" id="sc-hint">씬 머리글은 <b>S#1.</b> · <b>씬 1</b> · <b>1.</b> · <b>INT./EXT.</b> 형태를 모두 알아봅니다. 시간대(낮·밤·새벽…)도 자동으로 잡아요.</p>
@@ -884,7 +903,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <div class="out empty2" id="sc-preview" style="margin-top:12px;max-height:260px;overflow:auto">원고를 넣고 「분해 미리보기」를 누르세요</div>
     </div>
 
-    <div class="card" id="sc-oneshot" style="display:none">
+    <div class="card key" id="sc-oneshot" style="display:none">
       <h3>컷까지 한 번에 <span class="tagx">프롬프트 바로 쓰기</span></h3>
       <div class="row">
         <button class="btn pri" id="sc-allcuts">모든 씬을 컷으로 만들기</button>
@@ -982,7 +1001,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <label class="chip" data-pm="quick">빠른 입력 — 씬 · 컷 없이 바로</label>
     </div>
 
-    <div class="card" id="qcard" style="display:none">
+    <div class="card key" id="qcard" style="display:none">
       <h3>빠른 입력 <span class="tagx">저장 안 해도 바로 나옵니다</span></h3>
       <label class="f"><span>이 장면에서 무슨 일이 벌어지나요</span>
         <textarea id="q-desc" style="min-height:76px" placeholder="지훈이 우산도 없이 빗속 골목을 걸어 나온다"></textarea></label>
@@ -1027,7 +1046,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       </div>
     </details>
 
-    <div class="card" id="cutcard">
+    <div class="card key" id="cutcard">
       <h3>씬 · 컷 선택 <span class="tagx" id="curlabel">—</span></h3>
       <div class="row" style="margin-bottom:11px">
         <select id="p-scene" style="max-width:360px"></select>
