@@ -767,6 +767,7 @@
       <div style="display:flex;gap:8px;justify-content:center;margin-top:9px;flex-wrap:wrap;">
         <button class="chip" id="cloudLinkBtn">📧 이 기록 지키기</button>
         <button class="chip" id="cloudInBtn">🔑 이 계정으로 들어오기</button>
+        <button class="chip" id="cloudOutBtn">🚪 이 기기에서 로그아웃</button>
       </div>
       <div class="tag2" style="text-align:left;margin-top:8px;opacity:.75;">
         이메일을 붙이면 폰·노트북이 같은 사람이 돼요. 비밀번호는 없고, 메일로 오는 링크만 누르면 돼요.</div>
@@ -1238,6 +1239,22 @@ async function cloudSignIn(email){      // 다른 기기에서 그 계정으로 
   if(r&&r.error){ toast('안 됐어요: '+r.error.message); return false; }
   cloudSay('📧 '+email+' 로 들어오는 링크를 보냈어요. 메일함에서 눌러주세요');
   return true; }
+// 같이 쓰는 컴퓨터를 생각하면 나갈 문이 있어야 한다. 세션 토큰은 브라우저에 남으므로
+// 그냥 두면 다음 사람이 내 계정으로 들어와 있다. 나갈 때 이 기기에 남은 기록도 지운다
+// (이메일로 다시 들어오면 서버에서 그대로 돌아온다).
+function cloudOutAsk(){
+  if(cloudState!=='linked'){ toast('이메일을 붙인 계정에서만 로그아웃할 수 있어요'); return; }
+  showInvite('이 기기에서 로그아웃할까요?\n이 기기에 남은 기록은 지워지고, '+cloudMail
+    +' 로 다시 들어오면 그대로 돌아와요.','🚪 로그아웃',cloudOut); }
+async function cloudOut(){
+  const sb=getSupa();
+  if(cloudTimer){ clearTimeout(cloudTimer); cloudTimer=null; }   // 올리다 말고 나가지 않게
+  cloudState='off'; cloudUid=null; cloudMail='';
+  try{ if(sb) await sb.auth.signOut(); }catch(e){}
+  CLOUD_KEYS.concat(['jelly_saved_at']).forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+  cloudReload(); cloudSay('로그아웃했어요. 이 기기는 다시 처음부터예요');
+  toast('🚪 로그아웃했어요');
+  setTimeout(()=>{ try{ cloudBoot(); }catch(e){} },400); }
 function cloudSay(m){ cloudMsg=(m==null)?'':m; syncCloudUI(); }
 function cloudWhere(){
   if(cloudState==='linked') return '☁️ '+cloudMail+' 계정에 저장돼요 — 다른 기기에서도 이 이메일로 들어오면 그대로 이어져요';
@@ -1249,6 +1266,9 @@ function syncCloudUI(){
   const st=$('cloudState'); if(st) st.textContent=
     cloudState==='linked'?'연결됨 ✅':(cloudState==='device'?'서버 저장 중':'기기 저장');
   const lk=$('cloudLinkBtn'); if(lk) lk.style.display=(cloudState==='linked')?'none':'';
+  const inb=$('cloudInBtn'); if(inb) inb.style.display=(cloudState==='linked')?'none':'';
+  const ob=$('cloudOutBtn'); if(ob) ob.style.display=(cloudState==='linked')?'':'none';
+  const ml=$('cloudMail'); if(ml) ml.style.display=(cloudState==='linked')?'none':'';
 }
 
 // ================= Setup =================
@@ -3474,7 +3494,10 @@ function nickChangeAsk(){
     ()=>{ nickChanging=true; nickSet=false; nickDraft=nick;
       syncNickInputs(); syncNickUI();
       const el=$('nickInputP'); if(el){ el.readOnly=false; el.focus(); try{el.select();}catch(e){} } }); }
-function escapeHtml(s){ return (s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+function escapeHtml(s){ return (s||'').replace(/[<>&"']/g,
+  c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c])); }
+// 남이 보낸 말 번호. 속성 안에 들어가므로 글자 종류를 아예 제한한다.
+function chatIdSafe(v){ return String(v||'').replace(/[^A-Za-z0-9_-]/g,'').slice(0,40); }
 // "인터넷 연결이 필요해요"는 거짓말이 될 수 있다. 실제로는 SDK를 못 불러온 것
 // (미리보기·사내망의 CSP 차단)일 수도 있으므로 원인을 구분해서 알려준다.
 function netWhyOffline(){
@@ -3706,7 +3729,7 @@ function chatJoin(){
     const text=chatClean(m.text); if(!text) return;
     const name=chatClean(m.name).slice(0,10)||'누군가';
     seenPut(name,m.ch);
-    chatPush(chatMsgs,{id:String(m.id||'').slice(0,40),name:name,ch:m.ch,text:text});
+    chatPush(chatMsgs,{id:chatIdSafe(m.id),name:name,ch:m.ch,text:text});
     if(!$('chatScreen').classList.contains('hide')) chatRender('chatBox',chatMsgs,'');
   });
   chatCh.on('broadcast',{event:'del'},p=>{     // 상대가 회수했다
@@ -4136,7 +4159,7 @@ function netOnMsg(m){
     const text=chatClean(m.text); if(!text) return;
     const who=chatClean(m.name).slice(0,10)||'친구';
     seenPut(who,m.char);
-    chatPush(roomMsgs,{id:String(m.id||'').slice(0,40),name:who,ch:m.char,text:text});
+    chatPush(roomMsgs,{id:chatIdSafe(m.id),name:who,ch:m.char,text:text});
     roomChatRender(); return; }
   if(m.t==='unsay'){                            // 상대가 방 채팅을 회수했다
     if(chatDrop(roomMsgs,String(m.id||'').slice(0,40),chatClean(m.name).slice(0,10))) roomChatRender();
@@ -5631,6 +5654,7 @@ window.__auditEach=function(scan){
 // ☁️ 계정 단추
 $('cloudLinkBtn').onclick=()=>cloudLink(($('cloudMail').value||'').trim());
 $('cloudInBtn').onclick=()=>cloudSignIn(($('cloudMail').value||'').trim());
+$('cloudOutBtn').onclick=cloudOutAsk;
 
 // boot
 openStart();
