@@ -1,6 +1,6 @@
 // Jelly Shooting service worker — 오프라인 실행 + 자동 업데이트
 // 게임을 크게 바꾸면 아래 버전을 올려주세요 (예: jelly-v2) → 방문자에게 새 버전이 반영돼요.
-const CACHE = 'jelly-v40';
+const CACHE = 'jelly-v41';
 const ASSETS = [
   './', './index.html', './manifest.json',
   './icon-192.png', './icon-512.png', './icon-maskable-512.png',
