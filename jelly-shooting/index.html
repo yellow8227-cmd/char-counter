@@ -1217,7 +1217,9 @@ async function cloudBoot(){
     if(!ses){
       const r=await sb.auth.signInAnonymously();
       // 대시보드에서 '익명 로그인'을 안 켰으면 여기서 막힌다 — 게임은 그대로 돌아간다.
-      if(r&&r.error){ cloudSay('이 기기에만 저장돼요 — '+cloudWhy(r.error.message)); return false; }
+      if(r&&r.error){ devHint('익명 로그인 실패: '+r.error.message
+        +' — Authentication → Sign In/Providers 의 Anonymous sign-ins 를 켜면 됩니다.');
+        cloudSay('이 기기에만 저장돼요'); return false; }
       ses=r&&r.data&&r.data.session||null; }
     if(!ses||!ses.user){ cloudSay('이 기기에만 저장돼요'); return false; }
     cloudUid=ses.user.id; cloudMail=ses.user.email||'';
@@ -1277,7 +1279,8 @@ async function cloudPush(){
     }
     const slim=cloudBlob(true);
     if(JSON.stringify(slim).length>META_MAX){
-      cloudSay('저장이 너무 커서 계정에 못 넣었어요 — players 표를 만들면 해결돼요'); return false; }
+      devHint('저장이 계정 메모칸 한계('+META_MAX+'바이트)를 넘었습니다. players 표를 만들면 해결됩니다.');
+      cloudSay('저장이 너무 커서 못 올렸어요'); return false; }
     const r2=await sb.auth.updateUser({data:{jsave:slim,jat:at}});
     if(r2&&r2.error){ cloudSay('저장을 못 올렸어요 — '+cloudWhy(r2.error.message)); return false; }
     cloudSay(null); return true;
@@ -1291,32 +1294,40 @@ const MAIL_GAP=60000;
 let cloudMailAt=0;
 function mailWait(){ return Math.max(0,Math.ceil((MAIL_GAP-(Date.now()-cloudMailAt))/1000)); }
 // 서버가 주는 영어 오류를 사람 말로 옮긴다. 왜 안 되는지 모르면 고칠 수도 없다.
+// 서버가 주는 영어를 사람 말로 옮긴다.
+// 규칙: 화면에 나가는 말에는 '무엇이 안 된다'만 적는다. 어디를 어떻게 고쳐야 하는지는
+// 만든 사람만 알면 되는 얘기라 콘솔로 보낸다(플레이어가 대시보드 이름을 보면 놀란다).
 function cloudWhy(msg){
   const m=String(msg||'');
   // 두 가지 한도가 있다. '메일 보내기' 한도(시간당 몇 통)와 '요청' 한도(몇 분).
   // 앞의 것을 /rate limit/ 으로 뭉뚱그리면 뒤의 것까지 메일 얘기가 되어 버린다.
   if(/email rate limit/i.test(m))
-    return '메일을 너무 여러 번 보냈어요. Supabase 기본 메일은 시간당 몇 통만 되니 잠시 뒤에 다시 해주세요 (SMTP 를 붙이면 풀려요)';
+    { devHint('메일 한도(무료 프로젝트는 시간당 2통). Custom SMTP 를 붙이면 풀립니다.');
+      return '메일을 너무 여러 번 보냈어요. 잠시 뒤에 다시 해주세요'; }
   if(/Anonymous sign-ins are disabled/i.test(m))
     return '익명 로그인이 꺼져 있어요 — 이메일을 넣으면 계정을 만들 수 있어요';
   if(/Email signups are disabled|email logins are disabled/i.test(m))
-    return '이메일 로그인이 꺼져 있어요 (Supabase → Authentication → Email 을 켜주세요)';
+    { devHint('Authentication → Sign In/Providers → Email 을 켜주세요.');
+      return '지금은 이메일로 로그인할 수 없어요'; }
   if(/redirect|url/i.test(m)&&/not allowed|invalid/i.test(m))
-    return '돌아올 주소가 허용목록에 없어요 (Authentication → URL Configuration)';
+    { devHint('Authentication → URL Configuration 의 Site URL / Redirect URLs 에 이 주소를 넣어주세요: '+cloudBackURL());
+      return '메일 링크가 돌아올 곳이 설정되지 않았어요'; }
   if(/already registered|already been registered|User already/i.test(m))
     return '이미 있는 계정이에요 — 아래 "🔑 로그인" 을 눌러주세요';
   if(/Invalid login credentials/i.test(m))
-    return '이메일·비밀번호가 맞지 않거나, 확인 메일을 안 누른 계정이에요'
-      +' (Confirm email 을 끄면 확인 없이 바로 됩니다 · 여러 번 틀려도 계정은 잠기지 않아요)';
+    { devHint('확인 대기 계정이면 이 오류가 납니다. Authentication → Sign In/Providers → Email 의 Confirm email 을 끄거나, Users 에서 Confirm user 를 눌러주세요.');
+      return '이메일·비밀번호가 맞지 않아요 (여러 번 틀려도 계정은 잠기지 않아요)'; }
   if(/request rate limit|too many requests|over_request_rate/i.test(m))
     return '너무 빨리 여러 번 눌렀어요. 몇 분 뒤에 다시 해주세요 (계정은 잠기지 않아요)';
   // Supabase 기본 메일은 테스트용이라 네이버·다음 같은 곳이 그냥 버리는 일이 많다.
   // 그러면 확인 메일을 못 받아 계정이 영영 잠긴다 — Confirm email 을 끄는 게 답이다.
   if(/Email not confirmed|not confirmed/i.test(m))
-    return '확인 메일을 눌러야 하는 계정이에요. 메일이 안 왔다면 Supabase → Authentication → Email 의 "Confirm email" 을 끄면 바로 됩니다';
+    { devHint('Authentication → Sign In/Providers → Email 의 Confirm email 을 끄면 확인 없이 바로 로그인됩니다.');
+      return '메일함의 확인 링크를 눌러야 쓸 수 있는 계정이에요'; }
   if(/Password should be at least/i.test(m)) return '비밀번호를 6자 이상 적어주세요';
   if(/Signups not allowed|signup is disabled/i.test(m))
-    return '가입이 꺼져 있어요 (Supabase → Authentication → Email 을 켜주세요)';
+    { devHint('Authentication → Sign In/Providers 에서 가입(Email)을 켜주세요.');
+      return '지금은 새 계정을 만들 수 없어요'; }
   if(/Failed to fetch|NetworkError/i.test(m)) return '인터넷이 끊긴 것 같아요';
   return m; }
 // 메일 링크가 돌아올 곳. 이걸 안 넘기면 Supabase 는 대시보드의 Site URL 로 보내는데,
@@ -1345,9 +1356,9 @@ async function cloudSignUp(email,pw){
     // 그 이메일을 가진 계정이 없어서 "맞지 않아요"만 나온다 — 솔직히 알려 준다.
     if(!u||(u.email||'').toLowerCase()!==email.toLowerCase()){
       cloudMailAt=Date.now();
-      cloudSay('⚠️ 이메일이 아직 안 붙었어요 — 이 서버는 "확인 메일"을 켜 둔 상태예요.'
-        +' 메일함의 링크를 누르면 붙고, 그게 안 오면 Supabase → Authentication → Email 의'
-        +' Confirm email 을 끄고 다시 눌러주세요');
+      devHint('updateUser 로 이메일을 붙였지만 확인 대기로 남았습니다(Confirm email 켜짐).'
+        +' Authentication → Sign In/Providers → Email 의 Confirm email 을 끄면 즉시 붙습니다.');
+      cloudSay('⚠️ 이메일이 아직 안 붙었어요 — 메일함의 확인 링크를 눌러주세요');
       toast('⚠️ 확인 메일을 눌러야 붙어요'); syncCloudUI(); return false; }
     cloudMail=u.email; cloudState='linked';
     cloudSay('🔐 계정을 만들었어요. 다른 기기에서 같은 이메일·비밀번호로 로그인하면 그대로 이어져요');
@@ -1357,9 +1368,9 @@ async function cloudSignUp(email,pw){
   const ses=r&&r.data&&r.data.session;
   if(!ses){   // 세션이 안 오면 'Confirm email' 이 켜져 있다는 뜻이다
     cloudMailAt=Date.now();
-    cloudSay('⚠️ 이 서버는 "확인 메일"을 켜 둔 상태예요. '+email+' 로 보낸 링크를 눌러야 계정이 살아나고,'
-      +' 그 전에는 로그인해도 "맞지 않아요" 가 나옵니다.'
-      +' 메일이 안 오면 Supabase → Authentication → Email 의 Confirm email 을 끄고 다시 만들어주세요');
+    devHint('signUp 이 세션 없이 돌아왔습니다(Confirm email 켜짐). Authentication → Sign In/Providers'
+      +' → Email 의 Confirm email 을 끄면 메일 없이 바로 계정이 생깁니다.');
+    cloudSay('📧 '+email+' 로 확인 메일을 보냈어요. 링크를 눌러야 이 계정으로 들어올 수 있어요');
     toast('⚠️ 확인 메일을 눌러야 해요'); syncCloudUI(); return false; }
   cloudUid=ses.user.id; cloudMail=ses.user.email||email; cloudState='linked';
   await cloudPull(false); await cloudPush(); syncCloudUI();
@@ -3669,6 +3680,10 @@ function nickChangeAsk(){
     ()=>{ nickChanging=true; nickSet=false; nickDraft=nick;
       syncNickInputs(); syncNickUI();
       const el=$('nickInputP'); if(el){ el.readOnly=false; el.focus(); try{el.select();}catch(e){} } }); }
+// 개발자에게만 하는 말. 게임 화면에 서버 설정 얘기를 띄우면 플레이어가 놀란다.
+const DEVSAID={};
+function devHint(msg){ if(DEVSAID[msg]) return; DEVSAID[msg]=1;
+  try{ console.info('[젤리슈팅] '+msg); }catch(e){} }
 function escapeHtml(s){ return (s||'').replace(/[<>&"']/g,
   c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c])); }
 // 남이 보낸 말 번호. 속성 안에 들어가므로 글자 종류를 아예 제한한다.
@@ -3769,11 +3784,14 @@ async function loadLeaderboard(){
     h+='<div class="rrow'+(me?' me':'')+'"><span>'+(['🥇','🥈','🥉'][i]||((i+1)+'.'))+' '+
        av+escapeHtml(r.name)+'</span><span>⭐ '+r.score+'</span></div>'; });
   // 왜 어떤 사람은 얼굴이 없는지 알려 준다. 모르면 '고장'으로 보인다.
-  if(noFace) h+='<div class="tag2" style="text-align:left;margin-top:7px;">'
-    +(chCol===false
-      ? '얼굴이 없는 사람은 <b>아직 못 만난 사람</b>이에요. 모두의 얼굴을 보려면 Supabase 에서 한 줄만 실행해주세요 — <b>alter table scores add column if not exists ch text;</b>'
-      : '얼굴이 없는 사람은 <b>칸이 생기기 전에 올린 기록</b>이에요. 한 판 더 하면 얼굴이 붙어요 🙂')
-    +'</div>';
+  // 여기는 '게임을 하는 사람'이 보는 자리다. 손봐야 할 것(SQL·서버 설정)은 절대 쓰지 않는다 —
+  // 예전에 여기에 alter table 한 줄이 그대로 떠서 플레이어가 놀랐다. 그건 콘솔로 보낸다.
+  if(noFace){
+    h+='<div class="tag2" style="text-align:left;margin-top:7px;">'
+      +'얼굴이 없는 사람은 <b>아직 같이 안 놀아 본 사람</b>이에요. 한 판 같이 하면 얼굴이 붙어요 🙂'
+      +'</div>';
+    devHint('랭킹에 남의 얼굴까지 띄우려면 scores 표에 ch 칸이 필요합니다:'
+      +' alter table scores add column if not exists ch text;'); }
   box.innerHTML=h;
 }
 // 결과 화면용 — 그 난이도의 남들 순위와 내 위치를 보여준다.
@@ -4294,7 +4312,8 @@ function netConnect(){
       netHelloLoop(); }
     else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED'){
       net.status='fail';
-      net.statusMsg='서버에 연결하지 못했어요 (Supabase Realtime 설정을 확인하세요)';
+      devHint('Realtime 연결 실패 — Supabase 프로젝트의 Realtime 설정을 확인하세요.');
+      net.statusMsg='서버에 연결하지 못했어요';
     }
     renderLobby();
   });
