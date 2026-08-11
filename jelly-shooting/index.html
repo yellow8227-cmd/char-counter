@@ -1225,19 +1225,33 @@ async function cloudPush(){
   }catch(e){ return false; } finally { cloudBusy=false; } }
 // ---- 이메일로 두 기기를 묶기 ----
 const MAIL_OK=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+// 메일 링크가 돌아올 곳. 이걸 안 넘기면 Supabase 는 대시보드의 Site URL 로 보내는데,
+// 그 기본값이 http://localhost:3000 이라 링크를 눌러도 '사이트에 연결할 수 없음'이 떴다.
+// 지금 열려 있는 주소를 그대로 넘겨서, 대시보드 값이 어떻든 우리 게임으로 돌아오게 한다.
+// (그 주소가 Redirect URLs 허용목록에 있어야 한다 — 없으면 Supabase 가 Site URL 로 되돌린다)
+function cloudBackURL(){
+  try{ return location.origin+location.pathname; }catch(e){ return ''; } }
 async function cloudLink(email){        // 이 기기 기록에 이메일을 붙인다
   const sb=getSupa();
-  if(!sb||!cloudUid){ toast('서버에 연결되지 않았어요'); return false; }
+  if(!sb){ toast('온라인 기능을 못 불러왔어요'+(cloudMsg?(' — '+cloudMsg):'')); return false; }
   if(!MAIL_OK.test(email)){ toast('이메일을 확인해주세요'); return false; }
-  const r=await sb.auth.updateUser({email:email});
+  const back=cloudBackURL();
+  // 익명 로그인이 안 켜져 있으면 붙일 계정이 없다. 그때는 이메일로 계정을 새로 만든다 —
+  // 그러면 대시보드 스위치 하나(Email)만으로도 폰·노트북을 이을 수 있다.
+  if(!cloudUid){
+    const r0=await sb.auth.signInWithOtp({email:email,options:{emailRedirectTo:back,shouldCreateUser:true}});
+    if(r0&&r0.error){ toast('안 됐어요: '+r0.error.message); return false; }
+    cloudSay('📧 '+email+' 로 링크를 보냈어요. 누르면 이 이메일로 계정이 만들어져요');
+    return true; }
+  const r=await sb.auth.updateUser({email:email},{emailRedirectTo:back});
   if(r&&r.error){ toast('안 됐어요: '+r.error.message); return false; }
   cloudSay('📧 '+email+' 로 확인 메일을 보냈어요. 링크를 누르면 계정이 지켜져요');
   return true; }
 async function cloudSignIn(email){      // 다른 기기에서 그 계정으로 들어온다
   const sb=getSupa();
-  if(!sb){ toast('서버에 연결되지 않았어요'); return false; }
+  if(!sb){ toast('온라인 기능을 못 불러왔어요'+(cloudMsg?(' — '+cloudMsg):'')); return false; }
   if(!MAIL_OK.test(email)){ toast('이메일을 확인해주세요'); return false; }
-  const r=await sb.auth.signInWithOtp({email:email});
+  const r=await sb.auth.signInWithOtp({email:email,options:{emailRedirectTo:cloudBackURL()}});
   if(r&&r.error){ toast('안 됐어요: '+r.error.message); return false; }
   cloudSay('📧 '+email+' 로 들어오는 링크를 보냈어요. 메일함에서 눌러주세요');
   return true; }
