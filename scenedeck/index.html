@@ -84,26 +84,30 @@
 
 /* --- 어둡게 (헤더의 전환 버튼으로 켠다) --- */
 :root[data-theme="dark"]{
-  /* 새까맣게 떨어뜨리지 않는다 — 바닥 #1a1a19, 글씨도 순백이 아닌 #d9d8d3 */
-  --ground:#1a1a19;
-  --bg:#211f1e; --s1:#262523; --s2:#2c2b28; --s3:#35342f;
-  --line:#312f2d; --line2:#454340;
-  --herobg:#232220; --herotx:#e2e1dc;
-  --heroline:#3b3936; --herodim:#a19f98;
-  --tx:#d9d8d3; --tx2:#a8a69f; --tx3:#8d8b84;
-  --acc:#e2e1dc; --acc2:#bab8b1; --accdim:#312f2c; --accbd:#454340; --onacc:#1a1a19;
-  --sig:#8fb0d8; --sigdim:#1e242c; --sigbd:#38434f;
-  --teal:#71b391; --tealdim:#1b2620; --tealbd:#31453a; --red:#d38076; --blue:#8fb0d8;
-  --outbg:#1b1a19; --outtx:#c9c8c2; --entx:#bfcbdb; --ph:#6b6963;
-  --sb:#3a3835; --sb2:#4c4a46;
-  --dgrbd:#4a302c; --dgrbg:#2a201e;
-  --warnbg:#26241f; --warnbd:#454340; --warntx:#c4c2ba;
-  --herotop:#262523;
-  --hdr:rgba(26,26,25,.93); --fade0:rgba(26,26,25,0); --fade1:rgba(26,26,25,.96);
-  --mask:rgba(10,10,9,.72); --shadow:rgba(0,0,0,.5);
-  --glow:rgba(226,225,220,.09); --glow2:rgba(226,225,220,.05);
-  --focus:rgba(143,176,216,.28);
-  --lift:0 1px 2px rgba(0,0,0,.35), 0 14px 34px rgba(0,0,0,.3);
+  /* 어두운 화면 = 「암실」. 새까만 바탕에 흰 글씨는 글자가 번져 보여서
+     오래 보면 머리가 아프다. 그래서 두 가지를 함께 눌렀다.
+       · 바탕을 한 단계 올리고 (#1a1a19 → #262420)
+       · 글씨를 흰색이 아닌 따뜻한 아이보리로 (#d9d8d3 → #c6c0b4)
+     본문 대비 12.2:1 → 8.6:1. 읽기 기준(7:1)은 지키되 눈부심은 뺀 자리. */
+  --ground:#262420;
+  --bg:#2d2a25; --s1:#33302a; --s2:#3a3630; --s3:#443f38;
+  --line:#3d3830; --line2:#524c43;
+  --herobg:#2d2a25; --herotx:#c6c0b4;
+  --heroline:#4a443b; --herodim:#a09a8e;
+  --tx:#c6c0b4; --tx2:#a09a8e; --tx3:#9a9488;
+  --acc:#c6c0b4; --acc2:#a8a296; --accdim:#3a3630; --accbd:#524c43; --onacc:#262420;
+  --sig:#8caad2; --sigdim:#262c34; --sigbd:#3d4754;
+  --teal:#7cb394; --tealdim:#232d26; --tealbd:#3a483d; --red:#d08a7e; --blue:#8caad2;
+  --outbg:#221f1b; --outtx:#bdb7ab; --entx:#bfc8d6; --ph:#6e685e;
+  --sb:#413c34; --sb2:#544e45;
+  --dgrbd:#4e362f; --dgrbg:#302320;
+  --warnbg:#2e2a24; --warnbd:#524c43; --warntx:#b5afa3;
+  --herotop:#33302a;
+  --hdr:rgba(38,36,32,.93); --fade0:rgba(38,36,32,0); --fade1:rgba(38,36,32,.96);
+  --mask:rgba(14,13,11,.66); --shadow:rgba(0,0,0,.42);
+  --glow:rgba(198,192,180,.08); --glow2:rgba(198,192,180,.04);
+  --focus:rgba(140,170,210,.26);
+  --lift:0 1px 2px rgba(0,0,0,.26), 0 14px 34px rgba(0,0,0,.2);
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -1308,7 +1312,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v5 · 2026-08-11</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v6 · 2026-08-11</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
