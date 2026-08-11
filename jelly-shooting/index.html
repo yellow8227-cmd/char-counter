@@ -246,6 +246,11 @@
     box-shadow:0 2px 0 rgba(244,211,225,0.8),inset 0 1px 0 #fff,
       inset 0 -7px 12px -10px rgba(160,90,130,0.35);}
   .rrow:last-child{margin-bottom:0;}
+  /* 랭킹 줄의 프로필 사진. 글자 사이에 끼우므로 vertical-align 로 줄에 앉힌다.
+     동그랗게(50%) 자르면 모자·뿔처럼 위로 뻗는 악세서리의 끝이 잘려 나간다 → 둥근 네모 */
+  .rrow .ava{width:27px;height:27px;vertical-align:-9px;margin:0 1px 0 2px;
+    border-radius:30%;background:linear-gradient(180deg,#fff,#ffeef6);
+    box-shadow:0 1px 0 rgba(160,90,130,0.22),inset 0 0 0 1.5px rgba(255,255,255,0.9);}
   .rrow.me{color:var(--pink-d);
     background:linear-gradient(180deg,#fff3f8,#ffe3ee);
     box-shadow:0 2px 0 #f2bcd4,inset 0 0 0 1.5px rgba(255,138,180,0.65);}
@@ -665,8 +670,9 @@
       <button class="modebtn aim" id="aiBtn"><span class="e">🤖</span><span class="n">AI와 대결</span><span class="d">인터넷 없이 바로 붙기</span></button>
     </div>
     <div class="rowbtn">
-      <button class="btn ghost" id="shopBtn" style="padding:12px 26px;font-size:16px;">🛒 창작소</button>
-      <button class="btn ghost" id="attendBtn" style="padding:12px 26px;font-size:16px;">📅 출석부</button>
+      <button class="btn ghost" id="profileBtn" style="padding:12px 22px;font-size:16px;">🙋 내 프로필</button>
+      <button class="btn ghost" id="shopBtn" style="padding:12px 22px;font-size:16px;">🛒 창작소</button>
+      <button class="btn ghost" id="attendBtn" style="padding:12px 22px;font-size:16px;">📅 출석부</button>
     </div>
   </div>
 
@@ -676,6 +682,31 @@
     <div class="coinbadge" id="shopCoins">🪙 0</div>
     <div class="tag2">같은 아이템을 다시 사면 <b>Lv.5까지 강화</b>돼요! <b>나만의 아이템</b>도 만들 수 있어요 ✨</div>
     <div class="shopgrid" id="shopGrid"></div>
+    <div class="tag2">🎀 나만의 악세서리는 <b>🙋 내 프로필</b>에서 만들어요.</div>
+    <button class="btn ghost" id="shopToProfBtn">🙋 내 프로필로</button>
+    <button class="btn ghost" id="shopBackBtn">← 홈으로</button>
+  </div>
+
+  <!-- 🙋 내 프로필 — 캐릭터를 정하는 곳은 여기 한 군데다 -->
+  <div id="profileScreen" class="screen hide">
+    <div class="h2">🙋 내 프로필</div>
+    <canvas id="profCanvas" width="170" height="170"></canvas>
+    <div class="best" id="profName">이름 없음</div>
+    <div class="coinbadge" id="profCoins">🪙 0</div>
+    <div class="card">
+      <div class="label">🙋 닉네임</div>
+      <input id="nickInputP" maxlength="10" placeholder="닉네임을 입력하세요">
+      <div class="tag2" style="text-align:left;margin-top:6px;">랭킹에 이 이름과 <b>내 프로필 사진</b>이 같이 올라가요!</div>
+    </div>
+    <div class="card">
+      <div class="label">🐾 캐릭터</div>
+      <div class="opts" id="kindOpts"></div>
+      <div class="label" style="margin-top:12px;">🎨 색깔</div>
+      <div class="opts" id="colorOpts"></div>
+      <div class="label" style="margin-top:12px;">🎀 악세서리</div>
+      <div class="opts" id="accOpts"></div>
+      <div style="text-align:center;margin-top:12px;"><button class="chip" id="randomBtn">🎲 랜덤으로 뽑기</button></div>
+    </div>
     <div class="card" id="createPanel">
       <div class="label">🎀 악세서리 공방</div>
       <div class="tag2" style="margin:0 0 10px;text-align:left;">나만의 악세서리를 만들어 캐릭터에 씌워요.
@@ -695,22 +726,14 @@
       <div class="label" style="margin-top:12px;">내가 만든 악세서리</div>
       <div class="mini" id="caList"></div>
     </div>
-    <button class="btn ghost" id="shopBackBtn">← 홈으로</button>
+    <button class="btn ghost" id="profBackBtn">← 뒤로</button>
   </div>
 
   <!-- SETUP -->
   <div id="setupScreen" class="screen hide">
     <div class="h2">준비하기 ✨</div>
     <canvas id="previewCanvas" width="150" height="150"></canvas>
-    <div class="card">
-      <div class="label">🐾 캐릭터</div>
-      <div class="opts" id="kindOpts"></div>
-      <div class="label" style="margin-top:12px;">🎨 색깔</div>
-      <div class="opts" id="colorOpts"></div>
-      <div class="label" style="margin-top:12px;">🎀 악세서리</div>
-      <div class="opts" id="accOpts"></div>
-      <div style="text-align:center;margin-top:12px;"><button class="chip" id="randomBtn">🎲 랜덤으로 뽑기</button></div>
-    </div>
+    <div class="rowbtn"><button class="chip" id="toProfileBtn">🙋 내 캐릭터 고치기 →</button></div>
     <div class="card">
       <div class="label">🌶️ 난이도</div>
       <div class="modes" id="modeOpts"></div>
@@ -996,6 +1019,7 @@ let canvas=document.getElementById('game'), ctx=canvas.getContext('2d');
 function withCtx(g,fn){ const old=ctx; ctx=g; try{ fn(); } finally { ctx=old; } }
 const preview=document.getElementById('previewCanvas'), pctx=preview.getContext('2d');
 const hero=document.getElementById('heroCanvas'), hctx=hero.getContext('2d');
+const profCv=document.getElementById('profCanvas'), profCtx=profCv.getContext('2d');
 const $=id=>document.getElementById(id);
 let W=480,H=720;
 // 판 크기는 '가운데 띠(#stage)에 남은 자리'로 정한다. 위·아래 띠가 커지면 판이 그만큼
@@ -1114,8 +1138,22 @@ function getScores(){try{return JSON.parse(localStorage.getItem('jelly_scores'))
 function addScore(s){const a=getScores();a.push(s);a.sort((x,y)=>y-x);const top=a.slice(0,5);try{localStorage.setItem('jelly_scores',JSON.stringify(top));}catch(e){}return top;}
 function bestScore(){const a=getScores();return a.length?a[0]:0;}
 const MEDALS=['🥇','🥈','🥉','4','5'];
+// ---- 랭킹 줄에 붙는 내 프로필 사진 ----
+// 줄마다 캔버스를 새로 그리면 목록 열 때마다 열 번 그리는 셈이다. 한 번 그려 두고
+// 캐릭터가 바뀌면(=차림새 문자열이 달라지면) 알아서 버린다.
+// 남의 사진은 못 붙인다 — scores 표에는 이름·점수·판만 들어간다(차림새를 안 보낸다).
+// 자리는 64px, 머리는 R=17에 아래로 40 — 모자·왕관·뿔은 중심보다 1.8R 위까지 뻗는다.
+// 딱 맞게 그리면 그 끝이 테두리에 잘려 '모자를 자른 사진'이 된다. 위아래로 8px 남긴다.
+let avaURL='', avaKey='';
+function myAvatarURL(){ const k=JSON.stringify(character)+'|'+customAccs.length;
+  if(k===avaKey&&avaURL) return avaURL;
+  const c=document.createElement('canvas'); c.width=c.height=64;
+  drawAvatar(c.getContext('2d'),32,40,17,character,'calm',0);
+  avaKey=k; avaURL=c.toDataURL('image/png'); return avaURL; }
+function avaTag(){ return '<img class="ava" src="'+myAvatarURL()+'" alt="">'; }
 function renderRank(top,my){let r='<div class="t">🏅 내 최고 기록 TOP 5 <span style="font-weight:700;opacity:.65;">(이 기기)</span></div>';if(!top.length)r+='<div class="rrow">아직 기록이 없어요!</div>';let used=false;
-  top.forEach((s,i)=>{const me=!used&&s===my;if(me)used=true;r+=`<div class="rrow${me?' me':''}"><span>${MEDALS[i]} ${me?'나':''}</span><span>⭐ ${s}</span></div>`;});$('rankBox').innerHTML=r;}
+  const who=escapeHtml(nick)||'나';
+  top.forEach((s,i)=>{const me=!used&&s===my;if(me)used=true;r+=`<div class="rrow${me?' me':''}"><span>${MEDALS[i]} ${avaTag()}${who}</span><span>⭐ ${s}</span></div>`;});$('rankBox').innerHTML=r;}
 
 // 종류마다 실루엣·눈·볼 위치를 다르게 준다.
 // 이게 없으면 귀만 바뀌고 얼굴은 똑같아서 "다 비슷비슷하다"는 느낌이 든다.
@@ -1421,13 +1459,17 @@ function drawAcc(g,R,cfg){ const ac=cfg.accColor||'#ff5c8a';
   // 내가 만든 악세서리 — 머리 위에 모양을 얹고, 고른 색으로 뒤에서 빛을 준다
   const mine=(cfg.acc==='__preview')?{emoji:cfg.accEmoji||'🎀'}:customAccs.find(a=>a.id===cfg.acc);
   if(mine){
-    const y=-R*1.02, sz=R*0.86;
-    const gl=g.createRadialGradient(0,y,1,0,y,sz*0.9);
-    gl.addColorStop(0,hexA(ac,0.55)); gl.addColorStop(1,hexA(ac,0));
-    g.fillStyle=gl; g.beginPath(); g.ellipse(0,y,sz*0.9,sz*0.62,0,0,7); g.fill();
+    // 빛무리는 '있는 줄도 모르게' 있어야 한다. 처음엔 리본만큼 큰 덩어리를 깔았더니
+    // 머리에 분홍 풍선을 하나 더 얹은 꼴이 됐다(얼굴보다 악세서리가 커 보였다).
+    // 그래서 ① 모양 자체를 줄이고 ② 빛무리는 모양보다 작게, ③ 중간 정지점을 넣어
+    // 가장자리가 뚜렷한 테두리로 보이지 않게 한다.
+    const y=-R*0.99, sz=R*0.60;
+    const gl=g.createRadialGradient(0,y,1,0,y,sz*0.66);
+    gl.addColorStop(0,hexA(ac,0.24)); gl.addColorStop(0.55,hexA(ac,0.10)); gl.addColorStop(1,hexA(ac,0));
+    g.fillStyle=gl; g.beginPath(); g.ellipse(0,y,sz*0.66,sz*0.48,0,0,7); g.fill();
     g.save(); g.textAlign='center'; g.textBaseline='middle';
     g.font=sz+'px sans-serif';
-    g.shadowColor=hexA(ac,0.85); g.shadowBlur=R*0.22;
+    g.shadowColor=hexA(ac,0.40); g.shadowBlur=R*0.09;
     g.fillText(mine.emoji||'🎀',0,y);
     g.restore(); g.textBaseline='alphabetic';
     return;
@@ -1559,7 +1601,8 @@ function buildItemBar(){
     b.onclick=()=>useItem(id); bar.appendChild(b); });
   bar.classList.toggle('hide', bar.children.length===0||!running);
 }
-function openShop(){ ensureAudio(); showScreen('shopScreen'); buildShop(); buildCreator(); }
+// 악세서리 공방은 프로필로 옮겼다 — 여기서 buildCreator 를 부르면 숨은 캔버스에 그리는 헛일이다
+function openShop(){ ensureAudio(); showScreen('shopScreen'); buildShop(); }
 function buildShop(){
   $('shopCoins').textContent='🪙 '+coins;
   const grid=$('shopGrid'); grid.innerHTML='';
@@ -1634,7 +1677,7 @@ function buildCreator(){
     b.className='minichip'+(character.acc===a.id?' on':'');
     b.textContent=a.emoji+' '+a.label;
     b.onclick=()=>{ character.acc=a.id; character.accColor=a.color; saveChar();
-      buildCreator(); toast('🎀 '+a.label+' 착용!'); };
+      buildSetupUI(); buildCreator(); toast('🎀 '+a.label+' 착용!'); };
     li.appendChild(b); });
 }
 function createCustom(){
@@ -1646,7 +1689,8 @@ function createCustom(){
   customAccs.push(acc); ACCS.push({id,label:acc.emoji+' '+nm,custom:true});
   coins-=cost; character.acc=id; character.accColor=caColor; saveChar();
   saveEconomy(); playLevelUp(); $('caName').value='';
-  buildCreator(); if($('kindOpts')) buildSetupUI&&0;
+  // 새로 만든 것을 바로 착용하니 악세서리 목록의 '고른 표시'도 옮겨 줘야 한다
+  buildSetupUI(); buildCreator();
   toast('🎀 "'+nm+'" 완성! 바로 착용했어요 (🪙 -'+cost.toLocaleString()+')');
 }
 // ---- toast + 일일 보너스 ----
@@ -1678,11 +1722,30 @@ function buildSetupUI(){
     if(mode===id)b.style.background='linear-gradient(180deg,'+shade(m.color,25)+','+m.color+')';
     b.innerHTML=`<span class="emo">${m.emoji}</span><span class="nm">${m.name}</span><span class="ds">${m.desc}</span>`;
     b.onclick=()=>{mode=userMode=id;localStorage.setItem('jelly_mode',id);buildSetupUI();};mo.appendChild(b);});
+  // 프로필 화면에서 고쳤다면 공방 미리보기·코인도 같이 따라간다
+  // (buildCreator 는 buildSetupUI 를 되부르지 않으므로 무한 루프가 아니다)
+  if(!$('profileScreen').classList.contains('hide')){
+    $('profCoins').textContent='🪙 '+coins; buildCreator(); }
 }
 // 메뉴에서는 천천히 통통. 프레임마다 1씩 올리면 초당 4번 튀어서 눈이 어지럽다.
 const MENU_ANIM=0.22;   // 한 번 튀는 데 약 0.6초
 let previewT=0;
 function loopPreview(){ if($('setupScreen').classList.contains('hide'))return; previewT+=MENU_ANIM; pctx.clearRect(0,0,150,150); drawAvatar(pctx,75,88,48,character,'calm',previewT); requestAnimationFrame(loopPreview); }
+// ---- 🙋 내 프로필 ----
+// 캐릭터를 정하는 곳이 '준비하기'뿐이라, 판을 시작하려면 꼭 들러야 했고 반대로 그냥
+// 꾸미고 싶을 때는 갈 곳이 없었다. 캐릭터·악세서리·공방·닉네임을 한 화면에 모은다.
+let profT=0, profFrom='startScreen';
+function loopProfile(){ if($('profileScreen').classList.contains('hide'))return;
+  profT+=MENU_ANIM; profCtx.clearRect(0,0,170,170);
+  drawAvatar(profCtx,85,100,54,character,'calm',profT); requestAnimationFrame(loopProfile); }
+function openProfile(from){ ensureAudio(); profFrom=from||'startScreen';
+  showScreen('profileScreen'); syncNickInputs(); buildProfile(); loopProfile(); }
+// 캐릭터가 바뀌면 이름표·코인·공방 미리보기가 같이 따라와야 한다
+function buildProfile(){
+  $('profName').textContent=nick?('🙋 '+nick):'닉네임을 정해주세요';
+  $('profCoins').textContent='🪙 '+coins;
+  buildSetupUI();          // 화면이 보이는 중이므로 공방(buildCreator)까지 이어서 그려진다
+}
 let heroT=0;
 function loopHero(){ if($('startScreen').classList.contains('hide'))return; heroT+=MENU_ANIM; hctx.clearRect(0,0,160,160); drawAvatar(hctx,80,88,46,character,'calm',heroT); requestAnimationFrame(loopHero); }
 
@@ -2097,7 +2160,7 @@ function gameOver(){
   showScreen('overScreen'); lockOverActions(); startAttract(); }
 
 // ================= Screens & flow =================
-const SCREENS=['startScreen','setupScreen','shopScreen','settingsScreen','attendScreen','rankScreen','battleScreen','netScreen','aiScreen','lobbyScreen','acceptScreen','pauseScreen','overScreen'];
+const SCREENS=['startScreen','setupScreen','shopScreen','profileScreen','settingsScreen','attendScreen','rankScreen','battleScreen','netScreen','aiScreen','lobbyScreen','acceptScreen','pauseScreen','overScreen'];
 function showScreen(id){ if(id!=='overScreen')clearOverLock(); SCREENS.forEach(s=>$(s).classList.add('hide')); if(id)$(id).classList.remove('hide'); }
 // ---- 결과 화면 실수 탭 방지 ----
 // 죽는 순간 화면에 있던 손가락이 '다시 하기'를 눌러 판이 새로 시작되는 사고를 막는다.
@@ -2134,7 +2197,7 @@ function buildCalendar(){
 let nick=localStorage.getItem('jelly_nick')||'';
 function saveNick(v){ nick=(v||'').trim().slice(0,10); localStorage.setItem('jelly_nick',nick); syncNickInputs(); }
 // 닉네임 입력칸이 화면마다 있으니 한 곳에서 고치면 나머지도 따라간다 (입력 중인 칸은 건드리지 않음)
-function syncNickInputs(){ ['nickInput','nickInput2','nickInput3','nickInputO','nickInputL','nickInputN'].forEach(id=>{
+function syncNickInputs(){ ['nickInput','nickInput2','nickInput3','nickInputO','nickInputL','nickInputN','nickInputP'].forEach(id=>{
   const el=$(id); if(el&&el.value!==nick&&document.activeElement!==el)el.value=nick; }); }
 function escapeHtml(s){ return (s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
 // "인터넷 연결이 필요해요"는 거짓말이 될 수 있다. 실제로는 SDK를 못 불러온 것
@@ -2196,7 +2259,8 @@ async function loadLeaderboard(){
     const rows=[...best.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10);
     if(!rows.length){ box.innerHTML='<div class="rrow">이 판의 1등이 되어보세요! 🥇</div>'; return; }
     let h=''; rows.forEach((e,i)=>{ const me=e[0]===nick;
-      h+='<div class="rrow'+(me?' me':'')+'"><span>'+(['🥇','🥈','🥉'][i]||((i+1)+'.'))+' '+escapeHtml(e[0])+'</span><span>⭐ '+e[1]+'</span></div>'; });
+      h+='<div class="rrow'+(me?' me':'')+'"><span>'+(['🥇','🥈','🥉'][i]||((i+1)+'.'))+' '+
+         (me?avaTag():'')+escapeHtml(e[0])+'</span><span>⭐ '+e[1]+'</span></div>'; });
     box.innerHTML=h;
   }catch(e){ box.innerHTML='<div class="rrow">랭킹 로드 실패 😢</div>'; }
 }
@@ -2221,8 +2285,8 @@ async function renderOverOnline(m){
     let h='';
     rows.slice(0,5).forEach((e,i)=>{ const me=(i===mine);
       h+='<div class="rrow'+(me?' me':'')+'"><span>'+(['🥇','🥈','🥉'][i]||((i+1)+'.'))+' '+
-         escapeHtml(e[0])+(me?' (나)':'')+'</span><span>⭐ '+e[1]+'</span></div>'; });
-    if(mine>=5) h+='<div class="rrow me"><span>'+(mine+1)+'. '+escapeHtml(nick)+' (나)</span><span>⭐ '+rows[mine][1]+'</span></div>';
+         (me?avaTag():'')+escapeHtml(e[0])+(me?' (나)':'')+'</span><span>⭐ '+e[1]+'</span></div>'; });
+    if(mine>=5) h+='<div class="rrow me"><span>'+(mine+1)+'. '+avaTag()+escapeHtml(nick)+' (나)</span><span>⭐ '+rows[mine][1]+'</span></div>';
     h+='<div class="tag2" style="margin-top:6px;">'+
        (mine>=0?('내 순위 '+(mine+1)+'위 / '+rows.length+'명'):(rows.length+'명 참가 중'))+'</div>';
     box.innerHTML=h;
@@ -3885,6 +3949,14 @@ function openSetup(){ showScreen('setupScreen'); buildSetupUI(); loopPreview(); 
 $('playBtn').onclick=()=>{ensureAudio();openSetup();};
 $('shopBtn').onclick=()=>openShop();
 $('shopBackBtn').onclick=()=>openStart();
+$('profileBtn').onclick=()=>openProfile('startScreen');
+$('shopToProfBtn').onclick=()=>openProfile('shopScreen');
+$('toProfileBtn').onclick=()=>openProfile('setupScreen');
+// 프로필은 홈·창작소·준비하기 세 곳에서 들어온다 — 왔던 곳으로 되돌린다
+$('profBackBtn').onclick=()=>{ if(profFrom==='setupScreen')openSetup();
+  else if(profFrom==='shopScreen')openShop(); else openStart(); };
+$('nickInputP').addEventListener('input',e=>{ saveNick(e.target.value);
+  $('profName').textContent=nick?('🙋 '+nick):'닉네임을 정해주세요'; });
 $('dailyBtn').onclick=claimDaily;
 $('createBtn').onclick=createCustom;
 $('openSetBtn').onclick=openSettings;
@@ -3986,6 +4058,10 @@ canvas.addEventListener('touchstart',e=>{ lastTouch=performance.now(); e.prevent
 window.__auditEach=function(scan){
   const prep={
     shopScreen:()=>{openShop();}, setupScreen:()=>{buildSetupUI();},
+    // 프로필은 칩·공방까지 다 채워야 진짜 높이가 나온다 (빈 화면은 넘침을 못 잡는다)
+    profileScreen:()=>{ if(!customAccs.length){ const a={id:'ca_demo',label:'별하늘',emoji:'⭐',color:'#8a5cff'};
+        customAccs.push(a); ACCS.push({id:a.id,label:a.emoji+' '+a.label,custom:true}); }
+      buildProfile(); },
     rankScreen:()=>{lbGame='throw';lbMode='throw_thrower';buildLbTabs();
       $('lbBox').innerHTML='<div class="rrow me"><span>🥇 젤리왕</span><span>⭐ 32831</span></div>';}, netScreen:()=>{openNetMode('throw');},
     lobbyScreen:()=>{net.room='ABC123';net.foe=null;renderLobby();},
