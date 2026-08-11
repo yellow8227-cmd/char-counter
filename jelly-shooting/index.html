@@ -459,6 +459,14 @@
     font-family:var(--font);font-size:10px;font-weight:900;padding:0 4px;border-radius:8px;
     box-shadow:0 2px 5px rgba(0,0,0,.2);}
   /* 🔔 알림 — 게임 중에도 위에서 내려온다. 젤리 길목(가운데)을 피해 위쪽에 둔다. */
+  /* 프로필의 얼굴은 위에 붙여 둔다. 아래로 내려가서 악세서리를 고를 때도 얼굴이 보여야
+     '지금 뭘 입고 있는지'를 바로 알 수 있다(칸이 길어서 얼굴이 화면 밖으로 나갔다). */
+  #profTop{position:sticky;top:0;z-index:9;align-self:stretch;
+    display:flex;justify-content:center;padding:6px 0 8px;
+    /* 아래를 투명하게 흐리면 뒤의 색 동그라미가 얼굴에 겹쳐 보인다 — 불투명한 띠로 둔다 */
+    background:rgba(255,246,251,0.97);backdrop-filter:blur(7px);
+    box-shadow:0 9px 16px -9px rgba(190,120,160,0.40);}
+  #profCanvas{width:132px;height:132px;}
   #invite{position:absolute;top:calc(10px + var(--sat));left:50%;transform:translateX(-50%);
     z-index:28;width:min(92vw,420px);display:flex;flex-direction:column;gap:9px;align-items:center;
     padding:13px 15px;border-radius:20px;
@@ -749,31 +757,9 @@
   <!-- 🙋 내 프로필 — 캐릭터를 정하는 곳은 여기 한 군데다 -->
   <div id="profileScreen" class="screen hide">
     <div class="h2">🙋 내 프로필</div>
-    <canvas id="profCanvas" width="170" height="170"></canvas>
+    <div id="profTop"><canvas id="profCanvas" width="170" height="170"></canvas></div>
     <div class="best" id="profName">이름 없음</div>
     <div class="coinbadge" id="profCoins">🪙 0</div>
-    <div class="card">
-      <div class="label">🙋 닉네임</div>
-      <input id="nickInputP" maxlength="10" placeholder="닉네임을 입력하세요">
-      <div style="text-align:center;margin-top:9px;">
-        <button class="chip" id="nickBtn">✅ 이 이름으로 정하기</button></div>
-      <div class="tag2" id="nickHint" style="text-align:left;margin-top:8px;"></div>
-      <div class="tag2" id="nickWho" style="text-align:left;margin-top:4px;opacity:.7;"></div>
-    </div>
-    <div class="card" id="cloudCard">
-      <div class="label">☁️ 계정 <span class="tag2" id="cloudState" style="margin-left:6px;"></span></div>
-      <div class="tag2" id="cloudMsg" style="text-align:left;margin:0 0 10px;"></div>
-      <input id="cloudMail" type="email" maxlength="60" placeholder="이메일 (예: me@mail.com)">
-      <div style="display:flex;gap:8px;justify-content:center;margin-top:9px;flex-wrap:wrap;">
-        <button class="chip" id="cloudLinkBtn">📧 이 기록 지키기</button>
-        <button class="chip" id="cloudInBtn">🔑 이 계정으로 들어오기</button>
-        <button class="chip" id="cloudOutBtn">🚪 이 기기에서 로그아웃</button>
-      </div>
-      <div class="tag2" style="text-align:left;margin-top:8px;opacity:.75;">
-        이메일을 붙이면 폰·노트북이 같은 사람이 돼요. 비밀번호는 없고, 메일로 오는 링크만 누르면 돼요.<br>
-        이메일은 <b>계정을 잇는 데만</b> 써요 — 광고·알림은 안 보내고, 다른 사람에게도 안 보여요.
-        안 넣어도 게임은 그대로 할 수 있어요.</div>
-    </div>
     <div class="card">
       <div class="label">🐾 캐릭터</div>
       <div class="opts" id="kindOpts"></div>
@@ -787,6 +773,14 @@
       <div class="label" style="margin-top:12px;">🎀 악세서리</div>
       <div class="opts" id="accOpts"></div>
       <div style="text-align:center;margin-top:12px;"><button class="chip" id="randomBtn">🎲 랜덤으로 뽑기</button></div>
+    </div>
+    <div class="card">
+      <div class="label">🙋 닉네임</div>
+      <input id="nickInputP" maxlength="10" placeholder="닉네임을 입력하세요">
+      <div style="text-align:center;margin-top:9px;">
+        <button class="chip" id="nickBtn">✅ 이 이름으로 정하기</button></div>
+      <div class="tag2" id="nickHint" style="text-align:left;margin-top:8px;"></div>
+      <div class="tag2" id="nickWho" style="text-align:left;margin-top:4px;opacity:.7;"></div>
     </div>
     <div class="card" id="createPanel">
       <div class="label">🎀 악세서리 공방</div>
@@ -841,9 +835,23 @@
       <div class="tag2" style="text-align:left;margin:0 0 9px;">넉넉할수록 살짝 빗나가도 젤리가 터져요.</div>
       <div class="opts" id="tolOpts"></div>
     </div>
+    <div class="card" id="cloudCard">
+      <div class="label">☁️ 계정 <span class="tag2" id="cloudState" style="margin-left:6px;"></span></div>
+      <div class="tag2" id="cloudMsg" style="text-align:left;margin:0 0 10px;"></div>
+      <input id="cloudMail" type="email" maxlength="60" placeholder="이메일 (예: me@mail.com)">
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:9px;flex-wrap:wrap;">
+        <button class="chip" id="cloudLinkBtn">📧 이 기록 지키기</button>
+        <button class="chip" id="cloudInBtn">🔑 이 계정으로 들어오기</button>
+        <button class="chip" id="cloudOutBtn">🚪 이 기기에서 로그아웃</button>
+      </div>
+      <div class="tag2" style="text-align:left;margin-top:8px;opacity:.75;">
+        이메일을 붙이면 폰·노트북이 같은 사람이 돼요. 비밀번호는 없고, 메일로 오는 링크만 누르면 돼요.<br>
+        이메일은 <b>계정을 잇는 데만</b> 써요 — 광고·알림은 안 보내고, 다른 사람에게도 안 보여요.
+        안 넣어도 게임은 그대로 할 수 있어요.</div>
+    </div>
     <div class="card">
       <div class="label">📊 데이터</div>
-      <div class="tag2" style="text-align:left;margin:0 0 4px;">코인·아이템·레벨·기록은 이 브라우저에 저장돼요.</div>
+      <div class="tag2" style="text-align:left;margin:0 0 4px;" id="dataWhere">코인·아이템·레벨·기록은 이 브라우저에 저장돼요.</div>
       <button class="setbtn" id="resetScores">🗑️ 최고기록만 초기화</button>
       <button class="setbtn danger" id="resetAll">💥 전체 초기화 (코인·아이템·스킨·기록)</button>
     </div>
@@ -1277,6 +1285,10 @@ function cloudWhere(){
   if(cloudState==='device') return '☁️ 서버에 저장돼요 (이 기기 계정). 아래에 이메일을 붙이면 폰·노트북이 같은 사람이 돼요';
   return '📱 이 기기에만 저장돼요'; }
 function syncCloudUI(){
+  const dw=$('dataWhere');
+  if(dw) dw.textContent=(cloudState==='off')
+    ? '코인·아이템·레벨·기록은 이 브라우저에 저장돼요.'
+    : '코인·아이템·레벨·기록이 위 계정에 저장돼요 (이 브라우저에도 같이 남아요).';
   const box=$('cloudMsg'); if(!box) return;
   box.textContent=cloudMsg||cloudWhere();
   const st=$('cloudState'); if(st) st.textContent=
@@ -2971,6 +2983,7 @@ function buildSetupUI(){
   // (buildCreator 는 buildSetupUI 를 되부르지 않으므로 무한 루프가 아니다)
   if(!$('profileScreen').classList.contains('hide')){
     $('profCoins').textContent='🪙 '+coins; buildCreator(); }
+  syncCloudUI();
 }
 // 메뉴에서는 천천히 통통. 프레임마다 1씩 올리면 초당 4번 튀어서 눈이 어지럽다.
 const MENU_ANIM=0.22;   // 한 번 튀는 데 약 0.6초
@@ -5467,7 +5480,7 @@ function openAccept(){
   $('nickInput2').value=nick; showScreen('acceptScreen');
 }
 // ---- 설정 화면 ----
-function openSettings(){ ensureAudio(); showScreen('settingsScreen'); syncSettingsUI(); buildTolUI(); }
+function openSettings(){ ensureAudio(); showScreen('settingsScreen'); syncSettingsUI(); buildTolUI(); syncCloudUI(); }
 function syncSettingsUI(){ const s=$('setSound'),b=$('setBgm');
   s.textContent=soundOn?'켜짐':'꺼짐'; s.classList.toggle('off',!soundOn);
   b.textContent=bgmOn?'켜짐':'꺼짐'; b.classList.toggle('off',!bgmOn); }
@@ -5640,7 +5653,7 @@ window.__auditEach=function(scan){
       roomMsgs.push({name:'젤리왕',ch:{k:'bear',c:'#c9a27a',a:'crown',ac:'#ffce3d'},text:'준비 다 됐어!'});
       roomMsgs.push({name:'카미',ch:charPack(),text:'좋아 시작하자 🔥'});
       renderLobby();},
-    attendScreen:()=>{buildCalendar();}, settingsScreen:()=>{syncSettingsUI();buildTolUI();},
+    attendScreen:()=>{buildCalendar();}, settingsScreen:()=>{syncSettingsUI();buildTolUI();syncCloudUI();},
     overScreen:()=>{renderRank([32831,11224,10085],10085);
       $('overLb').innerHTML='<div class="rrow">🥇 젤리왕 <span>⭐ 32831</span></div>';},
     acceptScreen:()=>{pendingChallenge={host_name:'젤리왕',host_score:1234,seed:1,mode:'spicy'};openAccept();},
