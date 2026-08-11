@@ -1491,20 +1491,9 @@ function hairFront(g,R,cfg,col){
     hairSheen(g,R,[[-0.34,-0.80,0.30,0.085,-0.34,0.30],[-0.02,-0.92,0.24,0.060,-0.10,0.18]]); } }
 function hairTail(g,R,cfg,col){
   const st=hairOf(cfg);
-  // 머리끈은 '머리를 묶은 자리'다. 끝에 딱 붙여 두면 매달린 방울처럼 보인다(실제로 그랬다) —
-  // 끝보다 위에 두고, 그 아래로 머리가 더 나와 있어야 묶은 것으로 읽힌다.
-  if(st==='braid'){   // 갈래를 묶은 자리 — 마지막 덩이(1.14R)보다 위
-    [-1,1].forEach(s=>{
-      g.fillStyle='#ff7da6';g.beginPath();g.ellipse(s*R*1.01,R*0.98,R*0.105,R*0.068,s*0.34,0,7);g.fill();
-      g.fillStyle='rgba(255,255,255,0.55)';g.beginPath();g.ellipse(s*R*0.99,R*0.96,R*0.036,R*0.020,s*0.34,0,7);g.fill(); });
-    return; }
-  if(st!=='basic') return;              // 단발·짧은머리는 묶을 것도, 삐친 것도 없다
-  if(cfg.kind==='girl'){
-    // 머리채를 묶은 자리 — 머리채 끝(1.06R)보다 위에, 아래로 머리가 더 흐르게.
-    [-1,1].forEach(s=>{
-      g.fillStyle='#ff7da6';g.beginPath();g.ellipse(s*R*0.95,R*0.64,R*0.100,R*0.070,s*0.22,0,7);g.fill();
-      g.fillStyle='rgba(255,255,255,0.55)';g.beginPath();g.ellipse(s*R*0.93,R*0.62,R*0.036,R*0.021,s*0.22,0,7);g.fill(); });
-    return; }
+  // 머리끈(작은 방울)은 없앴다. 끝에 붙이면 매달린 알약처럼 보이고, 위로 올려도
+  // '왜 여기 붙어 있지' 싶은 물건이었다. 갈래·머리채 모양만으로 충분히 읽힌다.
+  if(st!=='basic'||cfg.kind==='girl') return;
   // 🧒 정수리 머리 뭉치. 선 하나면 철사, 뭉치면 꼭지처럼 보인다. 밑동은 넓고 끝으로
   // 갈수록 가늘어지는 머리 한 갈래로 그려야 '머리카락'으로 읽힌다.
   // 여기서 두 번 헛돌았다. 곡선 두 개로 감싸면 금세 얇아져 철사처럼 되고,
@@ -1662,10 +1651,14 @@ function kindExtras(g,R,cfg,mood){
     g.beginPath();g.ellipse(R*1.02,R*0.44,R*0.19,R*0.25,-0.38,0,7);g.fill();
   }
   else if(cfg.kind==='girl'||cfg.kind==='human'){          // 귀 + 머리 모양별 마무리
+    // 귀는 얼굴 옆으로 '삐져나온 덩이'여야 한다. 얼굴 반너비(0.94~0.96R) 안쪽에 두면
+    // 살색끼리 이어져 실루엣에 아무 변화가 없고, 안쪽 그늘만 남아 볼에 붙은 살덩이로 보였다.
+    // 그래서 얼굴 테두리에 살짝만 걸치고(0.03R) 나머지는 밖으로 내보낸다.
     const ey=cfg.kind==='girl'?0.06:0.04, ew=cfg.kind==='girl'?0.10:0.105, eh=cfg.kind==='girl'?0.14:0.145;
+    const ex=kfx(cfg.kind).sx+ew*0.72;
     [-1,1].forEach(s=>{   // 손잡이처럼 튀어나와 보이지 않게 조금 작게, 조금 위로
-      g.fillStyle='#ffdcbe';g.beginPath();g.ellipse(s*R*0.90,R*ey,R*ew,R*eh,0,0,7);g.fill();
-      g.fillStyle='rgba(226,150,120,0.40)';g.beginPath();g.ellipse(s*R*0.92,R*(ey+0.01),R*(ew*0.40),R*(eh*0.50),0,0,7);g.fill(); });
+      g.fillStyle='#ffdcbe';g.beginPath();g.ellipse(s*R*ex,R*ey,R*ew,R*eh,0,0,7);g.fill();
+      g.fillStyle='rgba(226,150,120,0.40)';g.beginPath();g.ellipse(s*R*(ex+0.02),R*(ey+0.01),R*(ew*0.40),R*(eh*0.50),0,0,7);g.fill(); });
     hairTail(g,R,cfg,col);       // 머리끈 방울 · 정수리 뭉치
   }
 }
@@ -2056,8 +2049,8 @@ const EAR_PT={
   dog  :{in:[1.02,-0.34], lobe:[0.86, 0.56]},   // 옆으로 늘어진 귀 → 귀걸이는 그 끝에
   bunny:{in:[0.51,-1.24], lobe:[0.76,-0.64]},   // 위로 솟은 긴 귀
   bear :{in:[0.80,-0.84], lobe:[0.95,-0.54]},   // 머리 위 동그란 귀
-  human:{in:[0.90, 0.04], lobe:[0.90, 0.17]},   // 옆에 붙은 사람 귀 (이건 나중에 그려서 맞았다)
-  girl :{in:[0.90, 0.06], lobe:[0.90, 0.19]} };
+  human:{in:[1.04, 0.05], lobe:[1.00, 0.25]},   // 옆에 붙은 사람 귀 — 얼굴 밖으로 삐져나온 부분을 재서
+  girl :{in:[1.01, 0.07], lobe:[1.00, 0.25]} };
 function earPt(kind,which){ const e=EAR_PT[kind]||EAR_PT.cat; return e[which]; }
 
 // 🎵 무선 이어폰 — 귀에 콕 꽂는 작은 것. 대(stem)가 아래로 살짝 내려온다.
