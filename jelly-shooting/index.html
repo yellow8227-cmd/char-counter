@@ -248,7 +248,7 @@
   .rrow:last-child{margin-bottom:0;}
   /* 랭킹 줄의 프로필 사진. 글자 사이에 끼우므로 vertical-align 로 줄에 앉힌다.
      동그랗게(50%) 자르면 모자·뿔처럼 위로 뻗는 악세서리의 끝이 잘려 나간다 → 둥근 네모 */
-  .rrow .ava{width:27px;height:27px;vertical-align:-9px;margin:0 1px 0 2px;
+  .rrow .ava{width:27px;height:27px;vertical-align:-9px;margin:0 5px 0 2px;
     border-radius:30%;background:linear-gradient(180deg,#fff,#ffeef6);
     box-shadow:0 1px 0 rgba(160,90,130,0.22),inset 0 0 0 1.5px rgba(255,255,255,0.9);}
   .rrow.me{color:var(--pink-d);
@@ -1138,19 +1138,49 @@ function getScores(){try{return JSON.parse(localStorage.getItem('jelly_scores'))
 function addScore(s){const a=getScores();a.push(s);a.sort((x,y)=>y-x);const top=a.slice(0,5);try{localStorage.setItem('jelly_scores',JSON.stringify(top));}catch(e){}return top;}
 function bestScore(){const a=getScores();return a.length?a[0]:0;}
 const MEDALS=['🥇','🥈','🥉','4','5'];
-// ---- 랭킹 줄에 붙는 내 프로필 사진 ----
-// 줄마다 캔버스를 새로 그리면 목록 열 때마다 열 번 그리는 셈이다. 한 번 그려 두고
-// 캐릭터가 바뀌면(=차림새 문자열이 달라지면) 알아서 버린다.
-// 남의 사진은 못 붙인다 — scores 표에는 이름·점수·판만 들어간다(차림새를 안 보낸다).
+// ================= 차림새 주고받기 =================
+// 남에게 보낼 차림새는 '혼자서 그려지는' 꼴이어야 한다. 나만의 악세서리를 id 로만 보내면
+// 받는 쪽 목록(customAccs)에 없어서 못 찾고, 결국 맨머리로 그려진다 — 실제로 그랬다.
+// 그래서 보낼 때 모양(이모지)까지 같이 실어 보낸다. 이름을 한 글자로 줄인 건 이 꾸러미가
+// 방 메시지에도, 랭킹 DB 한 칸에도 들어가기 때문이다.
+function charPack(c){ c=c||character;
+  const mine=customAccs.find(a=>a.id===c.acc);
+  const o={k:c.kind,c:c.color,a:mine?'__preview':c.acc,ac:c.accColor};
+  if(mine) o.e=mine.emoji;
+  return o; }
+// 받은 차림새는 남이 보낸 것이다. 그대로 그리기 함수에 넣으면 안 된다.
+// 아는 값만 통과시키고 모르면 기본 캐릭터로 떨어뜨린다.
+const HEX_OK=/^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/;
+function charSafe(o){
+  const d={kind:'cat',color:'#ffb3c9',acc:'none',accColor:'#ff5c8a'};
+  if(!o||typeof o!=='object') return d;
+  // 예전 판은 {kind,color,acc,accColor} 를 그대로 보냈다 — 두 꼴 다 받는다
+  const k=o.k||o.kind, col=o.c||o.color, a=o.a||o.acc, ac=o.ac||o.accColor, em=o.e||o.accEmoji;
+  const out={
+    kind: KINDS.some(x=>x.id===k)?k:d.kind,
+    color: HEX_OK.test(col)?col:d.color,
+    acc: (a==='__preview'||ACCS.some(x=>x.id===a))?a:d.acc,
+    accColor: HEX_OK.test(ac)?ac:d.accColor };
+  // 이모지는 글자 수만 막는다. 캔버스 글자로만 쓰이니 HTML 로 새지 않는다.
+  if(out.acc==='__preview') out.accEmoji=(typeof em==='string'&&em)?[...em].slice(0,3).join(''):'🎀';
+  return out; }
+
+// ---- 프로필 사진 (랭킹·로비 줄에 붙는 작은 얼굴) ----
+// 줄마다 캔버스를 새로 그리면 목록 열 때마다 열 번 그리는 셈이다. 차림새별로 한 번만
+// 그려 두고 다시 쓴다. 방마다 사람이 바뀌니 너무 쌓이면 오래된 것부터 버린다.
 // 자리는 64px, 머리는 R=17에 아래로 40 — 모자·왕관·뿔은 중심보다 1.8R 위까지 뻗는다.
-// 딱 맞게 그리면 그 끝이 테두리에 잘려 '모자를 자른 사진'이 된다. 위아래로 8px 남긴다.
-let avaURL='', avaKey='';
-function myAvatarURL(){ const k=JSON.stringify(character)+'|'+customAccs.length;
-  if(k===avaKey&&avaURL) return avaURL;
-  const c=document.createElement('canvas'); c.width=c.height=64;
-  drawAvatar(c.getContext('2d'),32,40,17,character,'calm',0);
-  avaKey=k; avaURL=c.toDataURL('image/png'); return avaURL; }
-function avaTag(){ return '<img class="ava" src="'+myAvatarURL()+'" alt="">'; }
+// 딱 맞게 그리면 그 끝이 테두리에 잘려 '모자를 자른 사진'이 된다. 사방에 여백을 둔다.
+const AVA=new Map();
+function avatarURL(cfg){
+  const c=cfg||character, k=JSON.stringify(c);
+  if(AVA.has(k)) return AVA.get(k);
+  const cv=document.createElement('canvas'); cv.width=cv.height=64;
+  drawAvatar(cv.getContext('2d'),32,40,17,c,'calm',0);
+  const u=cv.toDataURL('image/png');
+  if(AVA.size>40) AVA.delete(AVA.keys().next().value);
+  AVA.set(k,u); return u; }
+function myAvatarURL(){ return avatarURL(character); }
+function avaTag(cfg){ return '<img class="ava" src="'+avatarURL(cfg)+'" alt="">'; }
 function renderRank(top,my){let r='<div class="t">🏅 내 최고 기록 TOP 5 <span style="font-weight:700;opacity:.65;">(이 기기)</span></div>';if(!top.length)r+='<div class="rrow">아직 기록이 없어요!</div>';let used=false;
   const who=escapeHtml(nick)||'나';
   top.forEach((s,i)=>{const me=!used&&s===my;if(me)used=true;r+=`<div class="rrow${me?' me':''}"><span>${MEDALS[i]} ${avaTag()}${who}</span><span>⭐ ${s}</span></div>`;});$('rankBox').innerHTML=r;}
@@ -2242,27 +2272,57 @@ function buildLbTabs(){
     b.onclick=()=>{ lbMode=id; buildLbTabs(); loadLeaderboard(); }; o.appendChild(b); });
   syncLbTitle(); }
 function syncLbTitle(){ $('lbTitle').textContent='🏆 '+boardName(lbMode)+' TOP 10'; }
+// ---- 랭킹에 얼굴을 함께 올리기 ----
+// scores 표에 차림새를 담는 ch 칸이 있으면 남의 얼굴까지 보이고, 없으면 이름만 보인다.
+// 칸이 있는지 물어보는 API 는 따로 없으니 한 번 써 보고 안 되면 기억한다 —
+// 그래야 칸을 나중에 추가해도 코드를 안 고치고 저절로 켜진다.
+// 칸 만들기(Supabase → SQL Editor 한 줄):
+//   alter table scores add column if not exists ch text;
+let chCol=null;                          // null=아직 모름 · true=있음 · false=없음
+function noChCol(err){ if(!err) return false;
+  const s=((err.message||'')+' '+(err.details||'')+' '+(err.code||'')).toLowerCase();
+  // 통신 오류까지 '칸이 없다'로 단정하면 얼굴이 영영 안 나온다 — 스키마 오류만 본다
+  return /pgrst204|42703|column/.test(s); }
+// 한 사람이 여러 판 해도 최고점 한 줄만 남긴다 — 안 그러면 TOP 10을 혼자 채운다
+function bestByName(data){
+  const best=new Map();
+  (data||[]).forEach(r=>{ const n=(r.name||'').trim(); if(!n)return;
+    const cur=best.get(n);
+    if(!cur||cur.score<r.score) best.set(n,{score:r.score,ch:r.ch});
+    else if(cur&&!cur.ch&&r.ch) cur.ch=r.ch; });   // 옛 기록이 최고점이면 얼굴은 새 줄에서 가져온다
+  return [...best.entries()].map(([name,v])=>({name,score:v.score,ch:v.ch}))
+    .sort((a,b)=>b.score-a.score); }
+// 줄 앞에 붙는 얼굴. 내 줄은 지금 내 차림새, 남의 줄은 받아 온 것. 없으면 자리를 비운다.
+function rowAva(name,ch){
+  if(name===nick) return avaTag();
+  if(!ch) return '';
+  try{ return avaTag(charSafe(typeof ch==='string'?JSON.parse(ch):ch)); }catch(e){ return ''; } }
+async function scoreRows(board,limit){
+  const sel=(chCol===false)?'name,score':'name,score,ch';
+  const q=()=>getSupa().from('scores').select(sel)
+    .eq('mode',board).order('score',{ascending:false}).limit(limit);
+  let { data, error } = await q();
+  if(error&&noChCol(error)){ chCol=false;
+    ({ data, error } = await getSupa().from('scores').select('name,score')
+      .eq('mode',board).order('score',{ascending:false}).limit(limit)); }
+  else if(!error&&chCol===null) chCol=true;
+  if(error) throw error;
+  return bestByName(data); }
 async function loadLeaderboard(){
   const box=$('lbBox'), want=lbMode;
   syncLbTitle();
   if(!supaReady()){ box.innerHTML='<div class="rrow">'+netWhyOffline()+'</div>'; return; }
   box.innerHTML='<div class="rrow">불러오는 중...</div>';
-  try{
-    const { data, error } = await getSupa().from('scores').select('name,score')
-      .eq('mode',want).order('score',{ascending:false}).limit(200);
-    if(want!==lbMode) return;                       // 그새 탭을 바꿨으면 이 응답은 버린다
-    if(error){ box.innerHTML='<div class="rrow">랭킹 준비 중이에요 (DB 설정 확인)</div>'; return; }
-    // 한 사람이 여러 판 해도 최고점 한 줄만 남긴다 — 안 그러면 TOP 10을 혼자 채운다
-    const best=new Map();
-    (data||[]).forEach(r=>{ const n=(r.name||'').trim(); if(!n)return;
-      if(!best.has(n)||best.get(n)<r.score) best.set(n,r.score); });
-    const rows=[...best.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10);
-    if(!rows.length){ box.innerHTML='<div class="rrow">이 판의 1등이 되어보세요! 🥇</div>'; return; }
-    let h=''; rows.forEach((e,i)=>{ const me=e[0]===nick;
-      h+='<div class="rrow'+(me?' me':'')+'"><span>'+(['🥇','🥈','🥉'][i]||((i+1)+'.'))+' '+
-         (me?avaTag():'')+escapeHtml(e[0])+'</span><span>⭐ '+e[1]+'</span></div>'; });
-    box.innerHTML=h;
-  }catch(e){ box.innerHTML='<div class="rrow">랭킹 로드 실패 😢</div>'; }
+  let rows;
+  try{ rows=(await scoreRows(want,200)).slice(0,10); }
+  catch(e){ if(want!==lbMode) return;
+    box.innerHTML='<div class="rrow">랭킹 준비 중이에요 (DB 설정 확인)</div>'; return; }
+  if(want!==lbMode) return;                         // 그새 탭을 바꿨으면 이 응답은 버린다
+  if(!rows.length){ box.innerHTML='<div class="rrow">이 판의 1등이 되어보세요! 🥇</div>'; return; }
+  let h=''; rows.forEach((r,i)=>{ const me=r.name===nick;
+    h+='<div class="rrow'+(me?' me':'')+'"><span>'+(['🥇','🥈','🥉'][i]||((i+1)+'.'))+' '+
+       rowAva(r.name,r.ch)+escapeHtml(r.name)+'</span><span>⭐ '+r.score+'</span></div>'; });
+  box.innerHTML=h;
 }
 // 결과 화면용 — 그 난이도의 남들 순위와 내 위치를 보여준다.
 // 로컬 TOP 5는 내 기록일 뿐이라 따로 표시한다(라벨을 분명히 했다).
@@ -2273,20 +2333,14 @@ async function renderOverOnline(m){
   if(!nick){ box.innerHTML='<div class="rrow">닉네임을 정하면 순위에 올라가요 🙋</div>'; return; }
   box.innerHTML='<div class="rrow">불러오는 중...</div>';
   try{
-    const { data, error } = await getSupa().from('scores').select('name,score')
-      .eq('mode',m).order('score',{ascending:false}).limit(300);
-    if(error) throw error;
-    const best=new Map();
-    (data||[]).forEach(r=>{ const n=(r.name||'').trim(); if(!n)return;
-      if(!best.has(n)||best.get(n)<r.score) best.set(n,r.score); });
-    const rows=[...best.entries()].sort((a,b)=>b[1]-a[1]);
+    const rows=await scoreRows(m,300);
     if(!rows.length){ box.innerHTML='<div class="rrow">아직 기록이 없어요. 1등이 되어보세요! 🥇</div>'; return; }
-    const mine=rows.findIndex(e=>e[0]===nick);
+    const mine=rows.findIndex(r=>r.name===nick);
     let h='';
-    rows.slice(0,5).forEach((e,i)=>{ const me=(i===mine);
+    rows.slice(0,5).forEach((r,i)=>{ const me=(i===mine);
       h+='<div class="rrow'+(me?' me':'')+'"><span>'+(['🥇','🥈','🥉'][i]||((i+1)+'.'))+' '+
-         (me?avaTag():'')+escapeHtml(e[0])+(me?' (나)':'')+'</span><span>⭐ '+e[1]+'</span></div>'; });
-    if(mine>=5) h+='<div class="rrow me"><span>'+(mine+1)+'. '+avaTag()+escapeHtml(nick)+' (나)</span><span>⭐ '+rows[mine][1]+'</span></div>';
+         rowAva(r.name,r.ch)+escapeHtml(r.name)+(me?' (나)':'')+'</span><span>⭐ '+r.score+'</span></div>'; });
+    if(mine>=5) h+='<div class="rrow me"><span>'+(mine+1)+'. '+avaTag()+escapeHtml(nick)+' (나)</span><span>⭐ '+rows[mine].score+'</span></div>';
     h+='<div class="tag2" style="margin-top:6px;">'+
        (mine>=0?('내 순위 '+(mine+1)+'위 / '+rows.length+'명'):(rows.length+'명 참가 중'))+'</div>';
     box.innerHTML=h;
@@ -2296,7 +2350,18 @@ async function submitScore(board,sc){
   if(board==null) board=mode;
   if(sc==null) sc=score;
   if(!nick||!supaReady()||sc<=0) return;
-  try{ await getSupa().from('scores').insert({name:nick,score:sc,mode:board}); }catch(e){}
+  const row={name:nick,score:sc,mode:board};
+  // 얼굴을 같이 올린다. ch 칸이 없는 DB 라면 넣기가 통째로 거절되므로(아무것도 안 써진다)
+  // 한 번 더, 이번엔 이름·점수만 올린다. 점수를 잃는 일은 없다.
+  if(chCol!==false){
+    try{ const { error } = await getSupa().from('scores')
+           .insert({...row,ch:JSON.stringify(charPack())});
+      if(!error){ chCol=true; return; }
+      if(!noChCol(error)) return;                  // 통신 문제라면 다시 넣어도 마찬가지다
+      chCol=false;
+    }catch(e){ return; }
+  }
+  try{ await getSupa().from('scores').insert(row); }catch(e){}
 }
 // 이 판의 점수가 올라갈 랭킹 판. AI 대결은 어디에도 올리지 않는다(실력이 내 손이 아니다).
 function runBoard(wasNet){
@@ -2632,7 +2697,7 @@ function netConnect(){
   net.ch.on('broadcast',{event:'msg'},p=>netOnMsg(p&&p.payload));
   net.ch.subscribe(st=>{
     if(st==='SUBSCRIBED'){ net.status='ok'; net.statusMsg='';
-      if(nick) netSend({t:'hello',name:nick,char:character});
+      if(nick) netSend({t:'hello',name:nick,char:charPack()});
       netHelloLoop(); }
     else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED'){
       net.status='fail';
@@ -2647,7 +2712,7 @@ function netHelloLoop(){
   let tries=0;
   net.helloT=setInterval(()=>{
     if(!net.ch||net.foe||++tries>40){ netHelloStop(); return; }
-    if(nick) netSend({t:'hello',name:nick,char:character});
+    if(nick) netSend({t:'hello',name:nick,char:charPack()});
   },1200);
 }
 function netHelloStop(){ if(net.helloT){ clearInterval(net.helloT); net.helloT=null; } }
@@ -2686,7 +2751,7 @@ function netOnMsg(m){
     const isNew=!net.peers[pid];
     peerUpsert(pid,{name:m.name||'친구',char:m.char,gone:false});
     netHelloStop();                       // 상대를 알았으니 인사를 멈춘다
-    if(m.t==='hello') netSend({t:'hi',name:nick,char:character});   // 늦게 들어온 쪽에 내 정보 전달
+    if(m.t==='hello') netSend({t:'hi',name:nick,char:charPack()});   // 늦게 들어온 쪽에 내 정보 전달
     if(net.host){
       if(playerCount()>=MAX_PLAYERS) hubUnadvertise(); else hubAdvertise();  // 정원 차면 목록에서 내린다
       netSend({t:'seed',seed:netSeed,mode:netModeName,timeLimit:net.timeLimit,
@@ -3167,9 +3232,12 @@ function renderLobby(){
   else $('qrWrap').classList.add('hide');
   $('lobbyRole').textContent=net.host?'🏠 내가 방장 — 난이도·시간을 내가 정해요':'🚪 참가자 — 방장 설정을 따라요';
   const foe=net.foe, ps=peerList();
-  let h='<div class="rrow me"><span>🙋 '+escapeHtml(nick||'나')+' (나)'+(net.host?' 🏠':'')+'</span><span>'
+  // 이름 옆에 그 사람 얼굴 — 차림새는 hello/roster 로 이미 받아 뒀다.
+  // 아직 못 받은 사람(들어온 직후)은 🙋 로 자리만 잡아 준다.
+  let h='<div class="rrow me"><span>'+avaTag()+escapeHtml(nick||'나')+' (나)'+(net.host?' 🏠':'')+'</span><span>'
     +(net.ready?'✅ 준비완료':'⌛ 준비중')+'</span></div>';
-  ps.forEach(p=>{ h+='<div class="rrow"><span>🙋 '+escapeHtml(p.name)+'</span><span>'
+  ps.forEach(p=>{ const pc=peerChar(p.id);
+    h+='<div class="rrow"><span>'+(pc?avaTag(pc):'🙋 ')+escapeHtml(p.name)+'</span><span>'
     +(p.ready?'✅ 준비완료':'⌛ 준비중')+'</span></div>'; });
   // 빈 자리 — 최대 4명까지 들어올 수 있다는 걸 보여준다
   for(let i=playerCount(); i<MAX_PLAYERS; i++){
@@ -3483,7 +3551,9 @@ function mirrorInit(){ if(mcv)return; mcv=$('mirrorCanvas'); mctx=mcv.getContext
   pcv=$('myPadCanvas'); pctx2=pcv.getContext('2d');
   mcv.addEventListener('pointerdown',e=>{ if(!throwerAlive)return; e.preventDefault();
     const r=mcv.getBoundingClientRect(); throwAt((e.clientX-r.left)*(480/r.width)); }); }
-function foeAvatar(){ return (net.foe&&net.foe.char)?net.foe.char:character; }
+function foeAvatar(){ return (net.foe&&net.foe.char)?charSafe(net.foe.char):character; }
+// 방 안에서 그 사람의 차림새 — 아직 안 받았으면 null(사진 자리를 비운다)
+function peerChar(id){ const p=net.peers&&net.peers[id]; return (p&&p.char)?charSafe(p.char):null; }
 function buildSpdBar(){
   const bar=$('spdBar'); bar.innerHTML='';
   TSPD.forEach((sp,i)=>{ const b=document.createElement('button');
@@ -4016,7 +4086,7 @@ $('acceptBackBtn').onclick=()=>openStart();
 ['nickInput','nickInput2','nickInput3','nickInputO'].forEach(id=>$(id).addEventListener('input',e=>saveNick(e.target.value)));
 // 대기실에서 닉네임을 정하면 곧바로 상대에게 알린다
 $('nickInputL').addEventListener('input',e=>{ saveNick(e.target.value);
-  if(net.status==='ok'&&nick) netSend({t:'hello',name:nick,char:character});
+  if(net.status==='ok'&&nick) netSend({t:'hello',name:nick,char:charPack()});
   renderLobby(); });
 $('homeBtn').onclick=()=>openStart();
 $('shareBtn').onclick=shareResult;

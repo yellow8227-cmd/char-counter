@@ -179,6 +179,29 @@ async function run(){
   cases.forEach(([raw,want])=>{ const got=ev(B,'parseRoomCode('+JSON.stringify(raw)+')'); if(got!==want){ bad++; dim('  "'+raw+'" → '+got+' (기대 '+want+')'); } });
   if(bad) no('코드 해석 '+bad+'건 실패'); else ok('소문자·공백·하이픈·링크 붙여넣기 모두 해석');
 
+  // ── 6.5 대기실에서 서로의 얼굴이 보이는가 ──
+  // 이름만 오가고 차림새는 안 오는 일이 있었다(나만의 악세서리를 id 로만 보내서
+  // 받는 쪽이 못 찾고 맨머리로 그렸다). 사진이 '내 얼굴'로 대체되는 것도 통과가 아니다 —
+  // 두 사람 사진이 서로 달라야 진짜 상대 얼굴이다.
+  install(A,'까미'); install(B,'하늘');
+  // 서로 다른 차림새를 준다. B 는 나만의 악세서리까지 씌운다(가장 잘 새던 곳).
+  ev(A,"character={kind:'cat',color:'#ffb3c9',acc:'bow',accColor:'#ff5c8a'}");
+  ev(B,"customAccs.length=0; customAccs.push({id:'ca_q',label:'별',emoji:'⭐',color:'#8a5cff'});"
+      +"character={kind:'bear',color:'#c9a27a',acc:'ca_q',accColor:'#8a5cff'}");
+  ev(A,"openNetMode('dungeon')"); ev(B,"openNetMode('dungeon')");
+  ev(A,'netCreate()'); await sleep(150);
+  ev(B,'netEnterRoom("'+ev(A,'net.room')+'",false)');
+  await wait(bothMet,5000);
+  await wait(()=>ev(A,'!!peerChar(peerList()[0].id)'),3000);
+  ev(A,'renderLobby()');
+  const rows=ev(A,"[...$('lobbyPlayers').querySelectorAll('img.ava')].map(i=>i.src)");
+  const got=ev(A,'JSON.stringify(peerChar(peerList()[0].id))');
+  const want=ev(B,'JSON.stringify(charSafe(charPack()))');
+  if(rows.length<2) no('대기실에 사진이 '+rows.length+'개뿐이다 (내 것 + 상대 것 = 2개여야 한다)');
+  else if(rows[0]===rows[1]) no('두 사람 사진이 똑같다 — 상대 얼굴이 아니라 내 얼굴을 두 번 그렸다');
+  else if(got!==want) no('상대 차림새가 어긋난다: 받은 것 '+got+' / 보낸 것 '+want);
+  else ok('대기실에서 서로 다른 얼굴이 보인다 (나만의 악세서리 ⭐까지 전달: '+got+')');
+
   // ── 7. 한 쪽이 나가면 상대가 안다 ──
   install(A,'까미'); install(B,'하늘');
   ev(A,"openNetMode('dungeon')"); ev(B,"openNetMode('dungeon')");
