@@ -245,6 +245,63 @@ async function run(){
   if(/[\u0000-\u001f]/.test(cl)) no('제어문자가 그대로 들어갔다: '+JSON.stringify(cl));
   else ok('제어문자·줄바꿈은 지운다 ("'+cl+'")');
 
+  // ── 6.8 메시지 회수 ──
+  ev(A,'chatLast=0; $("roomChatInput").value="이건 회수할 말"; roomChatSay();');
+  const gotIt=await wait(()=>ev(B,'roomMsgs.some(m=>m.text==="이건 회수할 말")'),3000);
+  if(!gotIt) no('회수 검사를 위한 메시지가 안 갔다');
+  else {
+    const mid=ev(A,'roomMsgs[roomMsgs.length-1].id');
+    ev(A,'chatUnsend('+JSON.stringify(mid)+',false)');
+    if(ev(A,'roomMsgs.some(m=>m.id==='+JSON.stringify(mid)+')')) no('내 화면에서 안 지워졌다');
+    else {
+      const goneB=await wait(()=>!ev(B,'roomMsgs.some(m=>m.text==="이건 회수할 말")'),3000);
+      if(!goneB) no('상대 화면에서 안 지워졌다');
+      else ok('메시지 회수 — 내 화면·상대 화면 양쪽에서 사라진다');
+    }
+  }
+  // 남의 말은 회수할 수 없다
+  ev(B,'chatLast=0; $("roomChatInput").value="하늘이 말"; roomChatSay();');
+  await wait(()=>ev(A,'roomMsgs.some(m=>m.text==="하늘이 말")'),3000);
+  const foeId=ev(A,'(roomMsgs.find(m=>m.text==="하늘이 말")||{}).id');
+  ev(A,'chatUnsend('+JSON.stringify(foeId)+',false)');
+  if(!ev(A,'roomMsgs.some(m=>m.text==="하늘이 말")')) no('남의 말을 회수해 버렸다');
+  else ok('남의 말은 회수되지 않는다');
+  // 이름이 다르면 지우라는 말도 안 듣는다 (아무나 남의 말을 지우지 못하게)
+  const mineId=ev(B,'(roomMsgs.find(m=>m.text==="하늘이 말")||{}).id');
+  ev(A,'netSend({t:"unsay",id:'+JSON.stringify(mineId)+',name:"까미"})');
+  await sleep(400);
+  if(!ev(B,'roomMsgs.some(m=>m.text==="하늘이 말")')) no('이름이 달라도 지워졌다');
+  else ok('보낸 사람 이름이 다르면 지우라는 말을 무시한다');
+
+  // ── 6.9 한 판 하고 그 친구랑 바로 다시 ──
+  install(A,'까미'); install(B,'하늘');
+  ev(A,"openNetMode('dungeon')"); ev(B,"openNetMode('dungeon')");
+  ev(A,'netCreate()'); await sleep(150);
+  const rmRoom=ev(A,'net.room');
+  ev(B,'netEnterRoom("'+rmRoom+'",false)');
+  await wait(bothMet,5000);
+  // 판을 한 번 치른 것처럼 만든다
+  ev(A,'net.ready=true; net.playedOnce=true; netMode=true; net.myOver=true; net.order=[myId];');
+  ev(B,'net.ready=true; net.playedOnce=true; netMode=true;');
+  ev(A,"lastPlay={kind:'online',game:'dungeon',role:'popper'}; showScreen('overScreen'); syncAgainBtn();");
+  const label=ev(A,'$("againBtn").textContent');
+  if(label.indexOf('하늘')<0) no('다시 하기 버튼에 친구 이름이 안 나온다: '+label);
+  else ok('결과 화면 버튼이 "'+label+'" 로 바뀐다 (방을 다시 팔 필요 없음)');
+  ev(A,'playAgain()');
+  await sleep(300);
+  const aLobby=ev(A,'!$("lobbyScreen").classList.contains("hide")');
+  const sameRoom=ev(A,'net.room')===rmRoom;
+  const bLobby=await wait(()=>ev(B,'!$("lobbyScreen").classList.contains("hide")'),3000);
+  if(!aLobby) no('다시 하기를 눌렀는데 대기실로 안 갔다');
+  else if(!sameRoom) no('방이 바뀌었다 (같은 방이어야 한다): '+ev(A,'net.room'));
+  else if(!bLobby) no('상대가 대기실로 안 따라왔다');
+  else {
+    const cleared=ev(A,'!net.ready && !net.myOver && net.order.length===0 && peerList().every(p=>!p.ready)');
+    if(!cleared) no('준비·탈락 상태가 안 비워졌다');
+    else ok('같은 방('+rmRoom+')에서 둘 다 대기실로 — 준비·점수·탈락 순서 초기화');
+  }
+  ev(A,'netLeave()'); ev(B,'netLeave()');
+
   // ── 7. 한 쪽이 나가면 상대가 안다 ──
   install(A,'까미'); install(B,'하늘');
   ev(A,"openNetMode('dungeon')"); ev(B,"openNetMode('dungeon')");

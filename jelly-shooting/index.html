@@ -266,7 +266,14 @@
   .cmsg img.ava{flex:0 0 auto;width:30px;height:30px;margin:0;border-radius:30%;
     background:linear-gradient(180deg,#fff,#ffeef6);
     box-shadow:0 1px 0 rgba(160,90,130,0.22),inset 0 0 0 1.5px rgba(255,255,255,0.9);}
-  .cmsg .cwho{font-weight:900;font-size:11px;color:#a8557a;line-height:1.25;}
+  .cmsg .cbody{min-width:0;}
+  .cmsg .cwho{font-weight:900;font-size:11px;color:#a8557a;line-height:1.25;
+    display:flex;align-items:center;gap:5px;}
+  /* 회수 — 내 말에만 붙는다. 모바일에서는 hover 가 없으니 늘 보이게 둔다. */
+  .cdel{border:none;background:rgba(160,90,130,0.10);color:#a8557a;font-family:var(--font);
+    font-weight:900;font-size:10px;padding:2px 7px;border-radius:999px;cursor:pointer;
+    line-height:1.5;min-height:0;}
+  .cdel:active{background:rgba(160,90,130,0.22);}
   .cmsg .ctx{font-weight:700;font-size:13.5px;color:#5b3550;line-height:1.35;
     word-break:break-word;overflow-wrap:anywhere;}
   .cmsg.me .cwho{color:var(--pink-d);}
@@ -998,6 +1005,7 @@
         <button class="chip" id="roomChatSend" style="padding:11px 15px;">보내기</button>
       </div>
     </div>
+    <div class="tag2 hide" id="lobbyAgainTip">🔁 방은 그대로예요 — 준비만 누르면 바로 또 해요!</div>
     <div class="tag2" id="lobbyTip"></div>
     <button class="btn lg" id="lobbyReadyBtn">준비 완료!</button>
     <button class="btn ghost" id="lobbyLeaveBtn">← 홈으로</button>
@@ -1910,12 +1918,15 @@ function earAnchor(kind){ return Math.max(kfx(kind).sx,headHalf(kind,EAR_Y)); }
 // 위에 있는 애들은 귀걸이가 볼에 달린 꼴이 된다. 실제로 귀를 그린 좌표에서 두 점을 뽑았다.
 //   in   = 귀 안쪽 (에어팟을 꽂는 자리)
 //   lobe = 귓불 (귀걸이가 달랑거리는 자리)
+// 값은 '그려 보고 잰' 것이다. 귀 그리는 코드의 좌표에서 유추했더니 동물은 전부 어긋났다
+// (귀는 몸보다 먼저 그려져 안쪽이 덮이므로, 코드의 중심점은 보이는 귀의 중심이 아니다).
+// 보이는 귀 = 몸 타원 바깥에 칠해진 곳. 그 중심이 in, 아래·바깥 끝이 lobe.
 const EAR_PT={
-  cat  :{in:[0.60,-0.62], lobe:[0.84,-0.44]},   // 머리 위 삼각귀
-  dog  :{in:[0.86, 0.10], lobe:[0.94, 0.66]},   // 옆으로 늘어진 귀 → 귀걸이는 그 끝에
-  bunny:{in:[0.46,-0.90], lobe:[0.62,-0.22]},   // 위로 솟은 긴 귀
-  bear :{in:[0.70,-0.70], lobe:[0.90,-0.44]},   // 머리 위 동그란 귀
-  human:{in:[0.90, 0.04], lobe:[0.90, 0.17]},   // 옆에 붙은 사람 귀
+  cat  :{in:[0.63,-0.87], lobe:[0.85,-0.50]},   // 머리 위 삼각귀
+  dog  :{in:[1.02,-0.34], lobe:[0.86, 0.56]},   // 옆으로 늘어진 귀 → 귀걸이는 그 끝에
+  bunny:{in:[0.51,-1.24], lobe:[0.76,-0.64]},   // 위로 솟은 긴 귀
+  bear :{in:[0.80,-0.84], lobe:[0.95,-0.54]},   // 머리 위 동그란 귀
+  human:{in:[0.90, 0.04], lobe:[0.90, 0.17]},   // 옆에 붙은 사람 귀 (이건 나중에 그려서 맞았다)
   girl :{in:[0.90, 0.06], lobe:[0.90, 0.19]} };
 function earPt(kind,which){ const e=EAR_PT[kind]||EAR_PT.cat; return e[which]; }
 
@@ -3168,20 +3179,47 @@ function chatClean(t){
   // 줄바꿈·제어문자를 지우고 길이를 자른다. 화면에는 escapeHtml 로만 넣는다.
   return String(t==null?'':t).replace(/[\u0000-\u001f\u007f\u200b-\u200f\u2028\u2029]/g,' ')
     .replace(/\s+/g,' ').trim().slice(0,CHAT_MAX); }
+let chatSeq=0;
+function chatId(){ return (myId||'me')+'-'+(++chatSeq); }
 function chatPush(list,m){ list.push(m); while(list.length>CHAT_KEEP) list.shift(); }
+// 회수 — 보낸 사람만 자기 말을 지운다. 받은 쪽에서도 같은 번호를 지운다.
+// broadcast 에는 '누가 보냈는지'를 서버가 보증해 주지 않으므로, 지울 때도 이름을 같이 보고
+// 그 말의 주인과 같을 때만 지운다(채팅 자체와 같은 수준의 믿음이다).
+function chatDrop(list,id,who){
+  const i=list.findIndex(m=>m.id===id);
+  if(i<0) return false;
+  if(who!=null && list[i].name!==who) return false;
+  list.splice(i,1); return true; }
 function chatRender(boxId,list,emptyMsg){
   const box=$(boxId); if(!box) return;
   if(!list.length){ box.innerHTML='<div class="csys">'+emptyMsg+'</div>'; return; }
+  const world=(boxId==='chatBox');
   box.innerHTML=list.map(m=>{
     if(m.sys) return '<div class="csys">'+escapeHtml(m.text)+'</div>';
-    const me=(m.name===nick);
-    const cfg=m.ch?charSafe(m.ch):(me?character:null);
+    const me=(m.name===nick&&m.mine);
+    const cfg=m.ch?charSafe(m.ch):((m.name===nick)?character:null);
     return '<div class="cmsg'+(me?' me':'')+'">'
       +(cfg?'<img class="ava" src="'+avatarURL(cfg)+'" alt="">':'')
-      +'<div><div class="cwho">'+escapeHtml(m.name||'누군가')+(me?' (나)':'')+'</div>'
+      +'<div class="cbody"><div class="cwho">'+escapeHtml(m.name||'누군가')+(me?' (나)':'')
+      +(me?'<button class="cdel" data-id="'+escapeHtml(m.id||'')+'" data-w="'+(world?1:0)
+           +'" title="회수">회수</button>':'')+'</div>'
       +'<div class="ctx">'+escapeHtml(m.text)+'</div></div></div>';
   }).join('');
+  box.querySelectorAll('.cdel').forEach(b=>b.onclick=()=>chatUnsend(b.dataset.id,b.dataset.w==='1'));
   box.scrollTop=box.scrollHeight; }
+// 회수 누름 — 내 화면에서 지우고 상대에게도 알린다
+function chatUnsend(id,world){
+  if(!id) return;
+  if(world){
+    if(!chatDrop(chatMsgs,id,nick)) return;
+    if(chatCh){ try{ chatCh.send({type:'broadcast',event:'del',payload:{id:id,name:nick}}); }catch(e){} }
+    chatRender('chatBox',chatMsgs,'첫 마디를 남겨보세요! 💬');
+  } else {
+    if(!chatDrop(roomMsgs,id,nick)) return;
+    netSend({t:'unsay',id:id,name:nick});
+    roomChatRender();
+  }
+  toast('↩️ 메시지를 회수했어요'); }
 function chatCanSend(){
   if(!nick) return '닉네임을 먼저 정해주세요 🙋';
   if(!supaReady()) return netWhyOffline();
@@ -3209,8 +3247,13 @@ function chatJoin(){
     const text=chatClean(m.text); if(!text) return;
     const name=chatClean(m.name).slice(0,10)||'누군가';
     seenPut(name,m.ch);
-    chatPush(chatMsgs,{name:name,ch:m.ch,text:text});
+    chatPush(chatMsgs,{id:String(m.id||'').slice(0,40),name:name,ch:m.ch,text:text});
     if(!$('chatScreen').classList.contains('hide')) chatRender('chatBox',chatMsgs,'');
+  });
+  chatCh.on('broadcast',{event:'del'},p=>{     // 상대가 회수했다
+    const d=p&&p.payload; if(!d||!d.id) return;
+    if(chatDrop(chatMsgs,String(d.id).slice(0,40),chatClean(d.name).slice(0,10))
+       && !$('chatScreen').classList.contains('hide')) chatRender('chatBox',chatMsgs,'');
   });
   chatCh.on('presence',{event:'sync'},()=>{
     let n=0; try{ const st=chatCh.presenceState()||{};
@@ -3233,9 +3276,9 @@ function chatSay(){
   const text=chatClean($('chatInput').value); if(!text) return;
   if(!chatCh){ toast('아직 연결 중이에요 🔌'); return; }
   chatLast=performance.now(); $('chatInput').value='';
-  const m={name:nick,ch:charPack(),text:text};
+  const m={id:chatId(),name:nick,ch:charPack(),text:text};
   try{ chatCh.send({type:'broadcast',event:'msg',payload:m}); }catch(e){}
-  chatPush(chatMsgs,m);                       // 보낸 사람에게는 안 되돌아온다 — 직접 넣는다
+  chatPush(chatMsgs,{...m,mine:true});        // 보낸 사람에게는 안 되돌아온다 — 직접 넣는다
   chatRender('chatBox',chatMsgs,''); }
 
 // ---- 방 안 채팅 ----
@@ -3246,8 +3289,9 @@ function roomChatSay(){
   if(performance.now()-chatLast<CHAT_GAP){ toast('조금 천천히 보내주세요 🐢'); return; }
   const text=chatClean($('roomChatInput').value); if(!text) return;
   chatLast=performance.now(); $('roomChatInput').value='';
-  netSend({t:'chat',name:nick,char:charPack(),text:text});
-  chatPush(roomMsgs,{name:nick,ch:charPack(),text:text});
+  const id=chatId();
+  netSend({t:'chat',id:id,name:nick,char:charPack(),text:text});
+  chatPush(roomMsgs,{id:id,name:nick,ch:charPack(),text:text,mine:true});
   roomChatRender(); }
 
 // ================= QR 코드 =================
@@ -3612,13 +3656,21 @@ function netOnMsg(m){
   if(m.to&&m.to!==myId) return;                   // 남에게 보낸 귓속말
   const pid=m.from||'AI';                         // AI 대결은 보낸 사람 표시가 없다
   net.lastFoe=performance.now(); net.foeGone=false;
+  // 상대가 '한 판 더'를 눌렀다 — 나도 대기실로 돌아간다(방은 그대로다)
+  if(m.t==='again'){
+    if($('lobbyScreen').classList.contains('hide')){
+      toast('🔁 '+(m.name||'친구')+'님이 한 판 더 하고 싶어해요!'); rematch(false); }
+    return; }
   // 방 채팅 — 이미 붙어 있는 방 채널에 얹혀 온다. hello/hi 블록 안에 두면 도달하지 못한다.
   if(m.t==='chat'){
     const text=chatClean(m.text); if(!text) return;
     const who=chatClean(m.name).slice(0,10)||'친구';
     seenPut(who,m.char);
-    chatPush(roomMsgs,{name:who,ch:m.char,text:text});
+    chatPush(roomMsgs,{id:String(m.id||'').slice(0,40),name:who,ch:m.char,text:text});
     roomChatRender(); return; }
+  if(m.t==='unsay'){                            // 상대가 방 채팅을 회수했다
+    if(chatDrop(roomMsgs,String(m.id||'').slice(0,40),chatClean(m.name).slice(0,10))) roomChatRender();
+    return; }
   // 대전이 아닌데 오는 게임 메시지는 버린다. 안 버리면 방을 열어둔 채 혼자 하는 판에
   // 상대가 던진 젤리가 날아든다.
   if(!netMode&&!throwerAlive&&['throw','jthrow','jgone','hex','stat','tstat'].indexOf(m.t)>=0) return;
@@ -4156,6 +4208,7 @@ function renderLobby(){
   $('lobbyNickCard').classList.toggle('hide',!!nick);
   $('roomChatInput').disabled=!nick; roomChatRender();
   if(foe) lobbyStopWait(); else if(!lobbyTickT) lobbyStartWait();
+  $('lobbyAgainTip').classList.toggle('hide',!net.playedOnce);
   const rb=$('lobbyReadyBtn'), ok=(net.status==='ok');
   const others=ps.length, allReady=others>0&&ps.every(p=>p.ready);
   // 방장은 모두 준비되면 '시작하기'가 뜬다. 참가자는 준비만 하면 된다.
@@ -4210,7 +4263,7 @@ function netBeginCountdown(){
   const t=setInterval(()=>{
     n--;
     if(n<=0){ clearInterval(t); $('countWrap').classList.add('hide'); hubUnadvertise();
-      netMode=true; computeRole();
+      netMode=true; net.playedOnce=true; computeRole();
       if(netGame==='throw'&&myRole==='thrower') startThrower(); else startGame();
       return; }
     $('countNum').textContent=n; ensureAudio(); playSquish(n);
@@ -4796,14 +4849,34 @@ function copyText(s,okMsg){ if(navigator.clipboard&&navigator.clipboard.writeTex
 function syncAgainBtn(){
   const b=$('againBtn'); if(!b) return;
   b.textContent = lastPlay.kind==='ai' ? '🤖 AI와 다시'
-                : lastPlay.kind==='online' ? '🔁 다시 매칭'
+                : lastPlay.kind==='online' ? (roomAlive()
+                    ? ('🔁 '+((net.foe&&net.foe.name)||'친구')+'랑 다시')
+                    : '🔁 다시 매칭')
                 : '🔁 다시 하기';
+}
+// 판이 끝나도 방 채널은 그대로 붙어 있다. 그런데 '다시 하기'가 방 만들기 화면으로 되돌려
+// 보내서, 같은 친구랑 한 판 더 하려면 방을 또 파고 코드를 또 보내야 했다. 그럴 필요가 없다.
+function roomAlive(){ return !!(net.ch && net.room && !aiOn && peerCount()>0 && !net.foeGone); }
+// 방을 그대로 두고 대기실로 되돌린다. 점수·준비·탈락 순서만 비운다.
+function rematch(send){
+  if(!roomAlive()){ restoreMode(); openNetMode(lastPlay.game); return; }
+  if(send) netSend({t:'again',name:nick||'친구'});
+  netMode=false; throwerAlive=false; running=false; paused=false;
+  ['hud','audioBar','itemBar','pauseBtn','netBar','throwWrap','throwerView'].forEach(id=>$(id).classList.add('hide'));
+  canvas.style.display='';
+  net.ready=false; net.myOver=false; net.myScore=0; net.myReason='';
+  net.order=[]; net.mp=false; net.mpWin=false; net.target='';
+  net.foeStat={score:0,lives:0};
+  peerList().forEach(p=>{ p.ready=false; p.over=false; p.reason=''; p.score=0; p.lives=0; });
+  restoreMode();
+  if(net.host){ netSeed=(Math.random()*1e9)|0; hubAdvertise(); }   // 다음 판은 새 판으로
+  openLobby();
 }
 function playAgain(){
   if(lastPlay.kind==='ai'){
     netGame=lastPlay.game; hostRole=lastPlay.role||'thrower';
     restoreMode(); aiMatch(); return; }
-  if(lastPlay.kind==='online'){ restoreMode(); openNetMode(lastPlay.game); return; }
+  if(lastPlay.kind==='online'){ rematch(true); return; }
   restoreMode(); startGame();
 }
 function shareResult(){
