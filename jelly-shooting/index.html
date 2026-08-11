@@ -860,15 +860,14 @@
         <button class="chip" id="cloudOutBtn">🚪 이 기기에서 로그아웃</button>
       </div>
       <div class="tag2" style="text-align:left;margin-top:8px;opacity:.75;">
-        이메일+비밀번호로 계정을 만들면 폰·노트북에서 같은 사람이 돼요. <b>메일을 안 거치니 바로 됩니다.</b><br>
-        이메일은 <b>계정을 잇는 데만</b> 써요 — 광고·알림은 안 보내고, 다른 사람에게도 안 보여요.
-        안 넣어도 게임은 그대로 할 수 있어요.</div>
-      <div class="tag2" style="text-align:left;margin-top:6px;opacity:.6;">
-        비밀번호를 잊었으면 아래로 — 메일 링크로도 들어올 수 있어요.
-        (메일은 네이버·다음에서 안 오는 일이 있어요. 그럴 때는 위의 비밀번호 방식을 쓰면 메일이 아예 안 갑니다)</div>
+        이메일+비밀번호로 계정을 만들면 폰·노트북에서 같은 사람이 돼요. <b>메일은 안 갑니다.</b><br>
+        이메일은 <b>계정 이름</b>으로만 써요 — 광고·알림 안 보내고, 다른 사람에게도 안 보여요.
+        안 넣어도 게임은 그대로 할 수 있어요.<br>
+        비밀번호를 여러 번 틀려도 <b>계정은 잠기지 않아요.</b></div>
+      <div class="tag2" id="cloudLostHint" style="text-align:left;margin-top:6px;opacity:.6;">
+        비밀번호를 잊었을 때만 아래를 눌러주세요.</div>
       <div style="display:flex;gap:8px;justify-content:center;margin-top:6px;flex-wrap:wrap;">
-        <button class="chip" id="cloudLinkBtn" style="font-size:13px;">📧 메일 링크로 지키기</button>
-        <button class="chip" id="cloudInBtn" style="font-size:13px;">📧 메일 링크로 들어오기</button>
+        <button class="chip" id="cloudInBtn" style="font-size:13px;">🔓 비밀번호 찾기</button>
       </div>
     </div>
     <div class="card">
@@ -1264,7 +1263,9 @@ function mailWait(){ return Math.max(0,Math.ceil((MAIL_GAP-(Date.now()-cloudMail
 // 서버가 주는 영어 오류를 사람 말로 옮긴다. 왜 안 되는지 모르면 고칠 수도 없다.
 function cloudWhy(msg){
   const m=String(msg||'');
-  if(/rate limit/i.test(m))
+  // 두 가지 한도가 있다. '메일 보내기' 한도(시간당 몇 통)와 '요청' 한도(몇 분).
+  // 앞의 것을 /rate limit/ 으로 뭉뚱그리면 뒤의 것까지 메일 얘기가 되어 버린다.
+  if(/email rate limit/i.test(m))
     return '메일을 너무 여러 번 보냈어요. Supabase 기본 메일은 시간당 몇 통만 되니 잠시 뒤에 다시 해주세요 (SMTP 를 붙이면 풀려요)';
   if(/Anonymous sign-ins are disabled/i.test(m))
     return '익명 로그인이 꺼져 있어요 — 이메일을 넣으면 계정을 만들 수 있어요';
@@ -1274,7 +1275,10 @@ function cloudWhy(msg){
     return '돌아올 주소가 허용목록에 없어요 (Authentication → URL Configuration)';
   if(/already registered|already been registered|User already/i.test(m))
     return '이미 있는 계정이에요 — 아래 "🔑 로그인" 을 눌러주세요';
-  if(/Invalid login credentials/i.test(m)) return '이메일이나 비밀번호가 맞지 않아요';
+  if(/Invalid login credentials/i.test(m))
+    return '이메일이나 비밀번호가 맞지 않아요 (여러 번 틀려도 계정은 잠기지 않아요)';
+  if(/request rate limit|too many requests|over_request_rate/i.test(m))
+    return '너무 빨리 여러 번 눌렀어요. 몇 분 뒤에 다시 해주세요 (계정은 잠기지 않아요)';
   // Supabase 기본 메일은 테스트용이라 네이버·다음 같은 곳이 그냥 버리는 일이 많다.
   // 그러면 확인 메일을 못 받아 계정이 영영 잠긴다 — Confirm email 을 끄는 게 답이다.
   if(/Email not confirmed|not confirmed/i.test(m))
@@ -1290,25 +1294,6 @@ function cloudWhy(msg){
 // (그 주소가 Redirect URLs 허용목록에 있어야 한다 — 없으면 Supabase 가 Site URL 로 되돌린다)
 function cloudBackURL(){
   try{ return location.origin+location.pathname; }catch(e){ return ''; } }
-async function cloudLink(email){        // 이 기기 기록에 이메일을 붙인다
-  const sb=getSupa();
-  if(!sb){ toast('온라인 기능을 못 불러왔어요'+(cloudMsg?(' — '+cloudMsg):'')); return false; }
-  if(!MAIL_OK.test(email)){ toast('이메일을 확인해주세요'); return false; }
-  if(mailWait()){ toast('방금 메일을 보냈어요. 메일함을 먼저 확인해주세요 ('+mailWait()+'초 뒤에 다시 보낼 수 있어요)'); return false; }
-  const back=cloudBackURL();
-  // 익명 로그인이 안 켜져 있으면 붙일 계정이 없다. 그때는 이메일로 계정을 새로 만든다 —
-  // 그러면 대시보드 스위치 하나(Email)만으로도 폰·노트북을 이을 수 있다.
-  if(!cloudUid){
-    const r0=await sb.auth.signInWithOtp({email:email,options:{emailRedirectTo:back,shouldCreateUser:true}});
-    if(r0&&r0.error){ toast('안 됐어요: '+cloudWhy(r0.error.message)); return false; }
-    cloudMailAt=Date.now();
-    cloudSay('📧 '+email+' 로 링크를 보냈어요. 누르면 이 이메일로 계정이 만들어져요');
-    return true; }
-  const r=await sb.auth.updateUser({email:email},{emailRedirectTo:back});
-  if(r&&r.error){ toast('안 됐어요: '+cloudWhy(r.error.message)); return false; }
-  cloudMailAt=Date.now();
-  cloudSay('📧 '+email+' 로 확인 메일을 보냈어요. 링크를 누르면 계정이 지켜져요');
-  return true; }
 // ---- 비밀번호로 잇기 (메일을 안 거친다) ----
 // 메일 링크는 Supabase 기본 메일이 시간당 몇 통뿐이라 검증하기도, 쓰기도 불편했다.
 // 비밀번호는 우리가 저장하지 않는다 — Supabase 가 해시로 보관하고 우리는 넘겨만 준다.
@@ -1338,6 +1323,15 @@ async function cloudSignUp(email,pw){
   cloudUid=ses.user.id; cloudMail=ses.user.email||email; cloudState='linked';
   await cloudPull(false); await cloudPush(); syncCloudUI();
   cloudSay(null); toast('🔐 계정 완성!'); return true; }
+// 메일로 들어온 뒤(또는 그냥 쓰다가) 비밀번호를 새로 정한다
+async function cloudSetPw(pw){
+  const sb=getSupa();
+  if(!sb||!cloudUid){ toast('먼저 로그인해주세요'); return false; }
+  if(!pwOk(pw)){ toast('비밀번호를 '+PW_MIN+'자 이상 적어주세요'); return false; }
+  const r=await sb.auth.updateUser({password:pw});
+  if(r&&r.error){ toast('안 됐어요: '+cloudWhy(r.error.message)); return false; }
+  $('cloudPw').value='';
+  cloudSay('🔐 비밀번호를 바꿨어요'); toast('🔐 비밀번호를 바꿨어요'); return true; }
 async function cloudPwIn(email,pw){
   const sb=getSupa();
   if(!sb){ toast('온라인 기능을 못 불러왔어요'+(cloudMsg?(' — '+cloudMsg):'')); return false; }
@@ -1350,7 +1344,8 @@ async function cloudPwIn(email,pw){
   cloudUid=ses.user.id; cloudMail=ses.user.email||email; cloudState='linked';
   await cloudPull(true);          // 그 계정 기록으로 갈아탄다
   syncCloudUI(); toast('🔑 '+cloudMail+' 로 들어왔어요'); return true; }
-async function cloudSignIn(email){      // 다른 기기에서 그 계정으로 들어온다
+// 비밀번호를 잊었을 때 — 메일 링크로 들어온 뒤 위에서 새 비밀번호를 정하면 된다
+async function cloudSignIn(email){
   const sb=getSupa();
   if(!sb){ toast('온라인 기능을 못 불러왔어요'+(cloudMsg?(' — '+cloudMsg):'')); return false; }
   if(!MAIL_OK.test(email)){ toast('이메일을 확인해주세요'); return false; }
@@ -1391,9 +1386,11 @@ function syncCloudUI(){
   const st=$('cloudState'); if(st) st.textContent=
     cloudState==='linked'?'연결됨 ✅':(cloudState==='device'?'서버 저장 중':'기기 저장');
   const on=(cloudState==='linked');
-  ['cloudLinkBtn','cloudInBtn','cloudUpBtn','cloudPwInBtn','cloudMail','cloudPw'].forEach(id=>{
+  // 들어와 있으면: 이메일 칸·로그인·찾기는 감추고, 비밀번호 바꾸기와 로그아웃만 남긴다
+  ['cloudInBtn','cloudPwInBtn','cloudMail','cloudLostHint'].forEach(id=>{
     const e=$(id); if(e) e.style.display=on?'none':''; });
   const ob=$('cloudOutBtn'); if(ob) ob.style.display=on?'':'none';
+  const ub=$('cloudUpBtn'); if(ub) ub.textContent=on?'🔐 비밀번호 바꾸기':'🔐 계정 만들기';
 }
 
 // ================= Setup =================
@@ -5787,10 +5784,11 @@ window.__auditEach=function(scan){
 };
 
 // ☁️ 계정 단추
-$('cloudLinkBtn').onclick=()=>cloudLink(($('cloudMail').value||'').trim());
 $('cloudInBtn').onclick=()=>cloudSignIn(($('cloudMail').value||'').trim());
 $('cloudOutBtn').onclick=cloudOutAsk;
-$('cloudUpBtn').onclick=()=>cloudSignUp(($('cloudMail').value||'').trim(),$('cloudPw').value||'');
+$('cloudUpBtn').onclick=()=>(cloudState==='linked')
+  ? cloudSetPw($('cloudPw').value||'')
+  : cloudSignUp(($('cloudMail').value||'').trim(),$('cloudPw').value||'');
 $('cloudPwInBtn').onclick=()=>cloudPwIn(($('cloudMail').value||'').trim(),$('cloudPw').value||'');
 
 // boot
