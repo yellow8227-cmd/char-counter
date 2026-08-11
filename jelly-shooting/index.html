@@ -1284,6 +1284,7 @@ function drawAvatar(g,cx,cy,R,cfg,mood,t){ mood=mood||'idle';t=t||0; g.save(); g
                : (mood==='happy'||mood==='wow') ? Math.abs(Math.sin(t*0.4))*6 : 0;
   g.translate(0,-bounce);
   const squish=1+Math.sin(t*0.15)*0.03; g.scale(1/squish,squish);
+  drawAccBack(g,R,cfg);      // 머리에 두르는 것(🎧)은 머리 뒤에 — 그래야 얼굴이 가운데 온다
   const col=cfg.color,dark=shade(col,-28),isHuman=(cfg.kind==='human'||cfg.kind==='girl'),isGirl=cfg.kind==='girl';
   const nf=kfx(cfg.kind);   // 종류별 실루엣·눈·볼
   g.fillStyle=col;
@@ -1563,38 +1564,87 @@ function accSprite(em,col,px){
   if(TINT.size>48) TINT.delete(TINT.keys().next().value);
   TINT.set(key,c); return c; }
 
-// 모자는 머리를 덮는 물건이라 더 깊이 눌러써야 하고, 헤드폰은 덩치가 커서 조금 크게 얹는다.
-// (🎧 를 진짜로 '귀에 두르게' 놓아 보았지만 이모지가 정면 제품 사진이라 어떤 크기로도
-//  얼굴을 덮어 버렸다 — 머리에 올려 둔 모양이 훨씬 낫다.)
-const ACC_WEAR={'🧢':'hat','🎩':'hat','🎧':'wide'};
+// 물건마다 쓰는 자리가 다르다. 전부 정수리에 올리면 헤드폰은 머리에 얹은 모자가 되고
+// 막대사탕은 머리에 꽂은 꼬치가 된다. 물건의 성질대로 자리를 나눈다.
+//   ears  머리에 두른다 — 머리 폭보다 넓게 늘려 '머리 뒤'로 넣는다. 그러면 밴드는 정수리
+//         위로, 귀 덮개는 양옆으로 나오고 가운데는 얼굴이 가린다(실제로 쓴 모양).
+//   mouth 입에 문다 — 혀도 살짝 내민다.
+//   side  머리 옆에 꽂는다 (기본 꽃·리본과 같은 자리).
+//   hat   눌러쓴다.  crown  정수리에 얹는다.
+const ACC_WEAR={
+  '🎧':'ears', '🧢':'hat','🎩':'hat', '🍭':'mouth',
+  '🎀':'side','🌸':'side','🍓':'side','🦋':'side','🍀':'side','🐚':'side' };
 const WEAR={ crown:{w:0.42,sink:0.06,tilt:0},
-             wide :{w:0.54,sink:0.05,tilt:0},
-             hat  :{w:0.70,sink:0.22,tilt:-0.05} };
+             side :{w:0.34,sink:0.12,tilt:0},
+             hat  :{w:0.70,sink:0.22,tilt:-0.05},
+             ears :{w:1.16,tilt:0},
+             mouth:{w:0.34,tilt:0.22} };
+// 입 높이 — 종류마다 다르다(토끼는 ω 입이 아래, 강아지는 주둥이가 더 아래)
+function mouthY(kind){ return kind==='bunny'?0.32:(kind==='dog'?0.46:0.26); }
+// 물고 있으면 혀가 살짝 나온다. 강아지는 원래 나와 있어서 겹치지 않게 건너뛴다.
+function drawTongue(g,R,cfg){
+  if(cfg.kind==='dog') return;
+  const my=mouthY(cfg.kind)*R;
+  g.fillStyle='#ff7d9c'; g.beginPath(); g.ellipse(0,my+R*0.115,R*0.10,R*0.082,0,0,7); g.fill();
+  g.fillStyle='rgba(200,70,110,0.45)'; g.beginPath(); g.ellipse(0,my+R*0.145,R*0.042,R*0.046,0,0,7); g.fill(); }
+
+// 머리 '뒤'에 들어가는 악세서리. drawAvatar 가 머리를 그리기 전에 부른다.
+function drawAccBack(g,R,cfg){
+  if(!cfg.acc||cfg.acc==='none') return;
+  const mine=(cfg.acc==='__preview')?{emoji:cfg.accEmoji||'🎀'}:customAccs.find(a=>a.id===cfg.acc);
+  if(!mine||ACC_WEAR[mine.emoji||'']!=='ears') return;
+  const em=mine.emoji, W=WEAR.ears, ink=accInk(em), ac=cfg.accColor||'#ff5c8a';
+  // 두르는 물건이니 얼굴 폭이 아니라 '실루엣 폭'으로 잰다 — 👧는 머리카락이 얼굴보다 넓어서
+  // 얼굴 폭에 맞추면 귀 덮개가 머리카락 뒤로 숨어 버린다.
+  const wantW=2*Math.max(kfx(cfg.kind).sx,headHalf(cfg.kind,-0.10))*W.w;
+  const px=R*wantW/Math.max(ink.w,0.15);
+  const iw=ink.w*px, ih=ink.h*px;
+  const yc=-R*0.10;                              // 귀 덮개가 귀 높이에 오도록 살짝 위
+  const gl=g.createRadialGradient(0,yc,1,0,yc,iw*0.55);
+  gl.addColorStop(0,hexA(ac,0.16)); gl.addColorStop(1,hexA(ac,0));
+  g.fillStyle=gl; g.beginPath(); g.ellipse(0,yc,iw*0.55,ih*0.55,0,0,7); g.fill();
+  const sp=accSprite(em,ac,px), P=sp.width, s=Math.max(8,Math.round(px/2)*2);
+  g.save(); g.shadowColor='rgba(78,38,62,0.26)'; g.shadowBlur=R*0.07;
+  g.drawImage(sp, -(P/2+(ink.left+ink.right)/2*s), yc-(P/2+(ink.top+ink.bot)/2*s));
+  g.restore(); }
 function drawCustomAcc(g,R,cfg,mine,ac){
   const em=mine.emoji||'🎀', st=ACC_WEAR[em]||'crown', W=WEAR[st];
+  if(st==='ears') return;                          // 머리 뒤에서 이미 그렸다
   const ink=accInk(em), kind=cfg.kind;
   // ① 크기는 그 캐릭터 얼굴 폭(KIND_FX.sx)에 맞춘다 — 곰(1.13)과 여자아이(0.94)는 다르다.
   //    실루엣 폭을 쓰면 강아지 늘어진 귀·토끼 귀까지 머리 폭으로 세어 들쭉날쭉해진다.
   const wantW=2*kfx(kind).sx*W.w;
   const px=R*wantW/Math.max(ink.w,0.15);
   const iw=ink.w*px, ih=ink.h*px;
-  // ② 얹는 자리는 '가운데 좁은 띠'의 머리선이다. 물건 폭 전체로 재면 토끼는 귀 끝에,
-  //    고양이는 귀 위에 올라앉아 공중에 뜬다 — 리본은 귀 사이에 놓여야 한다.
-  const tp=headTop(kind,-0.20,0.20)*R;
-  const inkTop=tp+R*W.sink-ih;
-  const yc=inkTop+ih/2;
+  // ② 자리는 물건의 성질에 따라 다르다
+  let xc=0, yc, tp=null;
+  if(st==='mouth'){
+    drawTongue(g,R,cfg);                           // 물고 있으니 혀가 살짝
+    // 사탕이 입에 닿고 막대는 아래쪽으로 — 잉크 왼쪽 위 끝을 입가에 붙인다
+    xc=iw*0.5+R*0.02; yc=mouthY(kind)*R-R*0.02+ih*0.5;
+  } else if(st==='side'){
+    // 옆에 꽂는 것은 그 위치의 머리선에 얹는다 (기본 꽃·리본과 같은 방식)
+    xc=kfx(kind).sx*0.58*R;
+    tp=headTop(kind,kfx(kind).sx*0.58-0.18,kfx(kind).sx*0.58+0.18)*R;
+    yc=tp+R*W.sink;
+  } else {
+    // 정수리·모자는 '가운데 좁은 띠'의 머리선 위. 물건 폭 전체로 재면 토끼는 귀 끝에,
+    // 고양이는 귀 위에 올라앉아 공중에 뜬다 — 리본은 귀 사이에 놓여야 한다.
+    tp=headTop(kind,-0.20,0.20)*R;
+    yc=tp+R*W.sink-ih*0.5;
+  }
   // 빛무리 — 물건 크기를 따라가되 물건보다 작게(크게 하면 분홍 풍선이 된다)
-  const gl=g.createRadialGradient(0,yc,1,0,yc,iw*0.60);
+  const gl=g.createRadialGradient(xc,yc,1,xc,yc,iw*0.60);
   gl.addColorStop(0,hexA(ac,0.22)); gl.addColorStop(0.55,hexA(ac,0.09)); gl.addColorStop(1,hexA(ac,0));
-  g.fillStyle=gl; g.beginPath(); g.ellipse(0,yc,iw*0.60,ih*0.58,0,0,7); g.fill();
+  g.fillStyle=gl; g.beginPath(); g.ellipse(xc,yc,iw*0.60,ih*0.58,0,0,7); g.fill();
   // 머리에 닿는 그늘 — 이게 없으면 아무리 잘 놓아도 스티커처럼 떠 보인다
-  g.fillStyle='rgba(96,48,74,0.14)';
-  g.beginPath(); g.ellipse(0,tp+R*0.03,iw*0.38,R*0.05,0,0,7); g.fill();
-  // ③ 고른 색으로 칠한 물건을 얹는다. 스프라이트 안 잉크 중심을 (0,yc) 에 맞춘다.
+  if(tp!=null){ g.fillStyle='rgba(96,48,74,0.14)';
+    g.beginPath(); g.ellipse(xc,tp+R*0.03,iw*0.38,R*0.05,0,0,7); g.fill(); }
+  // ③ 고른 색으로 칠한 물건을 얹는다. 스프라이트 안 잉크 중심을 (xc,yc) 에 맞춘다.
   const sp=accSprite(em,ac,px), P=sp.width, s=Math.max(8,Math.round(px/2)*2);
-  const dx=-(P/2+(ink.left+ink.right)/2*s), dy=yc-(P/2+(ink.top+ink.bot)/2*s);
+  const dx=xc-(P/2+(ink.left+ink.right)/2*s), dy=yc-(P/2+(ink.top+ink.bot)/2*s);
   g.save();
-  if(W.tilt){ g.translate(0,yc); g.rotate(W.tilt); g.translate(0,-yc); }
+  if(W.tilt){ g.translate(xc,yc); g.rotate(W.tilt); g.translate(-xc,-yc); }
   // 옅은 물건(☁️)이 흰 캐릭터 위에서 사라지지 않게, 그리고 '얹혀 있다'고 읽히게 그늘 한 겹
   g.shadowColor='rgba(78,38,62,0.30)'; g.shadowBlur=R*0.07; g.shadowOffsetY=R*0.03;
   g.drawImage(sp,dx,dy);
