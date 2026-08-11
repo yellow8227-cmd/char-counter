@@ -762,6 +762,10 @@
       <div class="opts" id="kindOpts"></div>
       <div class="label" style="margin-top:12px;">🎨 색깔</div>
       <div class="opts" id="colorOpts"></div>
+      <div id="hairRow">
+        <div class="label" style="margin-top:12px;">💇 머리 모양</div>
+        <div class="opts" id="hairOpts"></div>
+      </div>
       <div class="label" style="margin-top:12px;">🎀 악세서리</div>
       <div class="opts" id="accOpts"></div>
       <div style="text-align:center;margin-top:12px;"><button class="chip" id="randomBtn">🎲 랜덤으로 뽑기</button></div>
@@ -1200,7 +1204,8 @@ const KINDS=[{id:'cat',label:'고양이 🐱'},{id:'dog',label:'강아지 🐶'}
 const COLORS=['#ffb3c9','#ff9db2','#ffd59e','#ffe36e','#f6f19a','#b6e3a0','#8fe0c8','#a3d5ff',
   '#9db8ff','#d9b8ff','#f0b8ff','#ffffff','#f2e7dc','#c9a27a','#8a6b5a','#8f9bb3','#5a5566','#3f3a4a'];
 const ACCS=[{id:'none',label:'없음'},{id:'bow',label:'리본 🎀'},{id:'hat',label:'모자 🎩'},{id:'glasses',label:'안경 👓'},{id:'shades',label:'선글라스 🕶️'},{id:'flower',label:'꽃 🌸'},{id:'crown',label:'왕관 👑'},{id:'horns',label:'뿔 😈'}];
-let character=loadChar()||{kind:'cat',color:'#ffb3c9',acc:'bow',accColor:'#ff5c8a'};
+let character=loadChar()||{kind:'cat',color:'#ffb3c9',acc:'bow',accColor:'#ff5c8a',hair:'basic'};
+if(!character.hair) character.hair='basic';       // 예전에 저장된 캐릭터에는 머리 모양 칸이 없다
 function saveChar(){try{localStorage.setItem('jelly_char',JSON.stringify(character));}catch(e){}}
 function loadChar(){try{return JSON.parse(localStorage.getItem('jelly_char'));}catch(e){return null;}}
 function getScores(){try{return JSON.parse(localStorage.getItem('jelly_scores'))||[];}catch(e){return[];}}
@@ -1214,22 +1219,24 @@ const MEDALS=['🥇','🥈','🥉','4','5'];
 // 방 메시지에도, 랭킹 DB 한 칸에도 들어가기 때문이다.
 function charPack(c){ c=c||character;
   const mine=customAccs.find(a=>a.id===c.acc);
-  const o={k:c.kind,c:c.color,a:mine?'__preview':c.acc,ac:c.accColor};
+  const o={k:c.kind,c:c.color,a:mine?'__preview':c.acc,ac:c.accColor,h:c.hair||'basic'};
   if(mine) o.e=mine.emoji;
   return o; }
 // 받은 차림새는 남이 보낸 것이다. 그대로 그리기 함수에 넣으면 안 된다.
 // 아는 값만 통과시키고 모르면 기본 캐릭터로 떨어뜨린다.
 const HEX_OK=/^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/;
 function charSafe(o){
-  const d={kind:'cat',color:'#ffb3c9',acc:'none',accColor:'#ff5c8a'};
+  const d={kind:'cat',color:'#ffb3c9',acc:'none',accColor:'#ff5c8a',hair:'basic'};
   if(!o||typeof o!=='object') return d;
   // 예전 판은 {kind,color,acc,accColor} 를 그대로 보냈다 — 두 꼴 다 받는다
   const k=o.k||o.kind, col=o.c||o.color, a=o.a||o.acc, ac=o.ac||o.accColor, em=o.e||o.accEmoji;
+  const hr=o.h||o.hair;
   const out={
     kind: KINDS.some(x=>x.id===k)?k:d.kind,
     color: HEX_OK.test(col)?col:d.color,
     acc: (a==='__preview'||ACCS.some(x=>x.id===a))?a:d.acc,
-    accColor: HEX_OK.test(ac)?ac:d.accColor };
+    accColor: HEX_OK.test(ac)?ac:d.accColor,
+    hair: HAIRS.some(x=>x.id===hr)?hr:d.hair };
   // 이모지는 글자 수만 막는다. 캔버스 글자로만 쓰이니 HTML 로 새지 않는다.
   if(out.acc==='__preview') out.accEmoji=(typeof em==='string'&&em)?[...em].slice(0,3).join(''):'🎀';
   return out; }
@@ -1364,47 +1371,97 @@ function jellyGloss(g,R,nf,col,soft){
   g.beginPath(); g.ellipse(0,0,sx*0.98,sy*0.98,0,Math.PI*0.10,Math.PI*0.90); g.stroke();
 }
 
-function drawAvatar(g,cx,cy,R,cfg,mood,t){ mood=mood||'idle';t=t||0; g.save(); g.translate(cx,cy);
-  // 'calm' = 메뉴 미리보기용. 낮게, 천천히 통통.
-  const bounce = mood==='calm' ? Math.abs(Math.sin(t*0.4))*3.4
-               : (mood==='happy'||mood==='wow') ? Math.abs(Math.sin(t*0.4))*6 : 0;
-  g.translate(0,-bounce);
-  const squish=1+Math.sin(t*0.15)*0.03; g.scale(1/squish,squish);
-  drawAccBack(g,R,cfg);      // 머리에 두르는 것(🎧)은 머리 뒤에 — 그래야 얼굴이 가운데 온다
-  const col=cfg.color,dark=shade(col,-28),isHuman=(cfg.kind==='human'||cfg.kind==='girl'),isGirl=cfg.kind==='girl';
-  const nf=kfx(cfg.kind);   // 종류별 실루엣·눈·볼
+// ================= 사람 머리 모양 =================
+// 사람은 머리카락이 곧 인상이다. 색만 갈아끼울 수 있으면 여섯 명이 다 같은 얼굴로 보인다.
+// 세 번에 나눠 그린다 —
+//   hairBack  얼굴보다 먼저. 뒷머리·머리채·땋은 갈래 (얼굴 뒤로 들어간다)
+//   hairFront 얼굴 다음. 앞머리(뱅) — 이마를 덮어야 하니 얼굴 위에 온다
+//   hairTail  맨 마지막. 머리끈·정수리 뭉치처럼 위에 얹히는 작은 것
+const HAIRS=[{id:'basic',label:'기본 🙂',price:0},
+  {id:'crop', label:'짧은머리 ✂️',price:1500},
+  {id:'bob',  label:'단발 💇',   price:2500},
+  {id:'braid',label:'땋은머리 🧶',price:3500}];
+const HAIR_PRICE={}; HAIRS.forEach(h=>{ HAIR_PRICE[h.id]=h.price; });
+// 남이 보낸 값일 수도 있다 — 아는 것만 통과시킨다
+function hairOf(cfg){ const h=cfg&&cfg.hair; return HAIRS.some(x=>x.id===h)?h:'basic'; }
+// 땋은 갈래 — [x, y, 반지름] (R 배수). 아래로 갈수록 작아진다.
+const BRAID=[[0.94,0.06,0.25],[1.02,0.36,0.235],[1.04,0.66,0.205],[0.99,0.93,0.17],[0.94,1.14,0.13]];
+// 머릿결 — 가장자리로 사라지는 흰빛. 불투명 타원 하나면 '회색 얼룩'으로 보인다.
+function hairSheen(g,R,spots){
+  spots.forEach(([hx,hy,hw,hh,rot,al])=>{
+    const hg=g.createRadialGradient(R*hx,R*hy,1,R*hx,R*hy,R*hw);
+    hg.addColorStop(0,'rgba(255,255,255,'+al+')'); hg.addColorStop(1,'rgba(255,255,255,0)');
+    g.fillStyle=hg; g.save(); g.translate(R*hx,R*hy); g.rotate(rot);
+    g.beginPath(); g.ellipse(0,0,R*hw,R*hh,0,0,7); g.fill(); g.restore(); }); }
+function hairBack(g,R,cfg,col){
+  const st=hairOf(cfg);
   g.fillStyle=col;
-  if(cfg.kind==='cat'){ triEar(g,-R*0.60,-R*0.86,R*0.56,col,dark,'#ff9ec0'); triEar(g,R*0.60,-R*0.86,R*0.56,col,dark,'#ff9ec0'); }
-  else if(cfg.kind==='bear'){ circEar(g,-R*0.7,-R*0.7,R*0.34,col); circEar(g,R*0.7,-R*0.7,R*0.34,col); }
-  else if(cfg.kind==='bunny'){ // 얇고 곧으면 안테나처럼 보인다 — 통통하게, 바깥으로 벌려서
-    longEar(g,-R*0.44,-R*0.98,R*0.34,R*0.76,col,'#ffb9d2',-0.24); longEar(g,R*0.44,-R*0.98,R*0.34,R*0.76,col,'#ffb9d2',0.24); }
-  else if(cfg.kind==='dog'){ floppyEar(g,-R*0.86,-R*0.04,R*0.36,R*0.92,dark,-1); floppyEar(g,R*0.86,-R*0.04,R*0.36,R*0.92,dark,1); }
-  else if(isHuman){ // 뒷머리 — 얼굴보다 살짝 크게 깔아서 머리 테두리처럼 보이게
-    g.fillStyle=col;
-    if(isGirl){ // 👧 얼굴 옆을 지나 아래로 흘러내리는 긴 머리 — 실루엣만으로 남녀가 갈린다
-      g.beginPath();
-      g.moveTo(-R*1.16,-R*0.10);
-      g.quadraticCurveTo(-R*1.24, R*0.62,-R*1.02, R*1.06);   // 왼쪽 머리채
-      g.quadraticCurveTo(-R*0.80, R*1.20,-R*0.62, R*0.96);
-      g.quadraticCurveTo(-R*0.90, R*0.50,-R*0.86,-R*0.10);
-      g.closePath(); g.fill();
-      g.beginPath();
-      g.moveTo( R*1.16,-R*0.10);
-      g.quadraticCurveTo( R*1.24, R*0.62, R*1.02, R*1.06);   // 오른쪽 머리채
-      g.quadraticCurveTo( R*0.80, R*1.20, R*0.62, R*0.96);
-      g.quadraticCurveTo( R*0.90, R*0.50, R*0.86,-R*0.10);
-      g.closePath(); g.fill();
-      g.beginPath();g.ellipse(0,-R*0.14,R*1.16,R*1.10,0,0,7);g.fill();
-    } else g.beginPath(),g.ellipse(0,-R*0.12,R*1.10,R*1.08,0,0,7),g.fill(); }
-  const bodyCol=isHuman?'#ffe8d6':col;          // 예전 #ffe0c8 은 그늘이 얹히면 진흙빛이 됐다
-  const soft=isHuman?0.62:0;                    // 사람은 바닥 그늘을 약하게 (얼굴이 시꺼매진다)
-  g.shadowColor='rgba(0,0,0,0.1)';g.shadowBlur=10;g.shadowOffsetY=5;
-  g.fillStyle=jellyGrad(g,R*nf.sy,bodyCol,soft);
-  g.beginPath();g.ellipse(0,0,R*nf.sx,R*nf.sy,0,0,7);g.fill();
-  g.shadowColor='transparent';
-  jellyGloss(g,R,nf,bodyCol,soft);   // 고인 빛·스펙큘러·기포·테두리 빛
-  if(isGirl){ // 👧 앞머리 — 이마를 덮는 둥근 뱅 + 볼 옆으로 내려오는 잔머리
-    g.fillStyle=col; g.beginPath();
+  if(st==='braid'){   // 🧶 점점 작아지는 덩어리를 엇갈리게 겹쳐야 '땋은' 결이 보인다
+    [-1,1].forEach(s=>BRAID.forEach((p,i)=>{
+      g.fillStyle=i%2?shade(col,-16):col;
+      g.beginPath(); g.ellipse(s*R*p[0],R*p[1],R*p[2],R*p[2]*0.88,s*(i%2?0.34:-0.34),0,7); g.fill(); }));
+    g.fillStyle=col; g.beginPath();g.ellipse(0,-R*0.14,R*1.14,R*1.10,0,0,7);g.fill(); return; }
+  if(st==='bob'){     // 💇 끝을 곧게 자른 것이 이 머리의 정체다 — 곡선으로 마무리하면 그냥 긴 머리가 된다
+    [-1,1].forEach(s=>{ g.beginPath();
+      g.moveTo(s*R*1.10,-R*0.16);
+      g.quadraticCurveTo(s*R*1.22, R*0.30, s*R*1.13, R*0.72);
+      g.lineTo(s*R*0.56, R*0.80);                            // 뭉툭하게 자른 끝
+      g.quadraticCurveTo(s*R*0.84, R*0.34, s*R*0.84,-R*0.16);
+      g.closePath(); g.fill(); });
+    g.beginPath();g.ellipse(0,-R*0.14,R*1.14,R*1.10,0,0,7);g.fill(); return; }
+  if(st==='crop'){    // ✂️ 얼굴 바깥으로 나오는 머리가 거의 없다
+    g.beginPath();g.ellipse(0,-R*0.16,R*1.08,R*1.05,0,0,7);g.fill(); return; }
+  if(cfg.kind==='girl'){ // 👧 기본 — 얼굴 옆을 지나 아래로 흘러내리는 긴 머리
+    g.beginPath();
+    g.moveTo(-R*1.16,-R*0.10);
+    g.quadraticCurveTo(-R*1.24, R*0.62,-R*1.02, R*1.06);   // 왼쪽 머리채
+    g.quadraticCurveTo(-R*0.80, R*1.20,-R*0.62, R*0.96);
+    g.quadraticCurveTo(-R*0.90, R*0.50,-R*0.86,-R*0.10);
+    g.closePath(); g.fill();
+    g.beginPath();
+    g.moveTo( R*1.16,-R*0.10);
+    g.quadraticCurveTo( R*1.24, R*0.62, R*1.02, R*1.06);   // 오른쪽 머리채
+    g.quadraticCurveTo( R*0.80, R*1.20, R*0.62, R*0.96);
+    g.quadraticCurveTo( R*0.90, R*0.50, R*0.86,-R*0.10);
+    g.closePath(); g.fill();
+    g.beginPath();g.ellipse(0,-R*0.14,R*1.16,R*1.10,0,0,7);g.fill(); }
+  else { g.beginPath();g.ellipse(0,-R*0.12,R*1.10,R*1.08,0,0,7);g.fill(); } }
+function hairFront(g,R,cfg,col){
+  const st=hairOf(cfg);
+  g.fillStyle=col;
+  if(st==='crop'){    // ✂️ 짧게 친 머리 — 밑단이 뾰족뾰족해야 '짧은 머리'로 읽힌다
+    g.beginPath();
+    g.moveTo(-R*0.98,-R*0.24);
+    g.quadraticCurveTo(-R*1.04,-R*0.96,-R*0.18,-R*1.07);
+    g.quadraticCurveTo( R*0.88,-R*0.98, R*0.98,-R*0.26);
+    g.lineTo( R*0.80,-R*0.44);                               // 밑단 — 톱니처럼 각지면 왕관으로
+    g.quadraticCurveTo( R*0.58,-R*0.28, R*0.40,-R*0.46);     // 보인다. 아래로 처지는 술 몇 개로
+    g.quadraticCurveTo( R*0.20,-R*0.30, 0,     -R*0.48);     // 그려야 '짧게 친 머리'로 읽힌다
+    g.quadraticCurveTo(-R*0.22,-R*0.32,-R*0.44,-R*0.48);
+    g.quadraticCurveTo(-R*0.64,-R*0.34,-R*0.80,-R*0.46);
+    g.closePath(); g.fill();
+    hairSheen(g,R,[[-0.34,-0.82,0.28,0.080,-0.34,0.28]]); return; }
+  if(st==='bob'){     // 💇 일자 앞머리
+    g.beginPath();
+    g.moveTo(-R*1.00,-R*0.18);
+    g.quadraticCurveTo(-R*1.06,-R*1.00,-R*0.10,-R*1.10);
+    g.quadraticCurveTo( R*0.96,-R*1.02, R*1.00,-R*0.18);
+    g.lineTo( R*0.90,-R*0.30);
+    g.lineTo(-R*0.90,-R*0.30);                             // 자로 그은 듯한 밑단
+    g.closePath(); g.fill();
+    hairSheen(g,R,[[-0.30,-0.80,0.30,0.085,-0.34,0.30],[0.22,-0.90,0.24,0.060,0.16,0.20]]); return; }
+  if(st==='braid'){   // 🧶 가운데 가르마 — 이마 가운데가 조금 보여야 갈래머리로 읽힌다
+    g.beginPath();
+    g.moveTo(-R*1.00,-R*0.16);
+    g.quadraticCurveTo(-R*1.06,-R*1.00,-R*0.10,-R*1.10);
+    g.quadraticCurveTo( R*0.96,-R*1.02, R*1.00,-R*0.16);
+    g.quadraticCurveTo( R*0.62,-R*0.34, R*0.18,-R*0.54);
+    g.quadraticCurveTo( 0,     -R*0.64,-R*0.18,-R*0.54);
+    g.quadraticCurveTo(-R*0.62,-R*0.34,-R*1.00,-R*0.16);
+    g.closePath(); g.fill();
+    hairSheen(g,R,[[-0.40,-0.78,0.28,0.080,-0.36,0.28],[0.40,-0.78,0.28,0.080,0.36,0.24]]); return; }
+  if(cfg.kind==='girl'){ // 👧 기본 — 이마를 덮는 둥근 뱅 + 볼 옆으로 내려오는 잔머리
+    g.beginPath();
     g.moveTo(-R*1.00,-R*0.16);
     g.quadraticCurveTo(-R*1.06,-R*1.00,-R*0.10,-R*1.10);     // 왼쪽 옆 → 정수리
     g.quadraticCurveTo( R*0.96,-R*1.02, R*1.00,-R*0.16);     // 정수리 → 오른쪽 옆
@@ -1418,14 +1475,10 @@ function drawAvatar(g,cx,cy,R,cfg,mood,t){ mood=mood||'idle';t=t||0; g.save(); g
       g.quadraticCurveTo(sd*R*1.10, R*0.34, sd*R*0.92, R*0.78);
       g.quadraticCurveTo(sd*R*0.86, R*0.40, sd*R*0.80,-R*0.26);
       g.closePath(); g.fill(); });
-    [[-0.30,-0.80,0.30,0.085,-0.34,0.30],[0.22,-0.90,0.24,0.060,0.16,0.20]].forEach(([hx,hy,hw,hh,rot,al])=>{
-      const hg=g.createRadialGradient(R*hx,R*hy,1,R*hx,R*hy,R*hw);
-      hg.addColorStop(0,'rgba(255,255,255,'+al+')'); hg.addColorStop(1,'rgba(255,255,255,0)');
-      g.fillStyle=hg; g.save(); g.translate(R*hx,R*hy); g.rotate(rot);
-      g.beginPath(); g.ellipse(0,0,R*hw,R*hh,0,0,7); g.fill(); g.restore(); }); }
-  else if(isHuman){ // 앞머리 — 왼쪽에서 가른 사이드 뱅.
+    hairSheen(g,R,[[-0.30,-0.80,0.30,0.085,-0.34,0.30],[0.22,-0.90,0.24,0.060,0.16,0.20]]); }
+  else { // 🧒 기본 — 왼쪽에서 가른 사이드 뱅.
     // 예전 모양은 정수리가 움푹 파여서 헬멧처럼 보였다. 바깥선을 한 번에 둥글게 넘긴다.
-    g.fillStyle=col; g.beginPath();
+    g.beginPath();
     g.moveTo(-R*0.99,-R*0.20);
     g.quadraticCurveTo(-R*1.04,-R*0.98,-R*0.20,-R*1.09);   // 왼쪽 옆 → 정수리
     g.quadraticCurveTo( R*0.86,-R*1.00, R*0.99,-R*0.24);   // 정수리 → 오른쪽 옆
@@ -1435,11 +1488,79 @@ function drawAvatar(g,cx,cy,R,cfg,mood,t){ mood=mood||'idle';t=t||0; g.save(); g
     g.closePath(); g.fill();
     // 예전엔 불투명 타원 하나라 어두운 머리색에서 '회색 얼룩'으로 보였다.
     // 가장자리로 사라지는 결 두 줄로 바꾼다.
-    [[-0.34,-0.80,0.30,0.085,-0.34,0.30],[-0.02,-0.92,0.24,0.060,-0.10,0.18]].forEach(([hx,hy,hw,hh,rot,al])=>{
-      const hg=g.createRadialGradient(R*hx,R*hy,1,R*hx,R*hy,R*hw);
-      hg.addColorStop(0,'rgba(255,255,255,'+al+')'); hg.addColorStop(1,'rgba(255,255,255,0)');
-      g.fillStyle=hg; g.save(); g.translate(R*hx,R*hy); g.rotate(rot);
-      g.beginPath(); g.ellipse(0,0,R*hw,R*hh,0,0,7); g.fill(); g.restore(); }); }
+    hairSheen(g,R,[[-0.34,-0.80,0.30,0.085,-0.34,0.30],[-0.02,-0.92,0.24,0.060,-0.10,0.18]]); } }
+function hairTail(g,R,cfg,col){
+  const st=hairOf(cfg);
+  // 머리끈은 '머리를 묶은 자리'다. 끝에 딱 붙여 두면 매달린 방울처럼 보인다(실제로 그랬다) —
+  // 끝보다 위에 두고, 그 아래로 머리가 더 나와 있어야 묶은 것으로 읽힌다.
+  if(st==='braid'){   // 갈래를 묶은 자리 — 마지막 덩이(1.14R)보다 위
+    [-1,1].forEach(s=>{
+      g.fillStyle='#ff7da6';g.beginPath();g.ellipse(s*R*1.01,R*0.98,R*0.105,R*0.068,s*0.34,0,7);g.fill();
+      g.fillStyle='rgba(255,255,255,0.55)';g.beginPath();g.ellipse(s*R*0.99,R*0.96,R*0.036,R*0.020,s*0.34,0,7);g.fill(); });
+    return; }
+  if(st!=='basic') return;              // 단발·짧은머리는 묶을 것도, 삐친 것도 없다
+  if(cfg.kind==='girl'){
+    // 머리채를 묶은 자리 — 머리채 끝(1.06R)보다 위에, 아래로 머리가 더 흐르게.
+    [-1,1].forEach(s=>{
+      g.fillStyle='#ff7da6';g.beginPath();g.ellipse(s*R*0.95,R*0.64,R*0.100,R*0.070,s*0.22,0,7);g.fill();
+      g.fillStyle='rgba(255,255,255,0.55)';g.beginPath();g.ellipse(s*R*0.93,R*0.62,R*0.036,R*0.021,s*0.22,0,7);g.fill(); });
+    return; }
+  // 🧒 정수리 머리 뭉치. 선 하나면 철사, 뭉치면 꼭지처럼 보인다. 밑동은 넓고 끝으로
+  // 갈수록 가늘어지는 머리 한 갈래로 그려야 '머리카락'으로 읽힌다.
+  // 여기서 두 번 헛돌았다. 곡선 두 개로 감싸면 금세 얇아져 철사처럼 되고,
+  // 원을 여러 개 이어 붙이면 원 테두리가 드러나 애벌레처럼 울퉁불퉁해진다.
+  // 굵기가 다른 선 세 개를 둥근 끝(lineCap)으로 겹치는 게 가장 매끄럽다.
+  // (앞머리 정수리가 -1.09R 쯤이므로 밑동을 그 선에 걸쳐야 뭉치 전체가 보인다)
+  g.strokeStyle=col; g.lineCap='round'; g.lineJoin='round';
+  const seg=(x0,y0,cx,cy,x1,y1,w)=>{ g.lineWidth=R*w; g.beginPath();
+    g.moveTo(R*x0,R*y0); g.quadraticCurveTo(R*cx,R*cy,R*x1,R*y1); g.stroke(); };
+  seg(-0.04,-1.02,  0.01,-1.09,  0.07,-1.16, 0.215);   // 밑동 — 도톰하게
+  seg( 0.055,-1.145, 0.105,-1.215, 0.155,-1.285, 0.145);// 중간
+  seg( 0.145,-1.275, 0.185,-1.325, 0.215,-1.375, 0.072);// 끝 — 가늘게
+  // (뭉치 위 하이라이트는 회색 줄처럼 보여서 뺐다)
+}
+
+function drawAvatar(g,cx,cy,R,cfg,mood,t){ mood=mood||'idle';t=t||0; g.save(); g.translate(cx,cy);
+  // 'calm' = 메뉴 미리보기용. 낮게, 천천히 통통.
+  const bounce = mood==='calm' ? Math.abs(Math.sin(t*0.4))*3.4
+               : (mood==='happy'||mood==='wow') ? Math.abs(Math.sin(t*0.4))*6 : 0;
+  g.translate(0,-bounce);
+  const squish=1+Math.sin(t*0.15)*0.03; g.scale(1/squish,squish);
+  drawAccBack(g,R,cfg);      // 머리에 두르는 것(🎧)은 머리 뒤에 — 그래야 얼굴이 가운데 온다
+  const col=cfg.color,dark=shade(col,-28),isHuman=(cfg.kind==='human'||cfg.kind==='girl'),isGirl=cfg.kind==='girl';
+  const nf=kfx(cfg.kind);   // 종류별 실루엣·눈·볼
+  g.fillStyle=col;
+  // 귀는 몸보다 먼저 그린다(그래야 밑동이 머리에 묻힌다). 그런데 몸은 젤리라서 반투명이다 —
+  // 그대로 두면 머리 안에 가려져야 할 귀가 몸을 통해 배어 나온다("귀 비침").
+  // 그래서 몸 타원 안쪽을 구멍으로 잘라 두고 귀를 그린다. 바깥에 나온 부분만 남는다.
+  if(cfg.kind==='cat'||cfg.kind==='bear'||cfg.kind==='bunny'||cfg.kind==='dog'){
+    g.save();
+    g.beginPath();
+    g.rect(-R*4,-R*4,R*8,R*8);                                  // 시계 방향
+    g.ellipse(0,0,R*nf.sx,R*nf.sy,0,0,Math.PI*2,true);          // 반시계 → 구멍
+    g.clip();
+    if(cfg.kind==='cat'){ triEar(g,-R*0.60,-R*0.86,R*0.56,col,dark,'#ff9ec0'); triEar(g,R*0.60,-R*0.86,R*0.56,col,dark,'#ff9ec0'); }
+    else if(cfg.kind==='bear'){ circEar(g,-R*0.7,-R*0.7,R*0.34,col); circEar(g,R*0.7,-R*0.7,R*0.34,col); }
+    else if(cfg.kind==='bunny'){ // 얇고 곧으면 안테나처럼 보인다 — 통통하게, 바깥으로 벌려서
+      longEar(g,-R*0.44,-R*0.98,R*0.34,R*0.76,col,'#ffb9d2',-0.24); longEar(g,R*0.44,-R*0.98,R*0.34,R*0.76,col,'#ffb9d2',0.24); }
+    else floppyEar(g,-R*0.86,-R*0.04,R*0.36,R*0.92,dark,-1), floppyEar(g,R*0.86,-R*0.04,R*0.36,R*0.92,dark,1);
+    g.restore();
+  }
+  else if(isHuman) hairBack(g,R,cfg,col);   // 뒷머리 — 얼굴보다 살짝 크게 깔아서 머리 테두리처럼
+  const bodyCol=isHuman?'#ffe8d6':col;          // 예전 #ffe0c8 은 그늘이 얹히면 진흙빛이 됐다
+  const soft=isHuman?0.62:0;                    // 사람은 바닥 그늘을 약하게 (얼굴이 시꺼매진다)
+  g.shadowColor='rgba(0,0,0,0.1)';g.shadowBlur=10;g.shadowOffsetY=5;
+  // 사람은 살색 밑칠을 먼저 깔고 그 위에 젤리 그라데이션을 얹는다.
+  // 얼굴이 반투명이라 뒷머리 색이 그대로 배어 나왔다 — 초록 머리는 얼굴이 올리브빛,
+  // 갈색 머리는 흙빛이 됐다(볼 화소가 머리색에 따라 최대 14.6 만큼 흔들렸다).
+  // 동물은 몸 색 = 고른 색이니 배어 나와도 티가 안 나서 그대로 둔다.
+  if(isHuman){ g.fillStyle=bodyCol; g.beginPath();g.ellipse(0,0,R*nf.sx,R*nf.sy,0,0,7);g.fill();
+    g.shadowColor='transparent'; }
+  g.fillStyle=jellyGrad(g,R*nf.sy,bodyCol,soft);
+  g.beginPath();g.ellipse(0,0,R*nf.sx,R*nf.sy,0,0,7);g.fill();
+  g.shadowColor='transparent';
+  jellyGloss(g,R,nf,bodyCol,soft);   // 고인 빛·스펙큘러·기포·테두리 빛
+  if(isHuman) hairFront(g,R,cfg,col);   // 앞머리 — 이마를 덮으니 얼굴 다음에 그린다
   // 주둥이 — 크기·색이 달라야 인상이 갈린다. 강아지는 크고 하얗게, 곰은 밝은 톤, 고양이는 옅게.
   if(cfg.kind==='dog'){ g.fillStyle='rgba(255,255,255,0.85)';g.beginPath();g.ellipse(0,R*0.30,R*0.47,R*0.33,0,0,7);g.fill(); }
   else if(cfg.kind==='bear'){ g.fillStyle=shade(col,32);g.beginPath();g.ellipse(0,R*0.34,R*0.41,R*0.30,0,0,7);g.fill(); }
@@ -1540,35 +1661,12 @@ function kindExtras(g,R,cfg,mood){
     g.beginPath();g.ellipse(-R*1.02,R*0.44,R*0.19,R*0.25,0.38,0,7);g.fill();
     g.beginPath();g.ellipse(R*1.02,R*0.44,R*0.19,R*0.25,-0.38,0,7);g.fill();
   }
-  else if(cfg.kind==='girl'){                             // 👧 귀 + 머리채 끝 묶은 자리
-    [-1,1].forEach(s=>{
-      g.fillStyle='#ffdcbe';g.beginPath();g.ellipse(s*R*0.90,R*0.06,R*0.10,R*0.14,0,0,7);g.fill();
-      g.fillStyle='rgba(226,150,120,0.40)';g.beginPath();g.ellipse(s*R*0.92,R*0.07,R*0.040,R*0.070,0,0,7);g.fill(); });
-    // 머리채를 묶은 자리 — 작은 방울 두 개. 머리 위 악세서리와 자리가 겹치지 않게 아래쪽에 둔다.
-    [-1,1].forEach(s=>{
-      g.fillStyle='#ff7da6';g.beginPath();g.ellipse(s*R*0.88,R*0.86,R*0.095,R*0.075,s*0.3,0,7);g.fill();
-      g.fillStyle='rgba(255,255,255,0.55)';g.beginPath();g.ellipse(s*R*0.86,R*0.84,R*0.035,R*0.022,s*0.3,0,7);g.fill(); });
-  }
-  else if(cfg.kind==='human'){                            // 🧒 귀 + 정수리 머리 뭉치
+  else if(cfg.kind==='girl'||cfg.kind==='human'){          // 귀 + 머리 모양별 마무리
+    const ey=cfg.kind==='girl'?0.06:0.04, ew=cfg.kind==='girl'?0.10:0.105, eh=cfg.kind==='girl'?0.14:0.145;
     [-1,1].forEach(s=>{   // 손잡이처럼 튀어나와 보이지 않게 조금 작게, 조금 위로
-      g.fillStyle='#ffdcbe';g.beginPath();g.ellipse(s*R*0.90,R*0.04,R*0.105,R*0.145,0,0,7);g.fill();
-      g.fillStyle='rgba(226,150,120,0.40)';g.beginPath();g.ellipse(s*R*0.92,R*0.05,R*0.042,R*0.072,0,0,7);g.fill(); });
-    // 선 하나면 철사, 뭉치면 꼭지처럼 보인다. 밑동은 넓고 끝으로 갈수록 가늘어지는
-    // 머리 한 갈래로 그려야 '머리카락'으로 읽힌다.
-    // 곡선 두 개로 감싸면 금세 얇아져 철사/뿔처럼 보인다.
-    // 점점 작아지는 원을 이어 붙이면 밑동은 도톰하고 끝만 가늘어져 '머리 뭉치'로 읽힌다.
-    g.fillStyle=col;
-    // 여기서 두 번 헛돌았다. 곡선 두 개로 감싸면 금세 얇아져 철사처럼 되고,
-    // 원을 여러 개 이어 붙이면 원 테두리가 드러나 애벌레처럼 울퉁불퉁해진다.
-    // 굵기가 다른 선 세 개를 둥근 끝(lineCap)으로 겹치는 게 가장 매끄럽다.
-    // (앞머리 정수리가 -1.09R 쯤이므로 밑동을 그 선에 걸쳐야 뭉치 전체가 보인다)
-    g.strokeStyle=col; g.lineCap='round'; g.lineJoin='round';
-    const seg=(x0,y0,cx,cy,x1,y1,w)=>{ g.lineWidth=R*w; g.beginPath();
-      g.moveTo(R*x0,R*y0); g.quadraticCurveTo(R*cx,R*cy,R*x1,R*y1); g.stroke(); };
-    seg(-0.04,-1.02,  0.01,-1.09,  0.07,-1.16, 0.215);   // 밑동 — 도톰하게
-    seg( 0.055,-1.145, 0.105,-1.215, 0.155,-1.285, 0.145);// 중간
-    seg( 0.145,-1.275, 0.185,-1.325, 0.215,-1.375, 0.072);// 끝 — 가늘게
-    // (뭉치 위 하이라이트는 회색 줄처럼 보여서 뺐다)
+      g.fillStyle='#ffdcbe';g.beginPath();g.ellipse(s*R*0.90,R*ey,R*ew,R*eh,0,0,7);g.fill();
+      g.fillStyle='rgba(226,150,120,0.40)';g.beginPath();g.ellipse(s*R*0.92,R*(ey+0.01),R*(ew*0.40),R*(eh*0.50),0,0,7);g.fill(); });
+    hairTail(g,R,cfg,col);       // 머리끈 방울 · 정수리 뭉치
   }
 }
 function twinkle(g,x,y,s){g.save();g.translate(x,y);g.beginPath();for(let i=0;i<8;i++){const a=i/8*Math.PI*2,rr=i%2?s*0.38:s;g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);}g.closePath();g.fill();g.restore();}
@@ -1654,7 +1752,18 @@ function accInk(em){
 // 이모지는 여러 색이 박힌 그림 글자라 fillStyle 로는 색이 안 바뀐다 — 그래서 지금까지
 // 겉의 빛무리만 색이 바뀌었다. 'color' 혼합은 색조·채도만 갈아끼우고 밝기는 남기므로
 // 원래 음영·테두리·하이라이트가 그대로 살아 '같은 모양의 다른 색 물건'이 된다.
+// 다만 그림 전체를 한 색으로 덮으면 '그 색이라서 그 물건인' 곳까지 같은 색이 된다 —
+// 🍓 꼭지의 초록, 🍉 껍질의 초록, 🍇🍒🥕 의 잎, 🍰 위의 딸기가 죄다 한 덩어리 색이 됐다.
+// 그래서 색조(hue)별로 넓이를 재서 가장 넓은 덩어리(=몸통)만 새 색으로 갈고, 색조가 그와
+// 크게 벌어진 곳은 원래 색으로 되돌린다. 무채색(흰 하이라이트·검은 테두리)은 예전처럼 둔다.
 const TINT=new Map();
+const TINT_KEEP=45;                               // 몸통 색조와 이만큼(°) 이상 벌어지면 남긴다
+// 채도는 HSV 쪽으로 잰다 — 흰빛 섞인 밝은 곳을 '색이 있는 곳'으로 잘못 보지 않게.
+function hueOf(r,g,b){ const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;
+  if(!d||!mx) return [-1,0];
+  let h; if(mx===r) h=((g-b)/d+6)%6; else if(mx===g) h=(b-r)/d+2; else h=(r-g)/d+4;
+  return [h*60,d/mx]; }
+function hueGap(a,b){ const d=Math.abs(a-b)%360; return d>180?360-d:d; }
 function accSprite(em,col,px){
   px=Math.max(8,Math.round(px/2)*2);              // 2px 단위로 묶어 캐시가 안 터지게
   const key=em+'|'+col+'|'+px;
@@ -1664,9 +1773,27 @@ function accSprite(em,col,px){
   const put=()=>{ g.font=px+'px sans-serif'; g.textAlign='center'; g.textBaseline='middle';
                   g.fillText(em,P/2,P/2); };
   put();
+  const src=g.getImageData(0,0,P,P).data;         // 원래 색 — 남겨 둘 곳을 여기서 되돌린다
   g.globalCompositeOperation='color'; g.fillStyle=col; g.fillRect(0,0,P,P);
   g.globalCompositeOperation='destination-in'; put();   // 혼합이 투명한 곳까지 덮는다 → 글자 모양으로 잘라낸다
   g.globalCompositeOperation='source-over';
+  // 몸통 색조 찾기 — 15°씩 스물넷으로 나눠 채도×알파로 넓이를 잰다
+  const bins=new Float64Array(24);
+  for(let i=0;i<src.length;i+=4){ if(src[i+3]<32) continue;
+    const hs=hueOf(src[i],src[i+1],src[i+2]);
+    if(hs[0]<0||hs[1]<0.20) continue;
+    bins[Math.floor(hs[0]/15)%24]+=hs[1]*src[i+3]; }
+  let pk=-1,best=0; for(let i=0;i<24;i++) if(bins[i]>best){ best=bins[i]; pk=i; }
+  if(pk>=0){
+    const H0=pk*15+7.5;
+    const out=g.getImageData(0,0,P,P), O=out.data; let kept=0;
+    for(let i=0;i<src.length;i+=4){ if(src[i+3]<32) continue;
+      const hs=hueOf(src[i],src[i+1],src[i+2]);
+      if(hs[0]<0||hs[1]<0.24) continue;           // 무채색·흰빛은 예전처럼 물들인다
+      if(hueGap(hs[0],H0)<=TINT_KEEP) continue;   // 몸통
+      O[i]=src[i]; O[i+1]=src[i+1]; O[i+2]=src[i+2]; kept++; }
+    if(kept) g.putImageData(out,0,0);
+  }
   if(TINT.size>48) TINT.delete(TINT.keys().next().value);
   TINT.set(key,c); return c; }
 
@@ -1695,7 +1822,7 @@ const ACC_DRAWN={
   '*jl':{label:'젤리곰',draw:(g,R,c,a)=>drawJellyBlob(g,R,c,a)},
   '🎧' :{label:'헤드폰',draw:(g,R,c,a)=>drawPhones(g,R,c,a)},
   // half:true — 칩에서는 한쪽만 크게 보여준다. 양쪽을 다 담으면 알이 너무 작아진다.
-  '*ap':{label:'에어팟',half:true,draw:(g,R,c,a)=>drawBuds(g,R,c,a)},
+  '*ap':{label:'무선 이어폰',half:true,draw:(g,R,c,a)=>drawBuds(g,R,c,a)},
   '*em':{label:'귀마개',draw:(g,R,c,a)=>drawMuffs(g,R,c,a)},
   '*sc':{label:'스카프',draw:(g,R,c,a)=>drawScarf(g,R,c,a)},
   '*er':{label:'귀걸이',half:true,draw:(g,R,c,a)=>drawEarrings(g,R,c,a)},
@@ -1848,16 +1975,16 @@ function drawShades(g,R,cfg,ac){
   });
   g.restore(); }
 
-// 🧸 젤리곰 — 머리 위에 올려놓는 반투명 곰돌이 젤리(하리보 같은 것).
+// 🧸 젤리곰 — 머리 위에 올려놓는 반투명 곰돌이 젤리(가게에서 파는 곰 젤리 같은 것).
 // 처음엔 둥근 슬라임 방울로 그렸는데 "너무 별로"였다. 젤리다움은 '속이 비치는 것'만으로는
-// 안 되고 실루엣이 있어야 한다 — 하리보 곰은 귀·팔·다리가 붙은 그 모양이 곧 정체성이다.
+// 안 되고 실루엣이 있어야 한다 — 곰 젤리는 귀·팔·다리가 붙은 그 모양이 곧 정체성이다.
 // 작게, 귀엽게. 이모지에는 없어서 직접 그린다.
 function drawJellyBlob(g,R,cfg,ac){
   const kind=cfg.kind, nf=kfx(kind);
   const u=nf.sx*R*0.20;                       // 곰 한 마리의 기준 크기 (작게!)
   const tp=headCrown(kind)*R;
   const by=tp-u*0.62;                         // 엉덩이가 정수리에 물리게
-  // 하리보 곰 실루엣 — 머리 · 귀 · 몸통 · 팔 · 다리
+  // 곰 젤리 실루엣 — 머리 · 귀 · 몸통 · 팔 · 다리
   const shape=()=>{
     g.beginPath();
     // 머리 (위)
@@ -1906,7 +2033,7 @@ function drawJellyBlob(g,R,cfg,ac){
   g.fillStyle='rgba(255,255,255,0.42)';
   g.beginPath(); g.ellipse(u*0.40,by-u*0.66,u*0.14,u*0.20,0.3,0,7); g.fill();
   g.restore();
-  // 눈·코 — 하리보 곰의 눌린 눈. 아주 작아도 이게 있어야 곰으로 읽힌다.
+  // 눈·코 — 곰 젤리의 눌린 눈. 아주 작아도 이게 있어야 곰으로 읽힌다.
   const ink=hexA(shade(ac,-64),0.62);
   g.fillStyle=ink;
   [-1,1].forEach(sd=>{ g.beginPath(); g.ellipse(sd*u*0.24,by-u*1.86,u*0.085,u*0.10,0,0,7); g.fill(); });
@@ -1919,7 +2046,7 @@ function drawJellyBlob(g,R,cfg,ac){
 function earAnchor(kind){ return Math.max(kfx(kind).sx,headHalf(kind,EAR_Y)); }
 // 귀는 종류마다 완전히 다른 곳에 있다. 얼굴 옆 제일 넓은 곳에 붙이면 🐱🐰 처럼 귀가 머리
 // 위에 있는 애들은 귀걸이가 볼에 달린 꼴이 된다. 실제로 귀를 그린 좌표에서 두 점을 뽑았다.
-//   in   = 귀 안쪽 (에어팟을 꽂는 자리)
+//   in   = 귀 안쪽 (무선 이어폰을 꽂는 자리)
 //   lobe = 귓불 (귀걸이가 달랑거리는 자리)
 // 값은 '그려 보고 잰' 것이다. 귀 그리는 코드의 좌표에서 유추했더니 동물은 전부 어긋났다
 // (귀는 몸보다 먼저 그려져 안쪽이 덮이므로, 코드의 중심점은 보이는 귀의 중심이 아니다).
@@ -1933,7 +2060,7 @@ const EAR_PT={
   girl :{in:[0.90, 0.06], lobe:[0.90, 0.19]} };
 function earPt(kind,which){ const e=EAR_PT[kind]||EAR_PT.cat; return e[which]; }
 
-// 🎵 에어팟 — 귀에 콕 꽂는 작은 것. 대(stem)가 아래로 살짝 내려온다.
+// 🎵 무선 이어폰 — 귀에 콕 꽂는 작은 것. 대(stem)가 아래로 살짝 내려온다.
 function drawBuds(g,R,cfg,ac){
   const pt=earPt(cfg.kind,'in'), bw=R*0.105, bh=R*0.128;
   g.save();
@@ -2259,9 +2386,9 @@ function drawBuiltinAcc(g,R,cfg,ac){
   } else if(cfg.acc==='crown'){ const cy=-R*0.92;g.fillStyle='#ffce3d';g.beginPath();g.moveTo(-R*0.5,cy);g.lineTo(-R*0.5,cy-R*0.32);g.lineTo(-R*0.25,cy-R*0.08);g.lineTo(0,cy-R*0.42);g.lineTo(R*0.25,cy-R*0.08);g.lineTo(R*0.5,cy-R*0.32);g.lineTo(R*0.5,cy);g.closePath();g.fill();g.fillStyle='#ff5c8a';[-0.3,0,0.3].forEach(dx=>{g.beginPath();g.arc(dx*R,cy-R*0.04,R*0.06,0,7);g.fill();});
   } else if(cfg.acc==='horns'){ g.fillStyle=ac;hornAt(g,-R*0.62,-R*0.72,R,-1);hornAt(g,R*0.62,-R*0.72,R,1); } }
 function hornAt(g,x,y,R,dir){g.beginPath();g.moveTo(x-dir*R*0.14,y+R*0.14);g.quadraticCurveTo(x+dir*R*0.02,y-R*0.1,x+dir*R*0.26,y-R*0.34);g.quadraticCurveTo(x+dir*R*0.05,y-R*0.05,x+dir*R*0.14,y+R*0.16);g.closePath();g.fill();}
-function triEar(g,x,y,s,col,dark,inner){g.fillStyle=hexA(mixHex(col,'#ffffff',0.30),0.88);g.beginPath();g.moveTo(x-s*0.5,y+s*0.7);g.lineTo(x,y-s*0.6);g.lineTo(x+s*0.5,y+s*0.7);g.closePath();g.fill();g.fillStyle=inner;g.beginPath();g.moveTo(x-s*0.22,y+s*0.4);g.lineTo(x,y-s*0.2);g.lineTo(x+s*0.22,y+s*0.4);g.closePath();g.fill();}
-function circEar(g,x,y,r,col){g.fillStyle=hexA(mixHex(col,'#ffffff',0.28),0.9);g.beginPath();g.arc(x,y,r,0,7);g.fill();g.fillStyle=shade(col,-18);g.beginPath();g.arc(x,y,r*0.5,0,7);g.fill();}
-function longEar(g,x,y,w,h,col,inner,rot){g.save();g.translate(x,y);g.rotate(rot);g.fillStyle=hexA(mixHex(col,'#ffffff',0.30),0.88);g.beginPath();g.ellipse(0,0,w,h,0,0,7);g.fill();g.fillStyle=inner;g.beginPath();g.ellipse(0,h*0.1,w*0.5,h*0.7,0,0,7);g.fill();g.restore();}
+function triEar(g,x,y,s,col,dark,inner){g.fillStyle=hexA(mixHex(col,'#ffffff',0.30),0.96);g.beginPath();g.moveTo(x-s*0.5,y+s*0.7);g.lineTo(x,y-s*0.6);g.lineTo(x+s*0.5,y+s*0.7);g.closePath();g.fill();g.fillStyle=inner;g.beginPath();g.moveTo(x-s*0.22,y+s*0.4);g.lineTo(x,y-s*0.2);g.lineTo(x+s*0.22,y+s*0.4);g.closePath();g.fill();}
+function circEar(g,x,y,r,col){g.fillStyle=hexA(mixHex(col,'#ffffff',0.28),0.96);g.beginPath();g.arc(x,y,r,0,7);g.fill();g.fillStyle=shade(col,-18);g.beginPath();g.arc(x,y,r*0.5,0,7);g.fill();}
+function longEar(g,x,y,w,h,col,inner,rot){g.save();g.translate(x,y);g.rotate(rot);g.fillStyle=hexA(mixHex(col,'#ffffff',0.30),0.96);g.beginPath();g.ellipse(0,0,w,h,0,0,7);g.fill();g.fillStyle=inner;g.beginPath();g.ellipse(0,h*0.1,w*0.5,h*0.7,0,0,7);g.fill();g.restore();}
 // 축 늘어진 귀 — 살짝 바깥으로 기울이고 안쪽에 그늘을 넣어 납작한 타원처럼 안 보이게
 function floppyEar(g,x,y,w,h,col,dir){ g.save();g.translate(x,y);g.rotate((dir||0)*0.20);
   g.fillStyle=col;g.beginPath();g.ellipse(0,0,w,h,0,0,7);g.fill();
@@ -2290,6 +2417,10 @@ let crafted=loadJSON('jelly_crafted',[]);
 let customItems=loadJSON('jelly_custom',[]);      // 예전에 만든 아이템 — 그대로 쓸 수 있게 남긴다
 let customAccs=loadJSON('jelly_caccs',[]);        // 내가 만든 악세서리
 let ownedKinds=loadJSON('jelly_kinds',['cat','dog','bunny']);
+let ownedHairs=loadJSON('jelly_hairs',['basic']);  // 산 머리 모양 (기본은 공짜)
+function hairOwned(id){ return (HAIR_PRICE[id]||0)===0||ownedHairs.includes(id); }
+// 저장값이 산 목록과 안 맞을 수 있다(초기화·옛 저장). 안 산 머리를 쓰고 있으면 기본으로.
+if(!hairOwned(character.hair)){ character.hair='basic'; saveChar(); }
 // 같은 아이템을 산 횟수가 그 아이템의 레벨이 된다 (최대 5).
 // 횟수를 그대로 레벨로 쓰면 저장값이 하나라 어긋날 일이 없다.
 let bought=loadJSON('jelly_bought',{});
@@ -2309,7 +2440,7 @@ function lvDesc(eff,lv){
   if(eff==='clear')  return '폭탄 제거'+(lv>1?(' + '+(lv-1)*2+'초 폭탄 차단'):'');
   return 'Lv.'+lv;
 }
-function saveEconomy(){try{localStorage.setItem('jelly_coins',coins);localStorage.setItem('jelly_inv',JSON.stringify(inventory));localStorage.setItem('jelly_crafted',JSON.stringify(crafted));localStorage.setItem('jelly_custom',JSON.stringify(customItems));localStorage.setItem('jelly_caccs',JSON.stringify(customAccs));localStorage.setItem('jelly_kinds',JSON.stringify(ownedKinds));localStorage.setItem('jelly_bought',JSON.stringify(bought));}catch(e){}}
+function saveEconomy(){try{localStorage.setItem('jelly_coins',coins);localStorage.setItem('jelly_inv',JSON.stringify(inventory));localStorage.setItem('jelly_crafted',JSON.stringify(crafted));localStorage.setItem('jelly_custom',JSON.stringify(customItems));localStorage.setItem('jelly_caccs',JSON.stringify(customAccs));localStorage.setItem('jelly_kinds',JSON.stringify(ownedKinds));localStorage.setItem('jelly_hairs',JSON.stringify(ownedHairs));localStorage.setItem('jelly_bought',JSON.stringify(bought));}catch(e){}}
 const ITEMS={
   heart:{name:'하트팩',emoji:'💗',desc:'목숨 +1 즉시 회복',effect:'heart',buy:35,craft:0},
   slow: {name:'슬로우',emoji:'⏱️',desc:'6초간 젤리가 느려져요',effect:'slow',buy:45,craft:0},
@@ -2443,7 +2574,7 @@ const CA_COLORS=['#ff5c8a','#ff3b5c','#ff8a5c','#ffb03a','#ffce3d','#f5e663','#8
   '#3fd1b0','#40dfe6','#4fa8ff','#4a6cff','#8a5cff','#b96cff','#ff6cd6','#ffc0d4',
   '#ffffff','#cfd6e6','#8f8aa3','#3a3546'];
 let caEmoji='*jl', caColor='#40dfe6';   // 처음 보이는 건 이 게임다운 물건 — 머리 위 젤리
-// 직접 그리는 물건(젤리곰·에어팟·스카프…)은 이모지가 없어서 칩에 그림을 그려 넣는다.
+// 직접 그리는 물건(젤리곰·무선 이어폰·스카프…)은 이모지가 없어서 칩에 그림을 그려 넣는다.
 // 물건마다 놓이는 자리가 달라서(정수리 위 / 귀 옆 / 턱 밑) 한 좌표로는 담을 수 없다.
 // 크게 한 번 그려 보고 칠해진 곳만 잘라서 칩에 맞춘다.
 function accChipImg(em){
@@ -2535,6 +2666,19 @@ function buildSetupUI(){
       else if(coins>=KIND_PRICE[k.id]){ coins-=KIND_PRICE[k.id];ownedKinds.push(k.id);saveEconomy();character.kind=k.id;saveChar();buildSetupUI();toast('🎉 '+k.label+' 잠금 해제!'); }
       else toast('코인이 부족해요! ('+KIND_PRICE[k.id]+'🪙 필요)'); };
     ko.appendChild(b);});
+  // 💇 머리 모양 — 사람일 때만. 동물에게는 머리카락이 없으니 줄째로 감춘다.
+  const isP=(character.kind==='human'||character.kind==='girl');
+  $('hairRow').style.display=isP?'':'none';
+  const ho=$('hairOpts'); ho.innerHTML='';
+  if(isP) HAIRS.forEach(h=>{ const owned=hairOwned(h.id); const b=document.createElement('button');
+    b.className='chip'+((character.hair||'basic')===h.id?' on':'');
+    b.innerHTML=h.label+(owned?'':' 🔒<span class="locktag">'+h.price.toLocaleString()+'🪙</span>');
+    b.onclick=()=>{ if(owned){ character.hair=h.id; saveChar(); buildSetupUI(); }
+      else if(coins>=h.price){ coins-=h.price; ownedHairs.push(h.id); saveEconomy();
+        character.hair=h.id; saveChar(); buildSetupUI(); playLevelUp();
+        toast('💇 '+h.label+' 잠금 해제! (🪙 -'+h.price.toLocaleString()+')'); }
+      else toast('코인이 부족해요! ('+h.price.toLocaleString()+'🪙 필요)'); };
+    ho.appendChild(b); });
   const co=$('colorOpts');co.innerHTML='';COLORS.forEach(c=>{const b=document.createElement('button');b.className='sw'+(character.color===c?' on':'');b.style.background=c;b.onclick=()=>{character.color=c;saveChar();buildSetupUI();};co.appendChild(b);});
   const ao=$('accOpts');ao.innerHTML='';ACCS.forEach(a=>{const b=document.createElement('button');b.className='chip'+(character.acc===a.id?' on':'');b.textContent=a.label;b.onclick=()=>{character.acc=a.id;saveChar();buildSetupUI();};ao.appendChild(b);});
   const mo=$('modeOpts');mo.innerHTML='';Object.keys(MODES).forEach(id=>{const m=MODES[id];const b=document.createElement('button');b.className='mode'+(mode===id?' on':'');
@@ -5046,8 +5190,9 @@ let resetArmed=false,resetTimer=null;
 function resetScores(){ localStorage.removeItem('jelly_scores'); toast('🗑️ 최고기록을 지웠어요'); }
 function resetAll(){
   if(!resetArmed){ resetArmed=true; toast('⚠️ 한 번 더 누르면 코인·아이템·스킨·기록이 모두 사라져요'); if(resetTimer)clearTimeout(resetTimer); resetTimer=setTimeout(()=>{resetArmed=false;},3000); return; }
-  ['jelly_coins','jelly_inv','jelly_crafted','jelly_custom','jelly_kinds','jelly_scores','jelly_streak','jelly_daily','jelly_bought'].forEach(k=>localStorage.removeItem(k));
-  coins=0; inventory={}; crafted=[]; bought={}; ownedKinds=['cat','dog','bunny'];
+  ['jelly_coins','jelly_inv','jelly_crafted','jelly_custom','jelly_kinds','jelly_hairs','jelly_scores','jelly_streak','jelly_daily','jelly_bought'].forEach(k=>localStorage.removeItem(k));
+  coins=0; inventory={}; crafted=[]; bought={}; ownedKinds=['cat','dog','bunny']; ownedHairs=['basic'];
+  character.hair='basic'; saveChar();
   customItems.forEach(ci=>{delete ITEMS[ci.id];}); customItems=[];
   fixCharOwnership();
   resetArmed=false; toast('✨ 전체 초기화 완료!'); syncSettingsUI();
@@ -5168,6 +5313,8 @@ $('randomBtn').onclick=()=>{
   character.color=COLORS[Math.floor(Math.random()*COLORS.length)];
   character.acc=ACCS[Math.floor(Math.random()*ACCS.length)].id;   // 기본 악세서리는 전부 무료
   character.accColor=['#ff5c8a','#8fc9ff','#ffd166','#c792ff'][Math.floor(Math.random()*4)];
+  const hs=HAIRS.filter(h=>hairOwned(h.id));                      // 안 산 머리 모양이 공짜로 딸려오면 안 된다
+  character.hair=hs[Math.floor(Math.random()*hs.length)].id;
   saveChar(); buildSetupUI();
   const locked=KINDS.length-mine.length;
   if(locked) toast('🎲 가진 캐릭터 '+mine.length+'종에서 뽑았어요 (잠긴 '+locked+'종은 제외)');

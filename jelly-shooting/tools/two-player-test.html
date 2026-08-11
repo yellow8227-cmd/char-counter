@@ -185,9 +185,9 @@ async function run(){
   // 두 사람 사진이 서로 달라야 진짜 상대 얼굴이다.
   install(A,'까미'); install(B,'하늘');
   // 서로 다른 차림새를 준다. B 는 나만의 악세서리까지 씌운다(가장 잘 새던 곳).
-  ev(A,"character={kind:'cat',color:'#ffb3c9',acc:'bow',accColor:'#ff5c8a'}");
+  ev(A,"character={kind:'girl',color:'#ffb3c9',acc:'bow',accColor:'#ff5c8a',hair:'braid'}");
   ev(B,"customAccs.length=0; customAccs.push({id:'ca_q',label:'별',emoji:'⭐',color:'#8a5cff'});"
-      +"character={kind:'bear',color:'#c9a27a',acc:'ca_q',accColor:'#8a5cff'}");
+      +"character={kind:'bear',color:'#c9a27a',acc:'ca_q',accColor:'#8a5cff',hair:'basic'}");
   ev(A,"openNetMode('dungeon')"); ev(B,"openNetMode('dungeon')");
   ev(A,'netCreate()'); await sleep(150);
   ev(B,'netEnterRoom("'+ev(A,'net.room')+'",false)');
@@ -200,7 +200,14 @@ async function run(){
   if(rows.length<2) no('대기실에 사진이 '+rows.length+'개뿐이다 (내 것 + 상대 것 = 2개여야 한다)');
   else if(rows[0]===rows[1]) no('두 사람 사진이 똑같다 — 상대 얼굴이 아니라 내 얼굴을 두 번 그렸다');
   else if(got!==want) no('상대 차림새가 어긋난다: 받은 것 '+got+' / 보낸 것 '+want);
-  else ok('대기실에서 서로 다른 얼굴이 보인다 (나만의 악세서리 ⭐까지 전달: '+got+')');
+  else if(ev(A,"peerChar(peerList()[0].id).hair")!=='basic') no('상대 머리 모양이 어긋난다');
+  else if(JSON.parse(want).hair!=='basic') no('보낸 꾸러미에 머리 모양이 없다');
+  else ok('대기실에서 서로 다른 얼굴이 보인다 (나만의 악세서리 ⭐·머리 모양까지 전달: '+got+')');
+  // 내가 산 머리 모양(땋은머리)도 상대에게 그대로 가야 한다
+  ev(B,'renderLobby()');
+  const aHair=ev(B,"(peerList().map(p=>peerChar(p.id)).filter(Boolean)[0]||{}).hair");
+  if(aHair!=='braid') no('상대의 땋은머리가 전달되지 않았다 (받은 값 '+aHair+')');
+  else ok('머리 모양이 상대 화면에도 그대로 (까미 = 땋은머리)');
 
   // ── 6.7 방 채팅이 실제로 오가는가 ──
   install(A,'까미'); install(B,'하늘');
