@@ -7,10 +7,14 @@
 
 **① 파일로 쓰기** — `index.html` 더블클릭. 끝. (크롬·엣지 아무거나)
 
-**② 웹 주소로 쓰기** — GitHub Pages를 켜면 링크로 바로 열립니다.
-저장소 **Settings → Pages → Source: `Deploy from a branch`** 로 브랜치를 고르면
-`https://<계정>.github.io/char-counter/scenedeck/` 주소가 만들어집니다.
-주소만 있으면 폰이든 남의 컴퓨터든 그냥 열려요.
+**② 웹 주소로 쓰기** — GitHub Pages로 이미 올라가 있습니다.
+
+```
+https://yellow8227-cmd.github.io/char-counter/scenedeck/
+```
+
+주소만 있으면 폰이든 남의 컴퓨터든 그냥 열립니다.
+**`main` 브랜치에 올리면 몇 분 안에 자동으로 반영됩니다** — 따로 업로드할 것이 없습니다.
 
 > ⚠️ `fonts/` 폴더가 같이 있으면 슬레이트 글자가 손글씨체로 나옵니다.
 > 없어도 **동작에는 아무 문제가 없습니다** — 그 자리만 `Consolas`로 대체됩니다.
