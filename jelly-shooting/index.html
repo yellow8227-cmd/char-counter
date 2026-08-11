@@ -1676,7 +1676,8 @@ const ACC_WEAR={
   '🎀':'side','🌸':'side','🦋':'side','🍀':'side','🐚':'side','🍁':'side','🍃':'side',
   '🔔':'side','🐣':'side','🪷':'side',
   // 그 밖(⭐💎🌙☁️❄️🔥🍄🧁🍰🎈🎁🪩🌻🎃🪐)은 정수리
-  '*jl':'jelly','*ap':'jelly','*em':'jelly','*sc':'jelly','*er':'jelly' };
+  '*jl':'jelly','*ap':'jelly','*em':'jelly','*sc':'jelly','*er':'jelly',
+  '*bn':'jelly','*hb':'jelly','*fl':'jelly','*nk':'jelly' };
 // 이모지가 아니라 직접 그리는 물건. 이모지 자리에 짧은 표를 넣어 두면 방 메시지·랭킹 칸에
 // 그대로 실려 가고(3글자라 charSafe 를 그냥 통과한다) 받는 쪽도 똑같이 그린다.
 const ACC_DRAWN={
@@ -1686,7 +1687,11 @@ const ACC_DRAWN={
   '*ap':{label:'에어팟',half:true,draw:(g,R,c,a)=>drawBuds(g,R,c,a)},
   '*em':{label:'귀마개',draw:(g,R,c,a)=>drawMuffs(g,R,c,a)},
   '*sc':{label:'스카프',draw:(g,R,c,a)=>drawScarf(g,R,c,a)},
-  '*er':{label:'귀걸이',half:true,draw:(g,R,c,a)=>drawEarrings(g,R,c,a)} };
+  '*er':{label:'귀걸이',half:true,draw:(g,R,c,a)=>drawEarrings(g,R,c,a)},
+  '*bn':{label:'비니',   draw:(g,R,c,a)=>drawBeanie(g,R,c,a)},
+  '*hb':{label:'머리띠', draw:(g,R,c,a)=>drawHeadband(g,R,c,a)},
+  '*fl':{label:'화관',   draw:(g,R,c,a)=>drawWreath(g,R,c,a)},
+  '*nk':{label:'목걸이', draw:(g,R,c,a)=>drawNecklace(g,R,c,a)} };
 const WEAR={ crown:{w:0.42,sink:0.06,tilt:0},
              side :{w:0.34,sink:0.12,tilt:0},
              hat  :{w:0.74,sink:0.30,tilt:-0.05},
@@ -1901,13 +1906,24 @@ function drawJellyBlob(g,R,cfg,ac){
 // 이모지로는 '쓰고 있는' 모양이 안 나온다. 정면 제품 사진이라 머리에 맞춰 놓을 수가 없다.
 // 귀 높이(EAR_Y)의 머리 반너비를 재서 그 자리에 붙인다.
 function earAnchor(kind){ return Math.max(kfx(kind).sx,headHalf(kind,EAR_Y)); }
+// 귀는 종류마다 완전히 다른 곳에 있다. 얼굴 옆 제일 넓은 곳에 붙이면 🐱🐰 처럼 귀가 머리
+// 위에 있는 애들은 귀걸이가 볼에 달린 꼴이 된다. 실제로 귀를 그린 좌표에서 두 점을 뽑았다.
+//   in   = 귀 안쪽 (에어팟을 꽂는 자리)
+//   lobe = 귓불 (귀걸이가 달랑거리는 자리)
+const EAR_PT={
+  cat  :{in:[0.60,-0.62], lobe:[0.84,-0.44]},   // 머리 위 삼각귀
+  dog  :{in:[0.86, 0.10], lobe:[0.94, 0.66]},   // 옆으로 늘어진 귀 → 귀걸이는 그 끝에
+  bunny:{in:[0.46,-0.90], lobe:[0.62,-0.22]},   // 위로 솟은 긴 귀
+  bear :{in:[0.70,-0.70], lobe:[0.90,-0.44]},   // 머리 위 동그란 귀
+  human:{in:[0.90, 0.04], lobe:[0.90, 0.17]},   // 옆에 붙은 사람 귀
+  girl :{in:[0.90, 0.06], lobe:[0.90, 0.19]} };
+function earPt(kind,which){ const e=EAR_PT[kind]||EAR_PT.cat; return e[which]; }
 
 // 🎵 에어팟 — 귀에 콕 꽂는 작은 것. 대(stem)가 아래로 살짝 내려온다.
 function drawBuds(g,R,cfg,ac){
-  const hx=earAnchor(cfg.kind)*R, y=EAR_Y*R;
-  const bw=R*0.11, bh=R*0.135;
+  const pt=earPt(cfg.kind,'in'), bw=R*0.105, bh=R*0.128;
   g.save();
-  [-1,1].forEach(sd=>{ const cx=sd*(hx-bw*0.35);
+  [-1,1].forEach(sd=>{ const cx=sd*pt[0]*R, y=pt[1]*R;
     g.fillStyle='rgba(70,34,56,0.20)';
     g.beginPath(); g.ellipse(cx,y,bw*1.18,bh*1.12,0,0,7); g.fill();
     // 대
@@ -1991,10 +2007,10 @@ function drawScarf(g,R,cfg,ac){
 
 // 💧 귀걸이 — 양쪽에 조그맣게 달랑달랑.
 function drawEarrings(g,R,cfg,ac){
-  const hx=earAnchor(cfg.kind)*R, y=EAR_Y*R;
-  const r0=R*0.045, dl=R*0.16, r1=R*0.075;
+  const pt=earPt(cfg.kind,'lobe');
+  const r0=R*0.045, dl=R*0.155, r1=R*0.072;
   g.save();
-  [-1,1].forEach(sd=>{ const cx=sd*(hx-r0*0.6);
+  [-1,1].forEach(sd=>{ const cx=sd*pt[0]*R, y=pt[1]*R;
     // 고리
     g.strokeStyle=shade(ac,-30); g.lineWidth=Math.max(1,R*0.020);
     g.beginPath(); g.arc(cx,y-r0*0.2,r0,0.15*Math.PI,0.85*Math.PI); g.stroke();
@@ -2012,6 +2028,138 @@ function drawEarrings(g,R,cfg,ac){
     g.closePath(); g.fill();
     g.fillStyle='rgba(255,255,255,0.70)';
     g.beginPath(); g.ellipse(cx-sd*r1*0.28,y+dl-r1*0.22,r1*0.26,r1*0.34,-0.4,0,7); g.fill(); });
+  g.restore(); }
+
+// 머리 윗선을 따라가는 호 — 비니·화관·머리띠가 같이 쓴다.
+// 실루엣 윗선을 그대로 따라가면 🐰🐱은 귀 모양을 타고 올라가 'M자'가 된다(헤드폰에서 배웠다).
+// 머리 크기로 만든 타원 호를 쓰면 귀와 상관없이 머리를 넘어간다.
+function crownArc(kind,hxR,apexR,endY,steps){
+  const pts=[], S=steps||26;
+  for(let i=0;i<=S;i++){ const t=-1+2*i/S;
+    pts.push([t*hxR, endY+(apexR-endY)*Math.sqrt(Math.max(0,1-t*t))]); }
+  return pts; }
+function strokePts(g,pts,col,wd){ g.strokeStyle=col; g.lineWidth=wd; g.lineCap='round'; g.lineJoin='round';
+  g.beginPath(); g.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++) g.lineTo(pts[i][0],pts[i][1]); g.stroke(); }
+
+// 🧶 비니 — 눌러쓰는 니트 모자. 접힌 밑단 + 뜨개 결 + 방울.
+function drawBeanie(g,R,cfg,ac){
+  const kind=cfg.kind, top=headCrown(kind);
+  const brim=(top+0.28)*R, apex=(top-0.50)*R;
+  const hx=Math.max(kfx(kind).sx*0.92,headHalf(kind,top+0.34))*R;
+  const dome=()=>{ const pts=crownArc(kind,hx,apex,brim);
+    g.beginPath(); g.moveTo(pts[0][0],pts[0][1]);
+    for(let i=1;i<pts.length;i++) g.lineTo(pts[i][0],pts[i][1]);
+    g.closePath(); };
+  g.save();
+  g.fillStyle='rgba(86,42,68,0.15)';
+  g.beginPath(); g.ellipse(0,brim+R*0.05,hx*0.94,R*0.06,0,0,7); g.fill();
+  const bg=g.createLinearGradient(0,apex,0,brim);
+  bg.addColorStop(0,mixHex(ac,'#ffffff',0.26)); bg.addColorStop(1,shade(ac,-24));
+  g.fillStyle=bg; dome(); g.fill();
+  // 뜨개 결 — 세로로 촘촘히. 이게 없으면 그냥 색 돔이다.
+  g.save(); dome(); g.clip();
+  g.strokeStyle=hexA(shade(ac,-40),0.34); g.lineWidth=Math.max(1,R*0.022);
+  for(let x=-hx;x<=hx;x+=R*0.085){ g.beginPath(); g.moveTo(x,apex); g.lineTo(x+R*0.03,brim); g.stroke(); }
+  g.restore();
+  // 접힌 밑단
+  const cg=g.createLinearGradient(0,brim-R*0.10,0,brim+R*0.10);
+  cg.addColorStop(0,mixHex(ac,'#ffffff',0.36)); cg.addColorStop(1,shade(ac,-16));
+  g.fillStyle=cg; g.beginPath(); g.ellipse(0,brim,hx*1.02,R*0.115,0,0,7); g.fill();
+  g.strokeStyle=hexA(shade(ac,-44),0.40); g.lineWidth=Math.max(1,R*0.020);
+  g.save(); g.beginPath(); g.ellipse(0,brim,hx*1.02,R*0.115,0,0,7); g.clip();
+  for(let x=-hx;x<hx;x+=R*0.075){ g.beginPath(); g.moveTo(x,brim-R*0.12); g.lineTo(x+R*0.03,brim+R*0.12); g.stroke(); }
+  g.restore();
+  // 방울
+  const py=apex-R*0.02, pr=R*0.135;
+  g.fillStyle='rgba(86,42,68,0.14)';
+  g.beginPath(); g.arc(0,py,pr*1.10,0,7); g.fill();
+  const pg=g.createRadialGradient(-pr*0.3,py-pr*0.35,1,0,py,pr*1.3);
+  pg.addColorStop(0,mixHex(ac,'#ffffff',0.52)); pg.addColorStop(1,shade(ac,-20));
+  g.fillStyle=pg;
+  for(let i=0;i<8;i++){ const a=i/8*Math.PI*2;
+    g.beginPath(); g.arc(Math.cos(a)*pr*0.44,py+Math.sin(a)*pr*0.44,pr*0.46,0,7); g.fill(); }
+  g.beginPath(); g.arc(0,py,pr*0.70,0,7); g.fill();
+  g.restore(); }
+
+// 🌸 화관 — 머리 위를 한 바퀴 두르는 꽃. 결혼사진 같은 것.
+function drawWreath(g,R,cfg,ac){
+  const kind=cfg.kind, top=headCrown(kind);
+  const hx=kfx(kind).sx*0.90*R, apex=(top+0.02)*R, endY=-0.40*R;
+  const pts=crownArc(kind,hx,apex,endY,9);
+  g.save();
+  // 줄기
+  strokePts(g,pts,hexA(shade(ac,-52),0.42),Math.max(1,R*0.030));
+  strokePts(g,pts,hexA(mixHex(ac,'#8fd94f',0.62),0.55),Math.max(1,R*0.020));
+  // 꽃 — 크기를 조금씩 달리해 손으로 엮은 느낌
+  pts.forEach((p,i)=>{
+    const big=(i%2===0), fr=R*(big?0.105:0.070);
+    g.fillStyle=hexA(shade(ac,-34),0.20);
+    g.beginPath(); g.arc(p[0],p[1]+fr*0.22,fr*1.15,0,7); g.fill();
+    g.fillStyle=big?mixHex(ac,'#ffffff',0.16):mixHex(ac,'#ffffff',0.46);
+    for(let k=0;k<5;k++){ const a=k/5*Math.PI*2+i;
+      g.beginPath(); g.arc(p[0]+Math.cos(a)*fr*0.62,p[1]+Math.sin(a)*fr*0.62,fr*0.50,0,7); g.fill(); }
+    g.fillStyle=hexA('#fff3a8',0.92);
+    g.beginPath(); g.arc(p[0],p[1],fr*0.34,0,7); g.fill(); });
+  g.restore(); }
+
+// 🎀 머리띠 — 머리 위를 지나는 얇은 띠 + 한쪽에 리본.
+function drawHeadband(g,R,cfg,ac){
+  const kind=cfg.kind, top=headCrown(kind);
+  const hx=Math.max(kfx(kind).sx*0.97,headHalf(kind,-0.34))*R;
+  const apex=(top+0.08)*R, endY=-0.34*R;
+  const pts=crownArc(kind,hx,apex,endY);
+  const w=Math.max(2,R*0.075);
+  g.save();
+  strokePts(g,pts,'rgba(70,34,56,0.22)',w*1.42);
+  strokePts(g,pts,shade(ac,-12),w);
+  strokePts(g,pts,hexA(mixHex(ac,'#ffffff',0.62),0.55),w*0.32);
+  // 리본 — 오른쪽 위에
+  const bi=Math.round(pts.length*0.74), bp=pts[bi];
+  const bw=R*0.155, bh=R*0.105;
+  g.fillStyle=shade(ac,-6);
+  [[-1],[1]].forEach(([sd])=>{ g.beginPath();
+    g.moveTo(bp[0],bp[1]);
+    g.quadraticCurveTo(bp[0]+sd*bw*1.05,bp[1]-bh*1.25,bp[0]+sd*bw*1.15,bp[1]-bh*0.05);
+    g.quadraticCurveTo(bp[0]+sd*bw*1.00,bp[1]+bh*0.90,bp[0],bp[1]);
+    g.closePath(); g.fill(); });
+  g.fillStyle=hexA('#ffffff',0.30);
+  [[-1],[1]].forEach(([sd])=>{ g.beginPath();
+    g.ellipse(bp[0]+sd*bw*0.60,bp[1]-bh*0.34,bw*0.30,bh*0.22,sd*0.4,0,7); g.fill(); });
+  g.fillStyle=shade(ac,-30);
+  g.beginPath(); g.arc(bp[0],bp[1]-bh*0.08,R*0.045,0,7); g.fill();
+  g.restore(); }
+
+// 📿 목걸이 — 턱 밑에 얇은 줄 + 하트 알.
+function drawNecklace(g,R,cfg,ac){
+  const kind=cfg.kind, nf=kfx(kind);
+  const y=nf.sy*R*0.72;
+  const hw=Math.max(headHalf(kind,y/R),nf.sx*0.56)*R*0.88;
+  g.save();
+  // 줄 — 아래로 살짝 처지게
+  g.strokeStyle=hexA(shade(ac,-40),0.55); g.lineWidth=Math.max(1,R*0.030);
+  g.beginPath(); g.moveTo(-hw,y-R*0.05); g.quadraticCurveTo(0,y+R*0.16,hw,y-R*0.05); g.stroke();
+  g.strokeStyle=hexA(mixHex(ac,'#ffffff',0.70),0.70); g.lineWidth=Math.max(1,R*0.014);
+  g.beginPath(); g.moveTo(-hw,y-R*0.055); g.quadraticCurveTo(0,y+R*0.15,hw,y-R*0.055); g.stroke();
+  // 작은 알 세 개
+  [-0.34,0,0.34].forEach((t,i)=>{ const bx=t*hw, byy=y+R*0.145-Math.abs(t)*R*0.10;
+    if(i===1) return;
+    g.fillStyle=mixHex(ac,'#ffffff',0.40);
+    g.beginPath(); g.arc(bx,byy,R*0.030,0,7); g.fill(); });
+  // 하트 알
+  const py=y+R*0.21, ps=R*0.105;
+  g.fillStyle='rgba(70,34,56,0.20)';
+  g.beginPath(); g.ellipse(0,py+ps*0.16,ps*1.14,ps*1.06,0,0,7); g.fill();
+  const hg=g.createLinearGradient(-ps,py-ps,ps,py+ps);
+  hg.addColorStop(0,mixHex(ac,'#ffffff',0.46)); hg.addColorStop(1,shade(ac,-24));
+  g.fillStyle=hg;
+  g.beginPath();
+  g.moveTo(0,py+ps*0.92);
+  g.bezierCurveTo(-ps*1.30,py-ps*0.10,-ps*0.58,py-ps*1.02,0,py-ps*0.34);
+  g.bezierCurveTo(ps*0.58,py-ps*1.02,ps*1.30,py-ps*0.10,0,py+ps*0.92);
+  g.closePath(); g.fill();
+  g.fillStyle='rgba(255,255,255,0.62)';
+  g.beginPath(); g.ellipse(-ps*0.36,py-ps*0.28,ps*0.24,ps*0.16,-0.5,0,7); g.fill();
   g.restore(); }
 
 // 머리 '뒤'에 들어가는 악세서리 자리. 지금은 쓰는 것이 없다(🎧 는 앞에서 직접 그린다).
@@ -2273,7 +2421,7 @@ const CA_GROUPS=[
   {label:'✨ 머리 위에', items:['*jl','⭐','💎','🌙','☁️','❄️','🔥','🍄','🧁','🍰','🎈','🎁','🪩','🌻','🎃','🪐']},
   {label:'🌿 머리 옆에', items:['🦋','🍀','🐚','🍁','🍃','🔔','🐣','🪷']},
   {label:'🍬 입에 물기', items:['🍓','🍉','🍦','🍥','🍭','🍬','🍡','🍩','🍪','🥕','🍒','🍑','🍇','🧋','🍧','🍮','🥐']},
-  {label:'🎧 두르고 걸기', items:['🎧','*em','*ap','*er','*sc']},
+  {label:'🎧 두르고 걸기', items:['🎧','*em','*ap','*er','*sc','*bn','*hb','*fl','*nk']},
 ];
 const CA_EMOJIS=CA_GROUPS.flatMap(g=>g.items);
 // 색이 물건 자체에 칠해지므로(‘color’ 혼합) 팔레트가 넓을수록 만들 재미가 커진다.
