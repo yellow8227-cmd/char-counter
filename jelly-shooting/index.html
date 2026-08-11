@@ -1517,7 +1517,15 @@ function kindOwned(id){return (KIND_PRICE[id]||0)===0||ownedKinds.includes(id);}
 // '사람'을 사둔 사람은 남자/여자로 갈라진 뒤에도 둘 다 쓸 수 있어야 한다.
 // 하나만 열어 주면 "돈 냈는데 반쪽만 생겼다"가 된다.
 if(ownedKinds.includes('human')&&!ownedKinds.includes('girl')){ ownedKinds.push('girl'); saveEconomy(); }
-if(!kindOwned(character.kind)){ownedKinds.push(character.kind);saveEconomy();}
+// 안 산 캐릭터가 선택돼 있으면 '그냥 준다'가 아니라 무료 캐릭터로 되돌린다.
+// 예전에는 여기서 ownedKinds 에 밀어 넣었는데, 그래서 🎲랜덤으로 공짜로 받은
+// 남자아이·여자아이·곰이 새로고침 한 번에 영구 소유가 됐다.
+function freeKind(){ const f=KINDS.find(k=>(KIND_PRICE[k.id]||0)===0); return f?f.id:'cat'; }
+function fixCharOwnership(){
+  if(!kindOwned(character.kind)){ character.kind=freeKind(); saveChar(); return true; }
+  return false;
+}
+fixCharOwnership();
 // active effect timers (steps) + run coins
 let slowTimer=0,x2Timer=0,magnetTimer=0,runCoins=0;
 let slowLv=1,x2Lv=1,magnetLv=1,bombBan=0;   // 발동 중인 효과의 레벨 + 폭탄 차단 남은 시간
@@ -3864,7 +3872,7 @@ function resetAll(){
   ['jelly_coins','jelly_inv','jelly_crafted','jelly_custom','jelly_kinds','jelly_scores','jelly_streak','jelly_daily','jelly_bought'].forEach(k=>localStorage.removeItem(k));
   coins=0; inventory={}; crafted=[]; bought={}; ownedKinds=['cat','dog','bunny'];
   customItems.forEach(ci=>{delete ITEMS[ci.id];}); customItems=[];
-  if(!kindOwned(character.kind)){character.kind='cat';saveChar();}
+  fixCharOwnership();
   resetArmed=false; toast('✨ 전체 초기화 완료!'); syncSettingsUI();
 }
 function openStart(){
@@ -3950,7 +3958,18 @@ $('resetScores').onclick=resetScores;
 $('resetAll').onclick=resetAll;
 $('backBtn').onclick=()=>openStart();
 $('startGameBtn').onclick=()=>{saveChar();startGame();};
-$('randomBtn').onclick=()=>{character.kind=KINDS[Math.floor(Math.random()*KINDS.length)].id;character.color=COLORS[Math.floor(Math.random()*COLORS.length)];character.acc=ACCS[Math.floor(Math.random()*ACCS.length)].id;character.accColor=['#ff5c8a','#8fc9ff','#ffd166','#c792ff'][Math.floor(Math.random()*4)];saveChar();buildSetupUI();};
+// 🎲랜덤은 '내가 가진 것 중에서' 뽑는다. 예전에는 KINDS 전체에서 뽑아
+// 곰(80)·남자아이(120)·여자아이(120)를 공짜로 줬다.
+$('randomBtn').onclick=()=>{
+  const mine=KINDS.filter(k=>kindOwned(k.id));
+  character.kind=mine[Math.floor(Math.random()*mine.length)].id;
+  character.color=COLORS[Math.floor(Math.random()*COLORS.length)];
+  character.acc=ACCS[Math.floor(Math.random()*ACCS.length)].id;   // 기본 악세서리는 전부 무료
+  character.accColor=['#ff5c8a','#8fc9ff','#ffd166','#c792ff'][Math.floor(Math.random()*4)];
+  saveChar(); buildSetupUI();
+  const locked=KINDS.length-mine.length;
+  if(locked) toast('🎲 가진 캐릭터 '+mine.length+'종에서 뽑았어요 (잠긴 '+locked+'종은 제외)');
+};
 $('againBtn').onclick=playAgain;
 $('editBtn').onclick=()=>openSetup();
 
