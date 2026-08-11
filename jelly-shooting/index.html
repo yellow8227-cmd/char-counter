@@ -786,9 +786,7 @@
       <div class="label">🎀 악세서리 공방</div>
       <div class="tag2" style="margin:0 0 10px;text-align:left;">나만의 악세서리를 만들어 캐릭터에 씌워요.
         만들 때마다 값이 올라가니 아껴서 골라주세요!</div>
-      <div style="display:flex;justify-content:center;margin-bottom:8px;">
-        <canvas id="accPreview" width="240" height="240"></canvas>
-      </div>
+      <div class="tag2" id="caTryHint" style="text-align:left;margin:0 0 10px;"></div>
       <div class="label" style="margin-top:2px;">모양</div>
       <div class="mini" id="caEmojis"></div>
       <div class="label" style="margin-top:10px;">색깔</div>
@@ -1185,7 +1183,7 @@ async function cloudBoot(){
     if(!ses){
       const r=await sb.auth.signInAnonymously();
       // 대시보드에서 '익명 로그인'을 안 켰으면 여기서 막힌다 — 게임은 그대로 돌아간다.
-      if(r&&r.error){ cloudSay('이 기기에만 저장돼요 ('+r.error.message+')'); return false; }
+      if(r&&r.error){ cloudSay('이 기기에만 저장돼요 — '+cloudWhy(r.error.message)); return false; }
       ses=r&&r.data&&r.data.session||null; }
     if(!ses||!ses.user){ cloudSay('이 기기에만 저장돼요'); return false; }
     cloudUid=ses.user.id; cloudMail=ses.user.email||'';
@@ -1206,7 +1204,7 @@ async function cloudPull(switched){
   let row=null;
   try{
     const r=await sb.from('players').select('save,updated_at').eq('uid',cloudUid).limit(1);
-    if(r.error){ cloudSay('저장을 못 불러왔어요 ('+r.error.message+')'); return false; }
+    if(r.error){ cloudSay('저장을 못 불러왔어요 — '+cloudWhy(r.error.message)); return false; }
     row=r.data&&r.data[0]||null;
   }catch(e){ return false; }
   if(!row){ await cloudPush(); cloudSay(null); return true; }   // 처음 — 이 기기 것을 올린다
@@ -1228,11 +1226,30 @@ async function cloudPush(){
     const at=new Date(cloudStamp()||Date.now()).toISOString();
     const r=await sb.from('players').upsert(
       {uid:cloudUid,nick:nick||null,save:cloudBlob(),updated_at:at},{onConflict:'uid'});
-    if(r&&r.error){ cloudSay('저장을 못 올렸어요 ('+r.error.message+')'); return false; }
+    if(r&&r.error){ cloudSay('저장을 못 올렸어요 — '+cloudWhy(r.error.message)); return false; }
     cloudSay(null); return true;
   }catch(e){ return false; } finally { cloudBusy=false; } }
 // ---- 이메일로 두 기기를 묶기 ----
 const MAIL_OK=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+// Supabase 기본 메일 서버는 시간당 몇 통밖에 못 보낸다(무료 프로젝트는 2통쯤).
+// 누를 때마다 요청이 나가면 그 몫을 금세 태워서 'email rate limit exceeded' 가 뜬다.
+// 그래서 한 번 보내면 잠깐 못 누르게 막고, 메일함을 먼저 보라고 알려 준다.
+const MAIL_GAP=60000;
+let cloudMailAt=0;
+function mailWait(){ return Math.max(0,Math.ceil((MAIL_GAP-(Date.now()-cloudMailAt))/1000)); }
+// 서버가 주는 영어 오류를 사람 말로 옮긴다. 왜 안 되는지 모르면 고칠 수도 없다.
+function cloudWhy(msg){
+  const m=String(msg||'');
+  if(/rate limit/i.test(m))
+    return '메일을 너무 여러 번 보냈어요. Supabase 기본 메일은 시간당 몇 통만 되니 잠시 뒤에 다시 해주세요 (SMTP 를 붙이면 풀려요)';
+  if(/Anonymous sign-ins are disabled/i.test(m))
+    return '익명 로그인이 꺼져 있어요 — 이메일을 넣으면 계정을 만들 수 있어요';
+  if(/Email signups are disabled|email logins are disabled/i.test(m))
+    return '이메일 로그인이 꺼져 있어요 (Supabase → Authentication → Email 을 켜주세요)';
+  if(/redirect|url/i.test(m)&&/not allowed|invalid/i.test(m))
+    return '돌아올 주소가 허용목록에 없어요 (Authentication → URL Configuration)';
+  if(/Failed to fetch|NetworkError/i.test(m)) return '인터넷이 끊긴 것 같아요';
+  return m; }
 // 메일 링크가 돌아올 곳. 이걸 안 넘기면 Supabase 는 대시보드의 Site URL 로 보내는데,
 // 그 기본값이 http://localhost:3000 이라 링크를 눌러도 '사이트에 연결할 수 없음'이 떴다.
 // 지금 열려 있는 주소를 그대로 넘겨서, 대시보드 값이 어떻든 우리 게임으로 돌아오게 한다.
@@ -1243,24 +1260,29 @@ async function cloudLink(email){        // 이 기기 기록에 이메일을 붙
   const sb=getSupa();
   if(!sb){ toast('온라인 기능을 못 불러왔어요'+(cloudMsg?(' — '+cloudMsg):'')); return false; }
   if(!MAIL_OK.test(email)){ toast('이메일을 확인해주세요'); return false; }
+  if(mailWait()){ toast('방금 메일을 보냈어요. 메일함을 먼저 확인해주세요 ('+mailWait()+'초 뒤에 다시 보낼 수 있어요)'); return false; }
   const back=cloudBackURL();
   // 익명 로그인이 안 켜져 있으면 붙일 계정이 없다. 그때는 이메일로 계정을 새로 만든다 —
   // 그러면 대시보드 스위치 하나(Email)만으로도 폰·노트북을 이을 수 있다.
   if(!cloudUid){
     const r0=await sb.auth.signInWithOtp({email:email,options:{emailRedirectTo:back,shouldCreateUser:true}});
-    if(r0&&r0.error){ toast('안 됐어요: '+r0.error.message); return false; }
+    if(r0&&r0.error){ toast('안 됐어요: '+cloudWhy(r0.error.message)); return false; }
+    cloudMailAt=Date.now();
     cloudSay('📧 '+email+' 로 링크를 보냈어요. 누르면 이 이메일로 계정이 만들어져요');
     return true; }
   const r=await sb.auth.updateUser({email:email},{emailRedirectTo:back});
-  if(r&&r.error){ toast('안 됐어요: '+r.error.message); return false; }
+  if(r&&r.error){ toast('안 됐어요: '+cloudWhy(r.error.message)); return false; }
+  cloudMailAt=Date.now();
   cloudSay('📧 '+email+' 로 확인 메일을 보냈어요. 링크를 누르면 계정이 지켜져요');
   return true; }
 async function cloudSignIn(email){      // 다른 기기에서 그 계정으로 들어온다
   const sb=getSupa();
   if(!sb){ toast('온라인 기능을 못 불러왔어요'+(cloudMsg?(' — '+cloudMsg):'')); return false; }
   if(!MAIL_OK.test(email)){ toast('이메일을 확인해주세요'); return false; }
+  if(mailWait()){ toast('방금 메일을 보냈어요. 메일함을 먼저 확인해주세요 ('+mailWait()+'초 뒤에 다시 보낼 수 있어요)'); return false; }
   const r=await sb.auth.signInWithOtp({email:email,options:{emailRedirectTo:cloudBackURL()}});
-  if(r&&r.error){ toast('안 됐어요: '+r.error.message); return false; }
+  if(r&&r.error){ toast('안 됐어요: '+cloudWhy(r.error.message)); return false; }
+  cloudMailAt=Date.now();
   cloudSay('📧 '+email+' 로 들어오는 링크를 보냈어요. 메일함에서 눌러주세요');
   return true; }
 // 같이 쓰는 컴퓨터를 생각하면 나갈 문이 있어야 한다. 세션 토큰은 브라우저에 남으므로
@@ -2868,20 +2890,20 @@ function buildCreator(){
       b.className='emochip'+(caEmoji===e?' on':'');
       if(ACC_DRAWN[e]){ b.innerHTML='<img src="'+accChipImg(e)+'" alt="">'; b.title=ACC_DRAWN[e].label; }
       else b.textContent=e;
-      b.onclick=()=>{caEmoji=e;buildCreator();}; row.appendChild(b); }); });
+      b.onclick=()=>{caEmoji=e;caTry=true;buildCreator();}; row.appendChild(b); }); });
   const co=$('caColors'); co.innerHTML='';
   CA_COLORS.forEach(c=>{const b=document.createElement('button');
     b.className='sw'+(caColor===c?' on':'');b.style.background=c;b.title=c;
-    b.onclick=()=>{caColor=c;buildCreator();};co.appendChild(b);});
+    b.onclick=()=>{caColor=c;caTry=true;buildCreator();};co.appendChild(b);});
   const cost=accCost();
   $('caCostMsg').innerHTML='이번 악세서리는 <b>🪙 '+cost.toLocaleString()+'코인</b>'
     +(customAccs.length?(' (만든 개수 '+customAccs.length+'개 — 다음은 더 비싸져요)'):' — 첫 개는 3,000코인');
   const cb=$('createBtn'); cb.disabled=coins<cost;
   cb.textContent='✨ 만들기 ('+cost.toLocaleString()+'🪙)';
-  // 미리보기 — 내 캐릭터에 씌워 본다
-  const cv=$('accPreview'); if(cv){ const g=cv.getContext('2d'); g.clearRect(0,0,240,240);
-    drawAvatar(g,120,132,62,{kind:charView().kind,color:character.color,hair:charView().hair,
-      acc:'__preview',accColor:caColor,accEmoji:caEmoji},'calm',frame*0.5); }
+  // 미리보기는 위에 붙어 있는 얼굴이 대신한다 (여기 큰 그림을 두면 그 얼굴과 겹쳤다)
+  const th=$('caTryHint'); if(th) th.innerHTML=caTry
+    ? '👀 <b>위의 얼굴</b>에 지금 고른 모양·색을 씌워 보고 있어요'
+    : '모양이나 색을 누르면 <b>위의 얼굴</b>에 씌워 보여줘요';
   // 내가 만든 목록 — 눌러서 바로 착용
   const li=$('caList'); li.innerHTML='';
   if(!customAccs.length) li.innerHTML='<span class="tag2">아직 없어요. 만들면 여기에 모여요 🎀</span>';
@@ -2901,7 +2923,7 @@ function doCreateCustom(cost){
   const nm=($('caName').value||'').trim().slice(0,8)||'나만의 악세서리';
   const id='ca'+(customAccs.length+1)+'_'+Date.now().toString(36).slice(-4);
   const acc={id,label:nm,emoji:caEmoji,color:caColor};
-  customAccs.push(acc); ACCS.push({id,label:acc.emoji+' '+nm,custom:true});
+  customAccs.push(acc); ACCS.push({id,label:acc.emoji+' '+nm,custom:true}); caTry=false;
   coins-=cost; character.acc=id; character.accColor=caColor; saveChar();
   saveEconomy(); playLevelUp(); $('caName').value='';
   // 새로 만든 것을 바로 착용하니 악세서리 목록의 '고른 표시'도 옮겨 줘야 한다
@@ -2927,6 +2949,9 @@ function claimDaily(){ const today=todayStr(),last=localStorage.getItem('jelly_d
 // 누르면 '입어만' 보고(내 캐릭터 그림에만 얹는다), 사는 것은 따로 묻는다.
 // 미리보기는 남에게 안 보인다 — charPack() 은 character 를 그대로 쓴다.
 let tryKind=null, tryHair=null;
+// 공방에서 만들고 있는 물건을 위의 얼굴에 씌워 보는 중인가.
+// 공방의 모양·색을 누르면 켜지고, 캐릭터 칸을 건드리면 꺼진다.
+let caTry=false;
 function charView(){
   if(!tryKind&&!tryHair) return character;
   const c={...character};
@@ -2935,7 +2960,13 @@ function charView(){
   // 사람이 아닌 것을 미리 볼 때 머리 모양은 의미가 없다
   if(c.kind!=='human'&&c.kind!=='girl') c.hair=character.hair;
   return c; }
-function tryClear(){ if(tryKind||tryHair){ tryKind=null; tryHair=null; return true; } return false; }
+function tryClear(){ const had=!!(tryKind||tryHair||caTry);
+  tryKind=null; tryHair=null; caTry=false; return had; }
+// 위에 붙어 있는 얼굴이 보여줄 것 — 공방을 만지는 중이면 그 물건까지 씌운다
+function profFace(){
+  const c=charView();
+  if(!caTry) return c;
+  return {kind:c.kind,color:c.color,hair:c.hair,acc:'__preview',accColor:caColor,accEmoji:caEmoji}; }
 // 값을 치르는 것은 반드시 한 번 더 묻는다.
 function askBuy(what,cost,onOk){
   if(coins<cost){ toast('코인이 부족해요! ('+cost.toLocaleString()+'🪙 필요 · 지금 '+coins.toLocaleString()+'🪙)'); return; }
@@ -2948,7 +2979,7 @@ function buildSetupUI(){
     b.className='chip'+(character.kind===k.id&&!tryKind?' on':'')+(tryKind===k.id?' tryon':'');
     b.innerHTML=k.label+(owned?'':' 🔒<span class="locktag">'+KIND_PRICE[k.id]+'🪙</span>');
     b.onclick=()=>{
-      if(owned){ tryKind=null; character.kind=k.id; saveChar(); buildSetupUI(); return; }
+      if(owned){ tryKind=null; caTry=false; character.kind=k.id; saveChar(); buildSetupUI(); return; }
       tryKind=k.id; buildSetupUI();                 // 먼저 입어만 본다
       askBuy(k.label+' 를 입어봤어요.',KIND_PRICE[k.id],()=>{
         coins-=KIND_PRICE[k.id]; ownedKinds.push(k.id); saveEconomy();
@@ -2963,7 +2994,7 @@ function buildSetupUI(){
     b.className='chip'+((character.hair||'basic')===h.id&&!tryHair?' on':'')+(tryHair===h.id?' tryon':'');
     b.innerHTML=h.label+(owned?'':' 🔒<span class="locktag">'+h.price.toLocaleString()+'🪙</span>');
     b.onclick=()=>{
-      if(owned){ tryHair=null; character.hair=h.id; saveChar(); buildSetupUI(); return; }
+      if(owned){ tryHair=null; caTry=false; character.hair=h.id; saveChar(); buildSetupUI(); return; }
       tryHair=h.id; buildSetupUI();                 // 먼저 입어만 본다
       askBuy('머리를 '+h.label+' 로 해봤어요.',h.price,()=>{
         coins-=h.price; ownedHairs.push(h.id); saveEconomy();
@@ -2973,8 +3004,8 @@ function buildSetupUI(){
   const hh=$('hairHint'); if(hh) hh.textContent=(tryKind||tryHair)
     ? '👀 지금 입어보는 중이에요 — 사지 않으면 그대로 돌아가요'
     : '🔒 잠긴 것을 눌러 먼저 입어볼 수 있어요';
-  const co=$('colorOpts');co.innerHTML='';COLORS.forEach(c=>{const b=document.createElement('button');b.className='sw'+(character.color===c?' on':'');b.style.background=c;b.onclick=()=>{character.color=c;saveChar();buildSetupUI();};co.appendChild(b);});
-  const ao=$('accOpts');ao.innerHTML='';ACCS.forEach(a=>{const b=document.createElement('button');b.className='chip'+(character.acc===a.id?' on':'');b.textContent=a.label;b.onclick=()=>{character.acc=a.id;saveChar();buildSetupUI();};ao.appendChild(b);});
+  const co=$('colorOpts');co.innerHTML='';COLORS.forEach(c=>{const b=document.createElement('button');b.className='sw'+(character.color===c?' on':'');b.style.background=c;b.onclick=()=>{caTry=false;character.color=c;saveChar();buildSetupUI();};co.appendChild(b);});
+  const ao=$('accOpts');ao.innerHTML='';ACCS.forEach(a=>{const b=document.createElement('button');b.className='chip'+(character.acc===a.id&&!caTry?' on':'');b.textContent=a.label;b.onclick=()=>{caTry=false;character.acc=a.id;saveChar();buildSetupUI();};ao.appendChild(b);});
   const mo=$('modeOpts');mo.innerHTML='';Object.keys(MODES).forEach(id=>{const m=MODES[id];const b=document.createElement('button');b.className='mode'+(mode===id?' on':'');
     if(mode===id)b.style.background='linear-gradient(180deg,'+shade(m.color,25)+','+m.color+')';
     b.innerHTML=`<span class="emo">${m.emoji}</span><span class="nm">${m.name}</span><span class="ds">${m.desc}</span>`;
@@ -2995,7 +3026,7 @@ function loopPreview(){ if($('setupScreen').classList.contains('hide'))return; p
 let profT=0, profFrom='startScreen';
 function loopProfile(){ if($('profileScreen').classList.contains('hide'))return;
   profT+=MENU_ANIM; profCtx.clearRect(0,0,170,170);
-  drawAvatar(profCtx,85,100,54,charView(),'calm',profT); requestAnimationFrame(loopProfile); }
+  drawAvatar(profCtx,85,100,54,profFace(),'calm',profT); requestAnimationFrame(loopProfile); }
 function openProfile(from){ ensureAudio(); profFrom=from||'startScreen';
   showScreen('profileScreen'); syncNickInputs(); buildProfile(); loopProfile(); }
 // 캐릭터가 바뀌면 이름표·코인·공방 미리보기가 같이 따라와야 한다
