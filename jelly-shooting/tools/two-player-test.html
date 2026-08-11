@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8">
+<title>두 사람 왕복 검사</title>
+<style>
+  body{font:13px/1.6 ui-monospace,monospace;margin:0;padding:14px;background:#12141c;color:#e6e6ef;}
+  h1{font-size:15px;margin:0 0 10px;}
+  #log{white-space:pre-wrap;}
+  .ok{color:#7ee08a;} .no{color:#ff8a9c;} .dim{color:#8a8aa0;}
+  iframe{width:300px;height:520px;border:0;position:fixed;right:-9999px;}
+</style></head>
+<body>
+<h1>젤리슈팅 · 두 사람이 실제로 만나는지 검사 (가짜 서버 공유)</h1>
+<div id="log">준비 중…</div>
+<iframe id="A" src="../index.html"></iframe>
+<iframe id="B" src="../index.html"></iframe>
+<script>
+// ────────────────────────────────────────────────────────────────
+// 왜 이 검사가 필요한가.
+// 실제 서버 없이도 "둘이 서로를 보는가"는 검사할 수 있다. broadcast와 presence를
+// 두 인스턴스가 공유하는 가짜 클라이언트로 바꿔 끼우면, 인사(hello) 순서 경쟁·
+// 방 등록 누락·랜덤 매칭 타이밍 같은 우리 쪽 논리 버그가 그대로 드러난다.
+// (서버 설정 문제는 이걸로 알 수 없다 — 그건 배포된 주소에서 확인해야 한다)
+// ────────────────────────────────────────────────────────────────
+const LOG=document.getElementById('log'); let lines=[], fails=0;
+const say=(m,c)=>{ lines.push(c?`<span class="${c}">${m}</span>`:m); LOG.innerHTML=lines.join('\n'); };
+const ok  =m=>say('✅ '+m,'ok');
+const no  =m=>{ fails++; say('❌ '+m,'no'); };
+const dim =m=>say('   '+m,'dim');
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+// ── 가짜 서버 (broadcast + presence 공유) ──
+const BUS={ ch:{}, drop:0 };   // drop>0 이면 그만큼의 broadcast를 삼킨다(유실 재현)
+BUS.sync=name=>(BUS.ch[name]||[]).forEach(o=>o.presH.forEach(h=>h({event:'sync'})));
+function fakeClient(){
+  return {
+    channel(name){
+      const ch={ name, msgH:[], presH:[], presence:null,
+        on(type,f,cb){ (type==='broadcast'?ch.msgH:ch.presH).push(cb); return ch; },
+        subscribe(cb){ (BUS.ch[name]=BUS.ch[name]||[]).push(ch);
+          setTimeout(()=>{ if(cb)cb('SUBSCRIBED'); BUS.sync(name); },12); return ch; },
+        // 보낸 사람에게는 되돌려주지 않는다(supabase 기본값과 같게)
+        send(msg){ if(BUS.drop>0){ BUS.drop--; return Promise.resolve('ok'); }   // 삼킨다
+          setTimeout(()=>{ (BUS.ch[name]||[]).forEach(o=>{ if(o!==ch) o.msgH.forEach(h=>h(msg)); }); },6);
+          return Promise.resolve('ok'); },
+        track(o){ ch.presence=o; setTimeout(()=>BUS.sync(name),6); return Promise.resolve('ok'); },
+        untrack(){ ch.presence=null; setTimeout(()=>BUS.sync(name),6); return Promise.resolve('ok'); },
+        presenceState(){ const st={};
+          (BUS.ch[name]||[]).forEach((o,i)=>{ if(o.presence) st['k'+i]=[o.presence]; }); return st; },
+      };
+      return ch;
+    },
+    removeChannel(ch){ const a=BUS.ch[ch&&ch.name]||[]; const i=a.indexOf(ch);
+      if(i>=0)a.splice(i,1); if(ch&&ch.name)BUS.sync(ch.name); },
+    from(){ const q={ select:()=>q, eq:()=>q, order:()=>q,
+      limit:()=>Promise.resolve({data:[],error:null}), insert:()=>Promise.resolve({error:null}),
+      update:()=>q, maybeSingle:()=>Promise.resolve({data:null,error:null}) }; return q; },
+  };
+}
+
+const A=document.getElementById('A'), B=document.getElementById('B');
+const w=f=>f.contentWindow;
+// 게임의 최상위 let/const 는 window 속성이 아니다(그래서 WA.net 이 undefined였다).
+// 프레임 안에서 eval 하면 그 창의 전역 렉시컬 환경이 그대로 보인다.
+const ev=(f,code)=>w(f).eval(code);
+function install(f,nick){
+  const W=w(f);
+  W.supabase={createClient:()=>window.parent.__fakeClient()};
+  ev(f,'_supa=null');                 // 다음 getSupa()에서 가짜로 다시 만들게
+  ev(f,'supaReady=()=>true');
+  ev(f,'hubLeave(); netLeave(); aiStop();');
+  W.saveNick(nick);
+}
+window.__fakeClient=fakeClient;
+const wait=async(cond,ms=4000)=>{ const t0=Date.now();
+  while(Date.now()-t0<ms){ if(cond())return true; await sleep(60); } return false; };
+
+async function run(){
+  // about:blank도 'complete'라서 load 이벤트로 판단하면 안 된다(그래서 한 번 헛돌았다).
+  // 게임 함수가 실제로 올라올 때까지 기다린다.
+  const ready=f=>{ try{ return typeof w(f).saveNick==='function' && typeof w(f).netCreate==='function'; }catch(e){ return false; } };
+  const both=await wait(()=>ready(A)&&ready(B),15000);
+  if(!both){ no('게임 인스턴스를 불러오지 못했습니다'); window.__done=true; window.__fails=1; return; }
+  await sleep(300);
+  lines=[]; say('두 인스턴스 로드 완료','dim');
+
+  // ── 1. 방 만들기 → 코드로 입장 (정상 순서) ──
+  install(A,'까미'); install(B,'하늘');
+  ev(A,"openNetMode('dungeon')"); ev(B,"openNetMode('dungeon')");
+  await sleep(60);
+  ev(A,'netCreate()');
+  const code=ev(A,'net.room');
+  if(!code||code.length!==6) no('방 코드가 안 만들어졌다: '+code); else ok('방 코드 '+code+' 생성');
+  await sleep(200);
+  ev(B,'$("netCodeInput").value='+JSON.stringify(code)+'; netJoinByCode();');
+  const bothMet=()=>ev(A,'!!net.foe')&&ev(B,'!!net.foe');
+  let met=await wait(bothMet);
+  if(met) ok('서로 인사 완료 — A가 본 상대 "'+ev(A,'net.foe.name')+'", B가 본 상대 "'+ev(B,'net.foe.name')+'"');
+  else no('서로를 못 봤다 (A '+(ev(A,'!!net.foe')?'O':'X')+' / B '+(ev(B,'!!net.foe')?'O':'X')+')');
+
+  // ── 2. 들어온 쪽이 먼저 구독하는 순서 (예전에 여기서 서로 못 봤다) ──
+  install(A,'까미'); install(B,'하늘');
+  ev(A,"openNetMode('dungeon')"); ev(B,"openNetMode('dungeon')");
+  const code2='ZZTEST';
+  ev(B,'netEnterRoom("'+code2+'",false)');          // 손님이 먼저 들어가서 인사를 던진다
+  await sleep(500);                       // 방장은 아직 없다 → 그 인사는 사라진다
+  ev(A,'netEnterRoom("'+code2+'",true)');            // 방장이 뒤늦게 들어온다
+  met=await wait(bothMet,6000);
+  if(met) ok('손님이 먼저 들어와도 만난다 (인사 반복 덕분)');
+  else no('손님이 먼저 들어오면 서로 못 본다');
+
+  // ── 3. 공개 방 목록 (방장이 목록에 뜨는가) ──
+  install(A,'까미'); install(B,'하늘');
+  ev(A,"openNetMode('throw')"); ev(B,"openNetMode('throw')");
+  await sleep(700);                        // 로비가 먼저 붙는다 — 실제로도 이 순서다
+  ev(A,'netPublic=true; netCreate();');
+  const hostRoom0=ev(A,'net.room');
+  const seen=await wait(()=>ev(B,'hubRooms.some(r=>r.room==="'+hostRoom0+'")'),4000);
+  if(seen){ ok('B의 목록에 A의 방이 보인다 ('+hostRoom0+')');
+    const rows=w(B).document.querySelectorAll('#roomList .roomrow');
+    if(rows.length) ok('목록에 입장 버튼 '+rows.length+'개 그려짐');
+    else no('hubRooms엔 있는데 화면에 안 그려졌다');
+  } else no('B의 목록에 A의 방이 안 보인다');
+
+  // ── 4. 목록에서 눌러 입장 ──
+  const row=w(B).document.querySelector('#roomList .roomrow');
+  if(row){ row.click();
+    met=await wait(bothMet,5000);
+    if(met) ok('목록에서 눌러 입장 → 서로 인사 완료');
+    else no('목록에서 눌렀는데 만나지 못했다');
+  }
+
+  // ── 5. 랜덤 매칭이 열린 방으로 들어가는가 (새 방을 열면 실패) ──
+  install(A,'까미'); install(B,'하늘');
+  ev(A,"openNetMode('dungeon')"); ev(B,"openNetMode('dungeon')");
+  await sleep(700);                        // 로비가 먼저 붙는다
+  ev(A,'netPublic=true; netCreate();');
+  const hostRoom=ev(A,'net.room');
+  await wait(()=>ev(B,'hubRooms.some(r=>r.room==="'+hostRoom+'")'),4000);
+  ev(B,'netRandom()');
+  const joined=await wait(()=>ev(B,'net.room')===hostRoom,6000);
+  if(joined) ok('랜덤 매칭이 열린 방('+hostRoom+')으로 들어갔다');
+  else no('랜덤 매칭이 남의 방을 못 찾고 '+(ev(B,'net.room')?('새 방 '+ev(B,'net.room')+'을 열었다'):'아무것도 안 했다'));
+  met=await wait(bothMet,5000);
+  if(met) ok('랜덤 매칭 뒤 서로 인사 완료');
+  else no('랜덤 매칭 뒤 서로를 못 봤다');
+
+  // ── 5-b. 첫 인사가 유실돼도 만나는가 (모바일에서 흔하다) ──
+  install(A,'까미'); install(B,'하늘');
+  ev(A,"openNetMode('dungeon')"); ev(B,"openNetMode('dungeon')");
+  await sleep(200);
+  BUS.drop=3;                              // 처음 세 통을 삼킨다
+  ev(A,'netCreate()'); await sleep(120);
+  ev(B,'netEnterRoom("'+ev(A,'net.room')+'",false)');
+  met=await wait(bothMet,8000);
+  BUS.drop=0;
+  if(met) ok('첫 인사 3통이 유실돼도 만난다');
+  else no('인사가 한 번 유실되면 서로 못 본다');
+
+  // ── 5-c. 방장이 고른 난이도·역할이 손님에게 그대로 가는가 ──
+  install(A,'까미'); install(B,'하늘');
+  ev(A,"openNetMode('throw')"); ev(B,"openNetMode('throw')");
+  await sleep(120);
+  ev(A,"netModeName='fire'; hostRole='popper'; netCreate();");
+  ev(B,'netEnterRoom("'+ev(A,'net.room')+'",false)');
+  await wait(bothMet,5000);
+  await sleep(400);
+  const gm=ev(B,'netModeName'), gr=ev(B,'hostRole'), gs=ev(B,'net.timeLimit');
+  if(gm==='fire') ok('방장이 고른 난이도(핵불닭)가 손님에게 전달됐다');
+  else no('난이도가 전달되지 않았다: 손님은 '+gm);
+  if(gr==='popper') ok('방장 역할(터트리는 사람)이 전달돼 손님은 반대 역할이 된다 (손님 역할 '+ev(B,'(computeRole(),myRole)')+')');
+  else no('역할이 전달되지 않았다: '+gr);
+  if(gs===90) ok('던지기 게임 제한시간 90초 전달');
+  else no('제한시간이 틀렸다: '+gs);
+
+  // ── 6. 링크를 코드 칸에 붙여넣어도 되는가 ──
+  const cases=[['abc123','ABC123'],[' ab-c1 23 ','ABC123'],
+    ['https://x.y/?r=ABC123','ABC123'],['https://x.y/index.html?r=abc123#z','ABC123']];
+  let bad=0;
+  cases.forEach(([raw,want])=>{ const got=ev(B,'parseRoomCode('+JSON.stringify(raw)+')'); if(got!==want){ bad++; dim('  "'+raw+'" → '+got+' (기대 '+want+')'); } });
+  if(bad) no('코드 해석 '+bad+'건 실패'); else ok('소문자·공백·하이픈·링크 붙여넣기 모두 해석');
+
+  // ── 6.5 대기실에서 서로의 얼굴이 보이는가 ──
+  // 이름만 오가고 차림새는 안 오는 일이 있었다(나만의 악세서리를 id 로만 보내서
+  // 받는 쪽이 못 찾고 맨머리로 그렸다). 사진이 '내 얼굴'로 대체되는 것도 통과가 아니다 —
+  // 두 사람 사진이 서로 달라야 진짜 상대 얼굴이다.
+  install(A,'까미'); install(B,'하늘');
+  // 서로 다른 차림새를 준다. B 는 나만의 악세서리까지 씌운다(가장 잘 새던 곳).
+  ev(A,"character={kind:'cat',color:'#ffb3c9',acc:'bow',accColor:'#ff5c8a'}");
+  ev(B,"customAccs.length=0; customAccs.push({id:'ca_q',label:'별',emoji:'⭐',color:'#8a5cff'});"
+      +"character={kind:'bear',color:'#c9a27a',acc:'ca_q',accColor:'#8a5cff'}");
+  ev(A,"openNetMode('dungeon')"); ev(B,"openNetMode('dungeon')");
+  ev(A,'netCreate()'); await sleep(150);
+  ev(B,'netEnterRoom("'+ev(A,'net.room')+'",false)');
+  await wait(bothMet,5000);
+  await wait(()=>ev(A,'!!peerChar(peerList()[0].id)'),3000);
+  ev(A,'renderLobby()');
+  const rows=ev(A,"[...$('lobbyPlayers').querySelectorAll('img.ava')].map(i=>i.src)");
+  const got=ev(A,'JSON.stringify(peerChar(peerList()[0].id))');
+  const want=ev(B,'JSON.stringify(charSafe(charPack()))');
+  if(rows.length<2) no('대기실에 사진이 '+rows.length+'개뿐이다 (내 것 + 상대 것 = 2개여야 한다)');
+  else if(rows[0]===rows[1]) no('두 사람 사진이 똑같다 — 상대 얼굴이 아니라 내 얼굴을 두 번 그렸다');
+  else if(got!==want) no('상대 차림새가 어긋난다: 받은 것 '+got+' / 보낸 것 '+want);
+  else ok('대기실에서 서로 다른 얼굴이 보인다 (나만의 악세서리 ⭐까지 전달: '+got+')');
+
+  // ── 7. 한 쪽이 나가면 상대가 안다 ──
+  install(A,'까미'); install(B,'하늘');
+  ev(A,"openNetMode('dungeon')"); ev(B,"openNetMode('dungeon')");
+  ev(A,'netCreate()'); await sleep(150);
+  ev(B,'netEnterRoom("'+ev(A,'net.room')+'",false)');
+  await wait(bothMet,5000);
+  ev(B,'netLeave()');
+  const gone=await wait(()=>ev(A,'net.foeGone===true'),3000);
+  if(gone) ok('상대가 나가면 바로 안다 (bye 전달)');
+  else no('상대가 나갔는데 모른다');
+
+  say('');
+  say(fails? ('총 '+fails+'건 실패') : '전부 통과', fails?'no':'ok');
+  window.__done=true; window.__fails=fails;
+}
+run().catch(e=>{ no('검사 중 오류: '+(e&&e.message||e)); window.__done=true; window.__fails=99; });
+</script>
+</body></html>

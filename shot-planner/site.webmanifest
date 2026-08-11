@@ -1,0 +1,30 @@
+{
+  "name": "촬영 배치도 · Shot Planner",
+  "short_name": "촬영 배치도",
+  "description": "화각과 심도, 180° 선을 종이 위에서 먼저 재 봅니다.",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#efece6",
+  "theme_color": "#141414",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
