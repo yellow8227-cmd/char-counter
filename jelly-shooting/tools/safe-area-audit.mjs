@@ -17,15 +17,37 @@ const evl=async e=>{const r=await send('Runtime.evaluate',{expression:e,returnBy
 await send('Page.enable');
 console.log('검사 대상: '+TARGET+'\n');
 
-const SAT=47, SAB=34;
-const SET=`document.documentElement.style.setProperty('--sat','${SAT}px');
-  document.documentElement.style.setProperty('--sab','${SAB}px');`;
+// 기종마다 화면 크기와 안전영역이 다르다. 그리고 '홈 화면에 추가'한 상태(standalone)와
+// 사파리 안에서 여는 상태가 또 다르다 —
+//   standalone : env(safe-area-inset-*) 가 진짜 값(위 47~59 · 아래 34)
+//   사파리 안   : env() 는 0 이고, 대신 주소창·툴바가 그 자리를 쓴다. 화면 맨 위·맨 아래를
+//                누르면 iOS 가 그 터치를 먼저 먹으므로 버튼을 거기 두면 안 눌린다.
+//                (아이폰 14프로 사파리에서 '나가기가 안 눌린다'가 이것이었다)
+// 사파리 안은 보이는 높이도 줄어든다(주소창 ~50 + 툴바 ~48).
+const EDGE=14;                       // 브라우저에서 위·아래로 최소 이만큼은 비워 둬야 한다
+const DEVICES=[
+  {n:'아이폰 SE (홈화면)',      w:375, h:667, sat:20, sab:0,  browser:false},
+  {n:'아이폰 14프로 (홈화면)',  w:393, h:852, sat:59, sab:34, browser:false},
+  {n:'아이폰 14프로 (사파리)',  w:393, h:754, sat:0,  sab:0,  browser:true},
+  {n:'아이폰 17프로 (사파리)',  w:402, h:776, sat:0,  sab:0,  browser:true},
+  {n:'아이폰 14프로맥스(홈화면)',w:430, h:932, sat:59, sab:34, browser:false},
+];
+let SAT=47, SAB=34, BROWSER=false;
+// --satmin/--sabmin 은 일부러 건드리지 않는다. 헤드리스 크로미움 자체가
+// display-mode:browser 이므로 index.html 의 @media 규칙이 그대로 걸린다 —
+// 그래야 '실제로 배포되는 CSS'를 검사하는 것이 된다(검사기가 값을 넣어 주면 거짓 통과다).
+const SET=()=>`document.documentElement.style.setProperty('--sat','${SAT}px');
+  document.documentElement.style.setProperty('--sab','${SAB}px');`
+  +(BROWSER?'':`document.documentElement.style.setProperty('--satmin','0px');
+    document.documentElement.style.setProperty('--sabmin','0px');`);
 // 안전영역 침범 검사 — 화면에 보이는 '누르는 것' 전부
 // 안전영역 침범 검사. band='top'|'bot'
 // 스크롤되는 메뉴는 위/아래를 각각 '가장 불리한 스크롤 위치'에서 봐야 한다.
 // 맨 위로 올린 상태에서 위 띠에 걸리면 영원히 못 누르고, 맨 아래로 내린 상태에서
 // 아래 띠에 걸리면 그것도 못 누른다. 그 반대는 스크롤로 꺼낼 수 있으니 문제가 아니다.
 const CHECK=band=>`(()=>{const bad=[], H=innerHeight;
+  // 브라우저 안이면 env() 가 0 이라 '안전영역'이 없다 — 대신 위·아래 끝 EDGE px 을 금지대로 본다
+  const TOPB=${BROWSER}?${EDGE}:${SAT}, BOTB=${BROWSER}?12:${SAB};
   document.querySelectorAll('button,canvas,input,.roomrow,#foeHud .fp').forEach(el=>{
     if(!el.offsetParent&&el.tagName!=='CANVAS') return;
     const r=el.getBoundingClientRect();
@@ -35,10 +57,10 @@ const CHECK=band=>`(()=>{const bad=[], H=innerHeight;
     if(r.bottom<0||r.top>H) return;
     const name=(el.id?'#'+el.id:el.className&&typeof el.className==='string'?'.'+el.className.split(' ')[0]:el.tagName)
       +(el.textContent&&el.textContent.trim()?' "'+el.textContent.trim().slice(0,10)+'"':'');
-    const topIn=Math.min(r.bottom,${SAT})-Math.max(r.top,0);
-    const botIn=Math.min(r.bottom,H)-Math.max(r.top,H-${SAB});
-    if('${band}'==='top'&&topIn>3) bad.push(name+' 위 안전영역 '+Math.round(topIn)+'px');
-    if('${band}'==='bot'&&botIn>3) bad.push(name+' 아래 안전영역 '+Math.round(botIn)+'px');
+    const topIn=Math.min(r.bottom,TOPB)-Math.max(r.top,0);
+    const botIn=Math.min(r.bottom,H)-Math.max(r.top,H-BOTB);
+    if('${band}'==='top'&&topIn>3) bad.push(name+' 위 '+Math.round(topIn)+'px 걸림');
+    if('${band}'==='bot'&&botIn>3) bad.push(name+' 아래 '+Math.round(botIn)+'px 걸림');
   });
   return bad;})()`;
 const SCROLL=to=>`(()=>{const sc=[...document.querySelectorAll('.screen')].find(e=>!e.classList.contains('hide'));
@@ -59,19 +81,24 @@ const STATES=[
   {n:'결과 화면', s:`showScreen('overScreen');`},
 ];
 let fails=0;
-for(const st of STATES){
-  await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:2,mobile:true});
-  await send('Page.navigate',{url:'file://'+TARGET});
-  await sleep(1400);
-  await evl(SET+`supaReady=()=>true;`);
-  await evl(st.s); await sleep(400);
-  await evl(SCROLL('top')); await sleep(250);
-  const badTop=await evl(CHECK('top'));
-  await evl(SCROLL('bot')); await sleep(250);
-  const badBot=await evl(CHECK('bot'));
-  const bad=(badTop||[]).concat(badBot||[]);
-  if(bad.length){ fails+=bad.length; console.log('❌ '+st.n+'\n   '+bad.join('\n   ')); }
-  else console.log('✅ '+st.n+' — 안전영역 침범 없음');
+for(const dv of DEVICES){
+  SAT=dv.sat; SAB=dv.sab; BROWSER=dv.browser;
+  console.log('── '+dv.n+' '+dv.w+'x'+dv.h+(dv.browser?' (env()=0, 위아래 끝 '+EDGE+'px 금지)':' (안전영역 위 '+SAT+' 아래 '+SAB+')'));
+  let devFail=0;
+  for(const st of STATES){
+    await send('Emulation.setDeviceMetricsOverride',{width:dv.w,height:dv.h,deviceScaleFactor:2,mobile:true});
+    await send('Page.navigate',{url:'file://'+TARGET});
+    await sleep(1200);
+    await evl(SET()+`supaReady=()=>true;`);
+    await evl(st.s); await sleep(380);
+    await evl(SCROLL('top')); await sleep(220);
+    const badTop=await evl(CHECK('top'));
+    await evl(SCROLL('bot')); await sleep(220);
+    const badBot=await evl(CHECK('bot'));
+    const bad=(badTop||[]).concat(badBot||[]);
+    if(bad.length){ fails+=bad.length; devFail+=bad.length; console.log('   ❌ '+st.n+'\n      '+bad.join('\n      ')); }
+  }
+  if(!devFail) console.log('   ✅ '+STATES.length+'개 화면 모두 통과');
 }
 console.log(fails? ('총 '+fails+'건'):'전부 통과');
 ws.close(); proc.kill();
