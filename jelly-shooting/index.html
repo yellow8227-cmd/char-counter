@@ -857,6 +857,7 @@
       <div style="display:flex;gap:8px;justify-content:center;margin-top:9px;flex-wrap:wrap;">
         <button class="chip" id="cloudUpBtn">🔐 계정 만들기</button>
         <button class="chip" id="cloudPwInBtn">🔑 로그인</button>
+        <button class="chip" id="cloudPwSetBtn">🔐 비밀번호 바꾸기</button>
         <button class="chip" id="cloudOutBtn">🚪 이 기기에서 로그아웃</button>
       </div>
       <div class="tag2" style="text-align:left;margin-top:8px;opacity:.75;">
@@ -1276,7 +1277,8 @@ function cloudWhy(msg){
   if(/already registered|already been registered|User already/i.test(m))
     return '이미 있는 계정이에요 — 아래 "🔑 로그인" 을 눌러주세요';
   if(/Invalid login credentials/i.test(m))
-    return '이메일이나 비밀번호가 맞지 않아요 (여러 번 틀려도 계정은 잠기지 않아요)';
+    return '이메일·비밀번호가 맞지 않거나, 확인 메일을 안 누른 계정이에요'
+      +' (Confirm email 을 끄면 확인 없이 바로 됩니다 · 여러 번 틀려도 계정은 잠기지 않아요)';
   if(/request rate limit|too many requests|over_request_rate/i.test(m))
     return '너무 빨리 여러 번 눌렀어요. 몇 분 뒤에 다시 해주세요 (계정은 잠기지 않아요)';
   // Supabase 기본 메일은 테스트용이라 네이버·다음 같은 곳이 그냥 버리는 일이 많다.
@@ -1310,16 +1312,26 @@ async function cloudSignUp(email,pw){
     const r=await sb.auth.updateUser({email:email,password:pw});
     if(r&&r.error){ toast('안 됐어요: '+cloudWhy(r.error.message)); return false; }
     const u=r&&r.data&&r.data.user;
-    if(u&&u.email){ cloudMail=u.email; cloudState='linked'; }
+    // 이메일이 아직 안 붙었다(확인 대기). 이 상태로 다른 기기에서 로그인하면
+    // 그 이메일을 가진 계정이 없어서 "맞지 않아요"만 나온다 — 솔직히 알려 준다.
+    if(!u||(u.email||'').toLowerCase()!==email.toLowerCase()){
+      cloudMailAt=Date.now();
+      cloudSay('⚠️ 이메일이 아직 안 붙었어요 — 이 서버는 "확인 메일"을 켜 둔 상태예요.'
+        +' 메일함의 링크를 누르면 붙고, 그게 안 오면 Supabase → Authentication → Email 의'
+        +' Confirm email 을 끄고 다시 눌러주세요');
+      toast('⚠️ 확인 메일을 눌러야 붙어요'); syncCloudUI(); return false; }
+    cloudMail=u.email; cloudState='linked';
     cloudSay('🔐 계정을 만들었어요. 다른 기기에서 같은 이메일·비밀번호로 로그인하면 그대로 이어져요');
     await cloudPush(); syncCloudUI(); toast('🔐 계정 완성!'); return true; }
   const r=await sb.auth.signUp({email:email,password:pw});
   if(r&&r.error){ toast('안 됐어요: '+cloudWhy(r.error.message)); return false; }
   const ses=r&&r.data&&r.data.session;
-  if(!ses){   // 대시보드에서 'Confirm email' 이 켜져 있으면 확인 메일을 기다려야 한다
+  if(!ses){   // 세션이 안 오면 'Confirm email' 이 켜져 있다는 뜻이다
     cloudMailAt=Date.now();
-    cloudSay('📧 '+email+' 로 확인 메일을 보냈어요. 링크를 누른 뒤 로그인해주세요');
-    return true; }
+    cloudSay('⚠️ 이 서버는 "확인 메일"을 켜 둔 상태예요. '+email+' 로 보낸 링크를 눌러야 계정이 살아나고,'
+      +' 그 전에는 로그인해도 "맞지 않아요" 가 나옵니다.'
+      +' 메일이 안 오면 Supabase → Authentication → Email 의 Confirm email 을 끄고 다시 만들어주세요');
+    toast('⚠️ 확인 메일을 눌러야 해요'); syncCloudUI(); return false; }
   cloudUid=ses.user.id; cloudMail=ses.user.email||email; cloudState='linked';
   await cloudPull(false); await cloudPush(); syncCloudUI();
   cloudSay(null); toast('🔐 계정 완성!'); return true; }
@@ -1386,11 +1398,12 @@ function syncCloudUI(){
   const st=$('cloudState'); if(st) st.textContent=
     cloudState==='linked'?'연결됨 ✅':(cloudState==='device'?'서버 저장 중':'기기 저장');
   const on=(cloudState==='linked');
-  // 들어와 있으면: 이메일 칸·로그인·찾기는 감추고, 비밀번호 바꾸기와 로그아웃만 남긴다
-  ['cloudInBtn','cloudPwInBtn','cloudMail','cloudLostHint'].forEach(id=>{
+  // 계정을 만든 뒤에는 '계정 만들기·로그인·찾기·이메일 칸'이 전부 사라진다.
+  // 남는 것은 비밀번호 바꾸기와 로그아웃 둘뿐이다.
+  ['cloudUpBtn','cloudInBtn','cloudPwInBtn','cloudMail','cloudLostHint'].forEach(id=>{
     const e=$(id); if(e) e.style.display=on?'none':''; });
-  const ob=$('cloudOutBtn'); if(ob) ob.style.display=on?'':'none';
-  const ub=$('cloudUpBtn'); if(ub) ub.textContent=on?'🔐 비밀번호 바꾸기':'🔐 계정 만들기';
+  ['cloudOutBtn','cloudPwSetBtn'].forEach(id=>{
+    const e=$(id); if(e) e.style.display=on?'':'none'; });
 }
 
 // ================= Setup =================
@@ -5786,9 +5799,8 @@ window.__auditEach=function(scan){
 // ☁️ 계정 단추
 $('cloudInBtn').onclick=()=>cloudSignIn(($('cloudMail').value||'').trim());
 $('cloudOutBtn').onclick=cloudOutAsk;
-$('cloudUpBtn').onclick=()=>(cloudState==='linked')
-  ? cloudSetPw($('cloudPw').value||'')
-  : cloudSignUp(($('cloudMail').value||'').trim(),$('cloudPw').value||'');
+$('cloudUpBtn').onclick=()=>cloudSignUp(($('cloudMail').value||'').trim(),$('cloudPw').value||'');
+$('cloudPwSetBtn').onclick=()=>cloudSetPw($('cloudPw').value||'');
 $('cloudPwInBtn').onclick=()=>cloudPwIn(($('cloudMail').value||'').trim(),$('cloudPw').value||'');
 
 // boot
