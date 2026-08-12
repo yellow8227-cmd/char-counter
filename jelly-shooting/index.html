@@ -384,6 +384,20 @@
   #toast.low{top:auto;bottom:19%;}
   #toast.low.show{transform:translateX(-50%) translateY(6px);}
 
+  /* 판 위에 살짝 떴다 사라지는 알림 — 대전에서 "누가 탈락했다"를 알린다.
+     toast 는 화면 가운데를 큼직하게 덮어서 젤리를 가린다. 이건 판 위쪽에 작게 떠서
+     1.6초 만에 없어지고, pointer-events:none 이라 그 자리를 눌러도 젤리가 터진다. */
+  #pnotes{position:absolute;left:0;right:0;top:6px;z-index:6;pointer-events:none;
+    display:flex;flex-direction:column;align-items:center;gap:4px;}
+  .pnote{background:rgba(60,30,50,0.72);color:#fff;font-weight:800;font-size:13px;
+    padding:6px 13px;border-radius:13px;max-width:92%;white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;box-shadow:0 4px 12px rgba(0,0,0,0.22);
+    animation:pnoteIn 1.6s ease-out forwards;}
+  @keyframes pnoteIn{0%{opacity:0;transform:translateY(-8px) scale(.92)}
+    14%{opacity:1;transform:translateY(0) scale(1)}
+    72%{opacity:1;transform:translateY(0) scale(1)}
+    100%{opacity:0;transform:translateY(-10px) scale(.98)}}
+
   /* creator form */
   .mini{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;}
   .minichip{border:none;background:#fff2f8;color:#b0567c;font-weight:800;font-size:13px;padding:9px 11px;border-radius:11px;cursor:pointer;box-shadow:0 2px 0 #f2cddd;min-height:35px;}
@@ -428,7 +442,29 @@
     box-shadow:0 4px 0 #e0691a,0 10px 16px -10px rgba(224,105,26,0.6),var(--rim);transition:transform .08s;}
   .setbtn.danger{background:linear-gradient(180deg,#ff8a9c,#ff5a6e);box-shadow:0 4px 0 #d63b50;}
   .setbtn:active{transform:translateY(4px);box-shadow:none;}
-  #openSetBtn{position:absolute;top:calc(16px + var(--satx));right:calc(16px + var(--sar));}
+  /* 설정 버튼이 하얀 유리라 배경에 묻혀 못 찾는 사람이 있었다 — 분홍으로 칠하고 테두리
+     고리를 천천히 퍼뜨린다. 크기·자리는 그대로(안전영역 검사가 이 자리를 본다). */
+  #openSetBtn{position:absolute;top:calc(16px + var(--satx));right:calc(16px + var(--sar));
+    background:var(--btn-gloss),linear-gradient(180deg,#ffa9c8,#ff5f8d);
+    box-shadow:0 8px 18px -8px rgba(230,60,120,0.75),inset 0 2px 0 rgba(255,255,255,0.7),
+      0 0 0 3px rgba(255,255,255,0.92);}
+  /* 고리는 :after 로 퍼뜨린다 — 버튼 자체에 animation 을 걸면 :active 의 눌리는 효과가 죽는다 */
+  #openSetBtn::after{content:'';position:absolute;inset:-3px;border-radius:17px;pointer-events:none;
+    border:2px solid rgba(255,95,141,0.55);animation:setRing 2.6s ease-out infinite;}
+  @keyframes setRing{0%{opacity:.85;transform:scale(.94)}70%{opacity:0;transform:scale(1.2)}
+    100%{opacity:0;transform:scale(1.2)}}
+
+  /* 📖 설명서 */
+  #helpBody .hrow{display:flex;gap:10px;align-items:flex-start;text-align:left;
+    padding:8px 0;border-top:1px solid rgba(210,150,180,0.22);}
+  #helpBody .hrow:first-of-type{border-top:none;}
+  #helpBody .he{font-size:21px;line-height:1.1;flex:0 0 auto;width:27px;text-align:center;}
+  #helpBody .hb{flex:1 1 auto;min-width:0;}
+  #helpBody .hn{font-weight:900;font-size:14px;color:var(--ink);}
+  #helpBody .hd{font-size:12.5px;color:#8a6b7d;line-height:1.45;margin-top:2px;}
+  #helpBody .hp{font-size:12px;font-weight:900;color:var(--pink-d);margin-top:3px;}
+  #helpBody .htxt{font-size:13px;color:#7c5c6e;line-height:1.6;text-align:left;}
+  #helpBody .htxt b{color:var(--ink);}
   /* 출석부 달력 */
   #calBox{width:min(94vw,380px);}
   .calhead{font-family:var(--font-title);font-size:20px;color:var(--pink-d);margin-bottom:10px;}
@@ -552,7 +588,12 @@
     background:#fff;border:1.5px solid var(--edge);
     box-shadow:var(--sh-soft),var(--sh-in);animation:dropIn .32s cubic-bezier(.2,.9,.3,1.3);}
   #invite.hide{display:none!important;}
+  /* 살까요? 를 위에 띄우면 프로필 맨 위에 붙어 있는 캐릭터 얼굴을 덮어서, 입어 본 모습을
+     보면서 결정할 수가 없었다. 값을 묻는 창은 아래쪽에 띄운다. */
+  #invite.low{top:auto;bottom:calc(12px + var(--sabx));animation:upIn .32s cubic-bezier(.2,.9,.3,1.3);}
   @keyframes dropIn{from{opacity:0;transform:translateX(-50%) translateY(-18px)}
+    to{opacity:1;transform:translateX(-50%) translateY(0)}}
+  @keyframes upIn{from{opacity:0;transform:translateX(-50%) translateY(18px)}
     to{opacity:1;transform:translateX(-50%) translateY(0)}}
   #invite .itxt{font-size:14.5px;font-weight:800;color:var(--ink);text-align:center;line-height:1.45;
     white-space:pre-line;}
@@ -713,7 +754,10 @@
       </div>
     </div>
 
-    <div id="stage"><canvas id="game"></canvas></div>
+    <div id="stage"><canvas id="game"></canvas>
+      <!-- 살짝 떠서 사라지는 알림(누가 탈락했다 등). 판 위에 얹지만 자리를 차지하지 않고
+           (absolute) 손가락도 통과시켜서 게임을 방해하지 않는다. -->
+      <div id="pnotes"></div></div>
 
     <div id="botBand">
       <div id="itemBar" class="hide"></div>
@@ -805,6 +849,11 @@
       <button class="btn ghost" id="shopBtn" style="padding:12px 22px;font-size:16px;">🛒 창작소</button>
       <button class="btn ghost" id="attendBtn" style="padding:12px 22px;font-size:16px;">📅 출석부</button>
     </div>
+    <!-- 처음 온 사람이 규칙·아이템을 어디서 봐야 하는지 몰랐다. 홈에 그림과 함께 둔다. -->
+    <div class="rowbtn">
+      <button class="btn ghost" id="helpPlayBtn" style="padding:12px 22px;font-size:16px;">🎮 게임 방법</button>
+      <button class="btn ghost" id="helpItemBtn" style="padding:12px 22px;font-size:16px;">🎒 아이템 설명서</button>
+    </div>
   </div>
 
   <!-- SHOP -->
@@ -868,7 +917,7 @@
     <div class="card" id="createPanel">
       <div class="label">🎀 악세서리 공방</div>
       <div class="tag2" style="margin:0 0 10px;text-align:left;">나만의 악세서리를 만들어 캐릭터에 씌워요.
-        만들 때마다 값이 올라가니 아껴서 골라주세요!</div>
+        하나에 <b>🪙 3,000코인</b>이고, 몇 개를 만들어도 값은 같아요!</div>
       <div class="tag2" id="caTryHint" style="text-align:left;margin:0 0 10px;"></div>
       <div class="label" style="margin-top:2px;">모양</div>
       <div class="mini" id="caEmojis"></div>
@@ -1149,8 +1198,21 @@
     <div class="h2">📅 출석부</div>
     <div class="card" id="calBox"></div>
     <div class="tag2" id="calInfo"></div>
-    <div class="tag2">매일 플레이하면 🍡 도장이 찍혀요!</div>
+    <div class="tag2">매일 플레이하면 🍡 도장이 찍혀요!<br>
+      하루도 안 빼고 이어서 오면 보너스가 <b>🪙 100코인</b>이에요 (빠지면 40코인부터 다시).</div>
     <button class="btn ghost" id="attendBackBtn">← 홈으로</button>
+  </div>
+
+  <!-- 📖 설명서 — 게임 방법 / 아이템·무기. 내용은 코드의 표(ITEMS·HEX·MODES…)로 만든다.
+       손으로 적어 두면 값을 고칠 때마다 설명서가 거짓말이 된다. -->
+  <div id="helpScreen" class="screen hide">
+    <div class="h2" id="helpTitle">📖 설명서</div>
+    <div class="opts" id="helpTabs">
+      <button class="chip" id="helpTabPlay">🎮 게임 방법</button>
+      <button class="chip" id="helpTabItem">🎒 아이템 설명서</button>
+    </div>
+    <div id="helpBody" style="width:min(94vw,460px);display:flex;flex-direction:column;gap:12px;"></div>
+    <button class="btn ghost" id="helpBackBtn">← 홈으로</button>
   </div>
 
   <!-- GAME OVER -->
@@ -3079,9 +3141,10 @@ function buildShop(){
 // ═══ 악세서리 공방 ═══
 // 아이템 창작은 없앴다. 대신 '입는 것'을 만든다 — 값이 비싸고, 만들 때마다 더 비싸진다.
 // 그래서 코인이 쓸 곳이 생기고, 남의 캐릭터를 보면 얼마나 모았는지 보인다.
-const ACC_COSTS=[3000,5000,8000,12000,18000];
-function accCost(){ const n=customAccs.length;
-  return n<ACC_COSTS.length ? ACC_COSTS[n] : ACC_COSTS[ACC_COSTS.length-1]+8000*(n-ACC_COSTS.length+1); }
+// 값이 만들 때마다 올라갔었다(3천→5천→8천→…). 하루 벌이가 몇백 코인이라 두 번째부터는
+// 사실상 못 만들었다 — 몇 개를 만들든 3,000코인으로 고정한다.
+const ACC_COST=3000;
+function accCost(){ return ACC_COST; }
 // 공방에서 만들 수 있는 것.
 // 기본 악세서리(무료)와 겹치는 건 넣지 않는다 — 리본🎀·왕관👑·꽃🌸·모자🎩🧢·안경👓·
 // 선글라스🕶️·뿔😈 은 프로필의 '악세서리'에서 공짜로 고를 수 있다. 여기는 돈 내고 만들
@@ -3139,8 +3202,8 @@ function buildCreator(){
     b.className='sw'+(caColor===c?' on':'');b.style.background=c;b.title=c;
     b.onclick=()=>{caColor=c;caTry=true;buildCreator();};co.appendChild(b);});
   const cost=accCost();
-  $('caCostMsg').innerHTML='이번 악세서리는 <b>🪙 '+cost.toLocaleString()+'코인</b>'
-    +(customAccs.length?(' (만든 개수 '+customAccs.length+'개 — 다음은 더 비싸져요)'):' — 첫 개는 3,000코인');
+  $('caCostMsg').innerHTML='악세서리 하나에 <b>🪙 '+cost.toLocaleString()+'코인</b>'
+    +(customAccs.length?(' · 지금까지 '+customAccs.length+'개 만들었어요 (값은 계속 같아요)'):' — 몇 개를 만들어도 같은 값이에요');
   const cb=$('createBtn'); cb.disabled=coins<cost;
   cb.textContent='✨ 만들기 ('+cost.toLocaleString()+'🪙)';
   // 미리보기는 위에 붙어 있는 얼굴이 대신한다 (여기 큰 그림을 두면 그 얼굴과 겹쳤다)
@@ -3175,16 +3238,31 @@ function doCreateCustom(cost){
 }
 // ---- toast + 일일 보너스 ----
 let toastTimer=null;
+// 판 위에 살짝 떴다 사라지는 알림. toast 와 달리 여러 개가 쌓일 수 있고(4명이면 셋이
+// 연달아 죽는다), 손가락을 통과시켜서 게임을 끊지 않는다.
+function pnote(msg){ const w=$('pnotes'); if(!w) return;
+  const d=document.createElement('div'); d.className='pnote'; d.textContent=msg;
+  w.appendChild(d);
+  while(w.childElementCount>3) w.removeChild(w.firstElementChild);   // 화면을 덮지 않게
+  setTimeout(()=>{ if(d.parentNode) d.parentNode.removeChild(d); },1700); }
 function toast(msg){ const t=$('toast'); t.textContent=msg;
   t.classList.toggle('low',!!running&&!paused); t.classList.add('show'); if(toastTimer)clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),1900); }
+const DAILY_FIRST=40, DAILY_STREAK=100;   // 첫날 / 연속 출석 보너스
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 function isYesterday(last,today){const p=last.split('-').map(Number),q=today.split('-').map(Number);const d1=new Date(p[0],p[1]-1,p[2]),d2=new Date(q[0],q[1]-1,q[2]);return Math.round((d2-d1)/86400000)===1;}
-function checkDaily(){ const last=localStorage.getItem('jelly_daily'); $('dailyBtn').style.display=(last!==todayStr())?'':'none'; }
+function checkDaily(){ const last=localStorage.getItem('jelly_daily'), show=(last!==todayStr());
+  $('dailyBtn').style.display=show?'':'none';
+  // 얼마를 받는지 버튼에 적어 둔다 — 연속으로 오면 100코인이라는 걸 눌러 보기 전에 알 수 있게
+  if(show) $('dailyBtn').textContent='🎁 오늘의 보너스 받기 (+'
+    +((last&&isYesterday(last,todayStr()))?DAILY_STREAK:DAILY_FIRST)+'🪙)'; }
 function claimDaily(){ const today=todayStr(),last=localStorage.getItem('jelly_daily'); if(last===today)return;
   let streak=loadNum('jelly_streak'); streak=(last&&isYesterday(last,today))?streak+1:1;
-  const bonus=40+Math.min(streak-1,6)*15;
+  // 어제도 왔으면(연속) 100코인. 하루 빠지면 다시 40부터 — 매일 오는 게 이득이 되게 둔다.
+  const bonus=(streak>=2)?DAILY_STREAK:DAILY_FIRST;
   coins+=bonus; localStorage.setItem('jelly_daily',today); localStorage.setItem('jelly_streak',streak); saveEconomy(); markAttend();
-  $('startCoins').textContent='🪙 '+coins; $('dailyBtn').style.display='none'; playLevelUp(); toast('🎁 '+streak+'일 연속 출석! +'+bonus+'🪙');
+  $('startCoins').textContent='🪙 '+coins; $('dailyBtn').style.display='none'; playLevelUp();
+  toast(streak>=2 ? ('🎁 '+streak+'일 연속 출석! +'+bonus+'🪙')
+                  : ('🎁 오늘 출석! +'+bonus+'🪙 · 내일 또 오면 '+DAILY_STREAK+'🪙'));
 }
 
 // ================= 미리 입어보기 =================
@@ -3213,8 +3291,9 @@ function profFace(){
 // 값을 치르는 것은 반드시 한 번 더 묻는다.
 function askBuy(what,cost,onOk){
   if(coins<cost){ toast('코인이 부족해요! ('+cost.toLocaleString()+'🪙 필요 · 지금 '+coins.toLocaleString()+'🪙)'); return; }
+  // 아래쪽에 띄운다 — 입어 본 얼굴이 화면 위에 있어서, 위에 띄우면 그걸 가린다
   showInvite(what+'\n🪙 '+cost.toLocaleString()+'코인에 살까요?  (사면 '+(coins-cost).toLocaleString()+'🪙 남아요)',
-    '🪙 살게요',onOk); }
+    '🪙 살게요',onOk,true); }
 
 // ================= Setup UI =================
 function buildSetupUI(){
@@ -3664,6 +3743,7 @@ function gameOver(){
   // 걸린 방해·방어·충전은 판이 끝나는 지금 정리한다. 다음 판 시작(resetRun)까지
   // 미뤄 두면 결과 화면에 남은 상태가 그려지고, 그 사이 다른 화면이 그것을 읽는다.
   hexT={zig:0,fog:0,rush:0}; hexSeen={}; shieldT=0; revealT=0; bolt=0; throwGauge=0;
+  { const pn=$('pnotes'); if(pn) pn.innerHTML=''; }   // 판 위 알림은 판이 끝나면 지운다
   $('netBar').classList.add('hide'); $('throwWrap').classList.add('hide');
   if(net.watchT){clearInterval(net.watchT);net.watchT=null;}
   coins+=runCoins; saveEconomy();
@@ -3697,7 +3777,7 @@ function gameOver(){
   showScreen('overScreen'); lockOverActions(); startAttract(); }
 
 // ================= Screens & flow =================
-const SCREENS=['startScreen','setupScreen','shopScreen','profileScreen','chatScreen','settingsScreen','attendScreen','rankScreen','battleScreen','netScreen','aiScreen','lobbyScreen','acceptScreen','pauseScreen','overScreen'];
+const SCREENS=['startScreen','setupScreen','shopScreen','profileScreen','chatScreen','settingsScreen','attendScreen','helpScreen','rankScreen','battleScreen','netScreen','aiScreen','lobbyScreen','acceptScreen','pauseScreen','overScreen'];
 function showScreen(id){ if(id!=='overScreen')clearOverLock();
   // 입어보던 것은 그 화면을 떠나면 없어진다 — 집 화면 얼굴이 안 산 캐릭터가 되면 안 된다
   if(id!=='profileScreen'&&id!=='setupScreen') tryClear();
@@ -3733,6 +3813,85 @@ function buildCalendar(){
   $('calBox').innerHTML=h;
   $('calInfo').textContent='이번 달 '+cnt+'일 출석 · 연속 '+loadNum('jelly_streak')+'일 🔥 · 총 '+a.length+'일';
 }
+// ================= 📖 설명서 =================
+// 규칙·아이템 값을 손으로 적어 두면 값을 고칠 때마다 설명서가 거짓말이 된다.
+// 그래서 전부 코드의 표(ITEMS·HEX·MODES·KIND_PRICE·HAIRS…)에서 만들어 낸다.
+let helpTab='play';
+function openHelp(tab){ ensureAudio(); helpTab=(tab==='item')?'item':'play';
+  showScreen('helpScreen'); buildHelp(); $('helpScreen').scrollTop=0; }
+function hrow(e,n,d,p){ return '<div class="hrow"><div class="he">'+e+'</div><div class="hb">'
+  +'<div class="hn">'+n+'</div><div class="hd">'+d+'</div>'
+  +(p?('<div class="hp">'+p+'</div>'):'')+'</div></div>'; }
+function helpCard(label,inner){ return '<div class="card"><div class="label">'+label+'</div>'+inner+'</div>'; }
+function buildHelp(){
+  const b=$('helpBody'); if(!b) return;
+  $('helpTabPlay').classList.toggle('on',helpTab==='play');
+  $('helpTabItem').classList.toggle('on',helpTab==='item');
+  $('helpTitle').textContent=(helpTab==='play')?'🎮 게임 방법':'🎒 아이템 설명서';
+  let h='';
+  if(helpTab==='play'){
+    h+=helpCard('🍡 기본 규칙',
+      hrow('✅','웃는 젤리는 톡 치기','떨어지는 젤리를 손가락(마우스)으로 누르면 터져요. 하나 터트릴 때마다 🪙 1코인.')
+     +hrow('💣','뾰족 폭탄은 피하기','누르면 목숨이 하나 깎이고 콤보가 풀려요. 바닥까지 떨어뜨려도 괜찮아요.')
+     +hrow('🕳️','놓치면 목숨 하나','웃는 젤리가 바닥에 닿으면 목숨이 깎여요. 폭탄은 놓쳐도 안 깎여요.')
+     +hrow('❤️','목숨이 0이면 끝','목숨은 난이도마다 달라요 (아래 표).')
+     +hrow('🔥','콤보 = 점수 배수','연달아 터트리면 최대 <b>x9</b>까지 올라가요. 놓치거나 폭탄을 터뜨리면 x1로 돌아가요.')
+     +hrow('🌟','황금 젤리','가끔 반짝이며 떨어져요. 터트리면 🪙 <b>12코인</b>!')
+     +hrow('📈','레벨','점수가 쌓이면 Lv이 올라가고 젤리가 더 빨라져요.'));
+    let mr='';
+    Object.keys(MODES).forEach(k=>{ const m=MODES[k];
+      mr+=hrow(m.emoji,m.name,m.desc+' · 목숨 '+m.lives+'개','젤리 속도 '+m.vy0.toFixed(1)+'배부터'); });
+    h+=helpCard('🌶️ 난이도',mr);
+    h+=helpCard('🎮 놀이 방법',
+      hrow('🍡','혼자 하기','기록에 도전해요. <b>산 아이템은 여기서만</b> 쓸 수 있어요.')
+     +hrow('⚔️','실시간 던전','같은 판을 여러 명이 같이 해요. 목숨이 0이면 탈락이고, <b>마지막까지 살아남은 사람이 1등</b>. 젤리를 터트리면 게이지가 차고, 그걸로 상대를 방해해요 (🎒 아이템 설명서 참고).')
+     +hrow('🎯','던지기 게임','한 사람은 젤리를 던지고, 한 사람은 터트려요. 역할을 바꿔 가며 겨뤄요.')
+     +hrow('🤖','AI와 대결','인터넷이 없어도 바로 붙을 수 있어요. 이기면 코인을 줘요.')
+     +hrow('📮','도전장','내가 한 판을 그대로 친구에게 보내요. 같은 젤리로 점수를 겨뤄요.')
+     +hrow('🏆','랭킹','난이도별 순위. 닉네임을 정하면 점수가 올라가요.'));
+    h+=helpCard('🪙 코인 모으는 법',
+      hrow('🍡','젤리 터트리기','젤리 1개 = 1코인, 황금 젤리 = 12코인.')
+     +hrow('🎁','출석 보너스','하루 한 번 <b>+'+DAILY_FIRST+'🪙</b>. 하루도 안 빼고 이어서 오면 <b>+'+DAILY_STREAK+'🪙</b>!')
+     +hrow('🤖','AI 격파','난이도가 높은 AI를 이길수록 많이 줘요.'));
+    h+=helpCard('💡 알아두면 좋아요',
+      '<div class="htxt">· 손가락이 살짝 빗나가도 터지게 하고 싶으면 <b>⚙️ 설정 → 터치 민감도</b>를 넉넉하게 두세요.<br>'
+     +'· 컴퓨터라면 <b>1~5 숫자키</b>로 아이템을, <b>스페이스</b>로 일시정지를 쓸 수 있어요.<br>'
+     +'· <b>☁️ 계정</b>(⚙️ 설정)을 만들면 폰과 노트북에서 코인·캐릭터가 같이 따라와요.<br>'
+     +'· 홈 화면에 추가하면 인터넷 없이도 혼자 하기를 할 수 있어요.</div>');
+  } else {
+    let ir='';
+    allItemIds().forEach(id=>{ const it=ITEMS[id]; if(!it) return;
+      const lv=itemOwnedLv(id), own=inventory[id]||0;
+      let p='🪙 '+buyCost(id)+'코인'+(lv?(' · 지금 Lv.'+lv+(isMaxLv(id)?' (최대)':' → 다시 사면 Lv.'+nextLv(id))):'')
+        +' · 가진 것 '+own+'개';
+      if(!isAvailable(id)) p='🔒 먼저 🔨 창작 '+it.craft+'🪙 · 그 뒤에 '+buyCost(id)+'🪙에 살 수 있어요';
+      ir+=hrow(escapeHtml(it.emoji||'🎁'),escapeHtml(it.name),escapeHtml(it.desc||'')
+        +(lv?(' · 지금 성능 <b>'+escapeHtml(lvDesc(it.effect,lv))+'</b>'):''),escapeHtml(p)); });
+    h+=helpCard('🎒 상점 아이템 (혼자 하기 전용)',
+      '<div class="htxt" style="margin-bottom:6px;">🛒 창작소에서 사요. 판 아래 칸을 눌러서 쓰고, 같은 아이템을 다시 사면 <b>Lv.'+ITEM_MAX_LV+'까지</b> 강해져요. 다 쓴 아이템은 칸에 <b>✕</b>로 남아요.<br>'
+     +'<b>대전(던전·던지기·도전장)에서는 쓸 수 없어요</b> — 가진 아이템으로 승부가 갈리면 재미가 없어서요.</div>'+ir);
+    let hr='';
+    HEX_ORDER.forEach(k=>{ const x=HEX[k];
+      hr+=hrow(x.e,x.n+(x.def?' <span class="locktag">방어</span>':''),x.d,
+        x.bolt?('⚡ 🍡를 '+BOLT_NEED+'번 던지면 한 발 충전'):('게이지 '+x.cost)); });
+    h+=helpCard('⚔️ 던전 무기 (대전 전용)',
+      '<div class="htxt" style="margin-bottom:6px;">실시간 던전·던지기 게임에서 써요. <b>젤리를 터트릴 때마다 콤보만큼 게이지가 차고</b>(x1~x9), 게이지를 써서 상대를 방해해요. 🛡️✨는 상대에게 보내는 게 아니라 <b>나를 지키는</b> 것이에요.</div>'+hr);
+    let cr='';
+    KINDS.forEach(k=>{ const pr=KIND_PRICE[k.id]||0;
+      cr+=hrow('🐾',escapeHtml(k.label),pr?'':'처음부터 쓸 수 있어요',pr?('🪙 '+pr+'코인'+(kindOwned(k.id)?' · 가지고 있어요 ✅':'')):''); });
+    h+=helpCard('🐾 캐릭터',cr);
+    let hh='';
+    HAIRS.forEach(s=>{ const pr=HAIR_PRICE[s.id]||0;
+      hh+=hrow('💇',escapeHtml(s.label),pr?'사람 캐릭터(남자·여자)에게 씌워요':'처음부터 쓸 수 있어요',
+        pr?('🪙 '+pr.toLocaleString()+'코인'+(hairOwned(s.id)?' · 가지고 있어요 ✅':'')):''); });
+    h+=helpCard('💇 머리 모양',hh);
+    h+=helpCard('🎀 나만의 악세서리',
+      '<div class="htxt">🙋 내 프로필 → <b>악세서리 공방</b>에서 모양과 색을 골라 만들어요. 하나에 <b>🪙 '
+      +accCost().toLocaleString()+'코인</b>이고, 몇 개를 만들어도 값은 같아요. 만든 것은 언제든 바꿔 쓸 수 있어요.</div>');
+  }
+  b.innerHTML=h;
+}
+
 // ================= 온라인: 닉네임 + 랭킹 =================
 let nick=localStorage.getItem('jelly_nick')||'';
 // 이름은 신분이다. 아무 때나 바꿀 수 있으면 랭킹·채팅에서 누가 누군지 알 수 없다.
@@ -4532,6 +4691,14 @@ function netOnMsg(m){
   else if(m.t==='over'){
     peerUpsert(pid,{over:true,reason:m.reason||'time',score:m.score|0});
     if((m.reason||'')==='dead'&&net.order.indexOf(pid)<0) net.order.push(pid);   // 탈락 순서
+    // 상대가 죽었으면 알려 준다. 내가 아직 하는 중이라면 판을 가리지 않게 살짝 떴다 사라지고,
+    // 판 밖(대기·결과 화면)이라면 평소 알림으로 보여준다.
+    if(netMode&&(m.reason||'')==='dead'){
+      const nm=(net.peers[pid]&&net.peers[pid].name)||'친구';
+      const left=(net.mp?mpAlive().length:0);
+      if(running) pnote('💀 '+nm+' 탈락!'+(net.mp&&left>1?(' · '+left+'명 남음'):''));
+      else toast('💀 '+nm+'님이 탈락했어요');
+    }
     net.foeOver=true; net.foeScore=m.score|0; net.foeReason=m.reason||'time';
     if(m.popped!=null){ net.foePopped=m.popped|0; net.foeMissed=m.missed|0; }
     if(throwerAlive){ throwerFinish(); return; }                 // 터트리는 사람이 끝났으면 나도 끝
@@ -4563,11 +4730,13 @@ let hub=null, hubRooms=[], netPublic=true;
 // ── 🔔 알림 ──
 // "방이 열렸다 / 누가 들어왔다"를 다른 걸 하는 중에도 알려준다.
 let inviteT=null;
-function showInvite(text,okLabel,onOk){
+// low=true 면 화면 아래쪽에 띄운다 — 위쪽에 있는 캐릭터 얼굴·제목을 가리지 않아야 할 때.
+function showInvite(text,okLabel,onOk,low){
   const w=$('invite'); if(!w) return;
   $('inviteTxt').textContent=text;
   $('inviteOk').textContent=okLabel;
   $('inviteOk').onclick=()=>{ hideInvite(); onOk&&onOk(); };
+  w.classList.toggle('low',!!low);
   w.classList.remove('hide');
   if(inviteT) clearTimeout(inviteT);
   inviteT=setTimeout(hideInvite,14000);      // 오래 두면 화면을 가린다
@@ -5825,6 +5994,11 @@ $('restartBtn').onclick=()=>{ resumeGame(); startGame(); };
 $('quitBtn').onclick=quitGame;
 $('attendBtn').onclick=openAttend;
 $('attendBackBtn').onclick=()=>openStart();
+$('helpPlayBtn').onclick=()=>openHelp('play');
+$('helpItemBtn').onclick=()=>openHelp('item');
+$('helpTabPlay').onclick=()=>{ helpTab='play'; buildHelp(); $('helpScreen').scrollTop=0; };
+$('helpTabItem').onclick=()=>{ helpTab='item'; buildHelp(); $('helpScreen').scrollTop=0; };
+$('helpBackBtn').onclick=()=>openStart();
 $('rankBtn').onclick=openRank;
 $('dungeonBtn').onclick=()=>openNetMode('dungeon');
 $('throwGameBtn').onclick=()=>openNetMode('throw');
@@ -5939,6 +6113,8 @@ window.__auditEach=function(scan){
       roomMsgs.push({name:'카미',ch:charPack(),text:'좋아 시작하자 🔥'});
       renderLobby();},
     attendScreen:()=>{buildCalendar();}, settingsScreen:()=>{syncSettingsUI();buildTolUI();syncCloudUI();},
+    // 설명서는 두 칸을 다 봐야 한다 — 아이템 칸이 훨씬 길다
+    helpScreen:()=>{helpTab='item';buildHelp();},
     overScreen:()=>{renderRank([32831,11224,10085],10085);
       $('overLb').innerHTML='<div class="rrow">🥇 젤리왕 <span>⭐ 32831</span></div>';},
     acceptScreen:()=>{pendingChallenge={host_name:'젤리왕',host_score:1234,seed:1,mode:'spicy'};openAccept();},
