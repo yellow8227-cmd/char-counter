@@ -190,6 +190,26 @@ async function run(){
   const aliveA=ev('A','mpAlive().length');
   if(aliveA===2) ok('A가 센 생존자 2명 (A·B)');
   else no('생존자 집계가 틀렸다: '+aliveA+'명');
+  // ── 6-b. 👀 탈락한 D가 살아 있는 사람(A·B)의 화면을 골라 본다 ──
+  // 여기서는 진짜 판이 돌고 있으므로 update() 가 스스로 관전 화면을 내보낸다.
+  await sleep(900);
+  const cardD=ev('D','!$("watchCard").classList.contains("hide")');
+  const chips=ev('D','$("watchWho").childElementCount');
+  if(cardD&&chips===2) ok('탈락한 D에게 관전 칸 + 볼 사람 2명 칩');
+  else no('관전 칸/칩이 틀렸다 (칸='+cardD+' 칩='+chips+')');
+  const first=ev('D','watch.id');
+  const gotV=await wait(()=>ev('D','!!(net.peers[watch.id]&&net.peers[watch.id].view)'),5000);
+  if(gotV) ok('보고 있는 사람의 화면이 실제로 도착한다 (젤리 '
+    +ev('D','net.peers[watch.id].view.j.length')+'개 · ⭐'+ev('D','net.peers[watch.id].view.s')+')');
+  else no('관전 화면이 오지 않는다 (아무도 안 보낸다)');
+  ev('D','[...$("watchWho").children].find(b=>b.textContent.indexOf(net.peers[watch.id].name)<0).click()');
+  const second=ev('D','watch.id');
+  if(second&&second!==first) ok('칩을 눌러 다른 사람 화면으로 바꾼다');
+  else no('보는 사람을 못 바꾼다 ('+first+' → '+second+')');
+  // 아직 하는 중인 A·B 에게는 관전 칸이 없다
+  if(ev('A','$("watchCard").classList.contains("hide")')) ok('아직 하는 사람에게는 관전 칸이 없다');
+  else no('플레이 중인 A에게 관전 칸이 떴다');
+
   // 승자는 gameOver를 안 타면 이 판에서 모은 코인이 그대로 사라진다. 실제 숫자로 확인한다.
   const coinBefore=ev('A','coins');
   ev('A','runCoins=37');

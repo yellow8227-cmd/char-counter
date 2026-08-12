@@ -309,6 +309,59 @@ async function run(){
   }
   ev(A,'netLeave()'); ev(B,'netLeave()');
 
+  // ── 7. 👀 관전 — 탈락한 A가 아직 하는 B의 화면을 본다 ──
+  // 가짜 서버로 실제 broadcast 를 왕복시킨다. 여기서 걸리면 폰에서도 안 보인다.
+  install(A,'까미'); install(B,'하늘');
+  ev(A,"openNetMode('dungeon')"); ev(B,"openNetMode('dungeon')");
+  ev(A,'netCreate()'); await sleep(150);
+  ev(B,'netEnterRoom("'+ev(A,'net.room')+'",false)');
+  await wait(bothMet,5000);
+  // B의 얼굴을 확실히 정해 둔다 (관전 화면에 이 얼굴이 그려져야 한다)
+  ev(B,"character.kind='bear'; character.color='#c9a27a'; saveChar(); netSend({t:'hi',name:'하늘',char:charPack()});");
+  await sleep(150);
+  // A는 탈락해서 결과 화면으로, B는 계속 플레이 중
+  ev(A,"netMode=false; netGame='dungeon'; net.mp=true; net.myOver=true; net.myScore=100;"
+      +"net.myReason='dead'; net.order=[myId];"
+      +"lastPlay={kind:'online',game:'dungeon',role:'popper'};"
+      +"showScreen('overScreen'); netSend({t:'over',score:100,reason:'dead'}); netResolve();");
+  await sleep(250);
+  const cardOn=ev(A,'!$("watchCard").classList.contains("hide")');
+  if(cardOn) ok('탈락한 A에게 관전 칸이 떴다 (보는 사람: '+ev(A,'(net.peers[watch.id]||{}).name')+')');
+  else no('탈락했는데 관전 칸이 안 뜬다');
+  // B가 자기 판을 보낸다 — 실제 경로(update 안에서 watchers() 가 참일 때)를 그대로 탄다
+  const bKnew=ev(B,"(()=>{ netMode=true; netGame='dungeon'; running=true; lives=5; net.timeLimit=999;"
+    +"jellies.length=0; for(let i=0;i<6;i++) jellies.push({x:60+i*60,y:100+i*60,r:28,vx:0,vy:1,"
+    +"color:'#ff5c8a',bomb:false,gold:false,ghost:false,face:'happy',shape:'round',wob:0,pts:10,dead:false});"
+    +"const has=watchers(); elapsed=9; update(); running=false; netMode=false; return has; })()");
+  if(!bKnew) no('B가 "볼 사람이 생겼다"를 못 알아챈다 (그러면 화면을 안 보낸다)');
+  const gotView=await wait(()=>ev(A,'!!(net.peers[watch.id]&&net.peers[watch.id].view)'),3000);
+  if(!gotView) no('B의 화면이 A에게 오지 않았다');
+  else {
+    const n=ev(A,'net.peers[watch.id].view.j.length');
+    ev(A,'watchDraw()');
+    const ink=ev(A,"(()=>{ const c=$('watchCanvas'),g=c.getContext('2d');"
+      +"const d=g.getImageData(0,0,c.width,c.height).data; let n=0;"
+      +"for(let i=0;i<d.length;i+=4) if(d[i+3]>200&&(d[i]>200&&d[i+1]<170)) n++; return n; })()");
+    const info=ev(A,'$("watchInfo").textContent');
+    if(n<6) no('받은 젤리 수가 모자라다: '+n);
+    else if(ink<200) no('관전 화면에 B의 젤리가 안 그려졌다 (분홍 화소 '+ink+')');
+    else if(info.indexOf('하늘')<0) no('누구를 보는지 안 적혔다: '+info);
+    else ok('B의 판이 A 화면에 그려졌다 (젤리 '+n+'개 · 분홍 '+ink+'화소 · "'+info.trim()+'")');
+  }
+  // B도 끝나면 관전 칸이 사라지고 결과 그림이 뜬다
+  ev(B,"net.myOver=true; net.myScore=900; net.myReason='time'; netSend({t:'over',score:900,reason:'time'});");
+  await sleep(300);
+  const closed=await wait(()=>ev(A,'$("watchCard").classList.contains("hide")'),3000);
+  const shown=ev(A,'!$("celebCanvas").classList.contains("hide")');
+  const mine=ev(A,'lastBattle&&lastBattle.mine');
+  const foeKind=ev(A,'lastBattle&&lastBattle.win.ch.kind');
+  if(!closed) no('B도 끝났는데 관전 칸이 남아 있다');
+  else if(!shown) no('결과가 정해졌는데 승패 그림이 안 뜬다');
+  else if(mine!=='lose') no('A는 탈락했는데 결과가 '+mine);
+  else if(foeKind!=='bear') no('이긴 쪽 얼굴이 B가 고른 얼굴이 아니다: '+foeKind);
+  else ok('B도 끝나자 관전이 닫히고, A에게 "졌다" 그림이 뜬다 (이긴 얼굴 '+foeKind+')');
+  ev(A,'netLeave()'); ev(B,'netLeave()');
+
   // ── 7. 한 쪽이 나가면 상대가 안다 ──
   install(A,'까미'); install(B,'하늘');
   ev(A,"openNetMode('dungeon')"); ev(B,"openNetMode('dungeon')");
