@@ -121,10 +121,18 @@
   /* 위쪽 정보는 한 스택에 담는다. HUD와 상대 바가 각자 absolute였을 때는, 칩이 2px
      넓어져 한 줄 늘어나기만 해도 상대 바가 내 목숨 칩을 덮었다. 이제 #topBand 안에서
      ⏸️ · 칩 · 🔊🎵 가 한 줄로 나란히 서고, 판 위가 아니라 판 위쪽 띠에 놓인다. */
-  #hud{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;}
+  /* 점수가 0 → 9169 로 길어지면 칩이 넓어져서 하트가 다음 줄로 밀렸다. 그러면 위 띠가
+     한 줄만큼 두꺼워지고, 판(#stage)이 그만큼 작아져서 게임 중에 판 비율이 바뀌었다
+     (실제로 "화면 비율이 조금씩 바뀐다"는 말을 들었다).
+     그래서 줄 수를 못 박는다: 첫 줄 = 점수·연속·레벨·코인, 둘째 줄 = 하트. 늘 두 줄. */
+  #hud{display:flex;flex-direction:column;align-items:center;gap:5px;}
+  .statrow{display:flex;gap:6px;flex-wrap:nowrap;justify-content:center;max-width:100%;}
   .stat{background:var(--glass);backdrop-filter:blur(8px);padding:5px 11px;border-radius:var(--r-sm);
     border:1px solid var(--edge);box-shadow:var(--sh-lift),inset 0 1px 0 rgba(255,255,255,0.9);
-    display:flex;align-items:center;gap:5px;font-weight:800;font-size:14.5px;color:var(--ink);}
+    display:flex;align-items:center;gap:5px;font-weight:800;font-size:14.5px;color:var(--ink);
+    white-space:nowrap;
+    /* 숫자 폭이 글자마다 다르면 칩이 들쭉날쭉 움직인다 — 자릿수가 같으면 폭도 같게 */
+    font-variant-numeric:tabular-nums;}
   .stat b{color:var(--pink-d);}
   #comboStat.pop{animation:pop .25s ease;}
   /* 좁은 폰에서는 양옆 버튼 자리를 빼면 188px밖에 안 남는다. 칩을 조금 줄여 두 줄에 담는다 */
@@ -317,7 +325,8 @@
   .stat.coin b{color:#c98a1e;}
 
   /* in-game item bar — 판 아래 띠의 왼쪽에 가로로 (판을 하나도 가리지 않는다) */
-  #itemBar{display:flex;flex-wrap:wrap;gap:9px;align-items:flex-end;}
+  #itemBar{display:flex;flex-wrap:nowrap;gap:9px;align-items:flex-end;min-width:0;}
+  #itemBar .itembtn{flex:0 1 auto;min-width:38px;min-height:38px;}
   .itembtn{pointer-events:auto;cursor:pointer;position:relative;border:none;width:54px;height:54px;border-radius:18px;font-size:25px;
     background:var(--btn-gloss),
       linear-gradient(180deg,rgba(255,255,255,0.98) 0%,rgba(255,244,249,0.92) 34%,rgba(255,225,238,0.88) 100%);
@@ -470,7 +479,11 @@
   .gauge i{display:block;height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,#b28cff,#8a5cff);transition:width .18s;}
   /* 방해 아이템 8종 — 판 아래 띠에서 '한 줄'. 4열 2줄로 쌓으면 눈이 어디를 봐야
      할지 모르게 어수선하고, 아래 띠가 두 배로 높아져 판까지 작아진다. */
-  #hexGrid{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;}
+  /* 접히면 아래 띠가 한 줄만큼 두꺼워지고, 판은 비율이 고정이라 세로에 눌리면서 가로까지
+     확 줄어든다(실제로 판이 절반 크기가 됐다). 그래서 절대 접지 않고, 자리가 모자라면
+     단추가 같이 줄어든다. 최소 30px 은 남겨서 누를 수는 있게. */
+  #hexGrid{display:flex;flex-wrap:nowrap;justify-content:flex-end;gap:4px;min-width:0;}
+  #hexGrid .throwbtn{flex:0 1 auto;min-width:30px;min-height:30px;}
   .throwbtn{pointer-events:auto;cursor:pointer;position:relative;border:none;width:40px;height:40px;border-radius:14px;font-size:19px;
     background:var(--btn-gloss),
       linear-gradient(180deg,rgba(255,255,255,0.98) 0%,rgba(246,242,255,0.92) 34%,rgba(232,224,252,0.88) 100%);
@@ -648,11 +661,13 @@
       </div>
       <div id="topStack">
         <div id="hud" class="hide">
-          <div class="stat">⭐ <b id="score">0</b></div>
-          <div class="stat" id="comboStat">🔥 <b id="combo">x1</b></div>
-          <div class="stat">Lv.<b id="level">1</b></div>
-          <div class="stat coin">🪙 <b id="runCoinHud">0</b></div>
-          <div class="stat"><span id="lives">❤️❤️❤️</span></div>
+          <div class="statrow">
+            <div class="stat">⭐ <b id="score">0</b></div>
+            <div class="stat" id="comboStat">🔥 <b id="combo">x1</b></div>
+            <div class="stat">Lv.<b id="level">1</b></div>
+            <div class="stat coin">🪙 <b id="runCoinHud">0</b></div>
+          </div>
+          <div class="statrow"><div class="stat"><span id="lives">❤️❤️❤️</span></div></div>
         </div>
         <!-- 실시간 대전: 상대 상태 (HUD 바로 아래 — 같은 스택이라 겹칠 수 없다) -->
         <div id="netBar" class="hide"><div id="foeHud"></div></div>
@@ -1472,17 +1487,52 @@ const $=id=>document.getElementById(id);
 let W=480,H=720;
 // 판 크기는 '가운데 띠(#stage)에 남은 자리'로 정한다. 위·아래 띠가 커지면 판이 그만큼
 // 작아질 뿐, 480x720 판 전체는 언제나 다 보인다(예전엔 정보·아이템이 판을 덮었다).
-function resize(){
-  const st=$('stage'); if(!st) return;
+// 판 크기는 한 판 동안 얼려 둔다.
+// #stage 의 남은 높이로 판을 정하는데, 그 높이는 위·아래 띠가 두꺼워지면 줄어든다.
+// 던전에서는 사람이 죽거나 들어올 때 상대 줄이 늘고 줄어서, 그때마다 판이 조금씩
+// 커졌다 작아졌다 했다("플레이를 방해해"). 진짜로 화면이 바뀔 때(회전·창 크기)만 다시 잰다.
+let boardLock=null;
+// resize() 는 화면을 세우자마자 한 번 불린다. 그런데 running·throwerAlive 는 훨씬 아래에서
+// let 으로 선언되므로 그때 읽으면 'Cannot access before initialization' 으로 터진다
+// (문법 검사로는 안 잡히고, 판이 아예 안 그려졌다). 안전하게 읽는다.
+function inPlay(){ try{ return !!(running||throwerAlive); }catch(e){ return false; } }
+function boardApply(w,h){
+  canvas.style.width=w+'px';canvas.style.height=h+'px';
+  canvas.width=480;canvas.height=720;W=480;H=720; }
+function boardCalc(st){
   const maxW=Math.min(st.clientWidth,480), maxH=Math.min(st.clientHeight,860), ratio=480/720;
   let w=maxW,h=w/ratio; if(h>maxH){h=maxH;w=h*ratio;}
-  w=Math.max(140,Math.round(w)); h=Math.max(210,Math.round(h));
-  canvas.style.width=w+'px';canvas.style.height=h+'px';canvas.width=480;canvas.height=720;W=480;H=720;
+  return {w:Math.max(140,Math.round(w)),h:Math.max(210,Math.round(h))}; }
+function resize(force){
+  const st=$('stage'); if(!st) return;
+  const vw=Math.round(innerWidth), vh=Math.round(innerHeight);
+  const n=boardCalc(st);
+  if(!force&&boardLock&&boardLock.vw===vw&&boardLock.vh===vh){
+    // 한 판 동안 판은 '커지지' 않는다 — 그게 눈에 보이는 흔들림이었다.
+    // 다만 자리가 진짜 줄어들면(상대가 들어와 줄이 늘면) 따라 줄인다. 안 그러면 판이 넘쳐
+    // 아래 아이템 줄을 덮는다. 줄이기는 한 방향이라 왔다갔다하지 않는다.
+    if(n.h>=boardLock.h-1){ boardApply(boardLock.w,boardLock.h); return; }
+    boardLock={w:n.w,h:n.h,vw:vw,vh:vh}; boardApply(n.w,n.h); return; }
+  boardApply(n.w,n.h);
+  // 판이 도는 중에만 얼린다. 메뉴에서는 자유롭게 다시 재도 방해될 것이 없다.
+  boardLock=inPlay()?{w:n.w,h:n.h,vw:vw,vh:vh}:null;
 }
+function boardUnlock(){ boardLock=null; bandsUnlock(); }
+// 위·아래 띠의 높이를 판이 시작될 때 그대로 못 박는다.
+// 아이템을 다 쓰면 그 칩이 사라져서 아래 띠가 얇아지고, 그만큼 판이 커졌다 —
+// 실측으로 판이 299x449 → 263x395 까지 달라졌다. 높이를 붙들어 두면 그 일이 없다.
+// (CSS 에 숫자를 박지 않고 그때그때 재서 붙든다 — 폰마다 띠 두께가 다르다)
+function bandsLock(){
+  ['topBand','botBand'].forEach(id=>{ const e=$(id); if(!e) return;
+    e.style.minHeight=''; const h=Math.round(e.getBoundingClientRect().height);
+    if(h>0) e.style.minHeight=h+'px'; }); }
+function bandsUnlock(){ ['topBand','botBand'].forEach(id=>{ const e=$(id); if(e) e.style.minHeight=''; }); }
 // 띠 높이는 게임 중에 바뀐다(상대 정보 줄이 생기고, 아이템 칸이 늘어난다).
 // 그때마다 resize()를 부르는 걸 잊으면 판이 옛 크기로 남아 삐져나간다 — 관찰해서 자동으로.
 if(window.ResizeObserver){ new ResizeObserver(()=>resize()).observe($('stage')); }
-resize();window.addEventListener('resize',resize);
+resize(true);
+window.addEventListener('resize',()=>{      // 진짜로 화면이 바뀐 것(회전 등) — 다시 재고 다시 붙든다
+  bandsUnlock(); if(inPlay()) bandsLock(); resize(true); });
 
 // ================= Sound =================
 let AC=null,soundOn=true;
@@ -3519,7 +3569,7 @@ function giveUpNow(){
   giveUpArmed=false; if(giveUpT){clearTimeout(giveUpT);giveUpT=null;}
   // 상대에게 끝났다고 알리고 나간다. 안 알리면 상대가 감시견 시간까지 기다린다.
   if(net.ch) netSend({t:'over',score:score,reason:'dead',popped:pPopped,missed:pMissed});
-  running=false; paused=false;
+  running=false; paused=false; boardUnlock();
   ['hud','audioBar','itemBar','pauseBtn','netBar','throwWrap'].forEach(id=>$(id).classList.add('hide'));
   netLeave(); restoreMode(); toast('판을 포기했어요 🏳️'); openStart();
 }
@@ -3527,7 +3577,7 @@ function pauseGame(){ if(!running||paused)return;
   if(netMode){ if(giveUpArmed) giveUpNow(); else armGiveUp(); return; }   // 대전은 포기하고 나가기
   paused=true; $('pauseScreen').classList.remove('hide'); if(bgmGain)bgmGain.gain.value=0; }
 function resumeGame(){ if(!paused)return; paused=false; lastT=0; $('pauseScreen').classList.add('hide'); if(bgmGain&&bgmOn)bgmGain.gain.value=bgmVol(); }
-function quitGame(){ paused=false; running=false; $('pauseScreen').classList.add('hide'); $('hud').classList.add('hide'); $('audioBar').classList.add('hide'); $('itemBar').classList.add('hide'); $('pauseBtn').classList.add('hide'); if(bgmGain&&bgmOn)bgmGain.gain.value=bgmVol(); openStart(); }
+function quitGame(){ paused=false; running=false; boardUnlock(); $('pauseScreen').classList.add('hide'); $('hud').classList.add('hide'); $('audioBar').classList.add('hide'); $('itemBar').classList.add('hide'); $('pauseBtn').classList.add('hide'); if(bgmGain&&bgmOn)bgmGain.gain.value=bgmVol(); openStart(); }
 
 function startGame(){
   // 난이도를 먼저 확정한다. 순서가 바뀌면 목숨 수가 내 지난 판 난이도로 정해져서
@@ -3547,12 +3597,15 @@ function startGame(){
   showScreen(null);$('hud').classList.remove('hide');$('audioBar').classList.remove('hide');
   syncPauseBtn();
   netStartSetup();
-  ensureAudio();lastT=0;acc=0;running=true;buildItemBar();startLoop(); }
+  ensureAudio();lastT=0;acc=0;running=true;buildItemBar();
+  // 위·아래 띠를 다 세운 다음 높이를 붙들고, 그 상태로 판을 한 번 재서 얼린다.
+  boardUnlock(); bandsLock(); resize(true);
+  startLoop(); }
 function gameOver(){
   // 한 update() 틱에서 젤리 두 개가 동시에 바닥에 닿으면 loseLife가 두 번 불려
   // 여기까지 두 번 들어온다. 그러면 코인·기록·랭킹 전송이 모두 중복된다.
   if(!running) return;
-  running=false;paused=false;$('hud').classList.add('hide');$('audioBar').classList.add('hide');$('itemBar').classList.add('hide');$('pauseBtn').classList.add('hide');
+  running=false;paused=false;boardUnlock();$('hud').classList.add('hide');$('audioBar').classList.add('hide');$('itemBar').classList.add('hide');$('pauseBtn').classList.add('hide');
   const wasNet=netMode, wasAi=aiOn; netMode=false;
   // 걸린 방해·방어·충전은 판이 끝나는 지금 정리한다. 다음 판 시작(resetRun)까지
   // 미뤄 두면 결과 화면에 남은 상태가 그려지고, 그 사이 다른 화면이 그것을 읽는다.
@@ -5228,7 +5281,7 @@ function refreshThrowBar(){
 
 function startThrower(){
   mirrorInit();
-  running=false; paused=false; throwerAlive=true;
+  running=false; paused=false; throwerAlive=true; boardUnlock();
   mirror=[]; throwCd=0; throwScore=0; jidSeq=0; elapsed=0; mframe=0;
   tKind='normal'; tEnergy=ENERGY_MAX; tCombo=1; tMsg=null; popX=240; tSpd=2;
   tThrown=0; tPopped=0; tMissed=0;
@@ -5563,7 +5616,7 @@ function roomAlive(){ return !!(net.ch && net.room && !aiOn && peerCount()>0 && 
 function rematch(send){
   if(!roomAlive()){ restoreMode(); openNetMode(lastPlay.game); return; }
   if(send) netSend({t:'again',name:nick||'친구'});
-  netMode=false; throwerAlive=false; running=false; paused=false;
+  netMode=false; throwerAlive=false; running=false; paused=false; boardUnlock();
   ['hud','audioBar','itemBar','pauseBtn','netBar','throwWrap','throwerView'].forEach(id=>$(id).classList.add('hide'));
   canvas.style.display='';
   net.ready=false; net.myOver=false; net.myScore=0; net.myReason='';

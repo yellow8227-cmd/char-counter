@@ -88,7 +88,7 @@ for(const dv of DEVICES){
   for(const st of STATES){
     await send('Emulation.setDeviceMetricsOverride',{width:dv.w,height:dv.h,deviceScaleFactor:2,mobile:true});
     await send('Page.navigate',{url:'file://'+TARGET});
-    await sleep(1200);
+    await sleep(1700);   // 첫 기기는 로딩이 느려 saveNick 이 아직 없을 수 있다(간헐 실패의 원인)
     await evl(SET()+`supaReady=()=>true;`);
     await evl(st.s); await sleep(380);
     await evl(SCROLL('top')); await sleep(220);
