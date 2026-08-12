@@ -79,6 +79,9 @@
   @media (display-mode:browser){ :root{ --satmin:18px; --sabmin:12px; } }
   :root{ --satx:max(var(--sat),var(--satmin)); --sabx:max(var(--sab),var(--sabmin)); }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  /* 누르는 것에서는 '두 번 탭 확대'를 끈다. 게임은 연달아 톡톡 치는 놀이라
+     두 번 탭이 계속 일어난다(그때마다 화면이 확대됐다). */
+  button,input,.chip,.iconbtn,.itembtn,.throwbtn,.roomrow,.rrow{touch-action:manipulation;}
   html,body{height:100%;overflow:hidden;overscroll-behavior:none;font-family:var(--font);user-select:none;touch-action:none;
     background:linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 55%,var(--bg3) 100%);color:var(--ink);}
   /* 100dvh 는 사파리 주소창이 접힐 때마다 값이 바뀌어서 화면이 계속 위아래로 움직였다.
@@ -107,8 +110,12 @@
   .blob{position:absolute;border-radius:50%;filter:blur(6px);opacity:.5;pointer-events:none;animation:float 9s ease-in-out infinite;}
   @keyframes float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-24px) scale(1.06)}}
 
+  /* 판에서는 손가락 제스처를 통째로 막는다. touch-action 은 물려받지 않아서 body 에만
+     걸어 두면 판에서는 살아 있었다 — 젤리를 연달아 톡톡 치면 그게 '두 번 탭'이 되어
+     화면이 확대됐다(아이폰에서 줌인/줌아웃이 왔다갔다한 가장 큰 원인). */
   canvas#game{background:linear-gradient(180deg,#fff0f7 0%,#eef2ff 55%,#eafff8 100%);
-    border-radius:26px;box-shadow:var(--shadow);max-width:100%;max-height:100%;cursor:crosshair;}
+    border-radius:26px;box-shadow:var(--shadow);max-width:100%;max-height:100%;cursor:crosshair;
+    touch-action:none;}
 
   /* ===== HUD ===== */
   /* 위쪽 정보는 한 스택에 담는다. HUD와 상대 바가 각자 absolute였을 때는, 칩이 2px
@@ -152,6 +159,9 @@
   .screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
     text-align:center;gap:16px;z-index:10;overflow-y:auto;-webkit-overflow-scrolling:touch;
     overscroll-behavior:contain;
+    /* touch-action 은 물려받지 않는다 — body 에만 걸어 두면 이 안에서는 두 번 톡톡 쳐서
+       확대가 된다. 세로 스크롤만 남기고 '두 번 탭 확대'를 끊는다. */
+    touch-action:pan-y;
     padding:calc(26px + var(--satx)) calc(20px + var(--sar)) calc(26px + var(--sabx)) calc(20px + var(--sal));
     /* 설탕가루: 아주 옅은 점을 두 겹 엇갈리게 깔아 빈 여백이 밋밋하지 않게 한다 */
     background:
@@ -358,8 +368,11 @@
   /* id를 하나씩 나열하다가 나중에 추가한 입력칸들이 전부 빠졌다(닉네임 4개, 방 코드).
      그 칸들만 브라우저 기본 모양으로 높이 18px짜리 작은 상자가 됐다.
      화면 안의 입력칸을 통째로 잡아서 새로 만들어도 자동으로 적용되게 한다. */
+  /* 글자 크기는 16px 아래로 내리면 안 된다. iOS 는 16px 미만인 입력칸을 누르면 화면을
+     저절로 확대하고, 칸에서 벗어나면 다시 축소한다 — 채팅·닉네임을 누를 때마다
+     화면이 줌인/줌아웃으로 왔다갔다 했다(아이폰 17프로에서 보고된 것). */
   .screen input{width:100%;border:2px solid #f0cddd;border-radius:12px;padding:11px 12px;
-    font-family:var(--font);font-size:15px;color:var(--ink);text-align:center;outline:none;background:#fff;}
+    font-family:var(--font);font-size:16px;color:var(--ink);text-align:center;outline:none;background:#fff;}
   .screen input:focus{border-color:var(--pink);}
   .screen input::placeholder{color:#c9a7b8;}
   #lbBox{min-height:40px;}
