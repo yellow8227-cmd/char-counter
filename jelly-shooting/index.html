@@ -95,11 +95,12 @@
      가릴 수 없다. 판은 남은 높이에 맞춰 줄어들지만 480x720 전체가 항상 보인다.
      정보·아이템이 다 숨으면(메뉴 화면) 두 띠는 높이 0으로 접히고 판이 다시 커진다. */
   #playCol{position:relative;width:100%;height:100%;display:flex;flex-direction:column;
-    align-items:center;gap:6px;
-    padding:calc(8px + var(--satx)) calc(7px + var(--sar)) calc(8px + var(--sabx)) calc(7px + var(--sal));}
+    align-items:center;gap:4px;
+    /* 옆 여백은 판 폭을 그대로 깎는다 — 판이 커야 하니 최소한만 남긴다 */
+    padding:calc(5px + var(--satx)) calc(3px + var(--sar)) calc(5px + var(--sabx)) calc(3px + var(--sal));}
   /* 버튼 줄을 흐름에서 빼서 하트 줄과 같은 자리에 겹친다 — 판이 한 줄만큼 넓어진다.
      (판은 480:720 비율 고정이라 세로 한 줄이 곧 가로 폭이기도 하다) */
-  #topBand{flex:0 0 auto;width:100%;display:flex;flex-direction:column;align-items:center;gap:6px;
+  #topBand{flex:0 0 auto;width:100%;display:flex;flex-direction:column;align-items:center;gap:3px;
     position:relative;}
   #topBand>#topRow{position:absolute;left:0;right:0;top:0;z-index:3;pointer-events:none;}
   #topBand>#topRow>*{pointer-events:auto;}
@@ -109,8 +110,15 @@
   .statrow.topline{min-height:44px;align-items:center;padding:0 100px 0 52px;}
   .statrow.topline .stat{font-size:12.5px;padding:3px 8px;gap:4px;}
   /* 좁은 폰에서는 칩 넷이 버튼 사이에 안 들어간다 — 그때만 버튼 아래로 내려 놓는다 */
+  /* 좁은 폰에서 칩을 버튼 아래로 내렸더니 위 띠가 한 줄 더 두꺼워져 판이 작아졌다.
+     내리지 말고 작게 만들어 버튼 사이에 넣는다. 가장 안 봐도 되는 것(Lv·판 중 코인)은 뺀다. */
   @media (max-width:379px){
-    .statrow.topline{padding:0;min-height:0;margin-top:46px;}
+    .statrow.topline{padding:0 92px 0 48px;}
+    .statrow.topline .stat{font-size:11px;padding:2px 6px;gap:3px;}
+    #lvStat{display:none;}
+    #lifeLine .stat.coin{display:none;}          /* 코인은 판이 끝나면 정산해 준다 */
+    .stat.lifechip{font-size:10px;padding:2px 6px;}
+    #foeHud .fp{font-size:11px;}
   }
   /* 내 생명 + 상대 상태 한 줄 */
   #lifeLine{display:flex;flex-wrap:nowrap;gap:6px;align-items:center;justify-content:center;
@@ -168,7 +176,7 @@
     .stat{font-size:12.5px;padding:3px 8px;gap:4px;border-radius:11px;}
     /* 조일 때도 안전영역은 빼면 안 된다 — 예전에 여기서 통째로 지워서 아이폰 SE·가로
        모드에서 ⏸️·🏳️ 버튼이 화면 맨 위에 붙어 안 눌렸다(검사로 15px 걸림을 잡았다) */
-    #playCol{padding:calc(5px + var(--satx)) calc(6px + var(--sar)) calc(5px + var(--sabx)) calc(6px + var(--sal));gap:4px;}
+    #playCol{padding:calc(4px + var(--satx)) calc(3px + var(--sar)) calc(4px + var(--sabx)) calc(3px + var(--sal));gap:3px;}
     #topStack{gap:4px;}
     .iconbtn{width:38px;height:38px;font-size:17px;border-radius:12px;}
     .itembtn{width:46px;height:46px;font-size:21px;border-radius:15px;}
@@ -505,8 +513,13 @@
   /* 접히면 아래 띠가 한 줄만큼 두꺼워지고, 판은 비율이 고정이라 세로에 눌리면서 가로까지
      확 줄어든다(실제로 판이 절반 크기가 됐다). 그래서 절대 접지 않고, 자리가 모자라면
      단추가 같이 줄어든다. 최소 30px 은 남겨서 누를 수는 있게. */
-  #hexGrid{display:flex;flex-wrap:nowrap;justify-content:flex-end;gap:4px;min-width:0;}
-  #hexGrid .throwbtn{flex:0 1 auto;min-width:30px;min-height:30px;}
+  /* 무기 줄은 개수가 정해져 있으니 '폭을 나눠 갖게' 한다 — 좁은 폰에서 화면을 넘어가
+     첫 칩이 화면 밖(-48px)으로 밀려나 있었다. flex:1 1 0 + min-width:0 이면 몇 개든 딱 맞는다. */
+  #hexWrap{width:100%;min-width:0;}
+  #hexGrid{display:flex;flex-wrap:nowrap;justify-content:center;gap:3px;min-width:0;width:100%;}
+  #hexGrid .throwbtn{flex:1 1 0;min-width:0;width:auto;max-width:44px;
+    aspect-ratio:1/1;height:auto;min-height:0;font-size:clamp(13px,4.4vw,19px);}
+  #hexGrid .throwbtn .cnt,#hexGrid .throwbtn .hx{font-size:clamp(8px,2.4vw,11px);}
   .throwbtn{pointer-events:auto;cursor:pointer;position:relative;border:none;width:40px;height:40px;border-radius:14px;font-size:19px;
     background:var(--btn-gloss),
       linear-gradient(180deg,rgba(255,255,255,0.98) 0%,rgba(246,242,255,0.92) 34%,rgba(232,224,252,0.88) 100%);
@@ -688,7 +701,7 @@
           <div class="statrow topline">
             <div class="stat">⭐ <b id="score">0</b></div>
             <div class="stat" id="comboStat">🔥 <b id="combo">x1</b></div>
-            <div class="stat">Lv.<b id="level">1</b></div>
+            <div class="stat" id="lvStat">Lv.<b id="level">1</b></div>
           </div>
         </div>
         <!-- 내 생명 + 상대 상태를 한 줄에. 생명은 중요한 숫자가 아니라 작게 둔다. -->

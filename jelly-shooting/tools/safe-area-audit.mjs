@@ -31,6 +31,9 @@ const DEVICES=[
   {n:'아이폰 14프로 (사파리)',  w:393, h:754, sat:0,  sab:0,  browser:true},
   {n:'아이폰 17프로 (사파리)',  w:402, h:776, sat:0,  sab:0,  browser:true},
   {n:'아이폰 14프로맥스(홈화면)',w:430, h:932, sat:59, sab:34, browser:false},
+  // '확대 표시(Display Zoom)' 를 켜면 화면 폭이 이렇게 좁아진다. 무기 줄이 화면 밖으로
+  // 밀려나 있던 것이 이 폭이었다.
+  {n:'확대 표시 켠 폰 (사파리)', w:306, h:660, sat:0,  sab:0,  browser:true},
 ];
 let SAT=47, SAB=34, BROWSER=false;
 // --satmin/--sabmin 은 일부러 건드리지 않는다. 헤드리스 크로미움 자체가
@@ -75,6 +78,19 @@ const OVERLAP=`(()=>{const bad=[];
       if(ox>2&&oy>2) bad.push((b.id||'단추')+' ↔ "'+c.textContent.trim().slice(0,7)+'" '+Math.round(ox)+'px 겹침'); }); });
   return bad;})()`;
 
+// 가로로 화면을 넘어가는 줄이 있는가 — 무기 줄이 좁은 폰에서 첫 칩을 화면 밖(-48px)으로
+// 밀어내고 있었다. 눈에 보이는 것만 본다.
+const SPILL=`(()=>{const bad=[];
+  document.querySelectorAll('#hexGrid,#itemBar,#hud .statrow,#lifeLine,#topRow').forEach(row=>{
+    if(!row.offsetParent) return;
+    [...row.children].forEach(c=>{ if(!c.offsetParent) return;
+      const r=c.getBoundingClientRect();
+      if(r.width<4) return;
+      if(r.left<-1||r.right>innerWidth+1)
+        bad.push('#'+(row.id||row.className)+' 의 "'+(c.textContent.trim().slice(0,6)||c.tagName)
+          +'" 가 화면 밖 ('+Math.round(r.left)+'~'+Math.round(r.right)+' / 화면 0~'+innerWidth+')'); }); });
+  return bad;})()`;
+
 const SCROLL=to=>`(()=>{const sc=[...document.querySelectorAll('.screen')].find(e=>!e.classList.contains('hide'));
   if(sc) sc.scrollTop=(${to==='top'}?0:sc.scrollHeight);})()`;
 
@@ -86,7 +102,7 @@ const STATES=[
   {n:'4명 대전',  s:`netMode=true; netGame='dungeon'; netModeName='normal'; aiOn=false;
       peerUpsert('P1',{name:'하늘'}); peerUpsert('P2',{name:'초코'}); peerUpsert('P3',{name:'몽이'});
       showScreen(null); startGame(); net.peers.P1.lives=2; net.peers.P2.lives=1; net.peers.P3.lives=3;
-      updateHud(); updateFoeHud(); updateGauge();`},
+      updateHud(); updateFoeHud(); updateGauge(); buildHexBar();`},
   {n:'던지는 사람(폰)', s:`netMode=true; netGame='throw'; myRole='thrower'; netModeName='normal';
       peerUpsert('P1',{name:'친구'}); showScreen(null); startThrower();`},
   {n:'일시정지',  s:`showScreen('pauseScreen');`},
@@ -112,8 +128,10 @@ for(const dv of DEVICES){
     const badTop=await evl(CHECK('top'));
     await evl(SCROLL('bot')); await sleep(220);
     const badBot=await evl(CHECK('bot'));
-    const badOv=(st.n==='혼자 게임'||st.n==='4명 대전')?(await evl(OVERLAP)||[]):[];
-    const bad=(badTop||[]).concat(badBot||[]).concat(badOv);
+    const inGame=(st.n==='혼자 게임'||st.n==='4명 대전');
+    const badOv=inGame?(await evl(OVERLAP)||[]):[];
+    const badSp=inGame?(await evl(SPILL)||[]):[];
+    const bad=(badTop||[]).concat(badBot||[]).concat(badOv).concat(badSp);
     if(bad.length){ fails+=bad.length; devFail+=bad.length; console.log('   ❌ '+st.n+'\n      '+bad.join('\n      ')); }
   }
   if(!devFail) console.log('   ✅ '+STATES.length+'개 화면 모두 통과');
