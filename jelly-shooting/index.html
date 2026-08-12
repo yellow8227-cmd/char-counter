@@ -3935,7 +3935,7 @@ function buildHelp(){
      +hrow('👀','탈락한 뒤 관전','내가 먼저 죽으면 <b>아직 하는 사람의 화면</b>을 그대로 볼 수 있어요. 여러 명이 남았으면 이름을 눌러 골라 봐요.')
      +hrow('🏆','이기면 춤춰요','판이 끝나면 그림이 떠요 — 이긴 사람은 트로피를 들거나 깡총 뛰거나 메롱하거나 브이를 하고, 진 사람은 팔짱 끼고 흥! 하거나 발을 구르거나 엉엉 울어요 (판마다 달라져요). <b>💬 한마디</b>를 누르면 말풍선이 바로 바뀌고 <b>상대 화면에도</b> 떠요. <b>📤 결과 공유</b>로 그 그림을 친구에게 보낼 수 있어요.')
      +hrow('🎯','던지기 게임','한 사람은 젤리를 던지고, 한 사람은 터트려요. 역할을 바꿔 가며 겨뤄요.')
-     +hrow('🤖','AI와 대결','인터넷이 없어도 바로 붙을 수 있어요. 이기면 코인을 줘요.')
+     +hrow('🤖','AI와 대결','인터넷이 없어도 바로 붙을 수 있어요. 이기면 코인을 줘요. <b>처음이면 🍼 뉴비</b>부터 — 느긋하게 던지고 방해도 안 해요. 익숙해지면 🙂 보통 → 🤓 개똑똑 → 🏆 알파고로 올려보세요.')
      +hrow('📮','도전장','내가 한 판을 그대로 친구에게 보내요. 같은 젤리로 점수를 겨뤄요.')
      +hrow('🏆','랭킹','난이도별 순위. 닉네임을 정하면 점수가 올라가요.'));
     h+=helpCard('🪙 코인 모으는 법',
@@ -4986,24 +4986,32 @@ function syncPublicBtn(){ const b=$('netPublicBtn'); if(!b)return;
 // dps/risk : 실시간 던전에서 자기 판을 굴리는 점수 속도와 목숨을 잃는 확률
 // thr/tn   : 실시간 던전에서 내 화면으로 젤리를 뿌리는 빈도와 개수
 // prize    : 이겼을 때 받는 코인
+// ⚖️ 난이도를 크게 낮췄다. 예전 dps 는 뉴비도 초당 170점(2분에 2만점)이라 사람이
+// 이길 수가 없었다 — 연습조차 안 됐다. 사람의 실제 점수(보통맛에서 잘한 판이 2분에
+// 1만점 안팎)를 기준으로 다시 잡았다. 아래 hexCd 는 방해 효과의 최소 간격(초)이고,
+// 뉴비는 방해 효과를 아예 쓰지 않는다(안개·지그재그는 초보에게 너무 가혹하다).
 const AI_TIERS=[
-  {id:'baby', name:'🍼 뉴비 AI',  desc:'자주 놓쳐요. 이기는 맛 보기용',    prize:15,
-   acc:0.52,  early:[0.80,0.97], bombErr:0.22,  gap:[820,1500], spd:1, bombRate:0.10,
-   arms:{normal:0.90,bomb:0.07,ghost:0.03,rain:0.00},
-   dps:[8,26],   risk:0.055, thr:0.030, tn:1, combo:2},
-  {id:'normal',name:'🙂 보통 AI',  desc:'적당히 잘해요. 기본값',            prize:40,
-   acc:0.80,  early:[0.66,0.92], bombErr:0.11,  gap:[520,1050], spd:2, bombRate:0.16,
-   arms:{normal:0.66,bomb:0.14,ghost:0.11,rain:0.09},
-   dps:[20,62],  risk:0.024, thr:0.060, tn:3, combo:4},
-  {id:'smart', name:'🤓 개똑똑 AI',desc:'거의 안 놓쳐요. 각오하세요',       prize:90,
-   acc:0.94,  early:[0.56,0.82], bombErr:0.04,  gap:[380,760],  spd:3, bombRate:0.24,
-   arms:{normal:0.54,bomb:0.18,ghost:0.14,rain:0.14},
-   dps:[44,100], risk:0.010, thr:0.100, tn:4, combo:5},
-  {id:'alpha', name:'🏆 알파고 AI',desc:'다 터뜨려요. 최고 난이도!',        prize:200,
-   acc:0.995, early:[0.48,0.72], bombErr:0.005, gap:[260,520],  spd:3, bombRate:0.30,
-   arms:{normal:0.44,bomb:0.20,ghost:0.16,rain:0.20}, vyBoost:1.25,
-   dps:[72,155], risk:0.003, thr:0.150, tn:5, combo:5},
+  {id:'baby', name:'🍼 뉴비 AI',  desc:'느긋해요. 처음이면 여기서',        prize:15,
+   acc:0.42,  early:[0.84,0.98], bombErr:0.30,  gap:[1500,2600], spd:0, bombRate:0.06,
+   arms:{normal:0.96,bomb:0.04,ghost:0.00,rain:0.00},
+   dps:[1,4],    risk:0.012,  thr:0.010, tn:1, hexCd:0,  combo:2},
+  {id:'normal',name:'🙂 보통 AI',  desc:'사람만큼 해요. 기본값',            prize:40,
+   acc:0.70,  early:[0.72,0.94], bombErr:0.18,  gap:[1000,1800], spd:1, bombRate:0.10,
+   arms:{normal:0.82,bomb:0.10,ghost:0.06,rain:0.02},
+   dps:[4,10],   risk:0.005,  thr:0.026, tn:2, hexCd:24, combo:3},
+  {id:'smart', name:'🤓 개똑똑 AI',desc:'잘해요. 좋은 판이 나와야 이겨요',   prize:90,
+   acc:0.86,  early:[0.62,0.88], bombErr:0.09,  gap:[700,1300],  spd:2, bombRate:0.16,
+   arms:{normal:0.66,bomb:0.16,ghost:0.11,rain:0.07},
+   dps:[8,18],   risk:0.0022, thr:0.050, tn:3, hexCd:16, combo:4},
+  {id:'alpha', name:'🏆 알파고 AI',desc:'아주 잘해요. 최고 난이도!',        prize:200,
+   acc:0.94,  early:[0.54,0.80], bombErr:0.03,  gap:[520,900],   spd:3, bombRate:0.22,
+   arms:{normal:0.54,bomb:0.18,ghost:0.16,rain:0.12}, vyBoost:1.08,
+   dps:[13,27],  risk:0.0008, thr:0.075, tn:4, hexCd:12, combo:5},
 ];
+// 난이도(맛)에 따라 사람 점수가 크게 달라진다 — AI 점수도 같이 따라가야 공평하다.
+const AI_MODE_K={soft:0.70,normal:1,spicy:1.35,fire:1.70};
+function aiDps(){ const t=aiCfg(), k=AI_MODE_K[netModeName]||AI_MODE_K[mode]||1;
+  return [t.dps[0]*k,t.dps[1]*k]; }
 const AI_LOOK={baby:{kind:'bunny',color:'#ffe36e',acc:'none',accColor:'#ff5c8a'},
   normal:{kind:'dog',color:'#a3d5ff',acc:'bow',accColor:'#ff5c8a'},
   smart:{kind:'cat',color:'#d9b8ff',acc:'glasses',accColor:'#5a4a6a'},
@@ -5050,7 +5058,7 @@ function aiStart(){
   net.foe={name:aiCfg().name,char:aiChar()};
   net.ready=true; net.foeReady=true; net.status='ok'; net.foeGone=false; net.foeOver=false;
   const md=MODES[netModeName]||MODES.normal;
-  aiS={score:0,lives:md.lives,jid:0,next:0,pop:0,miss:0,spd:aiCfg().spd,combo:1};
+  aiS={score:0,lives:md.lives,jid:0,next:0,pop:0,miss:0,spd:aiCfg().spd,combo:1,hexAt:0};
   net.prized=false;
   if(aiT)clearInterval(aiT); aiT=setInterval(aiTick,100);
 }
@@ -5143,23 +5151,29 @@ function aiTick(){
       aiS.next=now+rand(t.gap[0],t.gap[1])*(arm==='rain'?1.8:1);
     }
   } else if(netGame==='dungeon'){                          // 서로 던지는 모드 — AI도 자기 판을 하는 척
-    const t=aiCfg();
-    aiS.score+=Math.round(rand(t.dps[0],t.dps[1]));
+    const t=aiCfg(), dp=aiDps();
+    aiS.score+=Math.round(rand(dp[0],dp[1]));
     if(Math.random()<t.risk) aiS.lives=Math.max(0,aiS.lives-1);
     if(aiS.t=(aiS.t||0)+1, aiS.t%5===0)
       netOnMsg({t:'stat',score:aiS.score,lives:aiS.lives,combo:1,level:level,px:Math.round(rand(60,420))});
     if(Math.random()<t.thr){
       const pal=curTheme().jelly, n=1+Math.floor(Math.random()*t.tn), items=[],
-            gh=Math.random()<0.25*t.acc;                  // 잘하는 AI는 유령 젤리를 섞는다
+            gh=(t.id!=='baby')&&Math.random()<0.20*t.acc;  // 잘하는 AI는 유령 젤리를 섞는다
       for(let i=0;i<n;i++){ const r=Math.round(rand(24,32));
         items.push({x:Math.round(rand(r+12,480-r-12)),r,color:pal[Math.floor(Math.random()*pal.length)],
-          face:'happy',shape:'round',bomb:Math.random()<0.2,ghost:gh}); }
+          face:'happy',shape:'round',bomb:Math.random()<t.bombRate*0.6,ghost:gh}); }
       netOnMsg({t:'throw',items});
     }
-    // 효과형 방해도 쓴다. 실력이 높을수록 자주 건다.
-    if(Math.random()<t.thr*0.45){
-      const ks=HEX_ORDER.filter(k=>HEX_SEC[k]);
-      netOnMsg({t:'hex',kind:ks[Math.floor(Math.random()*ks.length)]});
+    // 효과형 방해(안개·지그재그·스피드업)는 아주 가끔만. 예전에는 알파고가 1.5초에 한 번씩
+    // 걸어서 화면이 계속 흐렸다. 티어별 최소 간격을 두고, 뉴비는 아예 안 쓴다.
+    if(t.hexCd>0){
+      const now=performance.now();
+      if(!aiS.hexAt) aiS.hexAt=now;                        // 판 시작 직후에는 걸지 않는다
+      if(now-aiS.hexAt>t.hexCd*1000&&Math.random()<0.25){
+        aiS.hexAt=now;
+        const ks=HEX_ORDER.filter(k=>HEX_SEC[k]);
+        netOnMsg({t:'hex',kind:ks[Math.floor(Math.random()*ks.length)]});
+      }
     }
     if(aiS.lives<=0) netOnMsg({t:'over',score:aiS.score,reason:'dead'});
   } else {                                                 // 던지기 게임에서 AI가 터뜨리는 쪽
@@ -6130,13 +6144,23 @@ function handV(g,x,y,R,col,rot){
   hand(g,0,0,R*0.19,col);
   g.restore();
 }
-// 😝 메롱 — 얼굴 위에 혀를 덧그린다 (drawAvatar 에는 혀 표정이 없다)
-function tongueOn(g,R,t){
-  const wig=Math.sin(t*0.3)*R*0.03;
+// 입의 아래끝 높이. 종류(토끼는 ω 입)와 표정마다 다르다 — drawAvatar 의 입 그리는
+// 좌표와 같은 값을 쓴다. 혀를 여기에 걸어야 '입에서 나온 혀'로 보인다.
+function mouthBottomY(R,cfg,mood){
+  if(mood==='wow'||mood==='wail') return R*(0.34+0.19*((mood==='wail')?1.35:1));
+  if((cfg&&cfg.kind)==='bunny')   return R*(0.300+0.115);
+  if(mood==='happy'||mood==='calm'||mood==='proud'||mood==='wink') return R*0.52;
+  return R*0.46;
+}
+// 😝 메롱 — 얼굴 위에 혀를 덧그린다 (drawAvatar 에는 혀 표정이 없다).
+// 예전에는 0.42R 에 고정해서 고양이는 코에, 강아지는 턱에 붙어 있었다. 입선에 걸친다.
+function tongueOn(g,R,t,cfg,mood){
+  const my=mouthBottomY(R,cfg,mood), wig=Math.sin(t*0.3)*R*0.022, cx=R*0.02+wig;
   g.fillStyle='#ff6f95';
-  g.beginPath(); g.ellipse(R*0.05+wig,R*0.42,R*0.16,R*0.13,0,0,7); g.fill();
-  g.fillStyle='rgba(255,255,255,0.45)';
-  g.beginPath(); g.ellipse(R*0.02+wig,R*0.39,R*0.06,R*0.035,0,0,7); g.fill();
+  g.beginPath(); g.ellipse(cx,my+R*0.045,R*0.115,R*0.10,0,0,7); g.fill();   // 내민 혀
+  g.beginPath(); g.ellipse(cx,my-R*0.02,R*0.075,R*0.055,0,0,7); g.fill();   // 입선에 물린 부분
+  g.fillStyle='rgba(255,255,255,0.42)';
+  g.beginPath(); g.ellipse(cx-R*0.025,my+R*0.02,R*0.035,R*0.022,0,0,7); g.fill();
 }
 // 💧 눈물 — 두 줄기로 흐르고 방울이 떨어진다
 function tears(g,R,t,big){
@@ -6213,7 +6237,7 @@ function poseWin(g,R,cfg,t,how,face){
   } else if(how==='jump'){
     joyMarks(g,R,t,[['🎉',-1.6,-0.3,0.4],['✨',1.6,-0.5,1.1],['🎊',1.55,0.6,1.9],['⭐',-1.5,-1.1,2.4]]);
   } else if(how==='tongue'){
-    tongueOn(g,R,t);
+    tongueOn(g,R,t,cfg,fc);
     joyMarks(g,R,t,[['😝',1.6,-0.9,0.7],['✨',-1.6,-0.6,1.5]]);
   } else if(how==='v'){
     handV(g,R*1.16,-R*0.56,R,col,0.22);
