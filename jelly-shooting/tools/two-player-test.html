@@ -349,7 +349,9 @@ async function run(){
     else ok('B의 판이 A 화면에 그려졌다 (젤리 '+n+'개 · 분홍 '+ink+'화소 · "'+info.trim()+'")');
   }
   // B도 끝나면 관전 칸이 사라지고 결과 그림이 뜬다
-  ev(B,"net.myOver=true; net.myScore=900; net.myReason='time'; netSend({t:'over',score:900,reason:'time'});");
+  ev(B,"net.myOver=true; net.myScore=900; net.myReason='time';"
+      +"lastPlay={kind:'online',game:'dungeon',role:'thrower'};"
+      +"netSend({t:'over',score:900,reason:'time'}); showScreen('overScreen'); netResolve();");
   await sleep(300);
   const closed=await wait(()=>ev(A,'$("watchCard").classList.contains("hide")'),3000);
   const shown=ev(A,'!$("celebCanvas").classList.contains("hide")');
@@ -360,6 +362,25 @@ async function run(){
   else if(mine!=='lose') no('A는 탈락했는데 결과가 '+mine);
   else if(foeKind!=='bear') no('이긴 쪽 얼굴이 B가 고른 얼굴이 아니다: '+foeKind);
   else ok('B도 끝나자 관전이 닫히고, A에게 "졌다" 그림이 뜬다 (이긴 얼굴 '+foeKind+')');
+  // 💬 말풍선을 고르면 상대 화면의 내 말풍선도 바로 바뀐다
+  const aChips=ev(A,'$("sayRow").childElementCount');
+  const aMine=ev(A,'mySide()');
+  if(aChips>0&&aMine==='lose') ok('진 A 에게 말풍선 칩 '+aChips+'개 (진 사람 말)');
+  else no('말풍선 칩이 안 떴다 (칩='+aChips+' 자리='+aMine+')');
+  ev(A,'$("sayRow").children[1].click()');
+  const said=ev(A,'lastBattle.lose.say');
+  const heard=await wait(()=>ev(B,'lastBattle&&lastBattle.win&&lastBattle.win.say')===said
+                         ||ev(B,'lastBattle&&lastBattle.lose&&lastBattle.lose.say')===said,3000);
+  const bSide=ev(B,'lastBattle&&lastBattle.lose&&lastBattle.lose.say');
+  if(heard&&bSide===said) ok('A가 고른 말("'+said+'")이 B 화면의 A 말풍선에 그대로 떴다');
+  else no('말풍선이 상대에게 안 갔다 (A "'+said+'" / B "'+bSide+'")');
+  // B(이긴 쪽)가 고른 말은 B 자리에만 들어간다
+  const bChips=ev(B,'$("sayRow").childElementCount');
+  ev(B,'$("sayRow").children[0].click()');
+  const bSaid=ev(B,'lastBattle.win.say');
+  const aHeard=await wait(()=>ev(A,'lastBattle.win.say')===bSaid,3000);
+  if(bChips>0&&aHeard) ok('B가 고른 말("'+bSaid+'")도 A 화면에 떴다 (칩 '+bChips+'개)');
+  else no('이긴 쪽 말풍선이 안 갔다 (B "'+bSaid+'" / A "'+ev(A,'lastBattle.win.say')+'")');
   ev(A,'netLeave()'); ev(B,'netLeave()');
 
   // ── 7. 한 쪽이 나가면 상대가 안다 ──

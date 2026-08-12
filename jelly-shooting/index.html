@@ -393,10 +393,16 @@
     padding:6px 13px;border-radius:13px;max-width:92%;white-space:nowrap;overflow:hidden;
     text-overflow:ellipsis;box-shadow:0 4px 12px rgba(0,0,0,0.22);
     animation:pnoteIn 1.6s ease-out forwards;}
+  /* 누가 탈락했다는 소식은 지우지 않고 판이 끝날 때까지 붙여 둔다(플레이를 방해하지
+     않는다는 걸 확인했다). 대신 조금 더 옅고 작게 — 계속 보이는 글씨니까. */
+  .pnote.stay{animation:pnoteHold .42s ease-out both;background:rgba(60,30,50,0.60);
+    font-size:12.5px;padding:5px 12px;}
   @keyframes pnoteIn{0%{opacity:0;transform:translateY(-8px) scale(.92)}
     14%{opacity:1;transform:translateY(0) scale(1)}
     72%{opacity:1;transform:translateY(0) scale(1)}
     100%{opacity:0;transform:translateY(-10px) scale(.98)}}
+  @keyframes pnoteHold{from{opacity:0;transform:translateY(-8px) scale(.92)}
+    to{opacity:1;transform:translateY(0) scale(1)}}
 
   /* creator form */
   .mini{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;}
@@ -1255,6 +1261,9 @@
   <div id="overScreen" class="screen hide">
     <!-- 🏆 이긴 사람은 트로피를 안고 춤추고, 진 사람은 주저앉는다. 둘 다 자기 프로필 얼굴. -->
     <canvas id="celebCanvas" class="hide" width="660" height="380"></canvas>
+    <!-- 💬 말풍선 고르기 — 누르면 내 그림의 말풍선이 바로 바뀌고 상대 화면에도 바뀐다 -->
+    <div class="tag2 hide" id="sayHint" style="margin:-6px 0 -4px;">💬 눌러서 한마디 (상대 화면에도 바로 떠요)</div>
+    <div class="mini hide" id="sayRow" style="width:min(94vw,430px);"></div>
     <div id="battleResult" class="card hide" style="width:min(94vw,460px);"></div>
     <!-- 👀 관전 — 내가 탈락한 뒤 살아 있는 사람의 판을 그대로 받아서 본다 -->
     <div class="card hide" id="watchCard" style="width:min(94vw,330px);">
@@ -1710,15 +1719,27 @@ function playFanfare(){ if(!soundOn||!AC)return; const t0=AC.currentTime;
     const t=t0+dt,o=AC.createOscillator(),g=AC.createGain(); o.type=type; o.frequency.value=f*mul;
     g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.02);
     g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
-    o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+dur+0.02); }); }); }
+    o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+dur+0.02); }); });
+  // 반짝이는 종소리를 얹는다 — 팡파르만 있으면 씩씩하기만 하고 '경쾌'하지 않다
+  [[1568,0.42],[2093,0.52],[2637,0.62],[3136,0.72],[2637,0.86],[3136,0.98]].forEach(([f,dt])=>{
+    const t=t0+dt,o=AC.createOscillator(),g=AC.createGain(); o.type='sine'; o.frequency.value=f;
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.10,t+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+0.42);
+    o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+0.45); }); }
 // 😢 뿌우… — 졌을 때. 미끄러져 내려가는 트롬본.
 function playBoo(){ if(!soundOn||!AC)return; const t=AC.currentTime;
-  [[311,0,0.34],[277,0.32,0.34],[233,0.64,0.34],[185,0.96,0.85]].forEach(([f,dt,dur])=>{
+  // 미끄러져 내려가는 트롬본 네 음 + 마지막에 낮게 쿵 (패배 효과음의 정석)
+  [[311,0,0.34],[277,0.32,0.34],[233,0.64,0.34],[185,0.96,0.95]].forEach(([f,dt,dur])=>{
     const o=AC.createOscillator(),g=AC.createGain(); o.type='sawtooth';
-    o.frequency.setValueAtTime(f,t+dt); o.frequency.exponentialRampToValueAtTime(f*0.88,t+dt+dur);
+    o.frequency.setValueAtTime(f,t+dt); o.frequency.exponentialRampToValueAtTime(f*0.86,t+dt+dur);
     g.gain.setValueAtTime(0.0001,t+dt); g.gain.exponentialRampToValueAtTime(0.16,t+dt+0.05);
     g.gain.exponentialRampToValueAtTime(0.0001,t+dt+dur);
-    o.connect(g);g.connect(AC.destination);o.start(t+dt);o.stop(t+dt+dur+0.02); }); }
+    o.connect(g);g.connect(AC.destination);o.start(t+dt);o.stop(t+dt+dur+0.02); });
+  const o=AC.createOscillator(),g=AC.createGain(); o.type='sine';
+  o.frequency.setValueAtTime(120,t+1.55); o.frequency.exponentialRampToValueAtTime(48,t+2.05);
+  g.gain.setValueAtTime(0.0001,t+1.55); g.gain.exponentialRampToValueAtTime(0.22,t+1.60);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+2.10);
+  o.connect(g);g.connect(AC.destination);o.start(t+1.55);o.stop(t+2.12); }
 $('soundBtn').addEventListener('click',toggleSound);
 // ================= BGM =================
 // 두 곡을 쓴다.
@@ -3302,11 +3323,15 @@ function doCreateCustom(cost){
 let toastTimer=null;
 // 판 위에 살짝 떴다 사라지는 알림. toast 와 달리 여러 개가 쌓일 수 있고(4명이면 셋이
 // 연달아 죽는다), 손가락을 통과시켜서 게임을 끊지 않는다.
-function pnote(msg){ const w=$('pnotes'); if(!w) return;
-  const d=document.createElement('div'); d.className='pnote'; d.textContent=msg;
+// stay=true 면 지우지 않는다 — 누가 탈락했는지는 판이 끝날 때까지 남아 있어야
+// "몇 명 남았지?" 를 다시 세지 않아도 된다. (판이 끝나면 gameOver 가 비운다)
+function pnote(msg,stay){ const w=$('pnotes'); if(!w) return null;
+  const d=document.createElement('div'); d.className='pnote'+(stay?' stay':'');
+  d.textContent=msg;
   w.appendChild(d);
-  while(w.childElementCount>3) w.removeChild(w.firstElementChild);   // 화면을 덮지 않게
-  setTimeout(()=>{ if(d.parentNode) d.parentNode.removeChild(d); },1700); }
+  while(w.childElementCount>4) w.removeChild(w.firstElementChild);   // 화면을 덮지 않게
+  if(!stay) setTimeout(()=>{ if(d.parentNode) d.parentNode.removeChild(d); },1700);
+  return d; }
 function toast(msg){ const t=$('toast'); t.textContent=msg;
   t.classList.toggle('low',!!running&&!paused); t.classList.add('show'); if(toastTimer)clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),1900); }
 const DAILY_FIRST=40, DAILY_STREAK=100;   // 첫날 / 연속 출석 보너스
@@ -3833,7 +3858,7 @@ function gameOver(){
   const bm=battleMode; battleMode=null; gspawn=null;
   $('battleResult').classList.add('hide'); $('overNickCard').classList.add('hide');
   // 지난 판의 축하 그림·관전 칸을 지운다 — 결과가 정해지면 아래에서 다시 켠다
-  lastBattle=null; celebStop(); $('celebCanvas').classList.add('hide'); watchStop();
+  lastBattle=null; celebStop(); $('celebCanvas').classList.add('hide'); buildSayRow(); watchStop();
   $('sendChBtn').disabled=false; $('sendChBtn').textContent='🎯 이 점수로 도전장 보내기';
   // 상대가 던진 젤리 때문에 판이 갈라지므로 대전 판은 도전장으로 재현할 수 없다
   $('sendChBtn').classList.toggle('hide',wasNet);
@@ -3913,7 +3938,7 @@ function buildHelp(){
       hrow('🍡','혼자 하기','기록에 도전해요. <b>산 아이템은 여기서만</b> 쓸 수 있어요.')
      +hrow('⚔️','실시간 던전','같은 판을 여러 명이 같이 해요. 목숨이 0이면 탈락이고, <b>마지막까지 살아남은 사람이 1등</b>. 젤리를 터트리면 게이지가 차고, 그걸로 상대를 방해해요 (🎒 아이템 설명서 참고).')
      +hrow('👀','탈락한 뒤 관전','내가 먼저 죽으면 <b>아직 하는 사람의 화면</b>을 그대로 볼 수 있어요. 여러 명이 남았으면 이름을 눌러 골라 봐요.')
-     +hrow('🏆','이기면 춤춰요','판이 끝나면 이긴 사람은 트로피를 안고 춤추고, 진 사람은 주저앉는 그림이 떠요. <b>📤 결과 공유</b>를 누르면 그 그림을 그대로 친구에게 보낼 수 있어요.')
+     +hrow('🏆','이기면 춤춰요','판이 끝나면 그림이 떠요 — 이긴 사람은 트로피를 들거나 깡총 뛰거나 메롱하거나 브이를 하고, 진 사람은 팔짱 끼고 흥! 하거나 발을 구르거나 엉엉 울어요 (판마다 달라져요). <b>💬 한마디</b>를 누르면 말풍선이 바로 바뀌고 <b>상대 화면에도</b> 떠요. <b>📤 결과 공유</b>로 그 그림을 친구에게 보낼 수 있어요.')
      +hrow('🎯','던지기 게임','한 사람은 젤리를 던지고, 한 사람은 터트려요. 역할을 바꿔 가며 겨뤄요.')
      +hrow('🤖','AI와 대결','인터넷이 없어도 바로 붙을 수 있어요. 이기면 코인을 줘요.')
      +hrow('📮','도전장','내가 한 판을 그대로 친구에게 보내요. 같은 젤리로 점수를 겨뤄요.')
@@ -4762,6 +4787,13 @@ function netOnMsg(m){
     if(throwerAlive){ popStat={score:m.score|0,lives:m.lives|0,combo:m.combo||1};
       if(m.level) level=m.level|0; }   // 미러 테마를 상대 화면과 맞춘다
     else updateFoeHud(); }
+  else if(m.t==='say'){                                          // 💬 결과 그림의 말풍선
+    // 남이 보낸 것은 '몇 번째 말'뿐이다. 그 사람이 선 쪽만 바꿔 준다.
+    if(!lastBattle) return;
+    const side=(m.side==='lose')?'lose':'win';
+    if(lastBattle[side]&&lastBattle[side].id&&lastBattle[side].id!==pid) return;   // 남의 자리는 못 바꾼다
+    if(side===mySide()) return;                                  // 내 말풍선은 내가만 바꾼다
+    sayApply(side,m.i); }
   else if(m.t==='view'){                                         // 👀 관전: 상대 판의 지금 모습
     const p=peerUpsert(pid,{}); p.view=viewSafe(m); p.viewAt=performance.now(); }
   else if(m.t==='jkind'){ /* 예약 */ }
@@ -4773,7 +4805,7 @@ function netOnMsg(m){
     if(netMode&&(m.reason||'')==='dead'){
       const nm=(net.peers[pid]&&net.peers[pid].name)||'친구';
       const left=(net.mp?mpAlive().length:0);
-      if(running) pnote('💀 '+nm+' 탈락!'+(net.mp&&left>1?(' · '+left+'명 남음'):''));
+      if(running) pnote('💀 '+nm+' 탈락!'+(net.mp&&left>1?(' · '+left+'명 남음'):''),true);
       else toast('💀 '+nm+'님이 탈락했어요');
     }
     net.foeOver=true; net.foeScore=m.score|0; net.foeReason=m.reason||'time';
@@ -5840,8 +5872,8 @@ function mpResolve(){
   // 그래야 이긴 쪽에서도 약을 올릴 수 있고, 진 쪽에서도 자기 얼굴이 주저앉는다.
   const face=p=>p.me?myFace():peerFace(p.id);
   const w=rank[0], l=(mine===1)?rank[1]:rank[mine-1];
-  battleSet(w&&{name:w.name,ch:face(w),score:w.score|0},
-            l&&{name:l.name,ch:face(l),score:l.score|0},
+  battleSet(w&&{name:w.name,ch:face(w),score:w.score|0,id:w.id},
+            l&&{name:l.name,ch:face(l),score:l.score|0,id:l.id},
             (mine===1)?'win':'lose','⚔️ 실시간 던전 '+rank.length+'명');
   // 살아남은 사람이 점수와 무관하게 위다. 그래서 생존/탈락을 둘 다 적어야
   // "2등이 점수가 더 높은데?" 하고 헷갈리지 않는다.
@@ -5865,23 +5897,70 @@ function peerFace(id){
   if(net.foe&&net.foe.char) return charSafe(net.foe.char);
   return charSafe(null);
 }
+// 말풍선에 넣을 말. 남이 보낸 글자를 그리지 않고 '몇 번째 말'만 주고받는다 —
+// 그러면 이상한 글자가 들어올 길이 아예 없다.
+const SAY_WIN=['메롱~ 😝','내가 이겼다~!! 🏆','한 판 더 해도 내가 이김~! 😎','잘했어 👏'];
+const SAY_LOSE=['분하다… 😤','다시 해! 🔥','한 판 더! 💪','축하해 🎉'];
+const WIN_SAY0={cup:'빰빠라빰빰~ 🎺',jump:'얏호! 신난다 🎉',tongue:'메롱~ 😝',v:'이겼지~ ✌️',calm:'좋았어! 😊'};
+const LOSE_SAY0={cross:'흥! 분하다 😤',stomp:'아 진짜~ 😖',cry:'으앙… 😭'};
 function battleSet(win,lose,mine,what){
   // 이름은 남이 보낸 것이다. 캔버스 글자라 코드가 새지는 않지만, 길면 그림이 깨진다.
-  const fix=p=>p&&{name:String(p.name||'친구').slice(0,10),ch:p.ch,score:p.score|0};
-  lastBattle=(win&&lose)?{win:fix(win),lose:fix(lose),mine:mine,what:what||''}:null;
+  const fix=p=>p&&{name:String(p.name||'친구').slice(0,10),ch:p.ch,score:p.score|0,id:p.id||''};
+  if(!(win&&lose)){ lastBattle=null; return; }
+  // 몸짓은 판마다 다르게 뽑는다 — 같은 그림만 나오면 재미가 없다.
+  // 한 번 뽑아 두어야 공유 그림도 화면과 같은 모습이 된다.
+  const wp=WIN_POSES[(Math.random()*WIN_POSES.length)|0];
+  const lp=LOSE_POSES[(Math.random()*LOSE_POSES.length)|0];
+  lastBattle={win:fix(win),lose:fix(lose),mine:mine,what:what||'',wp:wp,lp:lp};
+  lastBattle.win.say=(mine==='draw')?WIN_SAY0.calm:WIN_SAY0[wp];
+  lastBattle.lose.say=(mine==='draw')?WIN_SAY0.calm:LOSE_SAY0[lp];
+}
+// 내가 선 쪽 — 무승부면 왼쪽(이긴 자리)에 내 얼굴이 있다
+function mySide(){ return (lastBattle&&lastBattle.mine==='lose')?'lose':'win'; }
+// 말풍선 고르는 칩. 누르면 내 그림의 말풍선이 바로 바뀌고, 상대 화면에도 같이 바뀐다.
+function buildSayRow(){
+  const row=$('sayRow'), hint=$('sayHint'); if(!row) return;
+  if(!lastBattle){ row.innerHTML=''; row.classList.add('hide');
+    if(hint) hint.classList.add('hide'); return; }
+  const list=(mySide()==='win')?SAY_WIN:SAY_LOSE;
+  const now=lastBattle[mySide()].say;
+  row.innerHTML=''; row.classList.remove('hide');
+  if(hint) hint.classList.remove('hide');
+  list.forEach((txt,i)=>{ const b=document.createElement('button');
+    b.className='minichip'+(now===txt?' on':''); b.textContent=txt;
+    b.onclick=()=>saySend(i); row.appendChild(b); });
+}
+function sayApply(side,i){
+  if(!lastBattle||!lastBattle[side]) return;
+  const list=(side==='win')?SAY_WIN:SAY_LOSE;
+  const txt=list[i|0]; if(!txt) return;                       // 모르는 번호는 버린다
+  lastBattle[side].say=txt;
+  // 그림이 멈춰 있어도(18초 지나면 멈춘다) 바꾼 말이 바로 보여야 한다
+  const cv=$('celebCanvas');
+  if(cv&&!cv.classList.contains('hide')){
+    const g=cv.getContext('2d'); g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,cv.width,cv.height);
+    drawCeleb(g,cv.width,cv.height,celebT,lastBattle,false); }
+  buildSayRow();
+}
+function saySend(i){
+  const side=mySide();
+  sayApply(side,i);
+  netSend({t:'say',side:side,i:i|0});      // 상대 화면의 내 말풍선도 바뀐다
+  playSquish(2);
 }
 // 1:1(던전·던지기·AI) 결과를 그림에 넣는다. mine='win'|'lose'|'draw'
 function battleTwo(mine,myName,foeName,what){
-  const me={name:myName,ch:myFace(),score:net.myScore|0};
-  const foe={name:foeName,ch:peerFace(net.foe&&net.foe.id),score:net.foeScore|0};
+  const me={name:myName,ch:myFace(),score:net.myScore|0,id:myId};
+  const foe={name:foeName,ch:peerFace(net.foe&&net.foe.id),score:net.foeScore|0,
+    id:(net.foe&&net.foe.id)||''};
   if(mine==='lose') battleSet(foe,me,'lose',what);
   else battleSet(me,foe,mine,what);     // 무승부는 내 얼굴을 왼쪽에 둔다
 }
 // 결과가 정해졌으면 그림을 띄우고 소리를 낸다. 기다리는 중이면 감춘다.
 function celebShow(){
   const cv=$('celebCanvas'); if(!cv) return;
-  if(!lastBattle){ cv.classList.add('hide'); celebStop(); return; }
-  cv.classList.remove('hide');
+  if(!lastBattle){ cv.classList.add('hide'); celebStop(); buildSayRow(); return; }
+  cv.classList.remove('hide'); buildSayRow();
   if(!celebOn){ celebOn=true; celebT=0;
     if(lastBattle.mine==='win') playFanfare(); else if(lastBattle.mine==='lose') playBoo();
     celebRaf=requestAnimationFrame(celebLoop); }
@@ -5899,65 +5978,235 @@ function celebLoop(){
 }
 // ---- 몸짓 ----
 // 캐릭터는 원래 얼굴만 있다(drawAvatar). 팔·다리·몸통을 여기서만 덧붙인다 —
-// 게임 화면의 캐릭터는 그대로 두고, 결과 그림에서만 춤추고 주저앉게 하려고.
+// 게임 화면의 캐릭터는 그대로 두고, 결과 그림에서만 춤추고 분해하게 하려고.
+//
+// 두 번 고쳤다. ① 팔 0.18R·다리 0.24R 은 얼굴(폭 2R)에 비해 젓가락이었다.
+// ② 몸통을 얼굴 바로 아래(0.88R)에 두니 얼굴에 거의 다 가려서 '얼굴에 발만 달린 것'
+// 처럼 보였다. 그래서 어깨·몸통·엉덩이를 아래로 내리고(SH·BODY·HIP) 몸을 두툼하게 했다.
+const SH=1.04, BODY=1.18, HIP=1.52;      // 어깨 · 몸통 중심 · 엉덩이 (R 배수)
+// 종류마다 몸매가 다르다 — 곰은 통통하고 팔다리가 짧고, 토끼는 다리가 길고 발이 크고,
+// 고양이·강아지는 꼬리가 있고, 여자아이는 치마를 입는다.
+const POSE={
+  cat:  {bw:0.60,bh:0.48,arm:0.30,leg:0.34,legL:2.04,foot:0.17,tail:'cat'},
+  dog:  {bw:0.68,bh:0.52,arm:0.34,leg:0.38,legL:1.96,foot:0.19,tail:'dog'},
+  bunny:{bw:0.58,bh:0.46,arm:0.29,leg:0.33,legL:2.18,foot:0.22,tail:'puff'},
+  bear: {bw:0.76,bh:0.56,arm:0.38,leg:0.42,legL:1.90,foot:0.20},
+  human:{bw:0.62,bh:0.50,arm:0.31,leg:0.35,legL:2.08,foot:0.18},
+  girl: {bw:0.60,bh:0.50,arm:0.30,leg:0.34,legL:2.08,foot:0.18,skirt:true},
+};
+function pfx(kind){ return POSE[kind]||POSE.cat; }
 function limb(g,x1,y1,x2,y2,wd,col){ g.strokeStyle=col;g.lineWidth=wd;g.lineCap='round';
   g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke(); }
 function arm(g,x1,y1,cx,cy,x2,y2,wd,col){ g.strokeStyle=col;g.lineWidth=wd;g.lineCap='round';
   g.beginPath();g.moveTo(x1,y1);g.quadraticCurveTo(cx,cy,x2,y2);g.stroke(); }
-// 🏆 이긴 사람 — 제자리에서 뛰고 몸을 흔들며 트로피를 머리 위로 든다.
-// 팔은 얼굴보다 먼저 그린다(얼굴에 가리게). 대신 바깥으로 크게 휘어서 팔이 보이게 한다.
-function poseWin(g,R,cfg,t,noCup){
-  const hop=Math.abs(Math.sin(t*0.11))*R*0.30, sway=Math.sin(t*0.11)*0.13, step=Math.sin(t*0.22);
-  const col=cfg.color, dark=shade(col,-24), mid=shade(col,-12);
-  g.save(); g.translate(0,-hop); g.rotate(sway);
-  limb(g,-R*0.22,R*1.00,-R*0.46+step*R*0.26,R*1.58-Math.max(0,step)*R*0.18,R*0.24,dark);
-  limb(g, R*0.22,R*1.00, R*0.46+step*R*0.26,R*1.58-Math.max(0,-step)*R*0.18,R*0.24,dark);
-  g.fillStyle=mid; g.beginPath(); g.ellipse(0,R*0.88,R*0.44,R*0.33,0,0,7); g.fill();
-  // 이차곡선의 최대 x 는 (x1+2cx+x2)/4 다. 조절점을 1.4R 에 두면 최대가 0.98R —
-  // 얼굴(≈1.0R) 안이라 팔이 통째로 안 보였다. 2.2R 로 밀어 바깥으로 휘게 한다.
-  arm(g,-R*0.46,R*0.78,-R*2.20,R*0.02,-R*0.52,-R*1.34,R*0.18,dark);
-  arm(g, R*0.46,R*0.78, R*2.20,R*0.02, R*0.52,-R*1.34,R*0.18,dark);
-  // 손 — 트로피 양옆에 보이게(얼굴보다 위) 두면 '들고 있다'로 읽힌다
-  g.fillStyle=col;
-  [-1,1].forEach(sx=>{ g.beginPath(); g.arc(sx*R*0.52,-R*1.34,R*0.13,0,7); g.fill(); });
-  drawAvatar(g,0,0,R,cfg,noCup?'happy':'wow',t);
-  if(!noCup){
-    g.save(); g.translate(0,-R*1.34+Math.sin(t*0.16)*R*0.06); g.rotate(Math.sin(t*0.13)*0.11);
-    g.font=Math.round(R*0.95)+'px sans-serif'; g.textAlign='center'; g.textBaseline='middle';
-    g.fillText('🏆',0,0); g.restore(); }
-  // 신난 표시 — 머리 옆에서 튀는 음표·반짝임
-  g.font=Math.round(R*0.34)+'px sans-serif'; g.textAlign='center'; g.textBaseline='middle';
-  [['🎵',-R*1.5,-R*0.5,0.9],['✨',R*1.5,-R*0.7,1.3],['🎶',R*1.6,R*0.3,1.7]].forEach(([em,x,y,ph])=>{
-    g.globalAlpha=0.55+0.45*Math.sin(t*0.12+ph);
-    g.fillText(em,x,y+Math.sin(t*0.09+ph)*R*0.12); });
-  g.globalAlpha=1;
+function hand(g,x,y,r,col){ g.fillStyle=col; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); }
+// 꼬리 — 몸통보다 먼저 그린다(엉덩이 뒤에서 나오게)
+function poseTail(g,R,cfg,t){
+  const b=pfx(cfg.kind); if(!b.tail) return;
+  const col=cfg.color, dark=shade(col,-26), sw=Math.sin(t*0.13);
+  if(b.tail==='cat'){
+    g.strokeStyle=dark; g.lineWidth=R*0.18; g.lineCap='round';
+    g.beginPath(); g.moveTo(R*0.44,R*(HIP-0.06));
+    g.quadraticCurveTo(R*1.32,R*(HIP-0.10)+sw*R*0.10,R*1.16,R*(BODY-0.52)+sw*R*0.14); g.stroke();
+  } else if(b.tail==='dog'){
+    g.strokeStyle=dark; g.lineWidth=R*0.21; g.lineCap='round';
+    g.beginPath(); g.moveTo(R*0.50,R*(HIP-0.08));
+    g.quadraticCurveTo(R*1.10,R*(HIP-0.14),R*1.02+sw*R*0.16,R*(BODY-0.32)); g.stroke();
+  } else {                                   // 토끼 — 동그란 솜꼬리
+    g.fillStyle=mixHex(col,'#ffffff',0.55);
+    g.beginPath(); g.arc(R*0.64,R*(HIP-0.04),R*0.20,0,7); g.fill();
+  }
+}
+// 서 있는 몸통·다리·발(·치마). step=-1~1 이면 발을 번갈아 든다.
+// 다리를 먼저 그려야 밑동이 몸통에 묻힌다.
+function bodyStand(g,R,cfg,t,step,tuck){
+  const b=pfx(cfg.kind), col=cfg.color, dark=shade(col,-26), mid=shade(col,-12);
+  poseTail(g,R,cfg,t);
+  const hipX=R*0.30;
+  [-1,1].forEach(s=>{
+    const kick=(s>0?step:-step);
+    const fx=s*hipX+kick*R*0.24;
+    const fy=R*b.legL - Math.max(0,kick)*R*0.26 - (tuck||0)*R*0.40;
+    limb(g,s*hipX,R*HIP,fx,fy,R*b.leg,dark);
+    g.fillStyle=mid; g.beginPath();
+    g.ellipse(fx+s*R*0.03,fy+R*0.03,R*b.foot,R*b.foot*0.66,0,0,7); g.fill();
+  });
+  g.fillStyle=mid; g.beginPath(); g.ellipse(0,R*BODY,R*b.bw,R*b.bh,0,0,7); g.fill();
+  // 배 — 밝은 부분이 있어야 몸통이 덩어리로 안 보인다
+  g.fillStyle=hexA(mixHex(col,'#ffffff',0.55),0.6);
+  g.beginPath(); g.ellipse(0,R*(BODY+0.06),R*b.bw*0.58,R*b.bh*0.56,0,0,7); g.fill();
+  if(b.skirt){                              // 여자아이 — 치마
+    g.fillStyle=mixHex(col,'#ffffff',0.28);
+    g.beginPath(); g.moveTo(-R*b.bw*0.90,R*(BODY+0.06)); g.lineTo(R*b.bw*0.90,R*(BODY+0.06));
+    g.lineTo(R*b.bw*1.26,R*(HIP+0.18)); g.lineTo(-R*b.bw*1.26,R*(HIP+0.18)); g.closePath(); g.fill();
+  }
+}
+// 팔 — 자세마다 다르다. 위로 드는 팔은 얼굴보다 먼저 그리므로 바깥으로 휘어야 보인다.
+// (이차곡선의 최대 x 는 (x1+2cx+x2)/4 다. 조절점을 1.4R 에 두면 최대가 0.98R —
+//  얼굴(≈1.0R) 안이라 팔이 통째로 안 보였다.)
+function armsUp(g,R,cfg,t,spread){
+  const b=pfx(cfg.kind), col=cfg.color, dark=shade(col,-26), wob=Math.sin(t*0.18)*R*0.08;
+  const hx=R*(spread?1.00:0.54);
+  [-1,1].forEach(s=>{
+    arm(g,s*R*0.52,R*SH,s*R*2.30,R*0.30,s*hx,-R*1.28+s*wob,R*b.arm,dark);
+    hand(g,s*hx,-R*1.28+s*wob,R*b.arm*0.62,col); });
+}
+function armsHip(g,R,cfg,t){                 // 허리에 손 (메롱·자신만만)
+  const b=pfx(cfg.kind), col=cfg.color, dark=shade(col,-26), hx=R*(b.bw+0.10);
+  [-1,1].forEach(s=>{
+    arm(g,s*R*0.52,R*SH,s*R*1.60,R*(SH+0.10),s*hx,R*(BODY+0.22),R*b.arm,dark);
+    hand(g,s*hx,R*(BODY+0.22),R*b.arm*0.60,col); });
+}
+// 몸통 '앞'에 오는 팔은 몸통과 같은 색이면 통째로 묻힌다(팔짱이 안 보였다).
+// 진한 팔을 깔고 그 위에 밝은 팔을 얇게 얹어 테두리처럼 보이게 한다.
+function armFront(g,x1,y1,cx,cy,x2,y2,wd,col){
+  arm(g,x1,y1,cx,cy,x2,y2,wd,shade(col,-42));
+  arm(g,x1,y1,cx,cy,x2,y2,wd*0.62,shade(col,-4));
+}
+function armsCross(g,R,cfg,t){               // 팔짱 — 가슴 앞에서 엇갈린다 (몸통 위에 그린다)
+  const b=pfx(cfg.kind), col=cfg.color, w=R*b.arm*1.1;
+  [-1,1].forEach(s=>{
+    armFront(g,s*R*0.60,R*(SH+0.04),s*R*1.20,R*(BODY-0.04),-s*R*0.38,R*(BODY+0.06),w,col); });
+  [-1,1].forEach(s=>{ hand(g,-s*R*0.38,R*(BODY+0.06),w*0.40,shade(col,-42));
+    hand(g,-s*R*0.38,R*(BODY+0.06),w*0.30,shade(col,6)); });
+}
+function armsFist(g,R,cfg,t){                // 주먹 쥐고 아래로 (발 구르기)
+  const b=pfx(cfg.kind), col=cfg.color, sh=Math.sin(t*0.5)*R*0.07, w=R*b.arm;
+  [-1,1].forEach(s=>{
+    armFront(g,s*R*0.56,R*SH,s*R*1.56,R*(BODY+0.10),s*R*0.94,R*(HIP+0.12)+sh*s,w,col);
+    hand(g,s*R*0.94,R*(HIP+0.12)+sh*s,w*0.72,shade(col,-42));
+    hand(g,s*R*0.94,R*(HIP+0.12)+sh*s,w*0.56,shade(col,6)); });
+}
+function armsRub(g,R,cfg,t){                 // 두 손으로 눈을 비빈다 (엉엉)
+  const b=pfx(cfg.kind), col=cfg.color, dark=shade(col,-26), rub=Math.sin(t*0.45)*R*0.07;
+  [-1,1].forEach(s=>{
+    arm(g,s*R*0.52,R*SH,s*R*1.72,R*0.66,s*R*0.94,-R*0.04+rub*s,R*b.arm,dark);
+    hand(g,s*R*0.94,-R*0.04+rub*s,R*b.arm*0.74,col); });
+}
+// ✌️ 브이 — 손가락 두 개. 작아서 손만 그리면 안 보인다.
+function handV(g,x,y,R,col,rot){
+  g.save(); g.translate(x,y); g.rotate(rot||0);
+  g.strokeStyle=col; g.lineWidth=R*0.11; g.lineCap='round';
+  g.beginPath(); g.moveTo(-R*0.05,0); g.lineTo(-R*0.19,-R*0.40); g.stroke();
+  g.beginPath(); g.moveTo( R*0.05,0); g.lineTo( R*0.19,-R*0.40); g.stroke();
+  hand(g,0,0,R*0.19,col);
   g.restore();
 }
-// 😢 진 사람 — OTL. 머리를 푹 숙이고 무릎을 꿇고, 어깨가 분해서 떨린다.
-function poseLose(g,R,cfg,t){
-  const sh=Math.sin(t*0.6)*R*0.03, slump=Math.sin(t*0.05)*R*0.03;
-  const col=shade(cfg.color,-6), dark=shade(cfg.color,-28), mid=shade(cfg.color,-16);
-  g.save(); g.translate(sh,slump);
-  // 등·엉덩이 (오른쪽으로 올라간다) → L
-  g.fillStyle=mid; g.save(); g.translate(R*0.86,R*0.72); g.rotate(-0.30);
-  g.beginPath(); g.ellipse(0,0,R*0.56,R*0.33,0,0,7); g.fill(); g.restore();
-  // 무릎 → 바닥
-  limb(g,R*1.16,R*0.66,R*1.50,R*1.34,R*0.26,dark);
-  limb(g,R*0.96,R*0.84,R*1.22,R*1.38,R*0.24,shade(cfg.color,-36));
-  // 팔은 바닥에 축 늘어뜨린다 (OTL 의 'O' 앞으로 뻗은 팔)
-  arm(g,R*0.34,R*0.80,-R*0.34,R*1.34,-R*1.06,R*1.30,R*0.19,dark);
-  // 머리 — 앞으로 푹
-  g.save(); g.translate(-R*0.06,R*0.16); g.rotate(0.40);
-  drawAvatar(g,0,0,R*0.94,cfg,'sad',t*0.25); g.restore();
-  // 💧 눈물 두 방울 — 떨어지고 다시 맺힌다
-  g.font=Math.round(R*0.30)+'px sans-serif'; g.textAlign='center'; g.textBaseline='middle';
-  [0,1].forEach(i=>{ const ph=(t*0.02+i*0.5)%1;
-    g.globalAlpha=1-ph*ph;
-    g.fillText('💧',-R*0.46+i*R*0.42,R*0.44+ph*R*1.0); });
+// 😝 메롱 — 얼굴 위에 혀를 덧그린다 (drawAvatar 에는 혀 표정이 없다)
+function tongueOn(g,R,t){
+  const wig=Math.sin(t*0.3)*R*0.03;
+  g.fillStyle='#ff6f95';
+  g.beginPath(); g.ellipse(R*0.05+wig,R*0.42,R*0.16,R*0.13,0,0,7); g.fill();
+  g.fillStyle='rgba(255,255,255,0.45)';
+  g.beginPath(); g.ellipse(R*0.02+wig,R*0.39,R*0.06,R*0.035,0,0,7); g.fill();
+}
+// 💧 눈물 — 두 줄기로 흐르고 방울이 떨어진다
+function tears(g,R,t,big){
+  const n=big?3:2;
+  g.fillStyle='rgba(120,190,255,0.85)';
+  [-1,1].forEach(s=>{
+    g.beginPath(); g.ellipse(s*R*0.42,R*0.20,R*0.075,R*0.22,0,0,7); g.fill();
+    for(let i=0;i<n;i++){ const ph=((t*0.024)+i/n)%1;
+      g.globalAlpha=1-ph*ph;
+      g.beginPath(); g.ellipse(s*R*0.42,R*0.40+ph*R*(big?1.4:1.0),R*0.08,R*0.12,0,0,7); g.fill(); }
+    g.globalAlpha=1; });
+}
+// 💨 흥! — 콧김
+function huff(g,R,t){
+  g.font=Math.round(R*0.34)+'px sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+  [-1,1].forEach(s=>{ const ph=((t*0.03)+(s>0?0.5:0))%1;
+    g.globalAlpha=0.75*(1-ph);
+    g.fillText('💨',s*(R*0.66+ph*R*0.5),R*0.34-ph*R*0.24); });
   g.globalAlpha=1;
-  g.fillStyle='rgba(90,60,80,0.42)';
-  g.font='900 '+Math.round(R*0.40)+'px system-ui,sans-serif';
-  g.fillText('OTL',-R*1.20,-R*1.38);
+}
+// 발밑 먼지 — 발 구르기
+function dust(g,R,t){
+  g.fillStyle='rgba(150,120,140,0.4)';
+  for(let i=0;i<4;i++){ const ph=((t*0.05)+i/4)%1, s=(i%2?1:-1);
+    g.globalAlpha=0.45*(1-ph);
+    g.beginPath(); g.arc(s*R*(0.34+ph*0.9),R*(2.02)-ph*R*0.22,R*(0.11+ph*0.16),0,7); g.fill(); }
+  g.globalAlpha=1;
+}
+// 🎉 신난 표시 / 분한 표시
+function joyMarks(g,R,t,ems){
+  g.font=Math.round(R*0.34)+'px sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+  ems.forEach(([em,x,y,ph])=>{ g.globalAlpha=0.55+0.45*Math.sin(t*0.12+ph);
+    g.fillText(em,R*x,R*y+Math.sin(t*0.09+ph)*R*0.12); });
+  g.globalAlpha=1;
+}
+
+// 🏆 이긴 사람 — 네 가지 중 하나 (트로피 · 깡총 · 메롱 · 브이). calm 은 무승부용.
+const WIN_POSES=['cup','jump','tongue','v'];
+function poseWin(g,R,cfg,t,how){
+  how=(WIN_POSES.indexOf(how)>=0||how==='calm')?how:'cup';
+  const b=pfx(cfg.kind), col=cfg.color;
+  const beat=(how==='jump')?0.16:0.11;
+  const hop=Math.abs(Math.sin(t*beat))*R*((how==='jump')?0.52:0.28);
+  const sway=Math.sin(t*beat)*((how==='tongue')?0.09:0.12);
+  const step=(how==='jump')?0:Math.sin(t*0.22)*((how==='tongue'||how==='v')?0.5:1);
+  const tuck=(how==='jump')?Math.abs(Math.sin(t*beat)):0;     // 뛰면 다리를 접는다
+  g.save(); g.translate(0,-hop); g.rotate(sway);
+  bodyStand(g,R,cfg,t,step,tuck);
+  if(how==='cup')         armsUp(g,R,cfg,t,false);
+  else if(how==='jump')   armsUp(g,R,cfg,t,true);
+  else if(how==='tongue') armsHip(g,R,cfg,t);
+  else if(how==='v'){                       // 한 손은 브이, 한 손은 허리
+    const dark=shade(col,-26), hx=R*(b.bw+0.10);
+    arm(g,-R*0.52,R*SH,-R*1.60,R*(SH+0.10),-hx,R*(BODY+0.22),R*b.arm,dark);
+    hand(g,-hx,R*(BODY+0.22),R*b.arm*0.60,col);
+    arm(g,R*0.52,R*SH,R*2.10,R*0.40,R*1.02,-R*1.02,R*b.arm,dark);
+  }
+  else armsUp(g,R,cfg,t,true);                                  // calm
+  drawAvatar(g,0,0,R,cfg,(how==='tongue')?'happy':'wow',t);
+  if(how==='cup'){
+    g.save(); g.translate(0,-R*1.30+Math.sin(t*0.16)*R*0.06); g.rotate(Math.sin(t*0.13)*0.11);
+    g.font=Math.round(R*0.95)+'px sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+    g.fillText('🏆',0,0); g.restore();
+    joyMarks(g,R,t,[['🎵',-1.5,-0.5,0.9],['✨',1.5,-0.7,1.3],['🎶',1.6,0.3,1.7]]);
+  } else if(how==='jump'){
+    joyMarks(g,R,t,[['🎉',-1.6,-0.3,0.4],['✨',1.6,-0.5,1.1],['🎊',1.55,0.6,1.9],['⭐',-1.5,-1.1,2.4]]);
+  } else if(how==='tongue'){
+    tongueOn(g,R,t);
+    joyMarks(g,R,t,[['😝',1.6,-0.9,0.7],['✨',-1.6,-0.6,1.5]]);
+  } else if(how==='v'){
+    handV(g,R*1.02,-R*1.02,R,col,0.25);
+    joyMarks(g,R,t,[['✨',-1.6,-0.8,0.6],['⭐',1.75,0.4,1.4]]);
+  } else {
+    joyMarks(g,R,t,[['🎵',-1.5,-0.6,0.9],['✨',1.5,-0.7,1.3]]);
+  }
+  g.restore();
+}
+// 😤 진 사람 — 세 가지 중 하나 (팔짱 끼고 흥 · 발 구르기 · 엉엉 울기).
+// OTL(엎어지는 자세)은 없앴다 — 보기 안 좋다고 해서.
+const LOSE_POSES=['cross','stomp','cry'];
+function poseLose(g,R,cfg,t,how){
+  how=(LOSE_POSES.indexOf(how)>=0)?how:'cross';
+  g.save();
+  if(how==='cross'){
+    const sh=Math.sin(t*0.42)*R*0.02;
+    g.translate(sh,0); g.rotate(-0.08);
+    bodyStand(g,R,cfg,t,Math.sin(t*0.10)*0.15,0);
+    armsCross(g,R,cfg,t);
+    drawAvatar(g,0,0,R,cfg,'sad',t*0.3);
+    huff(g,R,t);
+    joyMarks(g,R,t,[['😤',1.55,-0.95,0.5]]);
+  } else if(how==='stomp'){
+    const beat=0.42, up=Math.max(0,Math.sin(t*beat)), shake=Math.sin(t*1.1)*R*0.035;
+    g.translate(shake,-up*R*0.06);
+    bodyStand(g,R,cfg,t,Math.sin(t*beat)*1.0,0);
+    armsFist(g,R,cfg,t);
+    drawAvatar(g,0,0,R,cfg,'ouch',t*0.5);
+    dust(g,R,t);
+    joyMarks(g,R,t,[['💥',-1.5,1.6,0.2],['😖',1.55,-0.95,0.9]]);
+  } else {
+    const bob=Math.sin(t*0.09)*R*0.05;
+    g.translate(0,bob);
+    bodyStand(g,R,cfg,t,0,0);
+    armsRub(g,R,cfg,t);
+    drawAvatar(g,0,0,R,cfg,'sad',t*0.25);
+    tears(g,R,t,true);
+    joyMarks(g,R,t,[['😭',1.6,-0.95,0.6],['💧',-1.6,-0.5,1.4]]);
+  }
   g.restore();
 }
 // 말풍선 — 이긴 쪽은 약을 올리고, 진 쪽은 분해한다
@@ -5997,7 +6246,7 @@ function drawCeleb(g,w,h,t,c,still){
   const solo=!c.lose, draw=(c.mine==='draw');
   // 머리 가운데(cy)를 기준으로 잡는다. 발끝은 cy+1.6R, 트로피 꼭대기는 cy-1.9R 이라
   // 제목(h*0.095)·이름(h*0.90)·아래 글(h*0.975)과 겹치지 않는 값을 골랐다.
-  const wx=solo?w*0.5:w*0.295, lx=w*0.73, gy=h*0.60, R=(solo?h*0.175:h*0.145);
+  const wx=solo?w*0.5:w*0.295, lx=w*0.73, gy=h*0.505, R=(solo?h*0.150:h*0.126);
   // 이긴 쪽 뒤로 퍼지는 빛살
   g.save(); g.translate(wx,gy-R*1.2);
   for(let i=0;i<14;i++){ g.rotate(Math.PI*2/14);
@@ -6007,12 +6256,12 @@ function drawCeleb(g,w,h,t,c,still){
   confetti(g,w,h,t);
   // 바닥 그늘
   g.fillStyle='rgba(180,120,160,0.18)';
-  [[wx,R],[lx,R*0.9]].forEach(([x,rr],i)=>{ if(solo&&i)return;
-    g.beginPath(); g.ellipse(x,gy+rr*1.55,rr*0.95,rr*0.20,0,0,7); g.fill(); });
+  [[wx,R],[lx,R*0.96]].forEach(([x,rr],i)=>{ if(solo&&i)return;
+    g.beginPath(); g.ellipse(x,gy+rr*2.18,rr*1.0,rr*0.20,0,0,7); g.fill(); });
   // 이긴 사람 (무승부면 둘 다 신나게 — 진 몸짓을 붙이면 거짓말이 된다)
-  g.save(); g.translate(wx,gy); poseWin(g,R,c.win.ch,t); g.restore();
+  g.save(); g.translate(wx,gy); poseWin(g,R,c.win.ch,t,draw?'calm':(c.wp||'cup')); g.restore();
   if(!solo){ g.save(); g.translate(lx,gy);
-    if(draw) poseWin(g,R*0.94,c.lose.ch,t+30,true); else poseLose(g,R*0.92,c.lose.ch,t);
+    if(draw) poseWin(g,R*0.94,c.lose.ch,t+30,'calm'); else poseLose(g,R*0.96,c.lose.ch,t,c.lp||'cross');
     g.restore(); }
   // 글씨
   const big=Math.round(h*0.082), mid=Math.round(h*0.056), sm=Math.round(h*0.045);
@@ -6024,15 +6273,16 @@ function drawCeleb(g,w,h,t,c,still){
     g.fillText(draw?'🤝 무승부':'😢 패배',lx,h*0.105); }
   // 이름 + 점수
   g.font='900 '+mid+'px system-ui,sans-serif'; g.fillStyle='#5b3550';
-  g.fillText(c.win.name+'  ⭐'+c.win.score,wx,h*0.90);
-  if(!solo){ g.fillStyle='#8a6b7d'; g.fillText(c.lose.name+'  ⭐'+c.lose.score,lx,h*0.90); }
+  g.fillText(c.win.name+'  ⭐'+c.win.score,wx,h*0.885);
+  if(!solo){ g.fillStyle='#8a6b7d'; g.fillText(c.lose.name+'  ⭐'+c.lose.score,lx,h*0.885); }
   // 말풍선 — 트로피·제목과 겹치지 않게 옆으로 비켜 세운다
-  if(!draw){
-    bubble(g,Math.min(w-R*1.5,wx+R*1.85),gy-R*1.30,'빰빠라빰빰~ 🎺',sm,'rgba(255,255,255,0.96)','#e63e72');
-    if(!solo) bubble(g,Math.min(w-R*1.2,lx+R*0.55),gy-R*1.72,'분하다… 😖',sm,'rgba(255,255,255,0.94)','#7c5c8e'); }
+  // 말풍선 — 사람이 고른 말을 쓴다(칩으로 바로 바꾼다). 트로피·제목과 안 겹치게 옆으로.
+  const wsay=(c.win&&c.win.say)||WIN_SAY0[c.wp||'cup'], lsay=(c.lose&&c.lose.say)||LOSE_SAY0[c.lp||'cross'];
+  bubble(g,Math.min(w-R*1.5,wx+R*1.90),gy-R*1.34,wsay,sm,'rgba(255,255,255,0.96)','#e63e72');
+  if(!solo) bubble(g,Math.min(w-R*1.25,lx+R*0.60),gy-R*1.62,lsay,sm,'rgba(255,255,255,0.94)','#7c5c8e');
   if(still){
     g.font='900 '+sm+'px system-ui,sans-serif'; g.fillStyle='rgba(120,80,110,0.78)';
-    g.fillText('🍡 젤리슈팅'+(c.what?(' · '+c.what):''),w/2,h*0.975); }
+    g.fillText('🍡 젤리슈팅'+(c.what?(' · '+c.what):''),w/2,h*0.972); }
   g.restore();
 }
 
@@ -6132,8 +6382,8 @@ function watchDraw(){
 function celebForShare(){
   if(lastBattle) return lastBattle;
   const r=lastRun||{score:score}, m=MODES[(r&&r.mode)||mode]||MODES.normal;
-  return {win:{name:(nick||'나'),ch:myFace(),score:r.score|0},lose:null,mine:'win',
-    what:m.emoji+m.name};
+  return {win:{name:(nick||'나'),ch:myFace(),score:r.score|0,say:'신기록! 🎉'},lose:null,
+    mine:'win',wp:'jump',what:m.emoji+m.name};
 }
 function shareText(){
   const r=lastRun||{mode:mode,score:score}, m=MODES[r.mode]||MODES.normal;
@@ -6557,7 +6807,7 @@ window.__auditEach=function(scan){
       drawCeleb($('celebCanvas').getContext('2d'),660,380,60,lastBattle,false);
       net.ch=net.ch||{}; net.myOver=true; net.mp=true; net.order=[]; net.peers={};
       peerUpsert('p1',{name:'젤리왕',char:{k:'bear',c:'#c9a27a'},over:false});
-      netGame='dungeon'; watchSync(); watchDraw();},
+      netGame='dungeon'; watchSync(); watchDraw(); buildSayRow();},
     acceptScreen:()=>{pendingChallenge={host_name:'젤리왕',host_score:1234,seed:1,mode:'spicy'};openAccept();},
     aiScreen:()=>{openAiScreen();},
   };
