@@ -97,7 +97,27 @@
   #playCol{position:relative;width:100%;height:100%;display:flex;flex-direction:column;
     align-items:center;gap:6px;
     padding:calc(8px + var(--satx)) calc(7px + var(--sar)) calc(8px + var(--sabx)) calc(7px + var(--sal));}
-  #topBand{flex:0 0 auto;width:100%;display:flex;flex-direction:column;align-items:center;gap:6px;}
+  /* 버튼 줄을 흐름에서 빼서 하트 줄과 같은 자리에 겹친다 — 판이 한 줄만큼 넓어진다.
+     (판은 480:720 비율 고정이라 세로 한 줄이 곧 가로 폭이기도 하다) */
+  #topBand{flex:0 0 auto;width:100%;display:flex;flex-direction:column;align-items:center;gap:6px;
+    position:relative;}
+  #topBand>#topRow{position:absolute;left:0;right:0;top:0;z-index:3;pointer-events:none;}
+  #topBand>#topRow>*{pointer-events:auto;}
+  /* 첫 줄은 버튼과 같은 높이를 차지해서, 버튼이 그 안에 들어앉는다.
+     버튼 자리(왼쪽 🏳️ 하나 · 오른쪽 🔊🎵 둘)를 좌우 여백으로 비워 둔다. */
+  /* 오른쪽에는 버튼이 둘(🔊🎵) 이라 더 넓게 비운다. 실측으로 겹침을 잡았다. */
+  .statrow.topline{min-height:44px;align-items:center;padding:0 100px 0 52px;}
+  .statrow.topline .stat{font-size:12.5px;padding:3px 8px;gap:4px;}
+  /* 좁은 폰에서는 칩 넷이 버튼 사이에 안 들어간다 — 그때만 버튼 아래로 내려 놓는다 */
+  @media (max-width:379px){
+    .statrow.topline{padding:0;min-height:0;margin-top:46px;}
+  }
+  /* 내 생명 + 상대 상태 한 줄 */
+  #lifeLine{display:flex;flex-wrap:nowrap;gap:6px;align-items:center;justify-content:center;
+    width:100%;min-width:0;}
+  #lifeLine #netBar{min-width:0;overflow:hidden;}
+  /* 생명은 중요한 숫자가 아니다 — 작게 */
+  .stat.lifechip{flex:0 0 auto;font-size:11px;padding:3px 7px;letter-spacing:-1px;}
   /* 버튼 줄 — 왼쪽 ⏸️/🏳️, 오른쪽 🔊🎵. 둘 다 숨으면 높이 0으로 접힌다 */
   #topRow{width:100%;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
   #topStack{width:100%;display:flex;flex-direction:column;align-items:center;gap:6px;
@@ -434,6 +454,9 @@
   .shopcard .ds.nx{color:#3f9a4f;font-weight:800;}
   .shopbtn.up{background:var(--btn-gloss),linear-gradient(180deg,#a8e3ac 0%,#8fd694 34%,#6ccb78 64%,#43b755 100%);
     box-shadow:0 4px 0 #37a04a,0 9px 14px -9px rgba(55,160,74,0.6),var(--rim);}
+  /* 다 쓴 아이템 — 자리는 그대로 두고 흐리게. 지우면 아래 띠가 얇아져 판이 커진다. */
+  .itembtn.out{opacity:.42;filter:saturate(.35);cursor:default;}
+  .itembtn .cnt.out{background:linear-gradient(180deg,#c8c2d0,#9a93a8);font-weight:900;}
   .itembtn .lv{position:absolute;top:-5px;left:-5px;background:linear-gradient(180deg,#ffcf5c,#ffb02e);
     color:#7a4a08;font-size:10px;font-weight:900;padding:1px 5px;border-radius:8px;
     box-shadow:0 2px 5px rgba(0,0,0,.25);font-family:var(--font);}
@@ -661,16 +684,19 @@
       </div>
       <div id="topStack">
         <div id="hud" class="hide">
-          <div class="statrow">
+          <!-- 이 줄은 위 버튼(🏳️ · 🔊🎵)과 같은 높이에 놓인다. 버튼은 양 끝, 칩은 가운데. -->
+          <div class="statrow topline">
             <div class="stat">⭐ <b id="score">0</b></div>
             <div class="stat" id="comboStat">🔥 <b id="combo">x1</b></div>
             <div class="stat">Lv.<b id="level">1</b></div>
-            <div class="stat coin">🪙 <b id="runCoinHud">0</b></div>
           </div>
-          <div class="statrow"><div class="stat"><span id="lives">❤️❤️❤️</span></div></div>
         </div>
-        <!-- 실시간 대전: 상대 상태 (HUD 바로 아래 — 같은 스택이라 겹칠 수 없다) -->
-        <div id="netBar" class="hide"><div id="foeHud"></div></div>
+        <!-- 내 생명 + 상대 상태를 한 줄에. 생명은 중요한 숫자가 아니라 작게 둔다. -->
+        <div id="lifeLine">
+          <div class="stat lifechip"><span id="lives">❤️❤️❤️</span></div>
+          <div class="stat coin lifechip">🪙 <b id="runCoinHud">0</b></div>
+          <div id="netBar" class="hide"><div id="foeHud"></div></div>
+        </div>
       </div>
     </div>
 
@@ -2963,21 +2989,36 @@ function applyEffect(eff,lv){
     floater(W/2,H*0.45,'🧲 자석 발동!'+tag,'#8a5cff'); }
 }
 function useItem(id){
+  if(!itemsAllowed()) return;                     // 대전에서는 못 쓴다
   if(!running||(inventory[id]||0)<=0||!ITEMS[id])return; ensureAudio();
   inventory[id]--; saveEconomy(); applyEffect(ITEMS[id].effect,itemLv(id));
   playLevelUp(); updateHud(); buildItemBar();
 }
+// 아이템을 다 쓰면 그 칩을 지웠는데, 그러면 아래 띠가 얇아지고 판이 그만큼 커졌다 —
+// 판 비율이 판 중에 바뀌는 것이다. 자리는 그대로 두고 '다 씀(✕)' 으로만 바꾼다.
+// 그래서 이 줄의 높이는 판이 도는 동안 절대 변하지 않는다.
 function buildItemBar(){
   const bar=$('itemBar'); bar.innerHTML='';
-  allItemIds().forEach(id=>{ const c=inventory[id]||0; if(c<=0||!ITEMS[id])return;
-    const lv=itemLv(id);
-    const b=document.createElement('button'); b.className='itembtn';
-    b.title=ITEMS[id].name+' Lv.'+lv+' — '+lvDesc(ITEMS[id].effect,lv);
-    b.innerHTML=ITEMS[id].emoji+`<span class="cnt">${c}</span><span class="kb">${ITEMS[id].name}</span>`+
-      (lv>1?`<span class="lv">L${lv}</span>`:'');
-    b.onclick=()=>useItem(id); bar.appendChild(b); });
+  // 이 판에 '들고 들어온' 것을 자리로 잡는다. 판 중에 자리 수가 변하지 않게
+  // 한 번 정해 두고(itemSlots) 계속 그 자리를 쓴다.
+  itemSlots.forEach(id=>{ if(!ITEMS[id]) return;
+    const c=inventory[id]||0, lv=itemLv(id), out=(c<=0);
+    const b=document.createElement('button'); b.className='itembtn'+(out?' out':'');
+    b.title=ITEMS[id].name+' Lv.'+lv+(out?' — 다 썼어요':' — '+lvDesc(ITEMS[id].effect,lv));
+    b.innerHTML=ITEMS[id].emoji
+      +(out?'<span class="cnt out">✕</span>':`<span class="cnt">${c}</span>`)
+      +`<span class="kb">${ITEMS[id].name}</span>`
+      +(lv>1?`<span class="lv">L${lv}</span>`:'');
+    if(out) b.disabled=true; else b.onclick=()=>useItem(id);
+    bar.appendChild(b); });
   bar.classList.toggle('hide', bar.children.length===0||!running);
 }
+// 이 판에서 쓸 아이템 자리 — 판이 시작될 때 한 번 정한다
+let itemSlots=[];
+// 산 아이템은 '혼자 하기'에서만 쓴다. 대전에서 쓰면 돈을 많이 쓴 쪽이 이기는 판이 된다.
+function itemsAllowed(){ return !netMode; }
+function setItemSlots(){ itemSlots=itemsAllowed()
+  ? allItemIds().filter(id=>ITEMS[id]&&(inventory[id]||0)>0) : []; }
 // 악세서리 공방은 프로필로 옮겼다 — 여기서 buildCreator 를 부르면 숨은 캔버스에 그리는 헛일이다
 function openShop(){ ensureAudio(); showScreen('shopScreen'); buildShop(); }
 function buildShop(){
@@ -3597,7 +3638,7 @@ function startGame(){
   showScreen(null);$('hud').classList.remove('hide');$('audioBar').classList.remove('hide');
   syncPauseBtn();
   netStartSetup();
-  ensureAudio();lastT=0;acc=0;running=true;buildItemBar();
+  ensureAudio();lastT=0;acc=0;running=true;setItemSlots();buildItemBar();
   // 위·아래 띠를 다 세운 다음 높이를 붙들고, 그 상태로 판을 한 번 재서 얼린다.
   boardUnlock(); bandsLock(); resize(true);
   startLoop(); }

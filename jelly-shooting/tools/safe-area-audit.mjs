@@ -63,6 +63,18 @@ const CHECK=band=>`(()=>{const bad=[], H=innerHeight;
     if('${band}'==='bot'&&botIn>3) bad.push(name+' 아래 '+Math.round(botIn)+'px 걸림');
   });
   return bad;})()`;
+// 위 버튼(🏳️·🔊🎵)과 같은 줄에 놓인 칩이 겹치지 않는가 — 진짜 기기 폭에서 본다.
+// 칩을 버튼 사이에 넣어 판을 넓혔으므로, 좁은 폰에서 겹치지 않는지가 중요해졌다.
+const OVERLAP=`(()=>{const bad=[];
+  const btns=[...document.querySelectorAll('#topRow button')].filter(b=>b.offsetParent);
+  document.querySelectorAll('#hud .statrow.topline .stat, #lifeLine .stat').forEach(c=>{
+    if(!c.offsetParent) return; const cr=c.getBoundingClientRect();
+    btns.forEach(b=>{ const br=b.getBoundingClientRect();
+      const ox=Math.min(cr.right,br.right)-Math.max(cr.left,br.left);
+      const oy=Math.min(cr.bottom,br.bottom)-Math.max(cr.top,br.top);
+      if(ox>2&&oy>2) bad.push((b.id||'단추')+' ↔ "'+c.textContent.trim().slice(0,7)+'" '+Math.round(ox)+'px 겹침'); }); });
+  return bad;})()`;
+
 const SCROLL=to=>`(()=>{const sc=[...document.querySelectorAll('.screen')].find(e=>!e.classList.contains('hide'));
   if(sc) sc.scrollTop=(${to==='top'}?0:sc.scrollHeight);})()`;
 
@@ -88,14 +100,20 @@ for(const dv of DEVICES){
   for(const st of STATES){
     await send('Emulation.setDeviceMetricsOverride',{width:dv.w,height:dv.h,deviceScaleFactor:2,mobile:true});
     await send('Page.navigate',{url:'file://'+TARGET});
-    await sleep(1700);   // 첫 기기는 로딩이 느려 saveNick 이 아직 없을 수 있다(간헐 실패의 원인)
+    // 고정 시간으로 기다리면 첫 기기에서 'saveNick is not defined' 가 나며 헛 실패했다.
+    // 게임이 준비됐는지(함수가 생겼는지) 직접 확인하고 넘어간다.
+    for(let i=0;i<60;i++){
+      if(await evl(`typeof openStart==='function'&&typeof saveNick==='function'&&!!document.getElementById('stage')`)) break;
+      await sleep(120); }
+    await sleep(250);
     await evl(SET()+`supaReady=()=>true;`);
     await evl(st.s); await sleep(380);
     await evl(SCROLL('top')); await sleep(220);
     const badTop=await evl(CHECK('top'));
     await evl(SCROLL('bot')); await sleep(220);
     const badBot=await evl(CHECK('bot'));
-    const bad=(badTop||[]).concat(badBot||[]);
+    const badOv=(st.n==='혼자 게임'||st.n==='4명 대전')?(await evl(OVERLAP)||[]):[];
+    const bad=(badTop||[]).concat(badBot||[]).concat(badOv);
     if(bad.length){ fails+=bad.length; devFail+=bad.length; console.log('   ❌ '+st.n+'\n      '+bad.join('\n      ')); }
   }
   if(!devFail) console.log('   ✅ '+STATES.length+'개 화면 모두 통과');
