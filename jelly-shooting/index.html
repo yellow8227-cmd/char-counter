@@ -384,25 +384,15 @@
   #toast.low{top:auto;bottom:19%;}
   #toast.low.show{transform:translateX(-50%) translateY(6px);}
 
-  /* 판 위에 살짝 떴다 사라지는 알림 — 대전에서 "누가 탈락했다"를 알린다.
-     toast 는 화면 가운데를 큼직하게 덮어서 젤리를 가린다. 이건 판 위쪽에 작게 떠서
-     1.6초 만에 없어지고, pointer-events:none 이라 그 자리를 눌러도 젤리가 터진다. */
-  #pnotes{position:absolute;left:0;right:0;top:6px;z-index:6;pointer-events:none;
-    display:flex;flex-direction:column;align-items:center;gap:4px;}
-  .pnote{background:rgba(60,30,50,0.72);color:#fff;font-weight:800;font-size:13px;
-    padding:6px 13px;border-radius:13px;max-width:92%;white-space:nowrap;overflow:hidden;
-    text-overflow:ellipsis;box-shadow:0 4px 12px rgba(0,0,0,0.22);
-    animation:pnoteIn 1.6s ease-out forwards;}
-  /* 누가 탈락했다는 소식은 지우지 않고 판이 끝날 때까지 붙여 둔다(플레이를 방해하지
-     않는다는 걸 확인했다). 대신 조금 더 옅고 작게 — 계속 보이는 글씨니까. */
-  .pnote.stay{animation:pnoteHold .42s ease-out both;background:rgba(60,30,50,0.60);
-    font-size:12.5px;padding:5px 12px;}
-  @keyframes pnoteIn{0%{opacity:0;transform:translateY(-8px) scale(.92)}
-    14%{opacity:1;transform:translateY(0) scale(1)}
-    72%{opacity:1;transform:translateY(0) scale(1)}
-    100%{opacity:0;transform:translateY(-10px) scale(.98)}}
-  @keyframes pnoteHold{from{opacity:0;transform:translateY(-8px) scale(.92)}
-    to{opacity:1;transform:translateY(0) scale(1)}}
+  /* "누가 탈락했다"는 판 위에 띄우지 않는다. 판 위에 얹었더니 (ㄱ) 같은 소식이 여러 번
+     와서 넉 줄로 쌓였고 (ㄴ) 젤리·효과 배지와 겹쳐 플레이를 방해했다.
+     대신 판 밖(위쪽 띠)의 상대 칩을 💀 로 바꿔 판이 끝날 때까지 붙여 둔다 — 칩은
+     처음부터 그 자리에 있으니 판 크기가 변하지도 않는다. */
+  #foeHud .fp.gone{opacity:.62;background:rgba(60,30,50,0.30);text-decoration:none;}
+  #foeHud .fp.just{animation:foeGone 1.5s ease-out 2;}
+  @keyframes foeGone{0%{box-shadow:0 0 0 0 rgba(255,255,255,0)}
+    30%{box-shadow:0 0 0 3px rgba(255,255,255,0.85)}
+    100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
 
   /* creator form */
   .mini{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;}
@@ -780,10 +770,7 @@
       </div>
     </div>
 
-    <div id="stage"><canvas id="game"></canvas>
-      <!-- 살짝 떠서 사라지는 알림(누가 탈락했다 등). 판 위에 얹지만 자리를 차지하지 않고
-           (absolute) 손가락도 통과시켜서 게임을 방해하지 않는다. -->
-      <div id="pnotes"></div></div>
+    <div id="stage"><canvas id="game"></canvas></div>
 
     <div id="botBand">
       <div id="itemBar" class="hide"></div>
@@ -2221,14 +2208,26 @@ function drawAvatar(g,cx,cy,R,cfg,mood,t){ mood=mood||'idle';t=t||0; g.save(); g
     g.beginPath();g.moveTo(ex+6,eyeY-4);g.lineTo(ex-4,eyeY+3);g.moveTo(ex-4,eyeY-4);g.lineTo(ex+6,eyeY+3);g.stroke();
   } else if(mood==='ouch'){ g.strokeStyle='#3a2b34';g.lineWidth=R*0.085;g.lineCap='round'; // >< 놀란 X눈
     [-ex,ex].forEach(sx=>{ g.beginPath();g.moveTo(sx-R*0.12,eyeY-R*0.12);g.lineTo(sx+R*0.12,eyeY+R*0.12);g.moveTo(sx+R*0.12,eyeY-R*0.12);g.lineTo(sx-R*0.12,eyeY+R*0.12);g.stroke(); });
-  } else { const big=mood==='wow'?1.3:1, ew=R*nf.eyeW*big,eh=R*nf.eyeH*big; // 크고 반짝이는 눈 (wow=더 큼)
-    [-ex,ex].forEach(sx=>{
+  } else { const big=mood==='wow'?1.3:(mood==='mad'?0.86:1), ew=R*nf.eyeW*big,eh=R*nf.eyeH*big;
+    // 감은 눈 — proud(^ ^ 히히) · wail(꽉 감고 엉엉) · wink(오른쪽만)
+    const shut=(mood==='proud'||mood==='wail')?3:(mood==='wink'?2:0);
+    [-ex,ex].forEach((sx,i)=>{
+      if(shut===3||(shut===2&&i===1)){
+        g.strokeStyle='#3a2b34'; g.lineWidth=R*0.075; g.lineCap='round'; g.beginPath();
+        // 캔버스는 y가 아래로 향한다 → arc(π→0) 은 위쪽 반원(∩ 웃는 눈), arc(0→π) 는 아래쪽 반원(∪ 꽉 감은 눈)
+        if(mood==='wail') g.arc(sx,eyeY-eh*0.30,ew*0.95,0,Math.PI);
+        else              g.arc(sx,eyeY+eh*0.30,ew*0.95,Math.PI,0);
+        g.stroke(); return; }
       const eg=g.createLinearGradient(sx,eyeY-eh,sx,eyeY+eh); eg.addColorStop(0,'#4a3d63'); eg.addColorStop(1,'#241d33');
       g.fillStyle=eg; g.beginPath(); g.ellipse(sx,eyeY,ew,eh,0,0,7); g.fill();
       g.fillStyle='#fff'; g.beginPath(); g.arc(sx-ew*0.34,eyeY-eh*0.42,ew*0.5,0,7); g.fill();        // 큰 하이라이트
       g.beginPath(); g.arc(sx+ew*0.42,eyeY+eh*0.42,ew*0.24,0,7); g.fill();                             // 작은 반짝이
       g.fillStyle='rgba(255,150,195,0.65)'; g.beginPath(); g.arc(sx+ew*0.02,eyeY+eh*0.5,ew*0.3,0,7); g.fill(); // 핑크 반사광
     });
+    if(mood==='mad'){                       // 😤 치켜올라간 눈썹 — 이것만으로 '분함'이 읽힌다
+      g.strokeStyle='#3a2b34'; g.lineWidth=R*0.075; g.lineCap='round';
+      [-1,1].forEach(sd=>{ g.beginPath();
+        g.moveTo(sd*ex-sd*ew*1.15,eyeY-eh*1.35); g.lineTo(sd*ex+sd*ew*0.95,eyeY-eh*2.25); g.stroke(); }); }
     g.fillStyle='#3a2b34'; }
   // 코 — 고양이는 분홍 하트, 강아지는 큰 젤리코, 곰은 넓적, 토끼는 작은 세모, 병아리는 두 톤 부리
   if(cfg.kind==='cat'){ g.fillStyle='#ff7fa8';g.beginPath();g.moveTo(0,R*0.30);
@@ -2247,7 +2246,13 @@ function drawAvatar(g,cx,cy,R,cfg,mood,t){ mood=mood||'idle';t=t||0; g.save(); g
     g.fill();
     g.fillStyle='rgba(255,255,255,0.45)';g.beginPath();g.ellipse(-R*0.03,R*0.185,R*0.032,R*0.02,-0.4,0,7);g.fill(); }
   else if(!isHuman){ g.fillStyle=dark;g.beginPath();g.moveTo(-R*0.09,R*0.16);g.lineTo(R*0.09,R*0.16);g.lineTo(0,R*0.26);g.closePath();g.fill(); }
-  if(mood==='wow'){ g.fillStyle='#3a2b34';g.beginPath();g.ellipse(0,R*0.34,R*0.15,R*0.19,0,0,7);g.fill(); g.fillStyle='#ff8fae';g.beginPath();g.ellipse(0,R*0.42,R*0.08,R*0.09,0,0,7);g.fill(); }
+  if(mood==='wow'||mood==='wail'){ const k=(mood==='wail')?1.35:1;
+    g.fillStyle='#3a2b34';g.beginPath();g.ellipse(0,R*0.34,R*0.15*k,R*0.19*k,0,0,7);g.fill();
+    g.fillStyle='#ff8fae';g.beginPath();g.ellipse(0,R*0.42,R*0.08*k,R*0.09*k,0,0,7);g.fill(); }
+  else if(mood==='mad'){                    // 삐죽거리는 입
+    g.strokeStyle='#3a2b34';g.lineWidth=R*0.062;g.lineCap='round';g.lineJoin='round';
+    g.beginPath(); g.moveTo(-R*0.17,R*0.34); g.lineTo(-R*0.06,R*0.28);
+    g.lineTo(R*0.05,R*0.36); g.lineTo(R*0.17,R*0.29); g.stroke(); }
   else if(cfg.kind==='bunny'){ // 🐰 인중선 + 좌우로 벌어지는 ω 입 — 토끼로 읽히게 하는 핵심.
     // 캔버스는 y가 아래로 향하므로 θ=π/2 가 '아래'다. 아래로 볼록한 그릇은 θ:0→π 이고,
     // 두 그릇을 가운데서 맞붙이면 ω 모양이 된다(각도를 잘못 주면 비스듬한 선이 된다).
@@ -2258,6 +2263,7 @@ function drawAvatar(g,cx,cy,R,cfg,mood,t){ mood=mood||'idle';t=t||0; g.save(); g
     g.beginPath();g.arc( mr,my,mr,0,Math.PI);g.stroke(); }
   else { g.strokeStyle='#3a2b34';g.lineWidth=R*0.07;g.lineCap='round';g.beginPath();
     if(mood==='sad')g.arc(0,R*0.55,R*0.24,Math.PI+0.5,-0.5);
+    else if(mood==='proud'||mood==='wink')g.arc(0,R*0.20,R*0.32,0.08*Math.PI,0.92*Math.PI);
     else if(mood==='ouch')g.arc(0,R*0.46,R*0.13,Math.PI+0.35,-0.35);
     else if(mood==='happy'||mood==='calm')g.arc(0,R*0.22,R*0.3,0.1*Math.PI,0.9*Math.PI);
     else g.arc(0,R*0.24,R*0.22,0.15*Math.PI,0.85*Math.PI);
@@ -2273,13 +2279,13 @@ function drawAvatar(g,cx,cy,R,cfg,mood,t){ mood=mood||'idle';t=t||0; g.save(); g
   g.restore();
   kindExtras(g,R,cfg,mood);
   drawAcc(g,R,cfg);
-  if(mood!=='sad'){ g.fillStyle='rgba(255,255,255,0.92)'; twinkle(g,-R*0.98,-R*0.32,R*0.11); twinkle(g,R*1.0,R*0.24,R*0.07); }
+  if(mood!=='sad'&&mood!=='wail'){ g.fillStyle='rgba(255,255,255,0.92)'; twinkle(g,-R*0.98,-R*0.32,R*0.11); twinkle(g,R*1.0,R*0.24,R*0.07); }
   g.restore();
 }
 // 종류별 전용 장식. 여기가 "완전 다르게" 보이게 만드는 핵심이다.
 // 머리 밖으로 나가는 건 1.12R 안에서 끝낸다 — 게임 화면 아래·미리보기 캔버스에서 잘리기 때문.
 function kindExtras(g,R,cfg,mood){
-  const col=cfg.color, hurt=(mood==='sad'||mood==='ouch');
+  const col=cfg.color, hurt=(mood==='sad'||mood==='ouch'||mood==='wail'||mood==='mad');
   if(cfg.kind==='cat'){                                   // 🐱 수염 3쌍
     g.strokeStyle='rgba(90,60,80,0.42)';g.lineWidth=Math.max(1,R*0.032);g.lineCap='round';
     [-1,0,1].forEach(k=>{ [-1,1].forEach(s=>{
@@ -3321,17 +3327,6 @@ function doCreateCustom(cost){
 }
 // ---- toast + 일일 보너스 ----
 let toastTimer=null;
-// 판 위에 살짝 떴다 사라지는 알림. toast 와 달리 여러 개가 쌓일 수 있고(4명이면 셋이
-// 연달아 죽는다), 손가락을 통과시켜서 게임을 끊지 않는다.
-// stay=true 면 지우지 않는다 — 누가 탈락했는지는 판이 끝날 때까지 남아 있어야
-// "몇 명 남았지?" 를 다시 세지 않아도 된다. (판이 끝나면 gameOver 가 비운다)
-function pnote(msg,stay){ const w=$('pnotes'); if(!w) return null;
-  const d=document.createElement('div'); d.className='pnote'+(stay?' stay':'');
-  d.textContent=msg;
-  w.appendChild(d);
-  while(w.childElementCount>4) w.removeChild(w.firstElementChild);   // 화면을 덮지 않게
-  if(!stay) setTimeout(()=>{ if(d.parentNode) d.parentNode.removeChild(d); },1700);
-  return d; }
 function toast(msg){ const t=$('toast'); t.textContent=msg;
   t.classList.toggle('low',!!running&&!paused); t.classList.add('show'); if(toastTimer)clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),1900); }
 const DAILY_FIRST=40, DAILY_STREAK=100;   // 첫날 / 연속 출석 보너스
@@ -4611,7 +4606,7 @@ function recvRoster(hostPid,ps){
   }
   renderLobby();
 }
-let net={ch:null,room:'',host:false,foe:null,peers:{},order:[],mp:false,ready:false,foeReady:false,
+let net={ch:null,room:'',host:false,foe:null,peers:{},order:[],deadSeen:{},mp:false,ready:false,foeReady:false,
          foeStat:{score:0,lives:0,combo:1,level:1},lastFoe:0,
          myOver:false,myScore:0,myReason:'',foeOver:false,foeScore:0,foeReason:'',
          foeGone:false,watchT:null,timeLimit:120,status:'',statusMsg:''};
@@ -4625,7 +4620,7 @@ function netLeave(){
   if(net.watchT){ clearInterval(net.watchT); net.watchT=null; }
   aiStop(); hubUnadvertise();
   netMode=false; net.foe=null; net.ready=false; net.foeReady=false; net.foeGone=false;
-  net.peers={}; net.order=[]; net.mp=false; net.mpWin=false;   // 참가자 명부를 비운다 — 다음 방에 이전 사람이 남으면 안 된다
+  net.peers={}; net.order=[]; net.deadSeen={}; net.mp=false; net.mpWin=false;   // 참가자 명부를 비운다 — 다음 방에 이전 사람이 남으면 안 된다
   // 지난 판의 승패도 비운다. 이게 남아 있으면 다음 방에서 (ㄱ) 상대가 나가도 "이미 끝낸
   // 상대가 창을 닫은 것"으로 보고 알리지 않았고(net.foeOver), (ㄴ) 내가 아직 하는 중인데
   // 상대 결과가 오면 결과창이 떴다(net.myOver). 검사로 잡았다.
@@ -4800,13 +4795,14 @@ function netOnMsg(m){
   else if(m.t==='over'){
     peerUpsert(pid,{over:true,reason:m.reason||'time',score:m.score|0});
     if((m.reason||'')==='dead'&&net.order.indexOf(pid)<0) net.order.push(pid);   // 탈락 순서
-    // 상대가 죽었으면 알려 준다. 내가 아직 하는 중이라면 판을 가리지 않게 살짝 떴다 사라지고,
-    // 판 밖(대기·결과 화면)이라면 평소 알림으로 보여준다.
-    if(netMode&&(m.reason||'')==='dead'){
+    // 상대가 죽었으면 알려 준다. 같은 소식이 두 번 와도 한 번만 알린다(예전에는 판 위에
+    // 넉 줄로 쌓였다). 판 위에는 아무것도 띄우지 않는다 — 위쪽 띠의 상대 칩을 💀 로
+    // 바꿔 두면 판이 끝날 때까지 남고, 판 크기도 그대로다.
+    if(netMode&&(m.reason||'')==='dead'&&!net.deadSeen[pid]){
+      net.deadSeen[pid]=1;
       const nm=(net.peers[pid]&&net.peers[pid].name)||'친구';
-      const left=(net.mp?mpAlive().length:0);
-      if(running) pnote('💀 '+nm+' 탈락!'+(net.mp&&left>1?(' · '+left+'명 남음'):''),true);
-      else toast('💀 '+nm+'님이 탈락했어요');
+      foeFlash(pid);
+      if(!running) toast('💀 '+nm+'님이 탈락했어요');
     }
     net.foeOver=true; net.foeScore=m.score|0; net.foeReason=m.reason||'time';
     if(m.popped!=null){ net.foePopped=m.popped|0; net.foeMissed=m.missed|0; }
@@ -5363,7 +5359,8 @@ function netStartSetup(){
     $('netBar').classList.add('hide'); $('throwWrap').classList.add('hide'); return; }
   throwGauge=0;
   net.myOver=false; net.foeOver=false; net.foeScore=0; net.foeReason=''; net.foeGone=false;
-  net.order=[]; peerList().forEach(p=>{ p.over=false; p.reason=''; p.score=0;
+  net.order=[]; net.deadSeen={}; net.flashAt={};   // 판이 새로 시작하면 '탈락 알림 이미 봤다'도 비운다
+  peerList().forEach(p=>{ p.over=false; p.reason=''; p.score=0;
     p.lives=MODES[netModeName]?MODES[netModeName].lives:MODES[mode].lives; });
   // 판이 시작될 때의 인원으로 규칙을 고정한다. 중간에 누가 나가도 1:1 승패 판정으로
   // 되돌아가면 안 된다(그러면 net.foe 하나만 보고 엉뚱한 결과가 나온다).
@@ -5406,6 +5403,8 @@ function updateFoeHud(){
   }
   const max=MODES[mode].lives, ps=peerList();
   // 여러 명이면 한 명씩 칩으로 — 누가 몇 등인지 한눈에 보여야 한다.
+  // 탈락은 💀 + 취소선으로만 적는다. '탈락' 글자를 넣으면 칩이 넓어져 줄이 접히고,
+  // 위 띠가 두꺼워져 판이 줄어든다(하트를 늘어놓아 네 줄이 됐던 것과 같은 함정).
   // 목숨을 하트 그림으로 늘어놓으면 세 명만 되어도 상자가 네 줄이 되어 판을 가린다.
   // 그래서 숫자로 적어 한 줄에 두 명씩 들어가게 한다.
   if(ps.length>=2){
@@ -5421,7 +5420,8 @@ function updateFoeHud(){
       +'/'+playerCount()+'명'+crown(myId)+'</span>'
       +ps.slice(0,3).map(p=>{
       const lv=Math.max(0,Math.min(max,p.lives|0)), out=(alive.indexOf(p.id)<0);
-      return '<span class="fp'+(out?' out':'')+(net.target===p.id?' tgt':'')+'" data-pid="'
+      return '<span class="fp'+(out?' out gone':'')+(foeJust(p.id)?' just':'')
+        +(net.target===p.id?' tgt':'')+'" data-pid="'
         +escapeHtml(p.id)+'"><span class="nm">'+escapeHtml(p.name)+'</span> '
         +(out?'💀':('❤️'+lv))+crown(p.id)+'</span>';
     }).join('');
@@ -5429,8 +5429,23 @@ function updateFoeHud(){
   }
   $('foeHud').classList.remove('mp');
   const lv=Math.max(0,Math.min(max,f.lives|0));
-  $('foeHud').innerHTML='<b>🙋 '+escapeHtml(nm)+'</b><span>⭐ '+(f.score|0)+'</span><span>'+
-    '❤️'.repeat(lv)+'🤍'.repeat(max-lv)+'</span>';
+  // 1:1 에서도 '탈락'을 글로 적어 둔다 — 빈 하트만으로는 죽은 걸 알기 어려웠다.
+  const p1=peerList()[0], gone=!!(p1&&(p1.over||net.order.indexOf(p1.id)>=0))||!!net.foeOver;
+  $('foeHud').innerHTML='<span class="fp'+(gone?' out gone':'')+((p1&&foeJust(p1.id))?' just':'')+'"'
+    +(p1?(' data-pid="'+escapeHtml(p1.id)+'"'):'')+'><b>🙋 '+escapeHtml(nm)+'</b> '
+    +'⭐ '+(f.score|0)+' '+(gone?'💀탈락':('❤️'.repeat(lv)+'🤍'.repeat(max-lv)))+'</span>';
+}
+// 방금 탈락한 사람의 칩을 두 번 반짝인다 — 판 위에 아무것도 안 띄우니 이걸로 알린다.
+// 클래스를 직접 붙이면 곧이어 오는 stat 이 칩을 다시 그려서 지워진다. 시각을 적어 두고
+// updateFoeHud 가 그때마다 다시 붙인다.
+const FLASH_MS=3200;
+function foeFlash(pid){
+  net.flashAt=net.flashAt||{}; net.flashAt[pid]=performance.now();
+  updateFoeHud();
+  setTimeout(()=>{ if(netMode||net.myOver) updateFoeHud(); },FLASH_MS+80);
+}
+function foeJust(pid){
+  return !!(net.flashAt&&(performance.now()-(net.flashAt[pid]||0)<FLASH_MS));
 }
 // 던지기 게임의 터트리는 사람은 공격을 못 한다. 대신 방어만 쓴다.
 function hexKinds(){
@@ -5911,7 +5926,9 @@ function battleSet(win,lose,mine,what){
   // 한 번 뽑아 두어야 공유 그림도 화면과 같은 모습이 된다.
   const wp=WIN_POSES[(Math.random()*WIN_POSES.length)|0];
   const lp=LOSE_POSES[(Math.random()*LOSE_POSES.length)|0];
-  lastBattle={win:fix(win),lose:fix(lose),mine:mine,what:what||'',wp:wp,lp:lp};
+  const pick=a=>a[(Math.random()*a.length)|0];
+  lastBattle={win:fix(win),lose:fix(lose),mine:mine,what:what||'',wp:wp,lp:lp,
+    wf:pick(WIN_FACE[(mine==='draw')?'calm':wp]), lf:pick(LOSE_FACE[lp])};
   lastBattle.win.say=(mine==='draw')?WIN_SAY0.calm:WIN_SAY0[wp];
   lastBattle.lose.say=(mine==='draw')?WIN_SAY0.calm:LOSE_SAY0[lp];
 }
@@ -5940,7 +5957,7 @@ function sayApply(side,i){
   if(cv&&!cv.classList.contains('hide')){
     const g=cv.getContext('2d'); g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,cv.width,cv.height);
     drawCeleb(g,cv.width,cv.height,celebT,lastBattle,false); }
-  buildSayRow();
+  buildSayRow(); celebResume();
 }
 function saySend(i){
   const side=mySide();
@@ -5966,14 +5983,22 @@ function celebShow(){
     celebRaf=requestAnimationFrame(celebLoop); }
 }
 function celebStop(){ celebOn=false; if(celebRaf){cancelAnimationFrame(celebRaf);celebRaf=0;} }
+// 멈춰 세운 그림을 다시 움직인다 (말풍선을 고르거나 그림을 눌렀을 때)
+function celebResume(){
+  if(celebOn||!lastBattle) return;
+  const cv=$('celebCanvas'); if(!cv||cv.classList.contains('hide')) return;
+  celebT=0; celebOn=true; celebRaf=requestAnimationFrame(celebLoop);
+}
 function celebLoop(){
   if(!celebOn) return;
   const cv=$('celebCanvas');
   if(!cv||cv.classList.contains('hide')||$('overScreen').classList.contains('hide')){ celebStop(); return; }
   const g=cv.getContext('2d'); g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,cv.width,cv.height);
   celebT++; drawCeleb(g,cv.width,cv.height,celebT,lastBattle,false);
-  // 18초쯤 춤추면 그림을 그대로 세워 둔다 — 결과 화면을 오래 켜 두는 사람의 배터리를 아낀다
-  if(celebT>18*60){ celebOn=false; celebRaf=0; return; }
+  // 오래 켜 두면 배터리가 아까워 멈춰 세운다. 예전에는 18초였는데, 말풍선을 고르는
+  // 동안 그림이 굳어 버려서 "클릭하니까 애니메이션이 멈춘다"로 보였다. 60초로 늘리고,
+  // 만질 때마다 celebResume() 으로 다시 움직인다.
+  if(celebT>60*60){ celebOn=false; celebRaf=0; return; }
   celebRaf=requestAnimationFrame(celebLoop);
 }
 // ---- 몸짓 ----
@@ -6150,8 +6175,14 @@ function joyMarks(g,R,t,ems){
 
 // 🏆 이긴 사람 — 네 가지 중 하나 (트로피 · 깡총 · 메롱 · 브이). calm 은 무승부용.
 const WIN_POSES=['cup','jump','tongue','v'];
-function poseWin(g,R,cfg,t,how){
+// 자세마다 어울리는 표정 후보. 판마다 하나를 뽑아 쓴다(battleSet).
+//  wow=눈 크게 · proud=^ ^ 히히 · wink=한쪽 감고 · happy=평소 웃음
+const WIN_FACE={cup:['wow','proud'],jump:['proud','wow'],tongue:['wink','happy'],
+                v:['wink','proud'],calm:['happy','proud']};
+const LOSE_FACE={cross:['mad','sad'],stomp:['mad','ouch'],cry:['wail','sad']};
+function poseWin(g,R,cfg,t,how,face){
   how=(WIN_POSES.indexOf(how)>=0||how==='calm')?how:'cup';
+  const fc=((WIN_FACE[how]||['wow']).indexOf(face)>=0)?face:(WIN_FACE[how]||['wow'])[0];
   const b=pfx(cfg.kind), col=cfg.color;
   const beat=(how==='jump')?0.16:0.11;
   const hop=Math.abs(Math.sin(t*beat))*R*((how==='jump')?0.52:0.28);
@@ -6172,7 +6203,7 @@ function poseWin(g,R,cfg,t,how){
     armTo(g,R,cfg, 1, R*1.16,-R*0.56,0.46);
   }
   else armsUp(g,R,cfg,t,true);                                  // calm
-  drawAvatar(g,0,0,R,cfg,(how==='tongue')?'happy':'wow',t);
+  drawAvatar(g,0,0,R,cfg,fc,t);
   if(how==='cup'){
     // 트로피는 들고 있는 손 위에 — 가운데 머리 위에 띄우면 누가 든 건지 알 수 없다
     g.save(); g.translate(R*1.16,-R*1.20+Math.sin(t*0.18)*R*0.06); g.rotate(Math.sin(t*0.13)*0.10);
@@ -6195,15 +6226,16 @@ function poseWin(g,R,cfg,t,how){
 // 😤 진 사람 — 세 가지 중 하나 (팔짱 끼고 흥 · 발 구르기 · 엉엉 울기).
 // OTL(엎어지는 자세)은 없앴다 — 보기 안 좋다고 해서.
 const LOSE_POSES=['cross','stomp','cry'];
-function poseLose(g,R,cfg,t,how){
+function poseLose(g,R,cfg,t,how,face){
   how=(LOSE_POSES.indexOf(how)>=0)?how:'cross';
+  const fc=((LOSE_FACE[how]||['sad']).indexOf(face)>=0)?face:(LOSE_FACE[how]||['sad'])[0];
   g.save();
   if(how==='cross'){
     const sh=Math.sin(t*0.42)*R*0.02;
     g.translate(sh,0); g.rotate(-0.08);
     bodyStand(g,R,cfg,t,Math.sin(t*0.10)*0.15,0);
     armsCross(g,R,cfg,t);
-    drawAvatar(g,0,0,R,cfg,'sad',t*0.3);
+    drawAvatar(g,0,0,R,cfg,fc,t*0.3);
     huff(g,R,t);
     joyMarks(g,R,t,[['😤',1.55,-0.95,0.5]]);
   } else if(how==='stomp'){
@@ -6211,7 +6243,7 @@ function poseLose(g,R,cfg,t,how){
     g.translate(shake,-up*R*0.06);
     bodyStand(g,R,cfg,t,Math.sin(t*beat)*1.0,0);
     armsFist(g,R,cfg,t);
-    drawAvatar(g,0,0,R,cfg,'ouch',t*0.5);
+    drawAvatar(g,0,0,R,cfg,fc,t*0.5);
     dust(g,R,t);
     joyMarks(g,R,t,[['💥',-1.5,1.6,0.2],['😖',1.55,-0.95,0.9]]);
   } else {
@@ -6219,7 +6251,7 @@ function poseLose(g,R,cfg,t,how){
     g.translate(0,bob);
     bodyStand(g,R,cfg,t,0,0);
     armsRub(g,R,cfg,t);
-    drawAvatar(g,0,0,R,cfg,'sad',t*0.25);
+    drawAvatar(g,0,0,R,cfg,fc,t*0.25);
     tears(g,R,t,true);
     joyMarks(g,R,t,[['😭',1.6,-0.95,0.6],['💧',-1.6,-0.5,1.4]]);
   }
@@ -6275,9 +6307,10 @@ function drawCeleb(g,w,h,t,c,still){
   [[wx,R],[lx,R*0.96]].forEach(([x,rr],i)=>{ if(solo&&i)return;
     g.beginPath(); g.ellipse(x,gy+rr*2.18,rr*1.0,rr*0.20,0,0,7); g.fill(); });
   // 이긴 사람 (무승부면 둘 다 신나게 — 진 몸짓을 붙이면 거짓말이 된다)
-  g.save(); g.translate(wx,gy); poseWin(g,R,c.win.ch,t,draw?'calm':(c.wp||'cup')); g.restore();
+  g.save(); g.translate(wx,gy); poseWin(g,R,c.win.ch,t,draw?'calm':(c.wp||'cup'),c.wf); g.restore();
   if(!solo){ g.save(); g.translate(lx,gy);
-    if(draw) poseWin(g,R*0.94,c.lose.ch,t+30,'calm'); else poseLose(g,R*0.96,c.lose.ch,t,c.lp||'cross');
+    if(draw) poseWin(g,R*0.94,c.lose.ch,t+30,'calm',c.lf2);
+    else poseLose(g,R*0.96,c.lose.ch,t,c.lp||'cross',c.lf);
     g.restore(); }
   // 글씨
   const big=Math.round(h*0.082), mid=Math.round(h*0.056), sm=Math.round(h*0.045);
@@ -6542,7 +6575,7 @@ function rematch(send){
   ['hud','audioBar','itemBar','pauseBtn','netBar','throwWrap','throwerView'].forEach(id=>$(id).classList.add('hide'));
   canvas.style.display='';
   net.ready=false; net.myOver=false; net.myScore=0; net.myReason='';
-  net.order=[]; net.mp=false; net.mpWin=false; net.target='';
+  net.order=[]; net.deadSeen={}; net.mp=false; net.mpWin=false; net.target='';
   net.foeStat={score:0,lives:0};
   peerList().forEach(p=>{ p.ready=false; p.over=false; p.reason=''; p.score=0; p.lives=0; });
   restoreMode();
@@ -6749,6 +6782,7 @@ $('shareCopy').onclick=()=>{ copyText(shareText()+'\n'+location.origin+location.
   '📋 결과를 복사했어요! 붙여넣어 자랑하세요'); shareClose(); };
 $('shareClose').onclick=shareClose;
 $('shareWrap').onclick=e=>{ if(e.target===$('shareWrap')) shareClose(); };   // 바깥을 누르면 닫힌다
+$('celebCanvas').onclick=celebResume;      // 멈춰 있으면 눌러서 다시 춤추게
 $('sendChBtn').onclick=sendChallenge;
 $('overNickOk').onclick=()=>{
   const v=($('nickInputO').value||'').trim().slice(0,10);
