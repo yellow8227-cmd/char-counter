@@ -81,7 +81,7 @@ if (existsSync(join(PRESS, FONT))) {
 }
 
 // 영상은 그대로 담는다 (다시 굽지 않는다 — 화질이 떨어진다)
-const vid = 'video/jelly-shooting-promo.webm';
+const vid = 'video/jelly-shooting-promo-web.webm';
 const vb64 = readFileSync(join(PRESS, vid)).toString('base64');
 html = html.split('"' + vid + '"').join('"data:video/webm;base64,' + vb64 + '"');
 
