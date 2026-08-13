@@ -32,6 +32,9 @@ const WIDTHS = {
   'shots/appstore-6-home.png': 560,
   'shots/play-feature-1024x500.png': 1024,
   'video/frames/01-cover.png': 560,
+  'shots/chars-row.png': 760,      // 캐릭터 띠 — 페이지에서 740px 폭으로 보여 준다
+  'shots/faces-row.png': 760,
+  'shots/dress-row.png': 700,
 };
 
 const browser = await chromium.launch({ executablePath: CHROME,

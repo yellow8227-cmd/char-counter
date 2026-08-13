@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>젤리슈팅 — 온 가족이, 연인끼리, 친구랑 3분이면 한 판</title>
-<meta name="description" content="설치도 가입도 없이 링크 하나로 같이 하는 캐주얼 게임. 방 코드 네 자리만 알려주면 2~4명이 같은 판에서 대전해요. 광고 없음 · 결제 없음 · 전 연령.">
-<meta property="og:title" content="젤리슈팅 — 온 가족이, 연인끼리, 친구랑 3분이면 한 판">
-<meta property="og:description" content="설치도 가입도 없이 링크 하나로. 방 코드 네 자리만 알려주면 2~4명이 같은 판에서 대전해요.">
+<title>젤리슈팅 — 가족도 연인도 친구도, 3분이면 한 판</title>
+<meta name="description" content="앱 설치도 회원가입도 없이, 열면 바로 하는 캐주얼 게임. 방 코드 네 자리만 보내면 2~4명이 같은 판에서 대전해요. 광고 없음 · 결제 없음 · 전 연령.">
+<meta property="og:title" content="젤리슈팅 — 가족도 연인도 친구도, 3분이면 한 판">
+<meta property="og:description" content="앱도 가입도 없이 열면 바로. 방 코드 네 자리만 보내면 2~4명이 같은 판에서 대전해요.">
 <meta property="og:image" content="shots/play-feature-1024x500.png">
 <link rel="icon" href="shots/icon-1024.png">
 <style>
@@ -100,6 +100,12 @@
   .aud h3{font-size:19px}
   .aud p{font-size:15.5px;color:var(--muted);line-height:1.72}
   .aud .who{margin-top:auto;padding-top:12px;font-size:13.5px;font-weight:700;color:var(--grape)}
+
+  /* ── 캐릭터 그림 띠 — 글만 이어지면 눈이 아프다. 쉬어 가는 줄 ── */
+  .charband{max-width:740px;margin:30px auto 0;text-align:center}
+  .charband img{width:100%;height:auto}
+  .charband p{margin-top:8px;font-size:14.5px;color:var(--muted)}
+  footer .charband{max-width:520px;margin:0 auto 14px}
 
   /* ── ④ 셋만 하면 같이 놀 수 있어요 (초대 3단계) ── */
   .steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:32px;counter-reset:s}
@@ -210,14 +216,14 @@
   <img class="icon" src="shots/icon-1024.png" alt="젤리슈팅 아이콘">
   <div>
     <h1 class="display">젤리슈팅</h1>
-    <p class="sub"><b>온 가족이, 연인끼리, 친구랑.</b><br>
-      3분이면 한 판 — 설치도 가입도 없어요.</p>
+    <p class="sub"><b>가족도, 연인도, 친구도 — 3분이면 한 판.</b><br>
+      앱 설치도 회원가입도 없이, 열면 바로 시작이에요.</p>
     <div class="cta">
       <a class="btn" href="https://zingy-cupcake-98444a.netlify.app/">🍡 지금 바로 플레이</a>
-      <a class="btn quiet" href="#video">🎬 74초 영상 보기</a>
+      <a class="btn quiet" href="#video">🎬 1분 15초 영상</a>
     </div>
     <ul class="badges">
-      <li>설치 0</li><li>가입 0</li><li>광고 0</li><li>결제 0</li><li>전 연령</li>
+      <li>설치 없음</li><li>가입 없음</li><li>광고 없음</li><li>결제 없음</li><li>전 연령</li>
     </ul>
     <ul class="chips">
       <li>아이폰 · 안드로이드 · PC</li><li>한국어</li><li>혼자 · 2~4인 실시간</li>
@@ -229,32 +235,36 @@
 <section class="band">
   <div class="wrap">
     <div class="narrow">
-      <span class="tag">이럴 때 딱</span>
+      <span class="tag">이럴 때 좋아요</span>
       <h2 class="display">같이 웃을 사람만 있으면 돼요</h2>
-      <p class="lead">규칙은 30초면 배워요. 그래서 처음 하는 사람이랑도 바로 붙을 수 있어요.</p>
+      <p class="lead">규칙은 30초면 배워요. 오늘 처음 하는 사람과도 바로 같이 할 수 있어요.</p>
     </div>
     <div class="aud">
       <div>
         <div class="e">👨‍👩‍👧</div>
         <h3 class="display">가족이랑</h3>
         <p>아이는 순한맛, 어른은 핵불닭. <strong>같은 게임을 각자 속도로</strong> 해요.
-          광고도 결제도 없어서 아이 폰에 그냥 열어 줘도 마음이 편해요.</p>
-        <p class="who">아이 옆에서 한 판 · 주말 거실</p>
+          광고도 결제도 없으니 아이 폰에 열어 줘도 마음이 편해요.</p>
+        <p class="who">주말 거실에서 · 아이 옆에서 한 판</p>
       </div>
       <div>
         <div class="e">💗</div>
         <h3 class="display">연인이랑</h3>
         <p>누가 이기나 딱 한 판. 이기면 트로피 들고 춤추고, 지면 팔짱 끼고 분해해요.
-          <strong>그 표정이 그림으로 남아</strong> 놀리기 좋아요.</p>
-        <p class="who">카페에서 · 저녁 통화하면서</p>
+          <strong>그 표정이 그림으로 남아서</strong> 두고두고 놀릴 수 있어요.</p>
+        <p class="who">카페에서 · 저녁에 통화하면서</p>
       </div>
       <div>
         <div class="e">🧑‍🤝‍🧑</div>
         <h3 class="display">친구들이랑</h3>
-        <p>단톡방에 <strong>방 코드 네 자리</strong>만 던지면 최대 네 명.
-          앱 설치를 기다릴 일이 없어서, 말 나오고 1분 안에 시작해요.</p>
-        <p class="who">단톡방 · 점심시간 · 야자 끝나고</p>
+        <p>단톡방에 <strong>방 코드 네 자리</strong>만 보내면 최대 네 명이 함께.
+          앱 설치를 기다릴 일이 없으니, 하자는 말이 나오고 1분 안에 시작해요.</p>
+        <p class="who">단톡방에서 · 점심시간에 · 퇴근하고</p>
       </div>
+    </div>
+    <div class="charband">
+      <img src="shots/chars-row.png" alt="고양이·강아지·토끼·곰·남자아이·여자아이 여섯 캐릭터">
+      <p>여섯 종에서 골라 머리·색깔·악세서리까지 내 마음대로</p>
     </div>
   </div>
 </section>
@@ -265,11 +275,11 @@
     <div class="narrow">
       <span class="tag">1분 안에 시작</span>
       <h2 class="display">링크 하나, 코드 네 자리</h2>
-      <p class="lead">따로 초대장을 보내거나 친구 추가를 할 필요가 없어요.</p>
+      <p class="lead">초대장을 보내거나 친구 추가를 할 필요가 없어요.</p>
     </div>
     <div class="steps3">
       <div><b>방 만들기</b><p>실시간 던전이나 던지기 게임에서 방을 만들어요.</p></div>
-      <div><b>코드 보내기</b><p>네 자리 코드가 나와요. 단톡방에 그대로 붙여 넣어요.</p>
+      <div><b>코드 보내기</b><p>네 자리 코드가 나와요. 단톡방에 그대로 붙여 넣으면 돼요.</p>
         <div class="code"><span>A</span><span>7</span><span>K</span><span>2</span></div></div>
       <div><b>같이 시작</b><p>친구가 코드를 넣으면 같은 판이 동시에 시작돼요.</p></div>
     </div>
@@ -282,8 +292,8 @@
 <section class="band" id="video">
   <div class="wrap">
     <div class="narrow">
-      <span class="tag">1분 14초</span>
-      <h2 class="display">1분이면 다 보여요</h2>
+      <span class="tag">1분 15초</span>
+      <h2 class="display">영상으로 먼저 보세요</h2>
       <p class="lead">따로 편집한 화면이 아니라, 실제로 플레이한 화면을 그대로 녹화했어요.</p>
     </div>
     <div class="video">
@@ -333,7 +343,7 @@
         <div>
           <h3 class="display">던지기 게임 — 역할을 나눠서</h3>
           <p>한 명은 던지고, 한 명은 막아요. 던지는 쪽은 상대 화면을 보면서 빈틈에 떨어뜨리고,
-            막는 쪽은 쏟아지는 걸 다 터뜨려야 해요. 실력 차가 있어도 재미있는 쪽이에요.</p>
+            막는 쪽은 쏟아지는 걸 다 터뜨려야 해요. 실력이 서로 달라도 재미있는 쪽이에요.</p>
           <p class="how">다시 할 때 <strong>역할 바꾸기</strong>를 누르면 바로 자리가 바뀌어요.
             무기는 일반 · 폭탄 · 유령 · 젤리비 네 가지.</p>
         </div>
@@ -348,7 +358,11 @@
     <div class="narrow">
       <span class="tag">계속 하게 되는 이유</span>
       <h2 class="display">이기면 춤추고, 지면 분해해요</h2>
-      <p class="lead">점수만 남기지 않아요. 그 판의 표정이 그림으로 남아요.</p>
+      <p class="lead">점수만 남지 않아요. 그 판의 표정이 그림으로 남아요.</p>
+    </div>
+    <div class="charband">
+      <img src="shots/faces-row.png" alt="기본·신남·놀람·으쓱·분함·눈물 여섯 표정">
+      <p>같은 캐릭터라도 판마다 표정이 달라져요</p>
     </div>
     <div class="more">
       <div><div class="e">🏆</div><h3 class="display">결과는 그림으로</h3>
@@ -357,7 +371,7 @@
       <div><div class="e">🎀</div><h3 class="display">내 캐릭터 꾸미기</h3>
         <p>캐릭터 여섯 종에 머리 · 색깔 · 악세서리. 코인을 모아 나만의 악세서리도 만들어요.</p></div>
       <div><div class="e">🤖</div><h3 class="display">AI와 연습</h3>
-        <p>같이 할 사람이 없을 때도 실력 네 단계 AI와 바로 붙어요. 다시 할 때 실력과 역할을 바꿔요.</p></div>
+        <p>같이 할 사람이 없을 때도 실력 네 단계 AI와 바로 붙어요. 다시 할 때 실력과 역할을 바꿀 수 있어요.</p></div>
     </div>
     <div class="play" style="margin-top:44px">
       <div class="row">
@@ -397,12 +411,12 @@
     <div class="narrow">
       <span class="tag">만든 이야기</span>
       <h2 class="display">HTML 파일 하나로 만든 게임이에요</h2>
-      <p class="lead">게임 엔진 없이 캔버스에 직접 그렸고, 실시간 대전은 Supabase Realtime을 씁니다.</p>
+      <p class="lead">게임 엔진 없이 캔버스에 직접 그렸고, 실시간 대전은 Supabase Realtime을 써요.</p>
     </div>
     <div class="made">
       <div><b>파일 하나가 곧 게임</b>
-        <p>index.html 안에 화면·소리·통신·저장이 다 들어 있어요. 게임 엔진 없이 캔버스에 직접
-          그려서, 반년 뒤에 열어도 그대로 돌아가요.</p></div>
+        <p>index.html 안에 화면·소리·통신·저장이 다 들어 있어요. 게임 엔진도 빌드 도구도 쓰지 않아
+          반년 뒤에 열어도 그대로 돌아가요.</p></div>
       <div><b>실시간 대전</b>
         <p>방·점수·방해·관전을 브로드캐스트로 주고받아요. 판 전체를 중계하지 않고 <em>필요한 소식만</em>
           보내서, 느린 인터넷에서도 버텨요.</p></div>
@@ -414,7 +428,7 @@
           이 페이지의 사진과 영상도 <em>스크립트가 진짜로 플레이해서</em> 만든 거예요.</p></div>
     </div>
     <p class="quote">아이랑 같이 할 게임을 만들다가, 친구랑 붙을 수 있는 방까지 붙었어요.
-      점수보다 <strong>같이 웃는 장면</strong>을 남기고 싶어서 이기면 춤추고 지면 분해하는 그림을 넣었습니다.</p>
+      점수보다 <strong>같이 웃는 장면</strong>을 남기고 싶어서 이기면 춤추고 지면 분해하는 그림을 넣었어요.</p>
   </div>
 </section>
 
@@ -425,33 +439,34 @@
     <h2 class="display">미리 답해 둘게요</h2>
     <div class="faq">
       <details open><summary>앱을 설치해야 하나요?</summary>
-        <p>아니요, 주소만 열면 바로 됩니다. 홈 화면에 추가하면 앱처럼 전체화면으로 열리고,
+        <p>아니요, 주소만 열면 바로 돼요. 홈 화면에 추가하면 앱처럼 전체화면으로 열리고,
           인터넷이 없을 때도 혼자 하기는 그대로 돌아가요.</p></details>
       <details><summary>몇 살부터 할 수 있나요?</summary>
-        <p>글자를 조금 읽을 수 있으면 됩니다. 폭력적인 표현이나 무서운 장면이 없고,
+        <p>글자를 조금 읽을 수 있으면 돼요. 폭력적인 표현이나 무서운 장면이 없고,
           난이도 순한맛은 젤리가 천천히 떨어져요. 아이와 어른이 같은 방에서 각자 난이도로 할 수 있어요.</p></details>
       <details><summary>친구랑 어떻게 같이 하나요?</summary>
-        <p>방을 만들면 네 자리 코드가 나와요. 친구가 그 코드를 넣으면 같은 방에서 시작합니다.
+        <p>방을 만들면 네 자리 코드가 나와요. 친구가 그 코드를 넣으면 같은 방에서 시작해요.
           2~4명까지 가능하고, 상대가 폰이든 노트북이든 상관없어요.</p></details>
       <details><summary>공짜인가요? 광고나 결제가 있나요?</summary>
-        <p>무료이고 광고가 없어요. 게임 안 코인은 플레이로만 모아요 — 현금 결제 항목이 아예 없습니다.</p></details>
+        <p>무료이고 광고가 없어요. 게임 안 코인은 플레이로만 모아요 — 현금 결제 항목이 아예 없어요.</p></details>
       <details><summary>데이터를 많이 쓰나요?</summary>
         <p>거의 안 써요. 대전에서 주고받는 건 점수·방해 같은 짧은 소식뿐이라 한 통이 1KB 미만이에요.</p></details>
       <details><summary>계정을 꼭 만들어야 하나요?</summary>
-        <p>아니요. 혼자 하기와 AI 대결은 계정 없이 됩니다. 계정을 만들면 폰과 노트북에서
+        <p>아니요. 혼자 하기와 AI 대결은 계정 없이 돼요. 계정을 만들면 폰과 노트북에서
           같은 캐릭터·코인으로 이어 할 수 있어요.</p></details>
     </div>
   </div>
 </section>
 
 <footer>
+  <div class="charband"><img src="shots/dress-row.png" alt="꾸민 캐릭터들"></div>
   <h2 class="display">지금 바로 한 판</h2>
   <p class="lead">친구에게 방 코드만 알려주면 끝.</p>
   <p style="margin-top:22px"><a class="btn" href="https://zingy-cupcake-98444a.netlify.app/">🍡 젤리슈팅 열기</a></p>
   <ul class="badges">
-    <li>설치 0</li><li>가입 0</li><li>광고 0</li><li>결제 0</li><li>전 연령</li>
+    <li>설치 없음</li><li>가입 없음</li><li>광고 없음</li><li>결제 없음</li><li>전 연령</li>
   </ul>
-  <p class="fine">🍡 젤리슈팅 · Jelly Shooting — 혼자 만든 웹 게임입니다.<br>
+  <p class="fine">🍡 젤리슈팅 · Jelly Shooting — 혼자 만든 웹 게임이에요.<br>
     화면과 영상은 시연용 상태(점수·코인 등)로 찍었어요 · 제목 글씨체 Jua (SIL OFL 1.1)</p>
 </footer>
 

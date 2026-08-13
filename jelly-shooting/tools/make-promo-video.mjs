@@ -49,7 +49,13 @@ const VW = 430, VH = 932;              // 게임을 보는 창 (아이폰 6.7" �
 // ⚠ 플레이라이트 녹화는 프레임을 'CSS 창 크기'로 받아 오고, 그보다 큰 녹화 크기를 주면
 //   남는 자리를 회색으로 채운다(키워 주지 않는다). 브라우저 자체를 2배로 띄우면
 //   (--force-device-scale-factor=2) CSS 창이 860x1864 로 잡혀 꽉 찬 고화질 영상이 나온다.
-const RW = 860, RH = 1864;
+// 녹화 크기 = 창 크기 그대로(1배). 실측으로 정한 값이다 —
+//   dpr2 + 720x1560 녹화 → 게임이 초당 23장 (버벅였다)
+//   dpr1.5 + 645x1398   → 34장
+//   dpr1 + 430x932      → 60장 (완전히 매끄럽다)
+// 화면을 2배로 그리면 게임과 인코더가 같이 느려져서, 크기보다 매끄러움을 골랐다.
+// 페이지에서는 340px 폭으로 보여 주므로 430 이면 충분하고, 앱 미리보기용만 886 으로 키운다.
+const RW = 430, RH = 932;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 // ── 페이지에 얹는 자막·표지 ──
@@ -117,30 +123,42 @@ const SFX_SHIM = `(()=>{
     window[n] = function(){ __sfx.push([n, [].slice.call(arguments).map(v=>typeof v==='number'?v:0),
       Date.now()-window.__t0]); };
   });
+  // 초당 몇 프레임이 그려지는지 재 둔다 — 버벅임을 숫자로 확인하려고
+  window.__fps=[]; let __fc=0, __fl=Date.now();
+  (function fps(){ __fc++; const n=Date.now();
+    if(n-__fl>=1000){ window.__fps.push(Math.round(__fc*1000/(n-__fl))); __fc=0; __fl=n; }
+    requestAnimationFrame(fps); })();
   window.__st = [];                      // 배경음악용 상태 [시각, 판이 도는가, 던지는 쪽인가]
   window.__stT = setInterval(()=>{
     try{ __st.push([Date.now()-window.__t0, running?1:0, throwerAlive?1:0]); }catch(e){}
   }, 200);
   return window.__t0; })()`;
 
-// 지금 화면에서 누를 만한 젤리 하나를 골라 '화면 좌표'로 돌려준다.
-// 폭탄은 피하고, 바닥에 가까운 것부터 — 사람이 하는 판단과 같게.
-// 화면이 텅 빈 영상은 심심하니 급하지 않으면 조금 기다린다.
-const PICK = `(()=>{
-  if(!running||!jellies.length) return null;
-  const r=canvas.getBoundingClientRect();
+// 젤리 하나를 고르고 그 자리를 '그 화면 안에서' 눌러 준다.
+// 예전에는 (좌표 물어보기 → 마우스 클릭) 두 번 왕복했는데, 그 왕복이 렌더링을 끊어
+// 영상이 버벅였다. 게임이 듣는 건 캔버스의 mousedown 이라 여기서 그대로 만들어 보낸다.
+const POP = `(()=>{
+  if(!running||!jellies.length) return 0;
   const cand=jellies.filter(j=>!j.dead&&!j.bomb&&j.y>60&&j.y<H-40);
-  if(!cand.length) return null;
+  if(!cand.length) return 0;
   cand.sort((a,b)=>b.y-a.y);
   const j=cand[0];
-  if(j.y < H*0.5 && cand.length < 5) return null;
-  return {x:r.left+j.x/W*r.width, y:r.top+j.y/H*r.height};
+  // 화면이 텅 빈 영상은 심심하니 급하지 않으면 조금 기다린다
+  if(j.y < H*0.5 && cand.length < 5) return 0;
+  const r=canvas.getBoundingClientRect();
+  canvas.dispatchEvent(new MouseEvent('mousedown',{bubbles:true,
+    clientX:r.left+j.x/W*r.width, clientY:r.top+j.y/H*r.height}));
+  return 1;
 })()`;
 
 const run = async () => {
   const browser = await chromium.launch({ executablePath: CHROME,
     args: ['--no-sandbox', '--allow-file-access-from-files', '--mute-audio',
-           '--force-device-scale-factor=2'] });
+           '--force-device-scale-factor=1',
+           // 창이 뒤로 밀렸다고 판단해 rAF·타이머를 늦추면 그게 곧 버벅임이 된다
+           '--disable-background-timer-throttling', '--disable-renderer-backgrounding',
+           '--disable-backgrounding-occluded-windows',
+           '--disable-features=CalculateNativeWinOcclusion'] });
   const ctxAt = Date.now();                     // 녹화가 시작되는 시각 (소리 맞추기용)
   const ctx = await browser.newContext({
     viewport: { width: VW, height: VH }, deviceScaleFactor: 1, isMobile: true, hasTouch: true,
@@ -160,8 +178,8 @@ const run = async () => {
     const t0 = Date.now();
     while (Date.now() - t0 < ms) {
       const t1 = Date.now();
-      const p = await page.evaluate(PICK).catch(() => null);
-      if (p) await page.mouse.click(p.x, p.y).catch(() => {});
+      await page.evaluate(POP).catch(() => 0);
+      // 고르고 누르는 데 걸린 시간을 빼야 영상 길이가 계획대로 나온다
       await sleep(Math.max(40, gap - (Date.now() - t1)));
     }
   };
@@ -213,7 +231,7 @@ const run = async () => {
   mark('준비 끝 (소리 맞춤 간격 ' + audioOffset + 'ms)');
 
   // ── ① 표지 ──
-  await ev(`__card('젤리슈팅','톡 터트리는 3분 · 온 가족이 함께','설치 없이 웹에서 바로')`);
+  await ev(`__card('젤리슈팅','가족도, 연인도, 친구도 · 3분이면 한 판','앱도 가입도 없이 바로')`);
   await sleep(2600);
   await ev(`__cardOff()`);
   await sleep(600);
@@ -357,14 +375,21 @@ const run = async () => {
   mark('결과·공유');
 
   // ── ⑦ 마무리 표지 ──
-  await ev(`__card('지금 바로 한 판','친구에게 방 코드만 알려주면 끝','zingy-cupcake-98444a.netlify.app')`);
+  await ev(`__card('지금 한 판 해요','방 코드 네 자리만 보내면 끝','zingy-cupcake-98444a.netlify.app')`);
   await sleep(2400);
   mark('마지막 장면');
 
   // 소리 기록을 가져온다
   const sfx = await page.evaluate(`(()=>{ clearInterval(window.__stT);
-    return {log:window.__sfx, st:window.__st, end:Date.now()-window.__t0}; })()`);
+    return {log:window.__sfx, st:window.__st, fps:window.__fps, end:Date.now()-window.__t0}; })()`);
   writeFileSync(join(OUT, '__sfx-log.json'), JSON.stringify(sfx));
+  if (sfx.fps && sfx.fps.length) {
+    const f = sfx.fps.slice(1);                 // 첫 칸은 창이 뜨는 중이라 뺀다
+    const avg = Math.round(f.reduce((a, b) => a + b, 0) / f.length);
+    const low = f.filter(v => v < 45).length;
+    console.log('   🎞 그림 초당 ' + avg + '장 (가장 낮은 값 ' + Math.min(...f)
+      + ' · 45장 미달 ' + low + '초)');
+  }
   const tally = {}; sfx.log.forEach(([f]) => tally[f] = (tally[f]||0)+1);
   console.log('   🔎 마지막 소리들: ' + sfx.log.slice(-6)
     .map(([f,,t]) => f.replace('play','') + '@' + (t/1000).toFixed(1) + 's').join(', '));
@@ -474,9 +499,9 @@ const run = async () => {
   // 소개 페이지·아티팩트에 담을 작은 판 — 페이지 안의 영상 액자가 340px 이라 540x1170 이면 넉넉하다.
   // (한 파일로 담는 아티팩트는 16MB 제한이 있어서 큰 영상을 그대로 넣을 수 없다)
   const web = join(OUT, 'jelly-shooting-promo-web.webm');
-  if (await ff(['-i', dst, '-vf', 'scale=540:1170', '-c:v', 'libvpx', '-b:v', '480k',
-                '-c:a', 'copy', web], '소개 페이지용 작은 판'))
-    console.log('🎬 ' + web + '  (540x1170 · 소개 페이지·공유용)');
+  if (await ff(['-i', dst, '-c:v', 'libvpx', '-b:v', '420k', '-c:a', 'copy', web],
+               '소개 페이지용 작은 판'))
+    console.log('🎬 ' + web + '  (430x932 · 용량만 줄인 판 · 소개 페이지·공유용)');
 
   // 애플 '앱 미리보기'는 15~30초만 받고, 세로 크기는 886x1920 을 쓴다
   const cut = join(OUT, 'jelly-shooting-promo-886x1920.webm');
