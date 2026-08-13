@@ -1,6 +1,7 @@
 // 배포 주소 바꾸기
 //
 //   node jelly-shooting/tools/set-site-url.mjs https://내주소.netlify.app
+//   node jelly-shooting/tools/set-site-url.mjs --press https://소개페이지주소   ← 소개 페이지
 //   node jelly-shooting/tools/set-site-url.mjs            ← 지금 값 보기
 //
 // 왜 필요한가: 링크 미리보기 그림(og:image)은 크롤러가 자바스크립트를 돌리지 않으므로
@@ -14,7 +15,12 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const HTML = join(dirname(fileURLToPath(import.meta.url)), '..', 'index.html');
+// --press 를 주면 소개 페이지(press/index.html)의 주소를 맞춘다.
+//   node tools/set-site-url.mjs --press https://소개페이지주소
+// 소개 페이지는 게임과 다른 사이트에 올릴 수 있어서 따로 둔다.
+const PRESS = process.argv.includes('--press');
+const ROOT_DIR = join(dirname(fileURLToPath(import.meta.url)), '..');
+const HTML = PRESS ? join(ROOT_DIR, 'press', 'index.html') : join(ROOT_DIR, 'index.html');
 // og:image 뒤에 붙는 판 번호. 그림을 바꿨는데도 예전 미리보기가 뜨면 이 숫자를 올린다.
 // 카카오·페이스북은 '같은 주소면 같은 그림'으로 보고 캐시한다. 링크에 ?v= 를 붙여
 // 페이지를 새로 읽게 해도, 그림 주소가 그대로면 그림은 예전 것을 그냥 다시 쓴다.
@@ -30,7 +36,8 @@ const TAGS = [
 ];
 
 let html = readFileSync(HTML, 'utf8');
-const raw = process.argv[2];
+// 깃발(--press)을 빼고 남은 첫 번째 값이 주소다
+const raw = process.argv.slice(2).find(a => !a.startsWith('--'));
 
 if (!raw) {
   console.log('지금 박혀 있는 주소:');
