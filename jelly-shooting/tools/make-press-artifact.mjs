@@ -88,9 +88,6 @@ const vid = 'video/jelly-shooting-promo-web.webm';
 const vb64 = readFileSync(join(PRESS, vid)).toString('base64');
 html = html.split('"' + vid + '"').join('"data:video/webm;base64,' + vb64 + '"');
 
-// 남은 상대 경로가 있으면 링크가 깨진 채로 올라간다 — 미리 잡는다
-const left = [...html.matchAll(/(?:src|href|content|poster)="((?:shots|video|fonts)\/[^"]+)"/g)].map(m => m[1]);
-if (left.length) { console.log('⚠ 아직 파일을 가리키는 곳이 있습니다: ' + [...new Set(left)].join(', ')); }
 
 // 탭 아이콘 — 올리는 쪽은 이모지만 받는다. 그래서 페이지 안에 <link rel="icon"> 을 넣어
 // 게임 아이콘(파비콘 32px)으로 덮는다. 나중에 선언된 아이콘이 이기므로 이게 보인다.
@@ -111,7 +108,12 @@ const title = '<title>젤리슈팅</title>';
 const style = (html.match(/<style>[\s\S]*?<\/style>/) || [''])[0];
 const body  = html.slice(html.indexOf('<body>') + 6, html.lastIndexOf('</body>'));
 const out = join(PRESS, 'artifact.html');
-writeFileSync(out, title + '\n' + iconTag + style + '\n' + body.trim() + '\n');
+const final = title + '\n' + iconTag + style + '\n' + body.trim() + '\n';
+// 올라가는 부분에 상대 경로가 남아 있으면 그림이 깨진 채로 올라간다 — 미리 잡는다.
+// (head 는 잘려 나가므로 거기 있는 아이콘 링크는 문제가 아니다)
+const left = [...final.matchAll(/(?:src|href|content|poster)="((?:shots|video|fonts)\/[^"]+)"/g)].map(m => m[1]);
+if (left.length) console.log('⚠ 아직 파일을 가리키는 곳이 있습니다: ' + [...new Set(left)].join(', '));
+writeFileSync(out, final);
 const sz = readFileSync(out).length;
 console.log('📄 ' + out + '  (' + (sz / 1024 / 1024).toFixed(2) + 'MB · 그림 ' + made
   + '장 + 영상 + 글씨체 담음)');
