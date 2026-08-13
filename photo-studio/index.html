@@ -1,0 +1,1315 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>증명사진 자판기 — 두 줄만 맞추면 규격이 나옵니다</title>
+<meta name="description" content="정수리와 턱끝에 줄 두 개만 놓으면 증명사진·여권사진·취업사진 규격으로 잘라 줍니다. 배경 교체와 인화지 배치까지. 사진은 기기 밖으로 나가지 않습니다.">
+<meta name="theme-color" content="#f2f3f5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1014" media="(prefers-color-scheme: dark)">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="증명사진 자판기 · Photo Studio">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="증명사진 자판기 — 두 줄만 맞추면 규격이 나옵니다">
+<meta property="og:description" content="사진관에서 재 주던 그 치수를, 브라우저에서. 정수리 3~5mm, 얼굴 32~36mm. 사진은 어디로도 올라가지 않습니다.">
+</head>
+<body style="margin:0">
+<style>
+  /* ══════════════════════════════════════════════════════════
+     디자인 시스템
+     이 저장소의 다른 도구(shot-planner, scenedeck)와 같은 토큰을 쓴다.
+     :root 가 아니라 #app 에 거는 이유 — 이 파일이 남의 페이지 안에
+     끼워져 열릴 때 바깥 :root[data-theme] 과 서로 덮어쓰기 때문.
+     ══════════════════════════════════════════════════════════ */
+  #app{
+    --fs:13px;
+    --r-sm:7px; --r:10px; --r-lg:14px; --r-xl:20px;
+    --sp:8px;
+    --acc:#c07800; --acc-ink:#ffffff;
+    --ease:cubic-bezier(.22,.61,.36,1);
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  }
+  #app[data-theme="light"]{
+    --bg:#f2f3f5; --bg2:#e8eaee;
+    --panel:#ffffff; --panel2:#f5f6f8; --panel3:#eceef2; --panel4:#e2e5ea;
+    --line:#e2e4e9; --line2:#cbd0d8; --line3:#b3bac5;
+    --ink:#16191f; --ink2:#3d434e; --sub:#5f6673; --sub2:#767e8b;
+    --warn:#c0392f; --ok:#1e7a52;
+    --badge-bad-bg:#fdecea; --badge-bad-ink:#a8322a;
+    --sh-1:0 1px 1px rgba(18,24,38,.04), 0 1px 3px rgba(18,24,38,.05);
+    --sh-2:0 1px 2px rgba(18,24,38,.05), 0 8px 24px -8px rgba(18,24,38,.12);
+    --sh-3:0 24px 60px -12px rgba(18,24,38,.28), 0 2px 8px rgba(18,24,38,.10);
+    --ring:rgba(18,24,38,.10);
+    --canvas-inset:inset 0 1px 3px rgba(18,24,38,.07);
+    --stage:#dfe2e7;
+  }
+  #app[data-theme="dark"]{
+    --bg:#0e1014; --bg2:#0a0c0f;
+    --panel:#181b21; --panel2:#1f232a; --panel3:#272c34; --panel4:#323842;
+    --line:#282d35; --line2:#3b424d; --line3:#4d5560;
+    --ink:#e9ecf1; --ink2:#c2c8d2; --sub:#98a1b0; --sub2:#828b99;
+    --warn:#ff7d72; --ok:#4fce8e;
+    --badge-bad-bg:#3d1e1c; --badge-bad-ink:#ff9d94;
+    --sh-1:0 1px 1px rgba(0,0,0,.3), 0 1px 3px rgba(0,0,0,.25);
+    --sh-2:0 1px 2px rgba(0,0,0,.35), 0 10px 26px -10px rgba(0,0,0,.6);
+    --sh-3:0 28px 70px -14px rgba(0,0,0,.75), 0 2px 8px rgba(0,0,0,.5);
+    --ring:rgba(255,255,255,.12);
+    --canvas-inset:inset 0 1px 3px rgba(0,0,0,.4);
+    --stage:#0a0c0f;
+  }
+
+  *{ box-sizing:border-box }
+  body{ margin:0 }
+  #app{
+    min-height:100vh; background:var(--bg); color:var(--ink);
+    font-family:"Pretendard Variable","Pretendard",-apple-system,BlinkMacSystemFont,
+                "Segoe UI","Malgun Gothic","맑은 고딕",system-ui,sans-serif;
+    font-size:var(--fs); line-height:1.5;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    font-variant-numeric:tabular-nums;
+    word-break:keep-all; overflow-wrap:anywhere;
+  }
+  #app *:focus{ outline:none }
+  #app *:focus-visible{ outline:2px solid var(--acc); outline-offset:2px }
+
+  input,select{
+    font-family:inherit; font-size:var(--fs); color:var(--ink);
+    background:var(--panel2); border:1px solid var(--line);
+    border-radius:var(--r-sm); padding:6px 9px; min-height:30px;
+  }
+  input:focus,select:focus{
+    border-color:var(--acc); background:var(--panel);
+    box-shadow:0 0 0 3px color-mix(in srgb, var(--acc) 16%, transparent);
+  }
+  input[type=number]{ width:70px; font-family:var(--mono); font-size:calc(var(--fs) - 1px) }
+  input[type=range]{ padding:0; background:transparent; border:none; width:100%;
+    min-height:0; accent-color:var(--acc) }
+  input[type=checkbox]{ accent-color:var(--acc); cursor:pointer; min-height:0;
+    width:15px; height:15px; margin:0 }
+  select{ cursor:pointer }
+
+  button{
+    font-family:inherit; font-size:calc(var(--fs) - 1px); font-weight:550; cursor:pointer;
+    color:var(--ink2); background:var(--panel2); border:1px solid var(--line);
+    border-radius:var(--r-sm); padding:6px 11px; min-height:30px; white-space:nowrap;
+    display:inline-flex; align-items:center; justify-content:center; gap:5px;
+    transition:.14s var(--ease); box-shadow:var(--sh-1);
+  }
+  button:hover{ border-color:var(--line2); background:var(--panel3); color:var(--ink) }
+  button:active{ transform:translateY(1px); box-shadow:none }
+  button.on{
+    background:var(--acc); border-color:transparent; color:var(--acc-ink); font-weight:700;
+    box-shadow:0 1px 2px rgba(0,0,0,.12), 0 6px 16px -8px color-mix(in srgb, var(--acc) 80%, transparent);
+  }
+  button.on:hover{ background:var(--acc); filter:brightness(1.07) }
+  button.mini{ padding:4px 9px; min-height:26px; font-size:calc(var(--fs) - 2px) }
+  button:disabled{ opacity:.38; cursor:default; box-shadow:none }
+  button:disabled:hover{ background:var(--panel2); border-color:var(--line); color:var(--ink2) }
+
+  .seg{
+    display:flex; background:var(--panel3); border:1px solid var(--line);
+    border-radius:var(--r); padding:3px; gap:3px; box-shadow:var(--canvas-inset);
+    flex-wrap:wrap;
+  }
+  .seg button{
+    border:1px solid transparent; background:transparent; box-shadow:none;
+    padding:5px 10px; min-height:26px; border-radius:var(--r-sm);
+    font-size:calc(var(--fs) - 1px); color:var(--sub); flex:1 1 auto;
+  }
+  .seg button:hover{ background:var(--panel); color:var(--ink) }
+  .seg button.on{
+    background:var(--panel); color:var(--ink); font-weight:700;
+    border-color:var(--line); box-shadow:var(--sh-1);
+  }
+  .seg button.on:hover{ background:var(--panel); filter:none }
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;
+    padding:11px 20px; border-radius:999px; text-decoration:none;
+    font-size:calc(var(--fs) + 1px); font-weight:700; letter-spacing:-.2px;
+    border:1px solid var(--line2); background:var(--panel); color:var(--ink);
+    transition:.16s var(--ease); box-shadow:var(--sh-1); min-height:0;
+  }
+  .btn:hover{ transform:translateY(-2px); box-shadow:var(--sh-2); border-color:var(--line3) }
+  .btn:active{ transform:none }
+  .btn.primary{
+    background:var(--acc); border-color:transparent; color:var(--acc-ink);
+    box-shadow:0 2px 4px rgba(0,0,0,.14), 0 12px 28px -10px color-mix(in srgb, var(--acc) 85%, transparent);
+  }
+  .btn.primary:hover{ filter:brightness(1.06) }
+  .btn:disabled{ opacity:.38; transform:none; box-shadow:var(--sh-1); cursor:default }
+
+  /* ── 머리말 ───────────────────────────────────────────── */
+  header{
+    position:sticky; top:0; z-index:40;
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    padding:10px 18px; background:color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter:saturate(1.4) blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  header .mark{ font-weight:800; letter-spacing:-.3px; font-size:calc(var(--fs) + 2px) }
+  header .mark i{ font-style:normal; color:var(--acc) }
+  header .tag{ color:var(--sub2); font-size:calc(var(--fs) - 2px) }
+  header .grow{ flex:1 }
+
+  /* ── 레이아웃 ─────────────────────────────────────────── */
+  main{
+    display:grid; grid-template-columns:300px minmax(0,1fr) 320px;
+    gap:14px; padding:14px 18px 40px; align-items:start;
+    max-width:1760px; margin:0 auto;
+  }
+  @media (max-width:1300px){ main{ grid-template-columns:290px minmax(0,1fr) } }
+  @media (max-width:900px){ main{ grid-template-columns:1fr; padding:12px } }
+  .col{ display:flex; flex-direction:column; gap:14px; min-width:0 }
+
+  .card{
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:var(--r-lg); box-shadow:var(--sh-1); overflow:hidden;
+  }
+  .card > h2{
+    margin:0; padding:11px 14px 9px; font-size:calc(var(--fs) - 1px);
+    font-weight:750; letter-spacing:.2px; color:var(--sub);
+    border-bottom:1px solid var(--line); background:var(--panel2);
+    display:flex; align-items:center; gap:7px;
+  }
+  .card > h2 .n{
+    width:17px; height:17px; border-radius:50%; background:var(--acc); color:var(--acc-ink);
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size:10px; font-weight:800; flex:none;
+  }
+  .card .body{ padding:12px 14px 14px; display:flex; flex-direction:column; gap:11px }
+
+  .row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap }
+  .row.tight{ gap:6px }
+  .lab{ font-size:calc(var(--fs) - 2px); color:var(--sub); font-weight:650 }
+  .lab b{ color:var(--ink2); font-family:var(--mono); font-weight:700 }
+  .hint{ font-size:calc(var(--fs) - 2px); color:var(--sub2); line-height:1.55 }
+  .hint b{ color:var(--sub); font-weight:650 }
+  .sep{ height:1px; background:var(--line); margin:1px 0 }
+
+  .slider{ display:flex; flex-direction:column; gap:3px }
+  .slider .top{ display:flex; justify-content:space-between; align-items:baseline; gap:8px }
+  .slider .top b{ font-family:var(--mono); font-size:calc(var(--fs) - 1px); color:var(--ink2) }
+  .slider .rng{ color:var(--sub2); font-size:calc(var(--fs) - 4px); font-family:var(--mono) }
+  .slider.warned .top b{ color:var(--warn) }
+
+  /* ── 사진 놓는 자리 ───────────────────────────────────── */
+  .drop{
+    border:1.5px dashed var(--line2); border-radius:var(--r-lg);
+    background:var(--panel2); padding:22px 16px; text-align:center;
+    display:flex; flex-direction:column; align-items:center; gap:9px;
+    transition:.16s var(--ease); cursor:pointer;
+  }
+  .drop:hover, .drop.over{ border-color:var(--acc); background:color-mix(in srgb, var(--acc) 7%, var(--panel2)) }
+  .drop .big{ font-size:26px; line-height:1 }
+  .drop .t{ font-weight:700; color:var(--ink2) }
+
+  /* ── 편집 무대 ────────────────────────────────────────── */
+  .stage{
+    position:relative; background:var(--stage); border-radius:var(--r-lg);
+    border:1px solid var(--line); box-shadow:var(--canvas-inset);
+    overflow:hidden; touch-action:none; min-height:340px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .stage canvas{ display:block; max-width:100%; touch-action:none }
+  .stage .empty{ color:var(--sub2); padding:60px 20px; text-align:center; font-size:calc(var(--fs) + 1px) }
+
+  /* 돋보기 — 줄을 끌 때만 뜬다 */
+  .loupe{
+    position:absolute; width:132px; height:132px; border-radius:50%;
+    border:2px solid var(--panel); box-shadow:var(--sh-3);
+    pointer-events:none; opacity:0; transition:opacity .12s var(--ease);
+    overflow:hidden; z-index:5; background:var(--panel);
+  }
+  .loupe.on{ opacity:1 }
+  .loupe canvas{ width:100%; height:100% }
+
+  /* ── 결과 ─────────────────────────────────────────────── */
+  .result{
+    display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap;
+  }
+  .shot{
+    background:var(--panel2); border:1px solid var(--line); border-radius:var(--r);
+    padding:9px; box-shadow:var(--sh-1); display:flex; flex-direction:column; gap:7px;
+    align-items:center;
+  }
+  .shot canvas{ display:block; border-radius:3px; box-shadow:0 1px 4px rgba(0,0,0,.14) }
+  .shot .cap{ font-size:calc(var(--fs) - 3px); color:var(--sub2); font-family:var(--mono) }
+
+  .swatches{ display:flex; gap:6px; flex-wrap:wrap }
+  .sw{
+    width:34px; height:30px; border-radius:var(--r-sm); cursor:pointer;
+    border:1px solid var(--line2); box-shadow:var(--sh-1); padding:0;
+  }
+  .sw.on{ box-shadow:0 0 0 2px var(--acc), var(--sh-1); border-color:transparent }
+
+  .checks{ display:flex; flex-direction:column; gap:5px }
+  .chk{ display:flex; align-items:flex-start; gap:7px; font-size:calc(var(--fs) - 2px); color:var(--sub) }
+  .chk .dot{ width:7px; height:7px; border-radius:50%; margin-top:5px; flex:none; background:var(--sub2) }
+  .chk.ok .dot{ background:var(--ok) } .chk.ok{ color:var(--ink2) }
+  .chk.bad .dot{ background:var(--warn) } .chk.bad{ color:var(--warn) }
+
+  footer{
+    max-width:1760px; margin:0 auto; padding:0 18px 40px;
+    color:var(--sub2); font-size:calc(var(--fs) - 2px); line-height:1.7;
+  }
+  .toast{
+    position:fixed; left:50%; bottom:26px; transform:translate(-50%, 14px);
+    background:var(--ink); color:var(--bg); padding:9px 16px; border-radius:999px;
+    font-size:calc(var(--fs) - 1px); font-weight:650; box-shadow:var(--sh-3);
+    opacity:0; pointer-events:none; transition:.2s var(--ease); z-index:90;
+  }
+  .toast.on{ opacity:1; transform:translate(-50%, 0) }
+
+  @media print{
+    header, main .col:first-child, main .col:last-child, footer, .toast{ display:none !important }
+    #app{ background:#fff }
+    main{ display:block; padding:0 }
+  }
+  @media (prefers-reduced-motion:reduce){
+    #app *{ transition-duration:.01ms !important }
+  }
+</style>
+
+<div id="app" data-theme="light">
+  <header>
+    <span class="mark">증명사진 <i>자판기</i></span>
+    <span class="tag">두 줄만 맞추면 규격이 나옵니다</span>
+    <span class="grow"></span>
+    <span class="tag" id="privacy">🔒 사진은 이 기기 밖으로 나가지 않습니다</span>
+    <button id="theme" title="밝기 바꾸기">◐</button>
+  </header>
+
+  <main>
+    <!-- ── 왼쪽: 사진과 규격 ─────────────────────────────── -->
+    <div class="col">
+      <section class="card">
+        <h2><span class="n">1</span> 사진 넣기</h2>
+        <div class="body">
+          <div class="drop" id="drop">
+            <div class="big">🖼</div>
+            <div class="t">사진을 여기에 놓거나 눌러서 고르기</div>
+            <div class="hint">붙여넣기(Ctrl+V)도 됩니다</div>
+          </div>
+          <input type="file" id="file" accept="image/*" hidden>
+          <div class="hint" id="srcinfo" style="display:none"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2><span class="n">2</span> 규격 고르기</h2>
+        <div class="body">
+          <div class="seg" id="specs"></div>
+          <div class="row" id="freedims" style="display:none">
+            <label class="lab">가로 <input type="number" id="fw" min="10" max="200" step="1" value="35"> mm</label>
+            <label class="lab">세로 <input type="number" id="fh" min="10" max="200" step="1" value="45"> mm</label>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="slider" id="s-head">
+            <div class="top"><span class="lab">얼굴 길이 <span class="hint">정수리~턱</span></span><b><span id="headv">32.0</span>mm</b></div>
+            <input type="range" id="head" min="10" max="60" step="0.5">
+            <div class="rng" id="headrng"></div>
+          </div>
+
+          <div class="slider" id="s-top">
+            <div class="top"><span class="lab">머리 위 여백</span><b><span id="topv">4.5</span>mm</b></div>
+            <input type="range" id="topm" min="0" max="20" step="0.5">
+            <div class="rng" id="toprng"></div>
+          </div>
+
+          <div class="row">
+            <span class="lab">해상도</span>
+            <div class="seg" id="dpis" style="flex:1">
+              <button data-dpi="300" class="on">300dpi</button>
+              <button data-dpi="600">600dpi</button>
+            </div>
+          </div>
+          <div class="hint" id="pxinfo"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>규격 점검</h2>
+        <div class="body">
+          <div class="checks" id="checks"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ── 가운데: 기준선 맞추기 ─────────────────────────── -->
+    <div class="col">
+      <section class="card">
+        <h2><span class="n">3</span> 기준선 맞추기 — 정수리·턱끝·얼굴 중심</h2>
+        <div class="body">
+          <div class="stage" id="stage">
+            <div class="empty" id="stageEmpty">왼쪽에 사진을 먼저 넣어 주세요</div>
+            <canvas id="edit" style="display:none"></canvas>
+            <div class="loupe" id="loupe"><canvas id="loupeC" width="264" height="264"></canvas></div>
+          </div>
+          <div class="row">
+            <div class="seg" id="guides" style="flex:1">
+              <button data-g="top" class="on">정수리</button>
+              <button data-g="chin">턱끝</button>
+              <button data-g="cx">얼굴 중심</button>
+            </div>
+            <button id="auto" title="배경과 피사체 경계로 다시 추측">다시 추측</button>
+          </div>
+          <div class="hint">
+            줄을 <b>끌어서</b> 옮기거나, 고른 뒤 <b>화살표 키</b>로 한 픽셀씩 밉니다(Shift 누르면 10픽셀).
+            정수리는 <b>머리카락 맨 위</b>, 턱끝은 <b>턱뼈 아래 끝</b>에 놓습니다.
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2><span class="n">5</span> 결과</h2>
+        <div class="body">
+          <div class="result">
+            <div class="shot">
+              <canvas id="out"></canvas>
+              <div class="cap" id="outcap">—</div>
+            </div>
+            <div style="flex:1; min-width:190px; display:flex; flex-direction:column; gap:9px">
+              <button class="btn primary" id="save">사진 내려받기</button>
+              <button class="btn" id="saveSheet">인화지 한 장 내려받기</button>
+              <button class="btn" id="print">인쇄</button>
+              <div class="hint" id="savehint">인화지는 사진관·무인 인화기에 그대로 넣으면 됩니다.</div>
+            </div>
+          </div>
+          <div class="sep"></div>
+          <div class="shot" style="align-self:flex-start; max-width:100%">
+            <canvas id="sheet"></canvas>
+            <div class="cap" id="sheetcap">—</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ── 오른쪽: 배경과 보정 ───────────────────────────── -->
+    <div class="col">
+      <section class="card">
+        <h2><span class="n">4</span> 배경</h2>
+        <div class="body">
+          <div class="seg" id="bgs">
+            <button data-bg="keep" class="on">그대로</button>
+            <button data-bg="white">흰색</button>
+            <button data-bg="grey">회색 그러데이션</button>
+            <button data-bg="flat">단색</button>
+          </div>
+          <div id="bgflat" style="display:none" class="row">
+            <span class="lab">색</span>
+            <div class="swatches" id="swatches"></div>
+          </div>
+          <div class="slider" id="s-key" style="display:none">
+            <div class="top"><span class="lab">따내는 정도</span><b><span id="keyv">14</span></b></div>
+            <input type="range" id="key" min="4" max="46" step="1" value="14">
+            <div class="rng">머리카락 끝이 뭉텅 잘리면 낮추고, 배경이 남으면 올립니다</div>
+          </div>
+          <div class="hint">
+            배경이 원래 단색일 때만 깔끔합니다. 벽지·창문 같은 배경은
+            사진관에서 다시 찍는 편이 낫습니다.
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>보정</h2>
+        <div class="body">
+          <div class="slider">
+            <div class="top"><span class="lab">밝기</span><b><span id="briv">0</span></b></div>
+            <input type="range" id="bri" min="-40" max="40" step="1" value="0">
+          </div>
+          <div class="slider">
+            <div class="top"><span class="lab">대비</span><b><span id="conv">10</span></b></div>
+            <input type="range" id="con" min="-30" max="50" step="1" value="10">
+          </div>
+          <div class="slider">
+            <div class="top"><span class="lab">따뜻함</span><b><span id="wrmv">0</span></b></div>
+            <input type="range" id="wrm" min="-30" max="30" step="1" value="0">
+          </div>
+          <div class="slider">
+            <div class="top"><span class="lab">선명도</span><b><span id="shpv">40</span></b></div>
+            <input type="range" id="shp" min="0" max="100" step="1" value="40">
+            <div class="rng">피부를 문지르지 않고 결만 살립니다 — AI 보정 특유의 밀랍 느낌을 막아 줍니다</div>
+          </div>
+          <div class="row">
+            <button id="reset" class="mini">보정 되돌리기</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>인화지</h2>
+        <div class="body">
+          <div class="seg" id="papers">
+            <button data-p="4x6" class="on">4×6″</button>
+            <button data-p="5x7">5×7″</button>
+            <button data-p="a4">A4</button>
+          </div>
+          <div class="row">
+            <label class="lab"><input type="checkbox" id="cut" checked> 가위선 그리기</label>
+          </div>
+          <div class="hint" id="fitinfo"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    치수는 <b>여권용 사진 규격</b>(가로 35mm·세로 45mm, 얼굴 길이 32~36mm, 머리 위 여백 3~5mm)을 기준으로 삼았습니다.
+    회사 지원서나 학교 서류는 규격이 조금씩 다를 수 있으니 공고를 한 번 더 확인해 주세요.<br>
+    사진은 브라우저 안에서만 처리됩니다. 서버로 올라가지 않고, 새로고침하면 남지 않습니다.
+  </footer>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+/* ══════════════════════════════════════════════════════════
+   0. 자잘한 도구들
+   ══════════════════════════════════════════════════════════ */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const MM = mm => mm / 25.4;                 // mm → 인치
+const app = $("#app");
+
+let toastT = 0;
+function toast(msg){
+  const t = $("#toast");
+  t.textContent = msg; t.classList.add("on");
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 2200);
+}
+
+/* ══════════════════════════════════════════════════════════
+   1. 규격표
+   head/top 은 [최소, 기본, 최대] mm. 범위를 벗어나면 점검 칸이 빨개진다.
+   ══════════════════════════════════════════════════════════ */
+const SPECS = [
+  { key:"id34", label:"증명 3×4",     w:30, h:40, head:[24, 27, 30],   top:[3, 4, 6] },
+  { key:"pp",   label:"여권·취업 3.5×4.5", w:35, h:45, head:[32, 32, 36], top:[3, 4.5, 5] },
+  { key:"half", label:"반명함 5×7",   w:50, h:70, head:[40, 46, 52],   top:[5, 7, 10] },
+  { key:"usv",  label:"미국비자 2×2″", w:51, h:51, head:[25, 30, 35],  top:[6, 9, 13] },
+  { key:"free", label:"자유",         w:35, h:45, head:[10, 32, 60],   top:[0, 4.5, 20] },
+];
+
+const PAPERS = {
+  "4x6": { label:"4×6인치", w:152.4, h:101.6 },
+  "5x7": { label:"5×7인치", w:177.8, h:127.0 },
+  "a4":  { label:"A4",      w:297.0, h:210.0 },
+};
+
+const FLATS = ["#ffffff", "#f0f1f3", "#dfe4ea", "#cfd8e3", "#b9c7d6", "#8fa6bd", "#c8d6c9"];
+
+/* ══════════════════════════════════════════════════════════
+   2. 상태
+   ══════════════════════════════════════════════════════════ */
+const S = {
+  img: null, name: "",
+  headTop: 0, chin: 0, cx: 0,        // 원본 픽셀 좌표
+  spec: "pp", fw: 35, fh: 45,
+  headMM: 32, topMM: 4.5,
+  dpi: 300,
+  bg: "keep", flat: "#ffffff", key: 14,
+  bri: 0, con: 10, wrm: 0, shp: 40,
+  paper: "4x6", cut: true,
+  guide: "top",
+};
+
+const spec = () => SPECS.find(s => s.key === S.spec);
+const specW = () => S.spec === "free" ? S.fw : spec().w;
+const specH = () => S.spec === "free" ? S.fh : spec().h;
+
+/* 원본 화소들을 담아 두는 작업대. 매번 다시 만들지 않는다. */
+let srcCv = null, srcCtx = null;
+
+/* ══════════════════════════════════════════════════════════
+   3. 사진 받기
+   ══════════════════════════════════════════════════════════ */
+const drop = $("#drop"), fileIn = $("#file");
+drop.addEventListener("click", () => fileIn.click());
+fileIn.addEventListener("change", e => { if (e.target.files[0]) load(e.target.files[0]); });
+
+["dragenter", "dragover"].forEach(t => drop.addEventListener(t, e => {
+  e.preventDefault(); drop.classList.add("over");
+}));
+["dragleave", "drop"].forEach(t => drop.addEventListener(t, e => {
+  e.preventDefault(); drop.classList.remove("over");
+}));
+drop.addEventListener("drop", e => {
+  const f = Array.from(e.dataTransfer.files).find(f => f.type.startsWith("image/"));
+  if (f) load(f); else toast("사진 파일이 아닙니다");
+});
+window.addEventListener("paste", e => {
+  const it = Array.from(e.clipboardData?.items || []).find(i => i.type.startsWith("image/"));
+  if (it) load(it.getAsFile());
+});
+
+function load(file){
+  const img = new Image();
+  img.onload = () => {
+    S.img = img;
+    S.name = (file.name || "photo").replace(/\.[^.]+$/, "");
+
+    srcCv = document.createElement("canvas");
+    srcCv.width = img.naturalWidth; srcCv.height = img.naturalHeight;
+    srcCtx = srcCv.getContext("2d", { willReadFrequently:true });
+    srcCtx.drawImage(img, 0, 0);
+
+    guessGuides();
+    $("#stageEmpty").style.display = "none";
+    $("#edit").style.display = "block";
+    $("#srcinfo").style.display = "block";
+    $("#srcinfo").innerHTML = `<b>${escapeHtml(file.name || "사진")}</b> · ${img.naturalWidth}×${img.naturalHeight}px`;
+    drop.querySelector(".t").textContent = "다른 사진으로 바꾸기";
+    layoutStage(); renderAll();
+    URL.revokeObjectURL(img.src);
+  };
+  img.onerror = () => toast("사진을 열지 못했습니다");
+  img.src = URL.createObjectURL(file);
+}
+
+const escapeHtml = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+
+/* ══════════════════════════════════════════════════════════
+   4. 기준선 자동 추측
+   테두리 색을 배경으로 보고, 그와 다른 화소가 처음 뭉치는 줄을 정수리로 잡는다.
+   턱끝은 사람 얼굴 비례로 어림잡아 두고, 나머지는 눈으로 맞추게 한다.
+   ══════════════════════════════════════════════════════════ */
+function guessGuides(){
+  const w = srcCv.width, h = srcCv.height;
+  const d = srcCtx.getImageData(0, 0, w, h).data;
+
+  // 위 모서리 네 곳을 배경 표본으로
+  const pick = (x, y) => { const i = (y * w + x) * 4; return [d[i], d[i+1], d[i+2]]; };
+  const samples = [pick(2, 2), pick(w-3, 2), pick(2, (h*0.06)|0), pick(w-3, (h*0.06)|0)];
+  const bg = [0,1,2].map(c => samples.reduce((a, s) => a + s[c], 0) / samples.length);
+
+  const far = (x, y) => {
+    const i = (y * w + x) * 4;
+    return Math.abs(d[i]-bg[0]) + Math.abs(d[i+1]-bg[1]) + Math.abs(d[i+2]-bg[2]) > 60;
+  };
+
+  const need = Math.max(3, (w * 0.012) | 0);       // 먼지 한 점에 속지 않도록
+  let top = 0;
+  for (let y = 0; y < h; y++){
+    let n = 0;
+    for (let x = 0; x < w; x += 2) if (far(x, y)) n++;
+    if (n * 2 >= need) { top = y; break; }
+  }
+
+  // 정수리 아래 얼마쯤에서 가로로 가장 넓은 곳 = 대략 귀 높이. 그 x 중앙을 얼굴 중심으로.
+  let sum = 0, cnt = 0;
+  const band = Math.min(h - 1, top + ((h - top) * 0.28) | 0);
+  for (let y = top; y <= band; y += 2){
+    for (let x = 0; x < w; x += 2) if (far(x, y)) { sum += x; cnt++; }
+  }
+  const cx = cnt ? sum / cnt : w / 2;
+
+  S.headTop = top; S.cx = Math.round(cx);
+  S.chin = Math.round(guessChin(d, w, h, top, cx));
+}
+
+/* 턱끝은 눈으로 보고 맞추는 것이 맞다. 다만 처음 놓이는 자리가 가까울수록
+   손이 덜 가므로, 얼굴에서 가장 붉은 줄(입술)을 찾아 되짚는다.
+   입술~턱끝은 정수리~입술의 대략 5분의 1이다. */
+function guessChin(d, w, h, top, cx){
+  const span = h - top;
+  const lo = top + span * 0.25, hi = top + span * 0.80;
+  const x0 = Math.max(0, Math.round(cx - w * 0.09));
+  const x1 = Math.min(w - 1, Math.round(cx + w * 0.09));
+
+  let bestY = -1, best = 0;
+  for (let y = Math.round(lo); y < hi; y++){
+    let red = 0, n = 0;
+    for (let x = x0; x <= x1; x++){
+      const i = (y * w + x) * 4;
+      const r = d[i], g = d[i+1], b = d[i+2];
+      if (r < 70) continue;                       // 머리카락·그림자는 뺀다
+      red += r - (g + b) / 2; n++;
+    }
+    if (n < 8) continue;
+    const v = red / n;
+    if (v > best){ best = v; bestY = y; }
+  }
+
+  // 입술이라 부를 만큼 붉지 않으면(흑백 사진 등) 흔한 비율로 물러선다
+  if (bestY < 0 || best < 18) return Math.min(h - 2, top + span * 0.62);
+
+  const chin = bestY + (bestY - top) * 0.21;
+  return clamp(chin, top + span * 0.40, Math.min(h - 2, top + span * 0.90));
+}
+
+$("#auto").addEventListener("click", () => {
+  if (!S.img) return;
+  guessGuides(); renderAll(); toast("배경 경계로 다시 잡았습니다");
+});
+
+/* ══════════════════════════════════════════════════════════
+   5. 크롭 상자 계산 — 이 도구의 심장
+   얼굴 길이(정수리~턱)를 규격의 몇 mm로 앉힐지 정하면 배율이 정해지고,
+   머리 위 여백이 정해지면 위치가 정해진다.
+   ══════════════════════════════════════════════════════════ */
+function cropBox(){
+  const headPx = Math.max(1, S.chin - S.headTop);
+  const H = specH();
+  const ch = headPx / (S.headMM / H);          // 잘라낼 세로 길이(원본 픽셀)
+  const cw = ch * specW() / H;
+  const top = S.headTop - ch * (S.topMM / H);
+  const left = S.cx - cw / 2;
+  return { x:left, y:top, w:cw, h:ch };
+}
+
+/* ══════════════════════════════════════════════════════════
+   6. 결과 그리기
+   잘라내기 → 배경 → 크기 맞추기 → 톤 → 선명도, 이 순서.
+   ══════════════════════════════════════════════════════════ */
+function outSize(){
+  return {
+    w: Math.round(MM(specW()) * S.dpi),
+    h: Math.round(MM(specH()) * S.dpi),
+  };
+}
+
+function renderOutput(){
+  const { w:OW, h:OH } = outSize();
+  const box = cropBox();
+
+  // 1) 잘라내기. 원본 밖으로 나간 자리는 배경색으로 메운다.
+  const cut = document.createElement("canvas");
+  cut.width = Math.max(1, Math.round(box.w));
+  cut.height = Math.max(1, Math.round(box.h));
+  const cx = cut.getContext("2d", { willReadFrequently:true });
+  cx.fillStyle = edgeColor();
+  cx.fillRect(0, 0, cut.width, cut.height);
+  cx.drawImage(srcCv, Math.round(box.x), Math.round(box.y), cut.width, cut.height,
+                      0, 0, cut.width, cut.height);
+
+  // 2) 배경 갈아 끼우기 (원본 해상도에서 해야 머리카락 경계가 산다)
+  if (S.bg !== "keep") replaceBackground(cut, cx);
+
+  // 3) 규격 크기로. 반씩 줄여 내려가면 계단이 덜 생긴다.
+  const fit = downscale(cut, OW, OH);
+
+  // 4) 톤 + 5) 선명도
+  const fx = fit.getContext("2d", { willReadFrequently:true });
+  tone(fit, fx);
+  if (S.shp > 0) sharpen(fit, fx, S.shp / 100);
+
+  return fit;
+}
+
+/** 크롭 상자 테두리 근처에서 가장 흔한 색 — 원본 밖을 메울 때 쓴다. */
+function edgeColor(){
+  const w = srcCv.width;
+  const d = srcCtx.getImageData(0, 0, w, 1).data;
+  let r = 0, g = 0, b = 0, n = 0;
+  for (let x = 0; x < w; x += Math.max(1, (w / 60) | 0)){
+    const i = x * 4; r += d[i]; g += d[i+1]; b += d[i+2]; n++;
+  }
+  return `rgb(${Math.round(r/n)},${Math.round(g/n)},${Math.round(b/n)})`;
+}
+
+/* ── 배경 따내기 ──────────────────────────────────────────
+   색 거리로 알파를 만든 뒤, 테두리에서 물이 흘러 닿는 곳만 배경으로 인정한다.
+   이 두 번째 단계가 없으면 이마 하이라이트나 흰 셔츠까지 뚫린다.
+   ────────────────────────────────────────────────────── */
+function replaceBackground(cv, ctx){
+  const w = cv.width, h = cv.height;
+  const im = ctx.getImageData(0, 0, w, h), d = im.data;
+
+  const s = [[2,2], [w-3,2], [2,h>>3], [w-3,h>>3]].map(([x,y]) => {
+    const i = (y*w+x)*4; return [d[i], d[i+1], d[i+2]];
+  });
+  const bg = [0,1,2].map(c => s.reduce((a,v) => a+v[c], 0) / s.length);
+
+  const soft = S.key, hard = S.key * 2.6;
+  const alpha = new Float32Array(w * h);
+  for (let p = 0, i = 0; p < w*h; p++, i += 4){
+    const dist = Math.abs(d[i]-bg[0]) + Math.abs(d[i+1]-bg[1]) + Math.abs(d[i+2]-bg[2]);
+    alpha[p] = 1 - clamp((dist - soft) / (hard - soft), 0, 1);
+  }
+
+  // 테두리에서 번져 나가는 칠하기 — 배경으로 이어진 곳만 남긴다
+  const keep = new Uint8Array(w * h);
+  const q = new Int32Array(w * h);
+  let qs = 0, qe = 0;
+  const push = p => { if (!keep[p] && alpha[p] > 0.5){ keep[p] = 1; q[qe++] = p; } };
+  for (let x = 0; x < w; x++){ push(x); push((h-1)*w + x); }
+  for (let y = 0; y < h; y++){ push(y*w); push(y*w + w-1); }
+  while (qs < qe){
+    const p = q[qs++], x = p % w, y = (p / w) | 0;
+    if (x > 0) push(p-1);
+    if (x < w-1) push(p+1);
+    if (y > 0) push(p-w);
+    if (y < h-1) push(p+w);
+  }
+  // 반투명 가장자리는 이웃이 배경이면 함께 인정 (머리카락 끝)
+  for (let p = 0; p < w*h; p++){
+    if (!keep[p] && alpha[p] > 0.02){
+      const x = p % w, y = (p / w) | 0;
+      if ((x > 0 && keep[p-1]) || (x < w-1 && keep[p+1]) ||
+          (y > 0 && keep[p-w]) || (y < h-1 && keep[p+w])) keep[p] = 2;
+    }
+  }
+  for (let p = 0; p < w*h; p++) if (!keep[p]) alpha[p] = 0;
+
+  const bgpx = backdrop(w, h);
+  for (let p = 0, i = 0; p < w*h; p++, i += 4){
+    const a = alpha[p];
+    if (a <= 0) continue;
+    d[i]   = d[i]   * (1-a) + bgpx[p*3]   * a;
+    d[i+1] = d[i+1] * (1-a) + bgpx[p*3+1] * a;
+    d[i+2] = d[i+2] * (1-a) + bgpx[p*3+2] * a;
+  }
+  ctx.putImageData(im, 0, 0);
+}
+
+/** 새 배경의 화소를 미리 계산해 둔다. */
+function backdrop(w, h){
+  const out = new Float32Array(w * h * 3);
+  if (S.bg === "grey"){
+    for (let y = 0; y < h; y++){
+      const t = Math.pow(y / (h-1), 1.35);
+      for (let x = 0; x < w; x++){
+        const u = (x / (w-1)) * 2 - 1;
+        const v = 246 - 26 * t - 6 * u * u;
+        const p = (y*w + x) * 3;
+        out[p] = v; out[p+1] = v; out[p+2] = v + 1.5;
+      }
+    }
+  } else {
+    const c = S.bg === "white" ? "#ffffff" : S.flat;
+    const r = parseInt(c.slice(1,3), 16), g = parseInt(c.slice(3,5), 16), b = parseInt(c.slice(5,7), 16);
+    for (let p = 0; p < w*h; p++){ out[p*3] = r; out[p*3+1] = g; out[p*3+2] = b; }
+  }
+  return out;
+}
+
+/** 절반씩 줄여 가며 목표 크기로. 한 번에 확 줄이면 결이 뭉개진다. */
+function downscale(src, W, H){
+  let cur = src;
+  while (cur.width > W * 2 && cur.height > H * 2){
+    const n = document.createElement("canvas");
+    n.width = Math.max(W, cur.width >> 1);
+    n.height = Math.max(H, cur.height >> 1);
+    const c = n.getContext("2d");
+    c.imageSmoothingEnabled = true; c.imageSmoothingQuality = "high";
+    c.drawImage(cur, 0, 0, n.width, n.height);
+    cur = n;
+  }
+  const out = document.createElement("canvas");
+  out.width = W; out.height = H;
+  const c = out.getContext("2d", { willReadFrequently:true });
+  c.imageSmoothingEnabled = true; c.imageSmoothingQuality = "high";
+  c.drawImage(cur, 0, 0, W, H);
+  return out;
+}
+
+/* ── 톤 ───────────────────────────────────────────────────
+   S 커브라 양 끝(0과 255)이 고정된다. 흰 배경이 회색으로 뜨지 않는다.
+   ────────────────────────────────────────────────────── */
+function tone(cv, ctx){
+  if (!S.bri && !S.con && !S.wrm) return;
+  const im = ctx.getImageData(0, 0, cv.width, cv.height), d = im.data;
+
+  const lut = new Uint8Array(256);
+  const k = S.con / 100 * 0.55, b = S.bri / 255 * 0.85;
+  for (let v = 0; v < 256; v++){
+    let x = v / 255;
+    x = x - k * Math.sin(2 * Math.PI * x) / (2 * Math.PI);
+    x = clamp(x + b * (1 - Math.abs(x - 0.5) * 0.7), 0, 1);
+    lut[v] = Math.round(x * 255);
+  }
+  const wr = S.wrm / 100 * 16;
+  for (let i = 0; i < d.length; i += 4){
+    d[i]   = clamp(lut[d[i]]   + wr, 0, 255);
+    d[i+1] = lut[d[i+1]];
+    d[i+2] = clamp(lut[d[i+2]] - wr, 0, 255);
+  }
+  ctx.putImageData(im, 0, 0);
+}
+
+/* ── 선명도 ───────────────────────────────────────────────
+   흐린 판을 만들어 원본과의 차이를 되돌려 준다(언샤프 마스크).
+   문턱을 두어 매끈한 피부는 건드리지 않고 눈·머리카락만 살아난다.
+   ────────────────────────────────────────────────────── */
+function sharpen(cv, ctx, amount){
+  const w = cv.width, h = cv.height;
+  const im = ctx.getImageData(0, 0, w, h), d = im.data;
+  const n = w * h;
+  const orig = new Float32Array(n * 3);
+  for (let p = 0; p < n; p++){
+    orig[p*3] = d[p*4]; orig[p*3+1] = d[p*4+1]; orig[p*3+2] = d[p*4+2];
+  }
+  const blur = boxBlur(orig, w, h, Math.max(1, Math.round(Math.min(w, h) / 260)));
+
+  const amt = amount * 1.15, thr = 3;
+  for (let p = 0; p < n; p++){
+    for (let c = 0; c < 3; c++){
+      const o = orig[p*3+c], diff = o - blur[p*3+c];
+      const v = Math.abs(diff) <= thr ? o : o + diff * amt;
+      d[p*4+c] = clamp(v, 0, 255);
+    }
+  }
+  ctx.putImageData(im, 0, 0);
+}
+
+/** 가로·세로로 두 번 훑는 상자 흐림. 두 번 돌리면 가우시안에 가까워진다. */
+function boxBlur(src, w, h, r){
+  let a = src, b = new Float32Array(src.length);
+  for (let pass = 0; pass < 2; pass++){
+    // 가로
+    for (let y = 0; y < h; y++){
+      for (let c = 0; c < 3; c++){
+        let sum = 0;
+        for (let x = -r; x <= r; x++) sum += a[(y*w + clamp(x, 0, w-1))*3 + c];
+        for (let x = 0; x < w; x++){
+          b[(y*w + x)*3 + c] = sum / (2*r + 1);
+          sum += a[(y*w + clamp(x + r + 1, 0, w-1))*3 + c] - a[(y*w + clamp(x - r, 0, w-1))*3 + c];
+        }
+      }
+    }
+    [a, b] = [b, a];
+    // 세로
+    for (let x = 0; x < w; x++){
+      for (let c = 0; c < 3; c++){
+        let sum = 0;
+        for (let y = -r; y <= r; y++) sum += a[(clamp(y, 0, h-1)*w + x)*3 + c];
+        for (let y = 0; y < h; y++){
+          b[(y*w + x)*3 + c] = sum / (2*r + 1);
+          sum += a[(clamp(y + r + 1, 0, h-1)*w + x)*3 + c] - a[(clamp(y - r, 0, h-1)*w + x)*3 + c];
+        }
+      }
+    }
+    [a, b] = [b, a];
+  }
+  return a;
+}
+
+/* ══════════════════════════════════════════════════════════
+   7. 편집 화면 — 사진 위에 줄 세 개
+   ══════════════════════════════════════════════════════════ */
+const edit = $("#edit"), ectx = edit.getContext("2d");
+let view = { scale:1, ox:0, oy:0 };
+
+function layoutStage(){
+  if (!S.img) return;
+  const stage = $("#stage");
+  const availW = stage.clientWidth - 24;
+  const availH = Math.max(320, Math.min(560, window.innerHeight - 330));
+  const sc = Math.min(availW / srcCv.width, availH / srcCv.height, 1.6);
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  view.scale = sc;
+  edit.style.width = Math.round(srcCv.width * sc) + "px";
+  edit.style.height = Math.round(srcCv.height * sc) + "px";
+  edit.width = Math.round(srcCv.width * sc * dpr);
+  edit.height = Math.round(srcCv.height * sc * dpr);
+  view.dpr = dpr;
+}
+
+function drawEdit(){
+  if (!S.img) return;
+  const dpr = view.dpr, sc = view.scale * dpr;
+  ectx.setTransform(1, 0, 0, 1, 0, 0);
+  ectx.clearRect(0, 0, edit.width, edit.height);
+  ectx.imageSmoothingQuality = "high";
+  ectx.drawImage(srcCv, 0, 0, edit.width, edit.height);
+
+  const box = cropBox();
+  const X = v => v * sc, Y = v => v * sc;
+
+  // 잘려 나갈 바깥쪽을 어둡게
+  ectx.fillStyle = "rgba(10,12,16,.52)";
+  ectx.beginPath();
+  ectx.rect(0, 0, edit.width, edit.height);
+  ectx.rect(X(box.x), Y(box.y), X(box.w), Y(box.h));
+  ectx.fill("evenodd");
+
+  // 크롭 테두리
+  ectx.strokeStyle = "#ffffff"; ectx.lineWidth = Math.max(1, 1.5 * dpr);
+  ectx.strokeRect(X(box.x), Y(box.y), X(box.w), Y(box.h));
+
+  const line = (y, color, label) => {
+    ectx.strokeStyle = color; ectx.lineWidth = Math.max(1, 1.6 * dpr);
+    ectx.setLineDash([7 * dpr, 5 * dpr]);
+    ectx.beginPath(); ectx.moveTo(0, Y(y)); ectx.lineTo(edit.width, Y(y)); ectx.stroke();
+    ectx.setLineDash([]);
+    tag(label, 8 * dpr, Y(y) - 6 * dpr, color);
+  };
+  line(S.headTop, "#5ac8fa", "정수리");
+  line(S.chin, "#ffd60a", "턱끝");
+
+  ectx.strokeStyle = "#ff6b8a"; ectx.lineWidth = Math.max(1, 1.6 * dpr);
+  ectx.setLineDash([7 * dpr, 5 * dpr]);
+  ectx.beginPath(); ectx.moveTo(X(S.cx), 0); ectx.lineTo(X(S.cx), edit.height); ectx.stroke();
+  ectx.setLineDash([]);
+
+  function tag(text, x, y, color){
+    ectx.font = `700 ${11 * dpr}px ui-monospace, monospace`;
+    const w = ectx.measureText(text).width + 10 * dpr;
+    ectx.fillStyle = color;
+    ectx.fillRect(x, y - 13 * dpr, w, 16 * dpr);
+    ectx.fillStyle = "#0e1014";
+    ectx.fillText(text, x + 5 * dpr, y - 1.5 * dpr);
+  }
+}
+
+/* ── 줄 끌기 ─────────────────────────────────────────── */
+let dragging = null;
+const HIT = 14;   // 화면 픽셀 기준 잡히는 거리
+
+edit.addEventListener("pointerdown", e => {
+  if (!S.img) return;
+  const r = edit.getBoundingClientRect();
+  const px = (e.clientX - r.left) / view.scale, py = (e.clientY - r.top) / view.scale;
+  const tol = HIT / view.scale;
+
+  const cands = [
+    ["top", Math.abs(py - S.headTop)],
+    ["chin", Math.abs(py - S.chin)],
+    ["cx", Math.abs(px - S.cx)],
+  ].sort((a, b) => a[1] - b[1]);
+
+  dragging = cands[0][1] <= tol ? cands[0][0] : S.guide;
+  setGuide(dragging);
+  edit.setPointerCapture(e.pointerId);
+  moveGuide(px, py);
+  showLoupe(e);
+});
+edit.addEventListener("pointermove", e => {
+  if (!dragging) return;
+  const r = edit.getBoundingClientRect();
+  moveGuide((e.clientX - r.left) / view.scale, (e.clientY - r.top) / view.scale);
+  showLoupe(e);
+});
+["pointerup", "pointercancel"].forEach(t => edit.addEventListener(t, () => {
+  dragging = null; $("#loupe").classList.remove("on");
+}));
+
+function moveGuide(px, py){
+  if (dragging === "top") S.headTop = clamp(Math.round(py), 0, S.chin - 8);
+  else if (dragging === "chin") S.chin = clamp(Math.round(py), S.headTop + 8, srcCv.height);
+  else S.cx = clamp(Math.round(px), 0, srcCv.width);
+  renderAll();
+}
+
+function showLoupe(e){
+  const lo = $("#loupe"), lc = $("#loupeC"), g = lc.getContext("2d");
+  const stage = $("#stage").getBoundingClientRect();
+  const r = edit.getBoundingClientRect();
+  const px = (e.clientX - r.left) / view.scale, py = (e.clientY - r.top) / view.scale;
+
+  const Z = 4, half = lc.width / (2 * Z);
+  g.imageSmoothingEnabled = false;
+  g.fillStyle = "#000"; g.fillRect(0, 0, lc.width, lc.height);
+  g.drawImage(srcCv, px - half, py - half, half * 2, half * 2, 0, 0, lc.width, lc.height);
+  // 한가운데 십자
+  g.strokeStyle = dragging === "cx" ? "#ff6b8a" : dragging === "chin" ? "#ffd60a" : "#5ac8fa";
+  g.lineWidth = 2;
+  g.beginPath();
+  if (dragging === "cx"){ g.moveTo(lc.width/2, 0); g.lineTo(lc.width/2, lc.height); }
+  else { g.moveTo(0, lc.height/2); g.lineTo(lc.width, lc.height/2); }
+  g.stroke();
+
+  lo.classList.add("on");
+  lo.style.left = clamp(e.clientX - stage.left - 66, 4, stage.width - 136) + "px";
+  lo.style.top = clamp(e.clientY - stage.top - 156, 4, stage.height - 136) + "px";
+}
+
+/* 화살표 키로 미세 조정 */
+window.addEventListener("keydown", e => {
+  if (!S.img) return;
+  if (["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement?.tagName)) return;
+  const step = e.shiftKey ? 10 : 1;
+  const horiz = S.guide === "cx";
+  let d = 0;
+  if (e.key === "ArrowUp") d = -step; else if (e.key === "ArrowDown") d = step;
+  else if (e.key === "ArrowLeft") d = -step; else if (e.key === "ArrowRight") d = step;
+  else return;
+  const vertical = e.key === "ArrowUp" || e.key === "ArrowDown";
+  if (horiz === vertical) return;                     // 방향이 안 맞으면 무시
+  e.preventDefault();
+  if (S.guide === "top") S.headTop = clamp(S.headTop + d, 0, S.chin - 8);
+  else if (S.guide === "chin") S.chin = clamp(S.chin + d, S.headTop + 8, srcCv.height);
+  else S.cx = clamp(S.cx + d, 0, srcCv.width);
+  renderAll();
+});
+
+function setGuide(g){
+  S.guide = g;
+  $$("#guides button").forEach(b => b.classList.toggle("on", b.dataset.g === g));
+}
+$$("#guides button").forEach(b => b.addEventListener("click", () => setGuide(b.dataset.g)));
+
+/* ══════════════════════════════════════════════════════════
+   8. 인화지 배치
+   ══════════════════════════════════════════════════════════ */
+let sheetFit = { cols:0, rows:0 };
+
+function renderSheet(one){
+  const p = PAPERS[S.paper];
+  const cv = $("#sheet");
+  const W = Math.round(MM(p.w) * S.dpi), H = Math.round(MM(p.h) * S.dpi);
+  cv.width = W; cv.height = H;
+  const c = cv.getContext("2d");
+  c.fillStyle = "#ffffff"; c.fillRect(0, 0, W, H);
+
+  const gap = Math.round(MM(1.5) * S.dpi), margin = Math.round(MM(3) * S.dpi);
+  const cols = Math.max(0, Math.floor((W - margin*2 + gap) / (one.width + gap)));
+  const rows = Math.max(0, Math.floor((H - margin*2 + gap) / (one.height + gap)));
+  sheetFit = { cols, rows };
+
+  if (cols && rows){
+    const tw = cols * one.width + (cols-1) * gap, th = rows * one.height + (rows-1) * gap;
+    const ox = ((W - tw) / 2) | 0, oy = ((H - th) / 2) | 0;
+    for (let r = 0; r < rows; r++){
+      for (let k = 0; k < cols; k++){
+        const x = ox + k * (one.width + gap), y = oy + r * (one.height + gap);
+        c.drawImage(one, x, y);
+        if (S.cut){
+          c.strokeStyle = "#cfcfcf"; c.lineWidth = Math.max(1, S.dpi / 300);
+          c.strokeRect(x + .5, y + .5, one.width - 1, one.height - 1);
+        }
+      }
+    }
+  }
+
+  // 화면에는 줄여서
+  const shown = Math.min(360, $("#sheet").parentElement.clientWidth - 20);
+  cv.style.width = shown + "px";
+  cv.style.height = Math.round(shown * H / W) + "px";
+
+  $("#sheetcap").textContent = cols && rows
+    ? `${p.label} · ${cols * rows}칸 (${cols}×${rows}) · ${W}×${H}px`
+    : `${p.label}에 이 규격이 한 칸도 안 들어갑니다`;
+  $("#fitinfo").textContent = cols && rows
+    ? `${p.label} 한 장에 ${cols * rows}장이 나옵니다.`
+    : `사진이 인화지보다 큽니다. 더 큰 인화지를 고르세요.`;
+  $("#saveSheet").disabled = !(cols && rows);
+}
+
+/* ══════════════════════════════════════════════════════════
+   9. 규격 점검
+   ══════════════════════════════════════════════════════════ */
+function renderChecks(){
+  const sp = spec(), box = cropBox();
+  const items = [];
+  const add = (state, text) => items.push({ state, text });
+
+  if (S.spec !== "free"){
+    const [lo, , hi] = sp.head;
+    add(S.headMM >= lo && S.headMM <= hi ? "ok" : "bad",
+        `얼굴 길이 ${S.headMM.toFixed(1)}mm (규격 ${lo}~${hi}mm)`);
+    const [tlo, , thi] = sp.top;
+    add(S.topMM >= tlo && S.topMM <= thi ? "ok" : "bad",
+        `머리 위 여백 ${S.topMM.toFixed(1)}mm (규격 ${tlo}~${thi}mm)`);
+  }
+
+  // 원본 화소가 충분한지 — 늘려 쓰면 흐려진다
+  const { w:OW } = outSize();
+  const ratio = box.w / OW;
+  add(ratio >= 1 ? "ok" : ratio >= 0.75 ? "" : "bad",
+      ratio >= 1 ? `원본 해상도 넉넉 (${Math.round(ratio*100)}%)`
+                 : `원본이 규격보다 작습니다 (${Math.round(ratio*100)}%) — 인쇄하면 흐릴 수 있습니다`);
+
+  // 크롭이 원본 밖으로 나가는지
+  const over = box.x < -1 || box.y < -1 ||
+               box.x + box.w > srcCv.width + 1 || box.y + box.h > srcCv.height + 1;
+  add(over ? "" : "ok", over ? "잘라낼 자리가 사진 밖으로 나가 여백을 메웁니다" : "사진 안에서 다 잘립니다");
+
+  // 얼굴이 가운데 있는지
+  const offset = Math.abs(S.cx - (box.x + box.w/2)) / box.w;
+  add(offset < 0.02 ? "ok" : "", offset < 0.02 ? "얼굴이 가운데 있습니다" : "얼굴 중심이 치우쳤습니다");
+
+  $("#checks").innerHTML = items.map(i =>
+    `<div class="chk ${i.state}"><span class="dot"></span><span>${escapeHtml(i.text)}</span></div>`
+  ).join("");
+}
+
+/* ══════════════════════════════════════════════════════════
+   10. 전체 다시 그리기
+   손이 바쁠 때(슬라이더를 끌 때) 무거운 계산이 밀리지 않도록 한 박자 미룬다.
+   ══════════════════════════════════════════════════════════ */
+let pending = 0, lastOut = null;
+
+function renderAll(){
+  if (!S.img) return;
+  drawEdit();
+  renderChecks();
+  cancelAnimationFrame(pending);
+  pending = requestAnimationFrame(() => {
+    const out = renderOutput();
+    lastOut = out;
+
+    const view = $("#out");
+    const shownH = 300;
+    view.width = out.width; view.height = out.height;
+    view.style.width = Math.round(shownH * out.width / out.height) + "px";
+    view.style.height = shownH + "px";
+    view.getContext("2d").drawImage(out, 0, 0);
+
+    $("#outcap").textContent = `${specW()}×${specH()}mm · ${out.width}×${out.height}px · ${S.dpi}dpi`;
+    renderSheet(out);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   11. 내려받기
+   canvas 는 인치당 점 수를 안 적어 준다. 인화기가 크기를 제대로 읽도록
+   JPEG 머리말(JFIF)의 밀도 값을 직접 고쳐 넣는다.
+   ══════════════════════════════════════════════════════════ */
+function withDpi(buf, dpi){
+  const b = new Uint8Array(buf);
+  // FFD8 FFE0 … 'JFIF' 0 … [단위][Xdensity 2][Ydensity 2]
+  if (b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF && b[3] === 0xE0 &&
+      b[6] === 0x4A && b[7] === 0x46 && b[8] === 0x49 && b[9] === 0x46){
+    b[13] = 1;                       // 단위: 인치
+    b[14] = dpi >> 8; b[15] = dpi & 255;
+    b[16] = dpi >> 8; b[17] = dpi & 255;
+  }
+  return b;
+}
+
+function download(cv, name){
+  cv.toBlob(async blob => {
+    if (!blob) return toast("사진을 만들지 못했습니다");
+    const fixed = new Blob([withDpi(await blob.arrayBuffer(), S.dpi)], { type:"image/jpeg" });
+    const url = URL.createObjectURL(fixed);
+    const a = document.createElement("a");
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    toast(name + " 내려받았습니다");
+  }, "image/jpeg", 0.95);
+}
+
+$("#save").addEventListener("click", () => {
+  if (!lastOut) return toast("사진을 먼저 넣어 주세요");
+  download(lastOut, `${S.name}_${specW()}x${specH()}mm.jpg`);
+});
+$("#saveSheet").addEventListener("click", () => {
+  if (!lastOut) return toast("사진을 먼저 넣어 주세요");
+  download($("#sheet"), `${S.name}_${PAPERS[S.paper].label}_인화용.jpg`);
+});
+$("#print").addEventListener("click", () => {
+  if (!lastOut) return toast("사진을 먼저 넣어 주세요");
+  try { window.print(); }
+  catch { toast("인쇄가 막혀 있습니다 — 내려받아서 인쇄해 주세요"); }
+});
+
+/* ══════════════════════════════════════════════════════════
+   12. 조작판 묶기
+   ══════════════════════════════════════════════════════════ */
+// 규격
+$("#specs").innerHTML = SPECS.map(s =>
+  `<button data-k="${s.key}"${s.key === S.spec ? ' class="on"' : ""}>${s.label}</button>`).join("");
+$$("#specs button").forEach(b => b.addEventListener("click", () => {
+  S.spec = b.dataset.k;
+  $$("#specs button").forEach(x => x.classList.toggle("on", x === b));
+  $("#freedims").style.display = S.spec === "free" ? "flex" : "none";
+  applySpecDefaults();
+  renderAll();
+}));
+
+function applySpecDefaults(){
+  const sp = spec();
+  const [lo, def, hi] = sp.head, [tlo, tdef, thi] = sp.top;
+  S.headMM = def; S.topMM = tdef;
+  const h = $("#head");
+  h.min = Math.max(6, lo - 6); h.max = hi + 6; h.value = def;
+  const t = $("#topm");
+  t.min = 0; t.max = Math.max(thi + 6, 8); t.value = tdef;
+  $("#headrng").textContent = S.spec === "free" ? "자유 규격 — 점검은 하지 않습니다" : `규격 ${lo}~${hi}mm`;
+  $("#toprng").textContent = S.spec === "free" ? "" : `규격 ${tlo}~${thi}mm`;
+  syncLabels();
+}
+
+function syncLabels(){
+  $("#headv").textContent = S.headMM.toFixed(1);
+  $("#topv").textContent = S.topMM.toFixed(1);
+  const { w, h } = outSize();
+  $("#pxinfo").textContent = `내보낼 크기 ${w}×${h}px (${specW()}×${specH()}mm, ${S.dpi}dpi)`;
+  if (S.spec !== "free"){
+    const [lo, , hi] = spec().head, [tlo, , thi] = spec().top;
+    $("#s-head").classList.toggle("warned", S.headMM < lo || S.headMM > hi);
+    $("#s-top").classList.toggle("warned", S.topMM < tlo || S.topMM > thi);
+  } else {
+    $("#s-head").classList.remove("warned"); $("#s-top").classList.remove("warned");
+  }
+}
+
+$("#head").addEventListener("input", e => { S.headMM = +e.target.value; syncLabels(); renderAll(); });
+$("#topm").addEventListener("input", e => { S.topMM = +e.target.value; syncLabels(); renderAll(); });
+$("#fw").addEventListener("input", e => { S.fw = clamp(+e.target.value || 35, 10, 200); syncLabels(); renderAll(); });
+$("#fh").addEventListener("input", e => { S.fh = clamp(+e.target.value || 45, 10, 200); syncLabels(); renderAll(); });
+
+$$("#dpis button").forEach(b => b.addEventListener("click", () => {
+  S.dpi = +b.dataset.dpi;
+  $$("#dpis button").forEach(x => x.classList.toggle("on", x === b));
+  syncLabels(); renderAll();
+}));
+
+// 배경
+$("#swatches").innerHTML = FLATS.map(c =>
+  `<button class="sw${c === S.flat ? " on" : ""}" data-c="${c}" style="background:${c}" title="${c}"></button>`).join("");
+$$("#swatches .sw").forEach(b => b.addEventListener("click", () => {
+  S.flat = b.dataset.c;
+  $$("#swatches .sw").forEach(x => x.classList.toggle("on", x === b));
+  renderAll();
+}));
+$$("#bgs button").forEach(b => b.addEventListener("click", () => {
+  S.bg = b.dataset.bg;
+  $$("#bgs button").forEach(x => x.classList.toggle("on", x === b));
+  $("#bgflat").style.display = S.bg === "flat" ? "flex" : "none";
+  $("#s-key").style.display = S.bg === "keep" ? "none" : "flex";
+  renderAll();
+}));
+$("#key").addEventListener("input", e => {
+  S.key = +e.target.value; $("#keyv").textContent = S.key; renderAll();
+});
+
+// 보정
+const tones = [["bri", "briv"], ["con", "conv"], ["wrm", "wrmv"], ["shp", "shpv"]];
+tones.forEach(([id, out]) => $("#" + id).addEventListener("input", e => {
+  S[id] = +e.target.value; $("#" + out).textContent = S[id]; renderAll();
+}));
+$("#reset").addEventListener("click", () => {
+  Object.assign(S, { bri:0, con:10, wrm:0, shp:40 });
+  tones.forEach(([id, out]) => { $("#" + id).value = S[id]; $("#" + out).textContent = S[id]; });
+  renderAll(); toast("보정을 되돌렸습니다");
+});
+
+// 인화지
+$$("#papers button").forEach(b => b.addEventListener("click", () => {
+  S.paper = b.dataset.p;
+  $$("#papers button").forEach(x => x.classList.toggle("on", x === b));
+  renderAll();
+}));
+$("#cut").addEventListener("change", e => { S.cut = e.target.checked; renderAll(); });
+
+// 밝기 테마
+const preferDark = matchMedia("(prefers-color-scheme: dark)");
+app.dataset.theme = preferDark.matches ? "dark" : "light";
+preferDark.addEventListener("change", e => { app.dataset.theme = e.matches ? "dark" : "light"; });
+$("#theme").addEventListener("click", () => {
+  app.dataset.theme = app.dataset.theme === "dark" ? "light" : "dark";
+});
+
+let resizeT = 0;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeT);
+  resizeT = setTimeout(() => { layoutStage(); renderAll(); }, 120);
+});
+
+applySpecDefaults();
+})();
+</script>
+</body>
+</html>

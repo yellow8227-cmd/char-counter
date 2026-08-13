@@ -38,6 +38,13 @@ python counter.py
   GitHub Pages를 켜면 `https://<계정>.github.io/char-counter/scenedeck/` 주소로도 열립니다.
   자세한 설명은 [`scenedeck/README.md`](scenedeck/README.md)에 있습니다.
 
+- [`photo-studio/`](photo-studio/) — 🪪 **증명사진 자판기 · Photo Studio**.
+  정수리와 턱끝에 줄 두 개만 놓으면 증명사진·여권사진·취업사진 규격으로 잘라 줍니다.
+  배경 교체와 인화지 배치까지 단일 HTML 안에서 끝납니다.
+  `photo-studio/index.html`을 더블클릭하면 바로 열리고,
+  고른 사진은 서버로 올라가지 않습니다.
+  자세한 설명은 [`photo-studio/README.md`](photo-studio/README.md)에 있습니다.
+
 ## 라이선스
 
 MIT
