@@ -1281,6 +1281,14 @@
       <button class="setbtn" id="overNickOk">확인하고 도전장 보내기 🎯</button>
     </div>
 
+    <!-- 🤖 AI 와 다시 붙기 전에 실력·역할을 바꿀 수 있게. 예전에는 '다시 하기'가 같은
+         실력·같은 역할로 바로 시작해서, 바꾸려면 홈까지 되돌아가야 했다. -->
+    <div class="card hide" id="aiAgainCard" style="width:min(94vw,420px);">
+      <div class="label">🤖 AI와 다시 — 실력·역할 바꿔서</div>
+      <div class="opts aiTierOpts"></div>
+      <div class="tag2 aiTierDesc" style="text-align:left;margin-top:7px;"></div>
+      <button class="setbtn hide" id="aiAgainSwapBtn">🔄 역할 바꾸기</button>
+    </div>
     <div id="overGuard" class="guard hide">👆 실수로 누르지 않게 잠깐만요…</div>
     <div id="overActions" class="locked">
       <div class="rowbtn">
@@ -3862,7 +3870,7 @@ function gameOver(){
   if(bm==='accept') finishAccept();
   if(wasNet) netFinish();
   lastPlay={kind:wasNet?(wasAi?'ai':'online'):'solo',game:netGame,role:myRole};
-  syncAgainBtn(); restoreMode();
+  syncAgainBtn(); syncAiAgain(); restoreMode();
   showScreen('overScreen'); lockOverActions(); startAttract(); }
 
 // ================= Screens & flow =================
@@ -4994,24 +5002,26 @@ function syncPublicBtn(){ const b=$('netPublicBtn'); if(!b)return;
 // ① 예전 dps 는 뉴비도 초당 170점(2분에 2만점)이라 사람이 이길 수가 없었다 → 크게 낮췄다.
 // ② 그러고 나니 알파고만 알맞고 아래 세 등급이 너무 쉬웠다 → 알파고는 그대로 두고
 //    뉴비·보통·개똑똑의 점수와 방해를 올려서 사이를 촘촘하게 메웠다.
-// ③ acc(내가 던질 때 AI 가 터뜨리는 확률)는 "얘네 겁나 잘한다"는 말대로 전부 내렸다 —
-//    AI 는 놓칠 때마다 목숨이 깎이므로, 이 값이 곧 '던지는 쪽의 난이도'다.
+// ③ acc(내가 던질 때 AI 가 터뜨리는 확률)는 "얘네 겁나 잘한다"고 해서 크게 내렸다가,
+//    "이제 좀 못한다"는 말에 다시 조금 올렸다(30/52/70/86% → 38/62/80/91%).
+//    AI 는 놓칠 때마다 목숨이 깎이므로 이 값이 곧 '던지는 쪽의 난이도'다 —
+//    지금은 젤리 7·11·20·45개쯤으로 재울 수 있다(90초에 60~90개를 던진다).
 // hexCd 는 방해 효과의 최소 간격(초)이고, 뉴비는 방해를 아예 쓰지 않는다.
 const AI_TIERS=[
   {id:'baby', name:'🍼 뉴비 AI',  desc:'느긋해요. 처음이면 여기서',        prize:15,
-   acc:0.30,  early:[0.84,0.98], bombErr:0.36,  gap:[1500,2600], spd:0, bombRate:0.06,
+   acc:0.38,  early:[0.84,0.98], bombErr:0.30,  gap:[1500,2600], spd:0, bombRate:0.06,
    arms:{normal:0.96,bomb:0.04,ghost:0.00,rain:0.00},
    dps:[3,8],    risk:0.004,  thr:0.020, tn:1, hexCd:0,  combo:2},
   {id:'normal',name:'🙂 보통 AI',  desc:'사람만큼 해요. 기본값',            prize:40,
-   acc:0.52,  early:[0.72,0.94], bombErr:0.26,  gap:[1000,1800], spd:1, bombRate:0.10,
+   acc:0.62,  early:[0.72,0.94], bombErr:0.20,  gap:[1000,1800], spd:1, bombRate:0.10,
    arms:{normal:0.82,bomb:0.10,ghost:0.06,rain:0.02},
    dps:[7,15],   risk:0.0018, thr:0.045, tn:2, hexCd:18, combo:3},
   {id:'smart', name:'🤓 개똑똑 AI',desc:'잘해요. 좋은 판이 나와야 이겨요',   prize:90,
-   acc:0.70,  early:[0.62,0.88], bombErr:0.16,  gap:[700,1300],  spd:2, bombRate:0.16,
+   acc:0.80,  early:[0.62,0.88], bombErr:0.11,  gap:[700,1300],  spd:2, bombRate:0.16,
    arms:{normal:0.66,bomb:0.16,ghost:0.11,rain:0.07},
    dps:[11,21],  risk:0.0012, thr:0.062, tn:3, hexCd:13, combo:4},
   {id:'alpha', name:'🏆 알파고 AI',desc:'아주 잘해요. 최고 난이도!',        prize:200,
-   acc:0.86,  early:[0.54,0.80], bombErr:0.08,  gap:[520,900],   spd:3, bombRate:0.22,
+   acc:0.91,  early:[0.54,0.80], bombErr:0.05,  gap:[520,900],   spd:3, bombRate:0.22,
    arms:{normal:0.54,bomb:0.18,ghost:0.16,rain:0.12}, vyBoost:1.08,
    dps:[13,27],  risk:0.0008, thr:0.075, tn:4, hexCd:12, combo:5},
 ];
@@ -5862,7 +5872,7 @@ function throwerFinish(){
   else submitScore('throw_thrower',throwScore).then(()=>renderOverOnline('throw_thrower'));
   lastRun={seed:0,mode:mode,score:throwScore,net:true};
   lastPlay={kind:aiOn?'ai':'online',game:'throw',role:'thrower'};
-  syncAgainBtn(); restoreMode();
+  syncAgainBtn(); syncAiAgain(); restoreMode();
   showScreen('overScreen'); lockOverActions(); startAttract();
   netResolve();
 }
@@ -6615,6 +6625,25 @@ function fallbackCopy(s,okMsg){ try{ const ta=document.createElement('textarea')
 function copyText(s,okMsg){ if(navigator.clipboard&&navigator.clipboard.writeText)
     navigator.clipboard.writeText(s).then(()=>toast(okMsg)).catch(()=>fallbackCopy(s,okMsg));
   else fallbackCopy(s,okMsg); }
+// 🤖 AI 와 다시 붙기 — 결과 화면에서 실력(티어)과 역할을 바꿀 수 있게 한다.
+// 실력 칩은 buildAiOpts() 가 .aiTierOpts 를 모두 채우므로 칸만 얹으면 된다.
+function syncAiAgain(){
+  const card=$('aiAgainCard'); if(!card) return;
+  const on=(lastPlay.kind==='ai');
+  card.classList.toggle('hide',!on);
+  if(!on) return;
+  buildAiOpts();
+  const isThrow=(lastPlay.game==='throw'), b=$('aiAgainSwapBtn');
+  b.classList.toggle('hide',!isThrow);
+  if(isThrow) b.textContent='🔄 역할 바꾸기 (지금 나는 '+roleLabel(lastPlay.role||'thrower')+')';
+}
+function aiAgainSwap(){
+  if(lastPlay.kind!=='ai'||lastPlay.game!=='throw') return;
+  const r=((lastPlay.role||'thrower')==='thrower')?'popper':'thrower';
+  lastPlay.role=r; aiRole=r; hostRole=r;
+  syncAiAgain(); syncAgainBtn(); playSquish(2);
+  toast('🔄 다음 판은 '+roleLabel(r)+'로 붙어요');
+}
 // 혼자 하기면 그대로 다시, AI면 같은 설정으로 재대결, 온라인이면 상대가 있어야 하니 매칭 화면으로.
 function syncAgainBtn(){
   const b=$('againBtn'); if(!b) return;
@@ -6812,6 +6841,7 @@ $('netCreateBtn').onclick=netCreate;
 $('netJoinBtn').onclick=netJoinByCode;
 $('lobbyReadyBtn').onclick=lobbyReady;
 $('lobbySwapBtn').onclick=swapRoles;
+$('aiAgainSwapBtn').onclick=aiAgainSwap;
 $('lobbyCopyBtn').onclick=()=>copyText(
   '🍡 젤리슈팅 같이 하자!\n'+location.origin+location.pathname+'?r='+net.room+
   '\n(안 열리면 방 코드 '+net.room+' 직접 입력)','🔗 복사됨! 붙여넣어 보내세요');
@@ -6918,7 +6948,9 @@ window.__auditEach=function(scan){
       drawCeleb($('celebCanvas').getContext('2d'),660,380,60,lastBattle,false);
       net.ch=net.ch||{}; net.myOver=true; net.mp=true; net.order=[]; net.peers={};
       peerUpsert('p1',{name:'젤리왕',char:{k:'bear',c:'#c9a27a'},over:false});
-      netGame='dungeon'; watchSync(); watchDraw(); buildSayRow();},
+      netGame='dungeon'; watchSync(); watchDraw(); buildSayRow();
+      // 🤖 AI 와 다시 붙기 칸(실력 칩 + 역할 단추)도 자리를 차지한다 — 같이 재야 한다
+      lastPlay={kind:'ai',game:'throw',role:'thrower'}; syncAiAgain();},
     acceptScreen:()=>{pendingChallenge={host_name:'젤리왕',host_score:1234,seed:1,mode:'spicy'};openAccept();},
     aiScreen:()=>{openAiScreen();},
   };
