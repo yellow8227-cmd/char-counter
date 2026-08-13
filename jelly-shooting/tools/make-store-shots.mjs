@@ -16,7 +16,7 @@ import { existsSync } from 'node:fs';
 const PW = '/opt/node22/lib/node_modules/playwright/index.js';
 const pwMod = await import(existsSync(PW) ? 'file://' + PW : 'playwright');
 const chromium = (pwMod.chromium || (pwMod.default && pwMod.default.chromium));
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -174,7 +174,7 @@ function framePage({ shot, cap, tint, w, h }) {
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
   html,body{margin:0;width:${w}px;height:${h}px;overflow:hidden;
-    font-family:'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',system-ui,sans-serif;}
+    font-family:'Jua','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',system-ui,sans-serif;}
   .bg{position:absolute;inset:0;background:
     radial-gradient(120% 90% at 15% 0%, #fff 0%, ${tint} 45%, ${tint} 100%);}
   .dots{position:absolute;inset:0;opacity:.5;
@@ -183,11 +183,11 @@ function framePage({ shot, cap, tint, w, h }) {
   .cap{position:absolute;left:0;right:0;top:${Math.round(h*0.028)}px;height:${Math.round(h*0.125)}px;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     gap:${Math.round(h*0.006)}px;text-align:center;padding:0 ${Math.round(w*0.06)}px;}
-  .cap i{font-style:normal;font-size:${Math.round(w*0.038)}px;font-weight:900;
+  .cap i{font-style:normal;font-size:${Math.round(w*0.038)}px;font-weight:400;
     color:rgba(120,80,110,.62);letter-spacing:.5px;}
-  .cap b{font-size:${Math.round(w*0.079)}px;font-weight:900;color:#e6336b;letter-spacing:-.5px;
+  .cap b{font-size:${Math.round(w*0.086)}px;font-weight:400;color:#e6336b;letter-spacing:-.5px;
     line-height:1.15;text-shadow:0 2px 0 #fff, 0 6px 16px rgba(230,60,120,.18);}
-  .cap span{font-size:${Math.round(w*0.048)}px;font-weight:800;color:#7c5c8e;}
+  .cap span{font-size:${Math.round(w*0.050)}px;font-weight:400;color:#7c5c8e;}
   .phone{position:absolute;left:50%;transform:translateX(-50%);
     top:${phT}px;width:${phW}px;
     border-radius:${Math.round(w*0.072)}px;overflow:hidden;background:#fff;
@@ -236,64 +236,41 @@ const run = async () => {
   }
 
   // ── 구글플레이 대표 이미지 1024x500 · 아이콘 1024x1024 ──
-  const ctx2 = await browser.newContext({ viewport: { width: 1024, height: 500 }, deviceScaleFactor: 1 });
+  // 새로 그리지 않는다. 게임이 이미 가진 두 그림이 훨씬 예쁘다.
+  //   · 대표 이미지 ← og.png (tools/make-og.mjs 가 만든 링크 미리보기 카드, 1200x630)
+  //   · 아이콘      ← icon-1024.png (tools/make-icons.mjs 가 만든 게임 아이콘)
+  // og.png 은 1200x630, 대표 이미지는 1024x500 이라 비율이 조금 다르다 →
+  // 가운데를 기준으로 꽉 채우게(cover) 잘라 넣는다.
+  const ctx2 = await browser.newContext({ viewport: { width: 600, height: 400 }, deviceScaleFactor: 1 });
   const fg = await ctx2.newPage();
-  await fg.goto(GAME);
-  await fg.waitForFunction("typeof openStart==='function'", null, { timeout: 20000 });
-  // 캐릭터 여섯 종을 한 줄로 세운 배너 — 게임의 drawAvatar 를 그대로 쓴다
-  const banner = await fg.evaluate(`(()=>{
-    const W=1024,H=500,c=document.createElement('canvas'); c.width=W;c.height=H;
-    const g=c.getContext('2d');
-    const bg=g.createLinearGradient(0,0,W,H);
-    bg.addColorStop(0,'#ffd9ea'); bg.addColorStop(0.5,'#ffe9f4'); bg.addColorStop(1,'#e2d9ff');
-    g.fillStyle=bg; g.fillRect(0,0,W,H);
-    for(let i=0;i<26;i++){ const x=(i*137)%W, y=(i*211)%H, r=8+(i%4)*7;
-      g.fillStyle='rgba(255,255,255,'+(0.18+(i%3)*0.08)+')';
-      g.beginPath(); g.arc(x,y,r,0,7); g.fill(); }
-    // 떨어지는 젤리 — drawJelly 는 전역 ctx 에 그린다. withCtx 로 이 캔버스로 돌려야 한다
-    // (안 그러면 젤리가 게임 판에 그려지고 배너는 텅 빈다)
-    const pal=['#ff5c8a','#4fa8ff','#ffce3d','#8fd94f','#b96cff','#40dfe6'];
-    withCtx(g,()=>{
-      [[62,96,30],[196,44,24],[958,86,28],[886,296,25],[520,44,21],[74,404,23],[978,432,26]]
-        .forEach(([x,y,r],i)=> drawJelly({x:x,y:y,r:r,color:pal[i%pal.length],face:(i%2?'happy':'wink'),
-          shape:i%2?'bean':'round',bomb:false,gold:i===2,wob:i*1.7,dead:false})); });
-    // 캐릭터 여섯 종을 한 줄로 — 게임의 drawAvatar 를 그대로 쓴다
-    const KS=[['bunny','#fff0a8','none'],['dog','#a3d5ff','cap'],['bear','#c9a27a','crown'],
-              ['human','#ffe36e','glasses'],['girl','#ff9db2','bow'],['cat','#ffb3c9','flower']];
-    KS.forEach(([k,col,acc],i)=>{
-      const x=172+i*136, R=54;
-      drawAvatar(g,x,356,R,charSafe({k:k,c:col,a:acc,ac:'#ff5c8a',h:(k==='girl'?'braid':'basic')}),
-        (i%2?'happy':'wow'),i*7);
-    });
-    g.textAlign='center'; g.textBaseline='middle';
-    g.font='900 92px "Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif';
-    g.lineWidth=14; g.strokeStyle='#fff';
-    g.strokeText('젤리슈팅',512,124);
-    g.fillStyle='#e6336b'; g.fillText('젤리슈팅',512,124);
-    g.font='900 38px "Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif';
-    g.strokeStyle='rgba(255,255,255,0.95)'; g.lineWidth=9;
-    g.strokeText('톡 터트리는 3분 · 친구랑 실시간 대전',512,204);
-    g.fillStyle='#7c5c8e'; g.fillText('톡 터트리는 3분 · 친구랑 실시간 대전',512,204);
-    return c.toDataURL('image/png').split(',')[1]; })()`);
-  writeFileSync(join(OUT, 'play-feature-1024x500.png'), Buffer.from(banner, 'base64'));
-  console.log('📷 play-feature-1024x500.png');
+  await fg.goto('data:text/html,<body></body>');
+  const ogB64 = readFileSync(join(ROOT, 'og.png')).toString('base64');
+  const feature = await fg.evaluate(async ([src]) => {
+    const im = new Image();
+    await new Promise((ok, no) => { im.onload = ok; im.onerror = no; im.src = src; });
+    const W = 1024, H = 500;
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const g = c.getContext('2d');
+    g.imageSmoothingQuality = 'high';
+    const s = Math.max(W / im.width, H / im.height);
+    const w = im.width * s, h = im.height * s;
+    g.drawImage(im, (W - w) / 2, (H - h) / 2, w, h);
+    return c.toDataURL('image/png').split(',')[1];
+  }, ['data:image/png;base64,' + ogB64]);
+  writeFileSync(join(OUT, 'play-feature-1024x500.png'), Buffer.from(feature, 'base64'));
+  console.log('📷 play-feature-1024x500.png  (og.png 에서)');
 
-  const icon = await fg.evaluate(`(()=>{
-    const S=1024,c=document.createElement('canvas'); c.width=c.height=S;
-    const g=c.getContext('2d');
-    const bg=g.createLinearGradient(0,0,S,S);
-    bg.addColorStop(0,'#ffd0e4'); bg.addColorStop(1,'#ffb3d1');
-    g.fillStyle=bg; g.fillRect(0,0,S,S);
-    for(let i=0;i<18;i++){ g.fillStyle='rgba(255,255,255,0.22)';
-      g.beginPath(); g.arc((i*173)%S,(i*281)%S,26+(i%3)*14,0,7); g.fill(); }
-    // 아이콘은 사방에 여백이 있어야 한다 — 스토어가 모서리를 깎고 작게 줄여 보여준다.
-    // 악세서리는 한쪽으로 삐져나와 가운데가 어긋나 보이니 넣지 않는다.
-    withCtx(g,()=>drawJelly({x:S*0.5,y:S*0.815,r:S*0.115,color:'#ff5c8a',face:'happy',
-      shape:'round',bomb:false,gold:false,wob:1.2,dead:false}));
-    drawAvatar(g,S/2,S*0.44,S*0.27,charSafe({k:'cat',c:'#ffb3c9',a:'none'}),'happy',12);
-    return c.toDataURL('image/png').split(',')[1]; })()`);
-  writeFileSync(join(OUT, 'icon-1024.png'), Buffer.from(icon, 'base64'));
-  console.log('📷 icon-1024.png');
+  // 소개 페이지 표지로도 쓴다 — press 폴더만 들고 가도 그림이 다 있게
+  writeFileSync(join(OUT, 'cover-1200x630.png'), readFileSync(join(ROOT, 'og.png')));
+  console.log('📷 cover-1200x630.png  (og.png 그대로 · 소개 페이지 표지)');
+
+  const iconSrc = join(ROOT, 'icon-1024.png');
+  if (existsSync(iconSrc)) {
+    writeFileSync(join(OUT, 'icon-1024.png'), readFileSync(iconSrc));
+    console.log('📷 icon-1024.png  (게임 아이콘 그대로)');
+  } else {
+    console.log('⚠ icon-1024.png 이 없습니다 — 먼저 node tools/make-icons.mjs 를 돌려주세요');
+  }
   await ctx2.close();
   await browser.close();
   console.log('\n총 ' + (made.length + 2) + '장 → press/shots/');

@@ -52,15 +52,20 @@ const OVERLAY = `(()=>{
   #__cap.low{top:auto;bottom:5%;}
   #__cap .in{background:rgba(255,255,255,.93);border-radius:22px;padding:12px 22px;text-align:center;
     box-shadow:0 10px 26px rgba(180,90,140,.28);max-width:86%;}
-  #__cap b{display:block;font-size:26px;font-weight:900;color:#e6336b;letter-spacing:-.5px;}
-  #__cap span{display:block;margin-top:4px;font-size:16px;font-weight:800;color:#7c5c8e;}
+  #__cap b{display:block;font-size:28px;font-weight:400;color:#e6336b;letter-spacing:-.5px;
+    font-family:'Jua','Apple SD Gothic Neo',sans-serif;}
+  #__cap span{display:block;margin-top:5px;font-size:17px;font-weight:400;color:#7c5c8e;
+    font-family:'Jua','Apple SD Gothic Neo',sans-serif;}
   #__card{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;
     justify-content:center;gap:14px;opacity:0;transition:opacity .5s ease;pointer-events:none;
     background:radial-gradient(120% 90% at 20% 0%, #fff 0%, #ffe3f0 45%, #efe2ff 100%);}
   #__card.on{opacity:1;}
-  #__card .t{font-size:56px;font-weight:900;color:#e6336b;letter-spacing:-2px;line-height:1.05;text-align:center;}
-  #__card .s{font-size:20px;font-weight:800;color:#7c5c8e;text-align:center;}
-  #__card .u{margin-top:10px;font-size:17px;font-weight:900;color:#fff;background:#ff5c8a;
+  #__card .t{font-size:62px;font-weight:400;color:#e6336b;letter-spacing:-1px;line-height:1.08;
+    text-align:center;font-family:'Jua','Apple SD Gothic Neo',sans-serif;}
+  #__card .s{font-size:21px;font-weight:400;color:#7c5c8e;text-align:center;
+    font-family:'Jua','Apple SD Gothic Neo',sans-serif;}
+  #__card .u{margin-top:10px;font-size:18px;font-weight:400;color:#fff;background:#ff5c8a;
+    font-family:'Jua','Apple SD Gothic Neo',sans-serif;
     padding:12px 22px;border-radius:999px;box-shadow:0 10px 24px rgba(255,92,138,.4);}
   #__card canvas{display:block;}
   \`;
@@ -123,8 +128,10 @@ const run = async () => {
   page.on('pageerror', e => console.log('⚠ 페이지 오류:', e.message));
 
   const T0 = Date.now();
+  // ⚠ 여기서 page.screenshot() 을 부르지 말 것. 녹화 중에 찍으면 그 순간 프레임이
+  //   CSS 크기로 들어와 영상에 '작게 박힌 화면'이 생긴다. 낱장은 녹화가 끝난 뒤
+  //   영상에서 뽑는다(아래 STILLS).
   const mark = n => console.log('   ⏱ ' + ((Date.now() - T0) / 1000).toFixed(1) + 's  ' + n);
-  const shot = async (name) => { writeFileSync(join(FRM, name), await page.screenshot({ type: 'png' })); };
   // 실제로 젤리를 눌러 플레이한다. ms 동안, 대략 gap 마다 한 번.
   const play = async (ms, gap = 230) => {
     const t0 = Date.now();
@@ -153,7 +160,6 @@ const run = async () => {
   // ── ① 표지 (0~2초) ──
   await page.evaluate(`__card('젤리슈팅','톡 터트리는 3분 · 친구랑 실시간 대전','설치 없이 웹에서 바로')`);
   await sleep(1400);
-  await shot('01-cover.png'); mark('01-cover');
   await page.evaluate(`__cardOff()`);
 
   // ── ② 홈 (2~4초) ──
@@ -178,7 +184,6 @@ const run = async () => {
   await play(2600, 240);
   await page.evaluate(`__capOff()`);
   await play(400, 300);
-  await shot('02-play.png'); mark('02-play');
   // 아이템 한 번 써 본다
   await page.evaluate(`__cap('아이템으로 위기 탈출','하트팩 · 슬로우 · 폭탄청소 · 2배 · 자석')`);
   const itemOk = await page.evaluate(`(()=>{ const b=document.querySelector('#itemBar .item'); if(!b) return 0;
@@ -189,17 +194,19 @@ const run = async () => {
   await play(300, 300);
 
   // ── ④ AI와 대결 ──
-  await page.evaluate(`(()=>{ gameOver(); return 1; })()`);   // running 을 먼저 끄면 안 된다(중복 방지 장치)
-  await sleep(900);
+  // 결과 화면을 거치지 않고 홈으로 — 몇 초 플레이한 점수(164점)가 영상에 나오면 초라하다
+  await page.evaluate(`(()=>{ running=false; paused=false; boardUnlock();
+    ['hud','audioBar','itemBar','pauseBtn','netBar','throwWrap'].forEach(id=>$(id).classList.add('hide'));
+    openStart(); return 1; })()`);
+  await sleep(700);
   await page.evaluate(`(()=>{ openStart(); aiGame='dungeon'; aiTier='normal'; netModeName='normal';
     userMode='normal'; aiGo(); return 1; })()`);
   await sleep(600);
   await page.evaluate(`__cap('AI랑 연습, 친구랑 실전','실력 4단계 · 인터넷 없이도 대결')`);
-  await sleep(2600);                      // 카운트다운 3-2-1
+  await sleep(2300);                      // 카운트다운 3-2-1
   await play(1400, 280);
   await page.evaluate(`__capOff()`);
   await play(1200, 280);
-  mark('03-ai 장면');
 
   // ── ⑤ 이겼을 때 ──
   await page.evaluate(`(()=>{
@@ -213,7 +220,6 @@ const run = async () => {
   // 자막을 아래로 — 위에 두면 승패 그림을 가린다
   await page.evaluate(`__cap('이기면 춤추고 · 지면 분해요','표정·자세·말풍선이 판마다 달라요',true)`);
   await sleep(1200);
-  await shot('04-win.png'); mark('04-win');
   // 말풍선을 바꿔 본다 — 메시지 보내듯 바로 바뀐다
   const say = await page.evaluate(`(()=>{ const r=$('sayRow'); if(!r||!r.children.length) return 0;
     const b=r.children[Math.min(1,r.children.length-1)].getBoundingClientRect();
@@ -225,28 +231,42 @@ const run = async () => {
   // ── ⑥ 마무리 표지 ──
   await page.evaluate(`__card('지금 바로 한 판','친구에게 방 코드만 알려주면 끝','zingy-cupcake-98444a.netlify.app')`);
   await sleep(1800);
-  await shot('05-end.png'); mark('05-end');
 
   mark('마지막 장면 끝');
   const video = page.video();
   await ctx.close();                      // 닫아야 영상 파일이 완성된다
-  const src = await video.path();
+  const raw = await video.path();
   const dst = join(OUT, 'jelly-shooting-promo.webm');
-  renameSync(src, dst);
   await browser.close();
+
+  // 녹화 첫 0.8초는 게임이 뜨기 전의 흰 화면이다 — 잘라 낸다.
+  // (-c copy 로는 키프레임 위치 때문에 원하는 지점에서 못 자른다. 다시 구우면 정확하다)
+  const ff = (args, label) => new Promise(res => {
+    const p = spawn('/opt/pw-browsers/ffmpeg-1011/ffmpeg-linux',
+      ['-hide_banner','-loglevel','error','-y'].concat(args));
+    p.on('close', c => { if (c !== 0) console.log('⚠ ' + label + ' 실패'); res(c === 0); });
+    p.on('error', () => { console.log('⚠ ffmpeg 를 못 찾았습니다'); res(false); });
+  });
+  // 소개 페이지용은 1400k — 페이지에 담아 링크로 보내려면 파일이 작아야 한다.
+  // (스토어용 판은 아래에서 2400k 로 따로 굽는다)
+  await ff(['-ss','0.8','-i',raw,'-c:v','libvpx','-b:v','1400k','-an',dst], '앞부분 자르기');
+  rmSync(raw, { force: true });
   console.log('🎬 ' + dst);
+
+  // 낱장(포스터·홍보용 정지 그림)은 영상에서 뽑는다.
+  // 녹화 중에 찍으면 영상이 깨지고, 뽑아 쓰면 크기·화질이 영상과 똑같다.
+  const STILLS = [['01-cover.png','1.4'],['02-play.png','8.0'],['03-ai.png','15.0'],
+                  ['04-win.png','18.6'],['05-end.png','21.6']];
+  for (const [name, at] of STILLS) {
+    await ff(['-ss',at,'-i',dst,'-frames:v','1',join(FRM,name)], name);
+  }
 
   // 애플 '앱 미리보기'는 15~30초만 받고, 세로 크기는 886x1920 을 쓴다.
   // 꼬리(마지막 화면이 늘어난 부분)를 자르고 그 크기로 맞춘 판을 하나 더 만든다.
   const cut = join(OUT, 'jelly-shooting-promo-886x1920.webm');
-  await new Promise(res => {
-    const ff = spawn('/opt/pw-browsers/ffmpeg-1011/ffmpeg-linux',
-      ['-hide_banner','-loglevel','error','-y','-i',dst,'-t','29.5',
-       '-vf','scale=886:1920','-c:v','libvpx','-b:v','2000k','-an',cut]);
-    ff.on('close', c => { console.log(c===0 ? ('🎬 ' + cut + '  (886x1920 · 29.5초 · 앱 미리보기용)')
-      : '⚠ 앱 미리보기용 판 만들기 실패 — 긴 판만 씁니다'); res(); });
-    ff.on('error', () => { console.log('⚠ ffmpeg 를 못 찾았습니다 — 긴 판만 씁니다'); res(); });
-  });
-  console.log('🖼  낱장: ' + readdirSync(FRM).sort().join(', '));
+  if (await ff(['-i',dst,'-t','29.5','-vf','scale=886:1920','-c:v','libvpx','-b:v','2400k','-an',cut],
+               '앱 미리보기용 판'))
+    console.log('🎬 ' + cut + '  (886x1920 · 30초 안쪽 · 앱 미리보기용)');
+  console.log('🖼  낱장(영상에서 뽑음): ' + readdirSync(FRM).sort().join(', '));
 };
 run().catch(e => { console.error('실패:', e.message); process.exit(1); });

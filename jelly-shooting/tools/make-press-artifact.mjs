@@ -19,17 +19,19 @@ const ROOT = join(HERE, '..');
 const PRESS = join(ROOT, 'press');
 const CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 
-// 그림마다 '가로 몇 픽셀로 줄일지' — 화면에 보이는 크기의 두 배면 충분하다
+// 그림마다 '가로 몇 픽셀로 줄일지' — 화면에 보이는 크기의 두 배면 충분하다.
+// (여기 없는 그림은 원본 크기 그대로 담긴다 → 파일이 커진다. 새 그림을 넣으면 여기도 적어 주자)
 const WIDTHS = {
-  'shots/icon-1024.png': 256,
-  'shots/appstore-1-play.png': 660,
-  'shots/appstore-2-dungeon.png': 520,
-  'shots/appstore-3-throw.png': 520,
-  'shots/appstore-4-dress.png': 520,
-  'shots/appstore-5-result.png': 520,
-  'shots/appstore-6-home.png': 520,
+  'shots/icon-1024.png': 280,
+  'shots/cover-1200x630.png': 1200,
+  'shots/appstore-1-play.png': 560,
+  'shots/appstore-2-dungeon.png': 560,
+  'shots/appstore-3-throw.png': 560,
+  'shots/appstore-4-dress.png': 560,
+  'shots/appstore-5-result.png': 560,
+  'shots/appstore-6-home.png': 560,
   'shots/play-feature-1024x500.png': 1024,
-  'video/frames/01-cover.png': 520,
+  'video/frames/01-cover.png': 560,
 };
 
 const browser = await chromium.launch({ executablePath: CHROME,
@@ -55,15 +57,28 @@ const shrink = async (rel, w) => {
 };
 
 let html = readFileSync(join(PRESS, 'index.html'), 'utf8');
-let saved = 0, made = 0;
-for (const [rel, w] of Object.entries(WIDTHS)) {
-  const data = await shrink(rel, w);
-  const before = readFileSync(join(PRESS, rel)).length;
-  saved += before - (data.length * 3 / 4); made++;
-  // src="..." 와 og:image content="..." 둘 다 바꾼다
+// 페이지가 실제로 가리키는 파일만 담는다 (안 쓰는 그림까지 담으면 파일만 커진다)
+// poster= 를 빼먹으면 영상 표지가 깨진 채로 올라간다(검은 네모가 된다)
+const refs = [...new Set([...html.matchAll(/(?:src|content|poster)="((?:shots|video)\/[^"]+\.png)"/g)].map(m => m[1]))];
+let made = 0;
+for (const rel of refs) {
+  const w = WIDTHS[rel];
+  if (!w) { console.log('· ' + rel + ' 은 줄이는 크기가 정해져 있지 않아 원본 그대로 담습니다'); }
+  const data = w ? await shrink(rel, w)
+                 : 'data:image/png;base64,' + readFileSync(join(PRESS, rel)).toString('base64');
   html = html.split('"' + rel + '"').join('"' + data + '"');
+  made++;
 }
 await browser.close();
+
+// 제목용 글씨체도 담는다 — 페이지 안에 없으면 보는 사람 기기의 폰트로 바뀐다
+const FONT = 'fonts/Jua-subset.woff2';
+if (existsSync(join(PRESS, FONT))) {
+  const fb = readFileSync(join(PRESS, FONT)).toString('base64');
+  html = html.split("url('" + FONT + "')").join("url('data:font/woff2;base64," + fb + "')");
+} else {
+  console.log('⚠ ' + FONT + ' 이 없습니다 → python3 tools/make-press-font.py 를 먼저 돌려주세요');
+}
 
 // 영상은 그대로 담는다 (다시 굽지 않는다 — 화질이 떨어진다)
 const vid = 'video/jelly-shooting-promo.webm';
@@ -71,7 +86,7 @@ const vb64 = readFileSync(join(PRESS, vid)).toString('base64');
 html = html.split('"' + vid + '"').join('"data:video/webm;base64,' + vb64 + '"');
 
 // 남은 상대 경로가 있으면 링크가 깨진 채로 올라간다 — 미리 잡는다
-const left = [...html.matchAll(/(?:src|href|content)="((?:shots|video)\/[^"]+)"/g)].map(m => m[1]);
+const left = [...html.matchAll(/(?:src|href|content|poster)="((?:shots|video|fonts)\/[^"]+)"/g)].map(m => m[1]);
 if (left.length) { console.log('⚠ 아직 파일을 가리키는 곳이 있습니다: ' + [...new Set(left)].join(', ')); }
 
 // 아티팩트로 올릴 때는 껍데기(doctype·html·head·body)를 빼야 한다 —
@@ -83,5 +98,6 @@ const body  = html.slice(html.indexOf('<body>') + 6, html.lastIndexOf('</body>')
 const out = join(PRESS, 'artifact.html');
 writeFileSync(out, title + '\n' + style + '\n' + body.trim() + '\n');
 const sz = readFileSync(out).length;
-console.log('📄 ' + out + '  (' + (sz / 1024 / 1024).toFixed(2) + 'MB, 그림 ' + made + '장 + 영상 1개 담음)');
+console.log('📄 ' + out + '  (' + (sz / 1024 / 1024).toFixed(2) + 'MB · 그림 ' + made
+  + '장 + 영상 + 글씨체 담음)');
 if (!title) console.log('⚠ <title> 을 못 찾았습니다 — 아티팩트 이름이 파일 이름으로 잡힙니다');

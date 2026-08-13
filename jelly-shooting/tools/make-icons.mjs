@@ -11,7 +11,8 @@
 //   icon-512.png           512  안드로이드 · 스플래시
 //   icon-maskable-512.png  512  안드로이드 적응형(바깥 20%가 잘리므로 여백을 크게)
 //   favicon-32.png          32  브라우저 탭
-//   og.png                1200x630  카톡·트위터 링크 미리보기 카드
+//   icon-1024.png         1024  스토어 등록용
+// (og.png 링크 미리보기 카드는 tools/make-og.mjs 가 만든다 — 여기서 만들지 않는다)
 import { spawn } from 'node:child_process';
 import { writeFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
@@ -63,23 +64,13 @@ const DRAW=`(()=>{
   out['apple-touch-icon.png']=square(180,0.20);
   out['icon-192.png']=square(192,0.20);
   out['icon-512.png']=square(512,0.20);
+  out['icon-1024.png']=square(1024,0.20);      // 스토어 등록용(앱스토어는 1024를 요구한다)
   // 적응형(maskable)은 바깥 20%가 잘려 나간다 → 안쪽 80% 안에 담는다
   out['icon-maskable-512.png']=square(512,0.34);
   out['favicon-32.png']=square(32,0.10);
-  // 링크 미리보기 카드
-  out['og.png']=make(1200,630,(g,w,h)=>{
-    drawAvatar(g,w*0.755,h*0.53,168,ICON,'idle',0);
-    g.textAlign='left'; g.textBaseline='alphabetic';
-    g.font='900 108px sans-serif';
-    g.lineWidth=12; g.lineJoin='round'; g.strokeStyle='rgba(255,255,255,0.95)';
-    g.strokeText('젤리슈팅',96,h*0.47); g.fillStyle='#ff4d84'; g.fillText('젤리슈팅',96,h*0.47);
-    g.font='800 40px sans-serif';
-    g.lineWidth=8; g.strokeText('터질 때마다 도파민 팡팡 🍡',96,h*0.60);
-    g.fillStyle='#7a5470'; g.fillText('터질 때마다 도파민 팡팡 🍡',96,h*0.60);
-    g.font='800 31px sans-serif';
-    g.lineWidth=7; g.strokeText('혼자 하기 · 던지기 대전 · 최대 4명 실시간 던전',96,h*0.72);
-    g.fillStyle='#8a5cff'; g.fillText('혼자 하기 · 던지기 대전 · 최대 4명 실시간 던전',96,h*0.72);
-  });
+  // ⚠ 링크 미리보기 카드(og.png)는 여기서 만들지 않는다.
+  //   예전에는 여기서 글자를 얹은 단순한 카드를 만들었는데, 지금은 tools/make-og.mjs 가
+  //   훨씬 공들인 카드를 만든다. 여기서 또 만들면 그 카드를 덮어써 버린다.
   return out;
 })()`;
 const files=await evl(DRAW);

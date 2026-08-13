@@ -4,248 +4,345 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>젤리슈팅 — 톡 터트리는 3분, 친구랑 실시간 대전</title>
-<meta name="description" content="설치 없이 웹에서 바로 하는 캐주얼 아케이드 게임. 젤리를 톡 터트려 콤보를 쌓고, 친구랑 실시간으로 대전해요.">
+<meta name="description" content="설치 없이 웹에서 바로 하는 캐주얼 게임. 젤리를 톡 터트려 콤보를 쌓고, 방 코드 하나로 친구 2~4명과 실시간 대전해요.">
 <meta property="og:title" content="젤리슈팅 — 톡 터트리는 3분, 친구랑 실시간 대전">
 <meta property="og:description" content="설치 없이 웹에서 바로. 혼자서 3분, 친구랑 실시간 대전, AI랑 연습까지.">
 <meta property="og:image" content="shots/play-feature-1024x500.png">
 <link rel="icon" href="shots/icon-1024.png">
 <style>
+  /* ── 글씨체 ──
+     제목은 게임 분위기와 같은 둥근 글씨체(Jua, SIL OFL 1.1 · fonts/OFL.txt).
+     이 페이지에 쓰인 글자만 골라 담아서 파일이 작다(tools/make-press-font.py).
+     본문은 기기에 이미 있는 한글 폰트를 쓴다 — 작은 글씨는 그게 가장 잘 읽힌다. */
+  @font-face{
+    font-family:'Jua'; font-style:normal; font-weight:400; font-display:swap;
+    src:url('fonts/Jua-subset.woff2') format('woff2');
+  }
   :root{
-    --pink:#e6336b; --pink2:#ff5c8a; --grape:#8a5cff; --ink:#4a3348; --sub:#7c5c8e;
-    --bg:#fff6fb; --card:#ffffff; --line:rgba(180,120,160,.18);
-    --shadow:0 14px 34px rgba(180,90,140,.16);
+    /* 게임에서 그대로 가져온 색 */
+    --berry:#c9184a;      /* 제목 — 분홍보다 진해서 흰 바탕에서 잘 읽힌다 */
+    --jelly:#ff5c8a;      /* 버튼·강조 */
+    --grape:#6d3ff2;      /* 두 번째 강조 (게임의 방해 효과 색) */
+    --mint:#3fb98f;
+    --ink:#3a2739;        /* 본문 — 자주빛이 살짝 섞인 먹색 */
+    --muted:#6b5069;      /* 보조 설명 */
+    --ground:#fff7fb;     /* 바탕 */
+    --card:#ffffff;
+    --line:#f0dbe6;
+    --shade:0 10px 30px rgba(160,70,110,.13);
+    --shade-lg:0 22px 54px rgba(150,60,105,.20);
+    --r:20px;
   }
   *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  body{margin:0;background:var(--bg);color:var(--ink);
-    font-family:'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',system-ui,-apple-system,sans-serif;
-    line-height:1.62;-webkit-text-size-adjust:100%}
-  img,video{max-width:100%}
-  a{color:var(--pink)}
-  .wrap{max-width:1080px;margin:0 auto;padding:0 clamp(20px,4vw,44px)}
-  .btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(180deg,#ff7ba5,#ff4f83);
-    color:#fff;text-decoration:none;font-weight:900;font-size:17px;padding:15px 28px;border-radius:999px;
-    box-shadow:0 12px 26px rgba(255,92,138,.38)}
-  .btn.ghost{background:#fff;color:var(--pink);box-shadow:var(--shadow)}
-  .eyebrow{font-weight:900;font-size:13px;letter-spacing:1.5px;color:var(--grape)}
-  h1,h2,h3{letter-spacing:-1px;line-height:1.2;margin:0;text-wrap:balance}
-  h2{font-size:clamp(26px,4.4vw,38px);font-weight:900;color:var(--pink)}
-  .lead{font-size:clamp(16px,2.2vw,19px);color:var(--sub);font-weight:700}
-  section{padding:74px 0}
-  section+section{border-top:1px solid var(--line)}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--ground);color:var(--ink);
+    font-family:'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic','NanumGothic',system-ui,sans-serif;
+    font-size:17px;line-height:1.78;font-weight:400;
+    letter-spacing:-.1px;text-rendering:optimizeLegibility}
+  img,video{max-width:100%;display:block}
+  p{margin:0}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 clamp(20px,5vw,40px)}
+  .narrow{max-width:660px}                      /* 읽는 글은 좁게 — 한 줄이 길면 눈이 지친다 */
 
-  /* ── 히어로 ── */
-  header{position:relative;overflow:hidden;
-    background:radial-gradient(120% 90% at 12% 0%,#fff 0%,#ffe3f0 42%,#eee0ff 100%)}
-  header::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:.55;
-    background-image:radial-gradient(rgba(255,255,255,.95) 1.6px,transparent 1.7px);background-size:20px 20px}
-  .hero{position:relative;z-index:1;display:grid;grid-template-columns:1.15fr .85fr;gap:36px;
-    align-items:center;padding:66px 0 74px}
-  .hero .icon{width:92px;height:92px;border-radius:24px;box-shadow:var(--shadow);display:block}
-  .hero h1{font-size:clamp(38px,7vw,62px);font-weight:900;color:var(--pink);margin:18px 0 10px}
-  .hero p{margin:0 0 8px}
-  .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
-  .meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
-  .meta span{background:rgba(255,255,255,.86);border-radius:999px;padding:8px 14px;font-size:14px;
-    font-weight:800;color:var(--sub);box-shadow:0 4px 14px rgba(180,90,140,.10)}
-  .phone{margin:0 auto;width:min(320px,80%);border-radius:32px;overflow:hidden;background:#fff;
-    box-shadow:0 26px 60px rgba(150,70,110,.32),0 0 0 4px rgba(255,255,255,.95)}
-  .phone img{display:block}
+  /* ── 글자 층위 ── */
+  .display{font-family:'Jua','Apple SD Gothic Neo',sans-serif;font-weight:400;letter-spacing:0}
+  h1,h2,h3{margin:0;font-weight:400;text-wrap:balance;line-height:1.24}
+  h2{font-size:clamp(27px,4.2vw,36px);color:var(--berry)}
+  h3{font-size:20px;color:var(--berry)}
+  .tag{display:inline-block;font-size:13px;line-height:1;letter-spacing:.6px;color:var(--grape);
+    background:#f3edff;border-radius:999px;padding:7px 13px;margin-bottom:16px;font-weight:700}
+  .lead{font-size:clamp(16px,2vw,18.5px);color:var(--muted);margin-top:12px}
+  strong{font-weight:700;color:var(--ink)}
 
-  /* ── 특징 카드 ── */
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:34px}
-  .card{background:var(--card);border-radius:22px;padding:24px;box-shadow:var(--shadow)}
-  .card .e{font-size:30px}
-  .card h3{font-size:20px;font-weight:900;color:var(--pink);margin:10px 0 8px}
-  .card p{margin:0;color:var(--sub);font-weight:700;font-size:15px}
-
-  /* ── 스크린샷 줄 ── */
-  .shots{display:flex;gap:16px;overflow-x:auto;padding:26px 4px 12px;scroll-snap-type:x mandatory}
-  .shots figure{flex:0 0 auto;width:250px;margin:0;scroll-snap-align:center}
-  .shots img{border-radius:20px;box-shadow:var(--shadow);display:block}
-  .shots figcaption{margin-top:10px;font-size:14px;font-weight:800;color:var(--sub);text-align:center}
-
-  /* ── 영상 ── */
-  .video{max-width:400px;margin:28px auto 0;border-radius:26px;overflow:hidden;
-    box-shadow:0 22px 50px rgba(150,70,110,.28);background:#000}
-  .video video{display:block;width:100%}
-
-  /* ── 표 ── */
-  .tablewrap{overflow-x:auto;margin-top:26px}
-  table{border-collapse:collapse;width:100%;min-width:560px;background:#fff;border-radius:18px;
-    overflow:hidden;box-shadow:var(--shadow)}
-  th,td{padding:13px 16px;text-align:left;font-size:15px;border-bottom:1px solid var(--line)}
-  th{background:#fff0f7;color:var(--pink);font-weight:900;white-space:nowrap}
-  td{color:var(--sub);font-weight:700}
-  tr:last-child td{border-bottom:0}
-
-  /* ── 만든 이야기 ── */
-  .steps{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:30px}
-  .step{background:#fff;border-radius:20px;padding:22px;box-shadow:var(--shadow)}
-  .step b{display:block;color:var(--pink);font-size:17px;margin-bottom:6px}
-  .step p{margin:0;color:var(--sub);font-weight:700;font-size:15px}
-  .quote{margin:30px 0 0;background:#fff;border-left:6px solid var(--pink2);border-radius:14px;
-    padding:18px 22px;color:var(--sub);font-weight:700;box-shadow:var(--shadow)}
-
-  /* ── FAQ ── */
-  details{background:#fff;border-radius:16px;padding:16px 20px;box-shadow:var(--shadow);margin-top:12px}
-  summary{cursor:pointer;font-weight:900;color:var(--ink);font-size:16px}
-  details p{margin:10px 0 0;color:var(--sub);font-weight:700;font-size:15px}
-
-  footer{background:linear-gradient(180deg,#ffe9f4,#efe2ff);text-align:center;padding:66px 20px 54px}
-  footer h2{margin-bottom:12px}
-  .fine{margin-top:26px;font-size:13px;color:rgba(90,60,85,.62);font-weight:700}
-
+  /* ── 버튼 ── */
+  .btn{display:inline-flex;align-items:center;gap:9px;text-decoration:none;border-radius:999px;
+    font-size:17px;padding:16px 30px;font-family:'Jua','Apple SD Gothic Neo',sans-serif;
+    background:linear-gradient(180deg,#ff7ea6,#ff4a80);color:#fff;
+    box-shadow:0 12px 26px rgba(255,74,128,.34);transition:transform .16s ease,box-shadow .16s ease}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 16px 32px rgba(255,74,128,.42)}
+  .btn.quiet{background:#fff;color:var(--berry);box-shadow:var(--shade)}
   a:focus-visible,summary:focus-visible,video:focus-visible{outline:3px solid var(--grape);
-    outline-offset:3px;border-radius:8px}
-  @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} }
+    outline-offset:3px;border-radius:10px}
 
-  @media (max-width:860px){
-    .hero{grid-template-columns:1fr;text-align:center;padding:48px 0 56px}
-    .hero .icon{margin:0 auto}
-    .cta,.meta{justify-content:center}
-    .grid,.steps{grid-template-columns:1fr}
-    section{padding:56px 0}
+  /* ── ① 표지 그림 (게임의 링크 미리보기 카드를 그대로 쓴다) ──
+     글자를 그림 위에 얹지 않는다. 고양이 얼굴 위에 제목을 놓으면 둘 다 죽는다.
+     잘라 쓰지도 않는다(고양이 입이 잘렸다). 아이콘만 표지 위로 살짝 걸쳐서
+     '스토어 페이지' 느낌을 낸다. */
+  .cover{position:relative;background:#ffe9f2;line-height:0}
+  .cover img{width:100%;height:auto}          /* 자르지 않는다 — 이 그림은 1200x630 으로 짜여 있다 */
+
+  /* ── ② 이름·소개 ── */
+  .intro{position:relative;z-index:1;padding:0 0 54px;
+    display:grid;grid-template-columns:auto 1fr;gap:clamp(18px,3vw,28px);align-items:start}
+  .intro .icon{width:118px;height:118px;border-radius:28px;box-shadow:var(--shade-lg);
+    border:5px solid #fff;margin-top:-52px}
+  .intro h1{font-size:clamp(40px,7.6vw,60px);color:var(--berry);margin-top:6px}
+  .intro .sub{font-size:clamp(16px,2.2vw,19px);color:var(--muted);margin-top:8px}
+  .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;list-style:none;padding:0}
+  .chips li{font-size:13.5px;color:var(--muted);background:#fff;border:1px solid var(--line);
+    border-radius:999px;padding:6px 13px}
+
+  /* ── 공통 구획 ── */
+  section{padding:66px 0}
+  .band{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+
+  /* ── ③ 놀이 방법 3가지 (그림 + 글) ── */
+  .play{display:grid;gap:52px;margin-top:40px}
+  .row{display:grid;grid-template-columns:270px 1fr;gap:clamp(24px,4vw,52px);align-items:center}
+  .row:nth-child(even){grid-template-columns:1fr 270px}
+  .row:nth-child(even) .shot{order:2}
+  .shot{border-radius:26px;overflow:hidden;background:#fff;box-shadow:var(--shade-lg);
+    border:4px solid #fff}
+  .row h3{font-size:clamp(21px,3vw,26px);margin-bottom:10px}
+  .row p{color:var(--muted)}
+  .row .how{margin-top:14px;font-size:15px;color:var(--ink);background:#fff6fa;
+    border-radius:14px;padding:12px 16px;border:1px solid var(--line)}
+
+  /* ── ④ 나머지 재미 ── */
+  .more{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:34px}
+  .more div{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:22px}
+  .more .e{font-size:26px;line-height:1}
+  .more h3{margin:12px 0 6px;font-size:18.5px}
+  .more p{font-size:15.5px;color:var(--muted);line-height:1.7}
+
+  /* ── ⑤ 영상 ── */
+  .video{max-width:340px;margin:34px auto 0;border-radius:30px;overflow:hidden;
+    box-shadow:var(--shade-lg);background:#000;border:5px solid #fff}
+  .video video{width:100%}
+  .videonote{margin-top:14px;text-align:center;font-size:14px;color:var(--muted)}
+
+  /* ── ⑥ 규칙 ── */
+  .rules{margin-top:30px;display:grid;gap:2px;background:var(--line);
+    border-radius:var(--r);overflow:hidden;border:1px solid var(--line)}
+  .rules div{display:grid;grid-template-columns:132px 1fr;gap:18px;background:#fff;padding:16px 20px}
+  .rules dt,.rules b{color:var(--berry);font-family:'Jua','Apple SD Gothic Neo',sans-serif;
+    font-weight:400;font-size:17px}
+  .rules span{color:var(--muted);font-size:15.5px}
+
+  /* ── ⑦ 만든 이야기 ── */
+  .made{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:34px}
+  .made div{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:22px 24px}
+  .made b{display:block;color:var(--berry);font-family:'Jua','Apple SD Gothic Neo',sans-serif;
+    font-weight:400;font-size:18px;margin-bottom:7px}
+  .made p{color:var(--muted);font-size:15.5px;line-height:1.72}
+  .made em{font-style:normal;color:var(--grape);font-weight:700}
+  .quote{margin-top:26px;padding:22px 26px;background:#fdf4ff;border:1px solid #eddcff;
+    border-radius:var(--r);color:var(--muted);font-size:16px}
+
+  /* ── ⑧ 자주 묻는 것 ── */
+  .faq{margin-top:28px;display:grid;gap:10px}
+  details{background:#fff;border:1px solid var(--line);border-radius:16px;padding:4px 20px}
+  summary{cursor:pointer;padding:14px 0;font-size:16.5px;color:var(--ink);
+    font-family:'Jua','Apple SD Gothic Neo',sans-serif;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:'＋';color:var(--jelly);margin-right:10px;font-family:system-ui,sans-serif}
+  details[open] summary::before{content:'－'}
+  details p{padding:0 0 16px 26px;color:var(--muted);font-size:15.5px}
+
+  /* ── 마무리 ── */
+  footer{background:linear-gradient(180deg,#ffeaf3,#f1e6ff);text-align:center;padding:70px 20px 60px}
+  footer h2{margin-bottom:10px}
+  .fine{margin-top:28px;font-size:13px;color:#8a7186;line-height:1.8}
+
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .btn{transition:none}
+  }
+  @media (max-width:840px){
+    body{font-size:16.5px}
+    .intro{grid-template-columns:1fr;gap:14px}
+    .intro .icon{width:96px;height:96px;border-radius:24px;margin-top:-44px}
+    .intro h1{margin-top:0}
+    .row,.row:nth-child(even){grid-template-columns:1fr;gap:20px}
+    .row:nth-child(even) .shot{order:0}
+    .shot{max-width:270px;margin:0 auto}
+    .more,.made{grid-template-columns:1fr}
+    .rules div{grid-template-columns:1fr;gap:4px;padding:14px 18px}
+    section{padding:52px 0}
+    .play{gap:44px}
   }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="wrap hero">
-    <div>
-      <img class="icon" src="shots/icon-1024.png" alt="젤리슈팅 아이콘">
-      <h1>젤리슈팅</h1>
-      <p class="lead">톡 터트리는 3분 · 친구랑 실시간 대전</p>
-      <p class="lead">설치 없이, 주소만 열면 바로 시작해요.</p>
-      <div class="cta">
-        <a class="btn" href="https://zingy-cupcake-98444a.netlify.app/">🍡 지금 바로 플레이</a>
-        <a class="btn ghost" href="#video">🎬 소개 영상 보기</a>
-      </div>
-      <div class="meta">
-        <span>웹 · PWA (iOS · 안드로이드 · PC)</span>
-        <span>무료 · 광고 없음</span>
-        <span>한국어</span>
-        <span>혼자 · 2~4인 실시간</span>
-      </div>
-    </div>
-    <div class="phone"><img src="shots/appstore-1-play.png" alt="젤리슈팅 플레이 화면"></div>
-  </div>
-</header>
+<!-- ① 표지 -->
+<div class="cover"><img src="shots/cover-1200x630.png" alt="분홍 고양이에게 젤리와 폭탄이 쏟아지는 젤리슈팅 표지 그림"></div>
 
-<section id="features">
+<!-- ② 이름·소개 -->
+<div class="wrap intro">
+  <img class="icon" src="shots/icon-1024.png" alt="젤리슈팅 아이콘">
+  <div>
+    <h1 class="display">젤리슈팅</h1>
+    <p class="sub">톡 터트리는 3분, 친구랑 실시간 대전.<br>설치 없이 주소만 열면 바로 시작해요.</p>
+    <div class="cta">
+      <a class="btn" href="https://zingy-cupcake-98444a.netlify.app/">🍡 지금 바로 플레이</a>
+      <a class="btn quiet" href="#video">🎬 소개 영상 보기</a>
+    </div>
+    <ul class="chips">
+      <li>무료 · 광고 없음</li><li>결제 없음</li><li>한국어</li>
+      <li>혼자 · 2~4인 실시간</li><li>iOS · 안드로이드 · PC</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ③ 놀이 방법 -->
+<section class="band">
   <div class="wrap">
-    <div class="eyebrow">게임 4가지</div>
-    <h2>한 손으로, 3분이면 한 판</h2>
-    <p class="lead">떨어지는 젤리를 톡 누르면 팡. 연달아 터지면 콤보가 붙고, 폭탄은 피해야 해요.</p>
-    <div class="grid">
-      <div class="card"><div class="e">🍡</div><h3>혼자 하기</h3>
-        <p>순한맛부터 핵불닭까지 난이도 4단계. 아이템으로 위기를 넘기고 최고 기록에 도전해요.</p></div>
-      <div class="card"><div class="e">⚔️</div><h3>실시간 던전</h3>
-        <p>방 코드만 알려주면 2~4명이 같은 판에서 동시에 대전. 지그재그·안개 같은 방해를 서로 던져요.</p></div>
-      <div class="card"><div class="e">🎯</div><h3>던지기 게임</h3>
-        <p>한 명은 젤리를 던지고, 한 명은 터트려요. 역할을 바꿔 다시 붙을 수 있어요.</p></div>
-      <div class="card"><div class="e">🤖</div><h3>AI와 대결</h3>
-        <p>인터넷 친구가 없어도 실력 4단계 AI와 바로 연습. 다시 할 때 실력·역할을 바꿀 수 있어요.</p></div>
-      <div class="card"><div class="e">🎀</div><h3>내 캐릭터 꾸미기</h3>
-        <p>캐릭터 6종 · 머리 · 색깔 · 악세서리. 코인을 모아 나만의 악세서리도 만들어요.</p></div>
-      <div class="card"><div class="e">🏆</div><h3>결과는 그림으로</h3>
-        <p>이기면 춤추고 지면 분해하는 승패 그림. 표정·자세·말풍선이 판마다 달라지고, 그대로 공유돼요.</p></div>
+    <div class="narrow">
+      <span class="tag">놀이 방법 3가지</span>
+      <h2 class="display">혼자여도 재미있고, 둘이면 더 재미있게</h2>
+      <p class="lead">떨어지는 젤리를 손가락으로 톡. 연달아 터지면 콤보가 붙고, 폭탄은 피해야 해요.</p>
+    </div>
+
+    <div class="play">
+      <div class="row">
+        <div class="shot"><img src="shots/appstore-1-play.png" alt="혼자 하기 플레이 화면"></div>
+        <div>
+          <h3 class="display">혼자 하기 — 딱 3분</h3>
+          <p>순한맛부터 핵불닭까지 난이도 네 단계. 잠깐 비는 시간에 한 판, 오늘의 최고 기록에 도전해요.</p>
+          <p class="how">아이템 다섯 가지를 들고 들어갈 수 있어요 —
+            <strong>하트팩</strong>으로 목숨을 늘리고, <strong>슬로우</strong>로 시간을 벌고,
+            <strong>폭탄청소·2배 점수·자석</strong>으로 위기를 넘겨요.</p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="shot"><img src="shots/appstore-2-dungeon.png" alt="실시간 던전 화면"></div>
+        <div>
+          <h3 class="display">실시간 던전 — 2~4명이 같은 판에서</h3>
+          <p>방을 만들면 네 자리 코드가 나와요. 친구가 코드를 넣으면 같은 판에서 동시에 시작.
+            마지막까지 살아남은 사람이 우승이에요.</p>
+          <p class="how">게이지를 모아 상대에게 방해를 던질 수 있어요 —
+            <strong>지그재그</strong>로 젤리를 흔들고, <strong>안개</strong>로 시야를 가리고,
+            <strong>스피드업</strong>으로 젤리를 빠르게 떨어뜨려요.</p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="shot"><img src="shots/appstore-3-throw.png" alt="던지기 게임 화면"></div>
+        <div>
+          <h3 class="display">던지기 게임 — 역할을 나눠서</h3>
+          <p>한 명은 젤리를 던지고, 한 명은 터트려요. 던지는 쪽은 상대 화면을 보면서
+            어디로 떨어뜨릴지 정하고, 터트리는 쪽은 쏟아지는 젤리를 막아 내요.</p>
+          <p class="how">같은 친구와 다시 할 때 <strong>역할 바꾸기</strong>를 누르면 바로 자리가 바뀌어요.</p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<section id="video">
+<!-- ④ 나머지 재미 -->
+<section>
   <div class="wrap">
-    <div class="eyebrow">26초</div>
-    <h2>26초 소개 영상</h2>
-    <p class="lead">실제 플레이를 그대로 녹화했어요. (소리 없음)</p>
+    <div class="narrow">
+      <span class="tag">계속 하게 되는 이유</span>
+      <h2 class="display">이기면 춤추고, 지면 분해해요</h2>
+    </div>
+    <div class="more">
+      <div><div class="e">🤖</div><h3 class="display">AI와 대결</h3>
+        <p>인터넷 상대가 없어도 실력 네 단계 AI와 바로 연습해요. 다시 할 때 실력과 역할을 바꿀 수 있어요.</p></div>
+      <div><div class="e">🎀</div><h3 class="display">내 캐릭터 꾸미기</h3>
+        <p>캐릭터 여섯 종에 머리·색깔·악세서리. 코인을 모아 나만의 악세서리도 만들어요.</p></div>
+      <div><div class="e">🏆</div><h3 class="display">결과는 그림으로</h3>
+        <p>표정·자세·말풍선이 판마다 달라져요. 진 사람은 이긴 사람 화면을 관전하고, 그 장면을 그대로 공유해요.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ⑤ 영상 -->
+<section class="band" id="video">
+  <div class="wrap">
+    <div class="narrow">
+      <span class="tag">22초</span>
+      <h2 class="display">소개 영상</h2>
+      <p class="lead">따로 편집한 화면이 아니라, 실제로 플레이한 화면을 그대로 녹화했어요.</p>
+    </div>
     <div class="video">
       <video src="video/jelly-shooting-promo.webm" controls playsinline muted loop
              poster="video/frames/01-cover.png"></video>
     </div>
+    <p class="videonote">소리는 없어요 · 표지 → 난이도 고르기 → 플레이 → AI 대결 → 승리 그림</p>
   </div>
 </section>
 
-<section id="shots">
+<!-- ⑥ 규칙 -->
+<section>
   <div class="wrap">
-    <div class="eyebrow">화면 6장</div>
-    <h2>화면 미리보기</h2>
-    <p class="lead">옆으로 넘겨 보세요.</p>
-  </div>
-  <div class="wrap">
-    <div class="shots">
-      <figure><img src="shots/appstore-1-play.png" alt="플레이"><figcaption>톡 터트리면 콤보!</figcaption></figure>
-      <figure><img src="shots/appstore-2-dungeon.png" alt="실시간 던전"><figcaption>친구랑 실시간 대전</figcaption></figure>
-      <figure><img src="shots/appstore-3-throw.png" alt="던지기 게임"><figcaption>한 명은 던지고, 한 명은 터트려요</figcaption></figure>
-      <figure><img src="shots/appstore-4-dress.png" alt="꾸미기"><figcaption>내 캐릭터 꾸미기</figcaption></figure>
-      <figure><img src="shots/appstore-5-result.png" alt="결과"><figcaption>이기면 춤추고, 지면 분해요</figcaption></figure>
-      <figure><img src="shots/appstore-6-home.png" alt="홈"><figcaption>설치 없이 웹에서 바로</figcaption></figure>
+    <div class="narrow">
+      <span class="tag">규칙 다섯 줄</span>
+      <h2 class="display">처음이라면 이것만</h2>
+    </div>
+    <div class="rules">
+      <div><b>기본</b><span>떨어지는 젤리를 누르면 터져요. 바닥에 닿으면 목숨이 하나 줄어요.</span></div>
+      <div><b>콤보</b><span>쉬지 않고 이어 터트리면 점수 배수가 올라가요.</span></div>
+      <div><b>폭탄</b><span>화난 얼굴(😡)은 누르면 안 돼요. 피하는 것도 실력이에요.</span></div>
+      <div><b>아이템</b><span>창작소에서 만들어 판에 들고 들어가요. 판이 시작되면 아래 줄에서 눌러 써요.</span></div>
+      <div><b>같이 하기</b><span>방을 만들면 네 자리 코드가 나와요. 친구가 그 코드를 넣으면 같은 방에서 시작해요.</span></div>
     </div>
   </div>
 </section>
 
-<section id="how">
+<!-- ⑦ 만든 이야기 -->
+<section class="band">
   <div class="wrap">
-    <div class="eyebrow">규칙 5줄</div>
-    <h2>게임 방법</h2>
-    <div class="tablewrap">
-      <table>
-        <tr><th>기본</th><td>떨어지는 젤리를 누르면 터져요. 바닥에 닿으면 목숨이 하나 줄어요.</td></tr>
-        <tr><th>콤보</th><td>쉬지 않고 이어 터트리면 점수 배수가 올라가요. 폭탄(😡)은 누르면 안 돼요.</td></tr>
-        <tr><th>아이템</th><td>하트팩 · 슬로우 · 폭탄청소 · 2배 점수 · 자석. 창작소에서 만들어 들고 들어가요.</td></tr>
-        <tr><th>방해 주사위</th><td>대전에서는 게이지를 모아 지그재그 · 안개 · 스피드업 같은 방해를 상대에게 던져요.</td></tr>
-        <tr><th>대전 참여</th><td>방을 만들면 4자리 코드가 나와요. 친구가 그 코드를 넣으면 같은 방에서 시작해요.</td></tr>
-      </table>
+    <div class="narrow">
+      <span class="tag">만든 이야기</span>
+      <h2 class="display">HTML 파일 하나로 만든 게임이에요</h2>
+      <p class="lead">게임 엔진 없이 캔버스에 직접 그렸고, 실시간 대전은 Supabase Realtime을 씁니다.</p>
     </div>
+    <div class="made">
+      <div><b>파일 하나가 곧 게임</b>
+        <p>index.html 안에 화면·소리·통신·저장이 다 들어 있어요. 정적 호스팅에 올리면 그게 배포라서,
+          반년 뒤에 열어도 그대로 돌아가요.</p></div>
+      <div><b>엔진 없이 캔버스로</b>
+        <p>젤리·캐릭터·표정·승패 애니메이션까지 좌표로 직접 그려요. 캐릭터 여섯 종의 팔·다리·꼬리
+          비율을 종마다 따로 잡았어요.</p></div>
+      <div><b>실시간 대전</b>
+        <p>방·점수·방해·관전을 브로드캐스트로 주고받아요. 판 전체를 중계하지 않고 <em>필요한 소식만</em>
+          보내서, 느린 인터넷에서도 버텨요.</p></div>
+      <div><b>흔들리지 않는 화면</b>
+        <p>아이폰 노치·홈바까지 계산해 판 크기를 한 판 동안 못 박아요. 아이템 칸이 줄어도
+          판이 커지지 않아요 — <em>299×449 → 263×395</em> 로 흔들렸던 걸 잡았어요.</p></div>
+      <div><b>난이도는 실측으로</b>
+        <p>AI가 2분에 몇 점을 내는지 재서 네 단계를 잡았어요. 가장 쉬운 단계는
+          <em>20,406점 → 6,576점</em>. 사람이 이길 수 있는 연습 상대가 목표였어요.</p></div>
+      <div><b>스스로 검사하는 도구</b>
+        <p>화면 넘침·작은 버튼·2인·4인 통신·AI 난이도까지 자동으로 검사해요.
+          이 페이지의 사진과 영상도 <em>스크립트가 진짜로 플레이해서</em> 만든 거예요.</p></div>
+    </div>
+    <p class="quote">아이랑 같이 할 게임을 만들다가, 친구랑 붙을 수 있는 방까지 붙었어요.
+      점수보다 <strong>같이 웃는 장면</strong>을 남기고 싶어서 이기면 춤추고 지면 분해하는 그림을 넣었습니다.</p>
   </div>
 </section>
 
-<section id="made">
-  <div class="wrap">
-    <div class="eyebrow">만든 이야기</div>
-    <h2>이렇게 만들었어요</h2>
-    <p class="lead">HTML 파일 하나 · 엔진 없이 캔버스 직접 그리기 · 실시간은 Supabase Realtime.</p>
-    <div class="steps">
-      <div class="step"><b>파일 하나로 끝나는 게임</b>
-        <p>index.html 안에 화면·소리·통신·저장이 다 들어 있어요. 정적 호스팅에 올리면 그게 배포예요.</p></div>
-      <div class="step"><b>엔진 없이 캔버스로</b>
-        <p>젤리·캐릭터·표정·승패 애니메이션까지 좌표로 직접 그려요. 캐릭터 6종의 팔·다리·꼬리 비율을 종마다 따로 잡았어요.</p></div>
-      <div class="step"><b>실시간 대전</b>
-        <p>Supabase Realtime 브로드캐스트로 방·점수·방해·관전을 주고받아요. 진 사람은 이긴 사람 화면을 관전할 수 있어요.</p></div>
-      <div class="step"><b>흔들리지 않는 화면</b>
-        <p>아이폰 노치·홈바(safe-area)와 판 크기를 못 박아 두는 규칙을 만들어, 아이템 칸이 줄어도 판이 커지지 않아요.</p></div>
-      <div class="step"><b>스스로 검사하는 도구</b>
-        <p>화면 넘침·작은 버튼·2인/4인 통신·AI 난이도까지 자동 검사 도구를 같이 만들었어요. 이 페이지의 스크린샷과 영상도 스크립트가 진짜 게임을 플레이해서 만든 거예요.</p></div>
-      <div class="step"><b>난이도는 실측으로</b>
-        <p>AI가 2분에 몇 점을 내는지, 젤리를 몇 개 잡는지를 재서 4단계를 잡았어요. “사람이 이길 수 있는 연습 상대”가 목표였어요.</p></div>
+<!-- ⑧ 자주 묻는 것 -->
+<section>
+  <div class="wrap narrow">
+    <span class="tag">자주 묻는 것</span>
+    <h2 class="display">미리 답해 둘게요</h2>
+    <div class="faq">
+      <details open><summary>앱을 설치해야 하나요?</summary>
+        <p>아니요, 주소만 열면 바로 됩니다. 홈 화면에 추가하면 앱처럼 전체화면으로 열리고,
+          인터넷이 없을 때도 혼자 하기는 그대로 돌아가요.</p></details>
+      <details><summary>친구랑 어떻게 같이 하나요?</summary>
+        <p>실시간 던전이나 던지기 게임에서 방을 만들면 네 자리 코드가 나와요.
+          친구가 그 코드를 넣으면 같은 방에서 시작합니다. 2~4명까지 가능해요.</p></details>
+      <details><summary>공짜인가요? 광고가 있나요?</summary>
+        <p>무료이고 광고가 없어요. 게임 안 코인은 플레이로만 모아요(현금 결제 없음).</p></details>
+      <details><summary>아이가 해도 괜찮나요?</summary>
+        <p>폭력적인 표현이나 과금 요소가 없어요. 주고받는 말은 방 안 한마디와 정해진 말풍선 정도이고,
+          난이도 순한맛에서 시작하면 쉬워요.</p></details>
     </div>
-    <p class="quote">“아이랑 같이 할 게임을 만들다가, 친구랑 붙을 수 있는 방까지 붙었어요.
-      점수보다 <b>같이 웃는 장면</b>을 남기고 싶어서 이기면 춤추고 지면 분해하는 그림을 넣었습니다.”</p>
-  </div>
-</section>
-
-<section id="faq">
-  <div class="wrap">
-    <div class="eyebrow">자주 묻는 것</div>
-    <h2>자주 묻는 것</h2>
-    <details open><summary>앱을 설치해야 하나요?</summary>
-      <p>아니요. 주소만 열면 바로 됩니다. 홈 화면에 추가하면 앱처럼 전체화면으로 열리고, 오프라인에서도 혼자 하기는 돌아가요.</p></details>
-    <details><summary>친구랑 어떻게 같이 하나요?</summary>
-      <p>실시간 던전이나 던지기 게임에서 방을 만들면 4자리 코드가 나와요. 친구가 코드를 넣으면 같은 방에서 시작합니다. 2~4명까지 가능해요.</p></details>
-    <details><summary>공짜인가요? 광고가 있나요?</summary>
-      <p>무료이고 광고가 없어요. 게임 안 코인은 플레이로만 모아요(현금 결제 없음).</p></details>
-    <details><summary>아이가 해도 괜찮나요?</summary>
-      <p>폭력·과금 요소가 없고, 채팅은 방 안 한마디와 말풍선 정도예요. 난이도 순한맛에서 시작하면 쉬워요.</p></details>
   </div>
 </section>
 
 <footer>
-  <h2>지금 바로 한 판</h2>
+  <h2 class="display">지금 바로 한 판</h2>
   <p class="lead">친구에게 방 코드만 알려주면 끝.</p>
-  <p style="margin-top:22px"><a class="btn" href="https://zingy-cupcake-98444a.netlify.app/">🍡 젤리슈팅 열기</a></p>
-  <p class="fine">🍡 젤리슈팅 · Jelly Shooting — 개인이 만든 웹 게임입니다.<br>
-    이 페이지의 화면·영상은 시연용 상태(점수·코인 등)로 만들어졌습니다.</p>
+  <p style="margin-top:24px"><a class="btn" href="https://zingy-cupcake-98444a.netlify.app/">🍡 젤리슈팅 열기</a></p>
+  <p class="fine">🍡 젤리슈팅 · Jelly Shooting — 혼자 만든 웹 게임입니다.<br>
+    화면과 영상은 시연용 상태(점수·코인 등)로 찍었어요 · 제목 글씨체 Jua (SIL OFL 1.1)</p>
 </footer>
 
 </body>
