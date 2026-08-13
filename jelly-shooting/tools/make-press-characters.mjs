@@ -58,7 +58,7 @@ const save = (name, b64) => {
 // ① 캐릭터 여섯 종
 save('chars-row.png', await strip([
   [{k:'cat',   c:'#ffb3c9', a:'bow',     ac:'#ff5c8a'}, 'happy', '고양이'],
-  [{k:'dog',   c:'#a3d5ff', a:'cap',     ac:'#4fa8ff'}, 'wow',   '강아지'],
+  [{k:'dog',   c:'#a3d5ff', a:'cap',     ac:'#4fa8ff'}, 'happy', '강아지'],   // 코·혀가 가장 예쁘게 나오는 표정
   [{k:'bunny', c:'#fff0a8', a:'flower',  ac:'#ff8ab5'}, 'calm',  '토끼'],
   [{k:'bear',  c:'#c9a27a', a:'crown',   ac:'#ffce3d'}, 'happy', '곰'],
   [{k:'human', c:'#ffe36e', a:'glasses', ac:'#5a5566', h:'crop'},  'wink', '남자아이'],

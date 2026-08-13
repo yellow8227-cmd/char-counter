@@ -2303,7 +2303,10 @@ function kindExtras(g,R,cfg,mood){
       g.beginPath();g.moveTo(s*R*0.40,R*0.24+k*R*0.085);g.lineTo(s*R*1.02,R*0.19+k*R*0.16);g.stroke(); }); });
   }
   else if(cfg.kind==='dog'){                              // 🐶 혀 + 파란 목걸이
-    if(!hurt){ g.fillStyle='#ff7d9c';g.beginPath();g.ellipse(0,R*0.56,R*0.125,R*0.16,0,0,7);g.fill();
+    // 입을 크게 벌린 표정(놀람·울음)에는 늘어뜨린 혀를 그리지 않는다.
+    // 벌린 입(진한 타원 + 분홍 안쪽)과 혀가 붙어서 코까지 한 덩어리 검은 뭉치로 보였다.
+    const openMouth=(mood==='wow'||mood==='wail');
+    if(!hurt&&!openMouth){ g.fillStyle='#ff7d9c';g.beginPath();g.ellipse(0,R*0.56,R*0.125,R*0.16,0,0,7);g.fill();
       g.strokeStyle='#e0567c';g.lineWidth=Math.max(1,R*0.028);g.beginPath();g.moveTo(0,R*0.47);g.lineTo(0,R*0.65);g.stroke(); }
     g.strokeStyle='#5c7cff';g.lineWidth=R*0.10;g.beginPath();g.arc(0,R*0.14,R*0.88,0.33*Math.PI,0.67*Math.PI);g.stroke();
     g.fillStyle='#ffce3d';g.beginPath();g.arc(0,R*1.02,R*0.10,0,7);g.fill();

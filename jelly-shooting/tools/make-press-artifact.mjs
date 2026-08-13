@@ -92,6 +92,18 @@ html = html.split('"' + vid + '"').join('"data:video/webm;base64,' + vb64 + '"')
 const left = [...html.matchAll(/(?:src|href|content|poster)="((?:shots|video|fonts)\/[^"]+)"/g)].map(m => m[1]);
 if (left.length) { console.log('⚠ 아직 파일을 가리키는 곳이 있습니다: ' + [...new Set(left)].join(', ')); }
 
+// 탭 아이콘 — 올리는 쪽은 이모지만 받는다. 그래서 페이지 안에 <link rel="icon"> 을 넣어
+// 게임 아이콘(파비콘 32px)으로 덮는다. 나중에 선언된 아이콘이 이기므로 이게 보인다.
+let iconTag = '';
+const ico = join(ROOT, 'favicon-32.png');
+if (existsSync(ico)) {
+  iconTag = '<link rel="icon" type="image/png" href="data:image/png;base64,'
+    + readFileSync(ico).toString('base64') + '">\n';
+  const at = join(ROOT, 'apple-touch-icon.png');
+  if (existsSync(at)) iconTag += '<link rel="apple-touch-icon" href="data:image/png;base64,'
+    + readFileSync(at).toString('base64') + '">\n';
+}
+
 // 아티팩트로 올릴 때는 껍데기(doctype·html·head·body)를 빼야 한다 —
 // 올리는 쪽이 그 껍데기를 다시 씌운다. <title> 과 <style> 은 그대로 남긴다.
 // 아티팩트 이름은 설명 없이 이름만 — 갤러리에서 이름으로 찾는다
@@ -99,7 +111,7 @@ const title = '<title>젤리슈팅</title>';
 const style = (html.match(/<style>[\s\S]*?<\/style>/) || [''])[0];
 const body  = html.slice(html.indexOf('<body>') + 6, html.lastIndexOf('</body>'));
 const out = join(PRESS, 'artifact.html');
-writeFileSync(out, title + '\n' + style + '\n' + body.trim() + '\n');
+writeFileSync(out, title + '\n' + iconTag + style + '\n' + body.trim() + '\n');
 const sz = readFileSync(out).length;
 console.log('📄 ' + out + '  (' + (sz / 1024 / 1024).toFixed(2) + 'MB · 그림 ' + made
   + '장 + 영상 + 글씨체 담음)');
