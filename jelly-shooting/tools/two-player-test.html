@@ -309,6 +309,39 @@ async function run(){
   }
   ev(A,'netLeave()'); ev(B,'netLeave()');
 
+  // ── 6-b. 🔄 던지기 게임 역할 바꾸기 (대기실에서 바로) ──
+  install(A,'까미'); install(B,'하늘');
+  ev(A,"openNetMode('throw'); hostRole='thrower';"); ev(B,"openNetMode('throw')");
+  ev(A,'netCreate()'); await sleep(150);
+  ev(B,'netEnterRoom("'+ev(A,'net.room')+'",false)');
+  await wait(bothMet,5000);
+  ev(A,'openLobby()'); ev(B,'openLobby()'); await sleep(200);
+  const roleA0=ev(A,'myRole'), roleB0=ev(B,'myRole');
+  if(roleA0!==roleB0) ok('처음 역할 — A '+roleA0+' / B '+roleB0);
+  else no('둘이 같은 역할이다 ('+roleA0+')');
+  // 둘 다 준비해 둔 상태에서 바꿔 본다 (준비가 풀려야 한다).
+  // lobbyReady() 를 쓰면 둘 다 준비되어 판이 바로 시작되므로(던지기 게임) 상태만 세운다.
+  ev(A,'net.ready=true; peerList().forEach(p=>p.ready=true); renderLobby()');
+  ev(B,'net.ready=true; peerList().forEach(p=>p.ready=true); renderLobby()');
+  await sleep(150);
+  const swapVisible=ev(A,'!$("lobbySwapBtn").classList.contains("hide")');
+  if(swapVisible) ok('대기실에 역할 바꾸기 단추가 보인다 ("'+ev(A,'$("lobbySwapBtn").textContent').trim()+'")');
+  else no('역할 바꾸기 단추가 안 보인다');
+  ev(A,'$("lobbySwapBtn").click()');
+  const flipped=await wait(()=>ev(B,'myRole')!==roleB0,3000);
+  const roleA1=ev(A,'myRole'), roleB1=ev(B,'myRole');
+  if(flipped&&roleA1===roleB0&&roleB1===roleA0) ok('A가 누르자 둘 다 역할이 맞바뀌었다 (A '+roleA1+' / B '+roleB1+')');
+  else no('역할이 안 바뀌었다 (A '+roleA1+' / B '+roleB1+')');
+  const cleared=ev(A,'!net.ready')&&ev(B,'!net.ready');
+  if(cleared) ok('바꾸면 준비 상태가 풀린다 (바뀐 역할로 갑자기 시작하지 않게)');
+  else no('준비 상태가 그대로다 (A '+ev(A,'net.ready')+' / B '+ev(B,'net.ready')+')');
+  // 손님(B)이 눌러도 바뀐다
+  ev(B,'$("lobbySwapBtn").click()');
+  const back=await wait(()=>ev(A,'myRole')===roleA0,3000);
+  if(back) ok('손님이 눌러도 바뀐다 (A '+ev(A,'myRole')+' / B '+ev(B,'myRole')+')');
+  else no('손님이 누르면 안 바뀐다');
+  ev(A,'netLeave()'); ev(B,'netLeave()');
+
   // ── 7. 👀 관전 — 탈락한 A가 아직 하는 B의 화면을 본다 ──
   // 가짜 서버로 실제 broadcast 를 왕복시킨다. 여기서 걸리면 폰에서도 안 보인다.
   install(A,'까미'); install(B,'하늘');

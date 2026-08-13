@@ -1206,6 +1206,9 @@
       </div>
     </div>
     <div class="tag2 hide" id="lobbyAgainTip">🔁 방은 그대로예요 — 준비만 누르면 바로 또 해요!</div>
+    <!-- 🎯 던지기 게임은 역할을 서로 바꿔 가며 하는 게 재미다. 한 판 하고 대기실로
+         돌아왔을 때 여기서 바로 바꾼다(둘 중 누가 눌러도 된다). -->
+    <button class="setbtn hide" id="lobbySwapBtn" style="max-width:min(92vw,420px);">🔄 역할 바꾸기</button>
     <div class="tag2" id="lobbyTip"></div>
     <button class="btn lg" id="lobbyReadyBtn">준비 완료!</button>
     <button class="btn ghost" id="lobbyLeaveBtn">← 홈으로</button>
@@ -3828,7 +3831,6 @@ function gameOver(){
   // 걸린 방해·방어·충전은 판이 끝나는 지금 정리한다. 다음 판 시작(resetRun)까지
   // 미뤄 두면 결과 화면에 남은 상태가 그려지고, 그 사이 다른 화면이 그것을 읽는다.
   hexT={zig:0,fog:0,rush:0}; hexSeen={}; shieldT=0; revealT=0; bolt=0; throwGauge=0;
-  { const pn=$('pnotes'); if(pn) pn.innerHTML=''; }   // 판 위 알림은 판이 끝나면 지운다
   $('netBar').classList.add('hide'); $('throwWrap').classList.add('hide');
   if(net.watchT){clearInterval(net.watchT);net.watchT=null;}
   coins+=runCoins; saveEconomy();
@@ -3934,7 +3936,7 @@ function buildHelp(){
      +hrow('⚔️','실시간 던전','같은 판을 여러 명이 같이 해요. 목숨이 0이면 탈락이고, <b>마지막까지 살아남은 사람이 1등</b>. 젤리를 터트리면 게이지가 차고, 그걸로 상대를 방해해요 (🎒 아이템 설명서 참고).')
      +hrow('👀','탈락한 뒤 관전','내가 먼저 죽으면 <b>아직 하는 사람의 화면</b>을 그대로 볼 수 있어요. 여러 명이 남았으면 이름을 눌러 골라 봐요.')
      +hrow('🏆','이기면 춤춰요','판이 끝나면 그림이 떠요 — 이긴 사람은 트로피를 들거나 깡총 뛰거나 메롱하거나 브이를 하고, 진 사람은 팔짱 끼고 흥! 하거나 발을 구르거나 엉엉 울어요 (판마다 달라져요). <b>💬 한마디</b>를 누르면 말풍선이 바로 바뀌고 <b>상대 화면에도</b> 떠요. <b>📤 결과 공유</b>로 그 그림을 친구에게 보낼 수 있어요.')
-     +hrow('🎯','던지기 게임','한 사람은 젤리를 던지고, 한 사람은 터트려요. 역할을 바꿔 가며 겨뤄요.')
+     +hrow('🎯','던지기 게임','한 사람은 젤리를 던지고, 한 사람은 터트려요. 던지는 무기는 <b>누르는 대로</b> 나가고 값은 ⚡에너지로만 매겨요. 한 판 끝나고 대기실에서 <b>🔄 역할 바꾸기</b>를 누르면 바로 서로 바꿔서 또 해요.')
      +hrow('🤖','AI와 대결','인터넷이 없어도 바로 붙을 수 있어요. 이기면 코인을 줘요. <b>처음이면 🍼 뉴비</b>부터 — 느긋하게 던지고 방해도 안 해요. 익숙해지면 🙂 보통 → 🤓 개똑똑 → 🏆 알파고로 올려보세요.')
      +hrow('📮','도전장','내가 한 판을 그대로 친구에게 보내요. 같은 젤리로 점수를 겨뤄요.')
      +hrow('🏆','랭킹','난이도별 순위. 닉네임을 정하면 점수가 올라가요.'));
@@ -4768,6 +4770,8 @@ function netOnMsg(m){
       net.timeLimit=m.timeLimit||120;
       netGame=(m.game==='throw')?'throw':'dungeon';
       hostRole=(m.hostRole==='popper')?'popper':'thrower'; } renderLobby(); }
+  else if(m.t==='role'){                                 // 🔄 상대가 역할을 바꿨다
+    hostRole=(m.hostRole==='popper')?'popper':'thrower'; roleSwapped(); }
   else if(m.t==='ready'){ peerUpsert(pid,{ready:true}); net.foeReady=true;
     renderLobby(); mpMaybeStart(); }
   else if(m.t==='start'){ if(!net.host) netBeginCountdown(); }
@@ -4986,25 +4990,28 @@ function syncPublicBtn(){ const b=$('netPublicBtn'); if(!b)return;
 // dps/risk : 실시간 던전에서 자기 판을 굴리는 점수 속도와 목숨을 잃는 확률
 // thr/tn   : 실시간 던전에서 내 화면으로 젤리를 뿌리는 빈도와 개수
 // prize    : 이겼을 때 받는 코인
-// ⚖️ 난이도를 크게 낮췄다. 예전 dps 는 뉴비도 초당 170점(2분에 2만점)이라 사람이
-// 이길 수가 없었다 — 연습조차 안 됐다. 사람의 실제 점수(보통맛에서 잘한 판이 2분에
-// 1만점 안팎)를 기준으로 다시 잡았다. 아래 hexCd 는 방해 효과의 최소 간격(초)이고,
-// 뉴비는 방해 효과를 아예 쓰지 않는다(안개·지그재그는 초보에게 너무 가혹하다).
+// ⚖️ 두 번 손봤다.
+// ① 예전 dps 는 뉴비도 초당 170점(2분에 2만점)이라 사람이 이길 수가 없었다 → 크게 낮췄다.
+// ② 그러고 나니 알파고만 알맞고 아래 세 등급이 너무 쉬웠다 → 알파고는 그대로 두고
+//    뉴비·보통·개똑똑의 점수와 방해를 올려서 사이를 촘촘하게 메웠다.
+// ③ acc(내가 던질 때 AI 가 터뜨리는 확률)는 "얘네 겁나 잘한다"는 말대로 전부 내렸다 —
+//    AI 는 놓칠 때마다 목숨이 깎이므로, 이 값이 곧 '던지는 쪽의 난이도'다.
+// hexCd 는 방해 효과의 최소 간격(초)이고, 뉴비는 방해를 아예 쓰지 않는다.
 const AI_TIERS=[
   {id:'baby', name:'🍼 뉴비 AI',  desc:'느긋해요. 처음이면 여기서',        prize:15,
-   acc:0.42,  early:[0.84,0.98], bombErr:0.30,  gap:[1500,2600], spd:0, bombRate:0.06,
+   acc:0.30,  early:[0.84,0.98], bombErr:0.36,  gap:[1500,2600], spd:0, bombRate:0.06,
    arms:{normal:0.96,bomb:0.04,ghost:0.00,rain:0.00},
-   dps:[1,4],    risk:0.012,  thr:0.010, tn:1, hexCd:0,  combo:2},
+   dps:[3,8],    risk:0.004,  thr:0.020, tn:1, hexCd:0,  combo:2},
   {id:'normal',name:'🙂 보통 AI',  desc:'사람만큼 해요. 기본값',            prize:40,
-   acc:0.70,  early:[0.72,0.94], bombErr:0.18,  gap:[1000,1800], spd:1, bombRate:0.10,
+   acc:0.52,  early:[0.72,0.94], bombErr:0.26,  gap:[1000,1800], spd:1, bombRate:0.10,
    arms:{normal:0.82,bomb:0.10,ghost:0.06,rain:0.02},
-   dps:[4,10],   risk:0.005,  thr:0.026, tn:2, hexCd:24, combo:3},
+   dps:[7,15],   risk:0.0018, thr:0.045, tn:2, hexCd:18, combo:3},
   {id:'smart', name:'🤓 개똑똑 AI',desc:'잘해요. 좋은 판이 나와야 이겨요',   prize:90,
-   acc:0.86,  early:[0.62,0.88], bombErr:0.09,  gap:[700,1300],  spd:2, bombRate:0.16,
+   acc:0.70,  early:[0.62,0.88], bombErr:0.16,  gap:[700,1300],  spd:2, bombRate:0.16,
    arms:{normal:0.66,bomb:0.16,ghost:0.11,rain:0.07},
-   dps:[8,18],   risk:0.0022, thr:0.050, tn:3, hexCd:16, combo:4},
+   dps:[11,21],  risk:0.0012, thr:0.062, tn:3, hexCd:13, combo:4},
   {id:'alpha', name:'🏆 알파고 AI',desc:'아주 잘해요. 최고 난이도!',        prize:200,
-   acc:0.94,  early:[0.54,0.80], bombErr:0.03,  gap:[520,900],   spd:3, bombRate:0.22,
+   acc:0.86,  early:[0.54,0.80], bombErr:0.08,  gap:[520,900],   spd:3, bombRate:0.22,
    arms:{normal:0.54,bomb:0.18,ghost:0.16,rain:0.12}, vyBoost:1.08,
    dps:[13,27],  risk:0.0008, thr:0.075, tn:4, hexCd:12, combo:5},
 ];
@@ -5287,9 +5294,14 @@ function renderLobby(){
   $('lobbyPlayers').innerHTML=h;
   const m=MODES[netModeName]||MODES.normal;
   $('lobbyInfo').textContent='난이도 '+m.emoji+m.name+' · 제한시간 '+net.timeLimit+'초 · 목숨 '+m.lives+'개';
+  // 역할 바꾸기 — 던지기 게임에서, 상대가 있을 때만
+  const sw=$('lobbySwapBtn');
+  if(sw){ const can=(netGame==='throw'&&!!net.foe&&!aiOn);
+    sw.classList.toggle('hide',!can);
+    if(can) sw.textContent='🔄 역할 바꾸기 (지금 나는 '+roleLabel(myRole)+')'; }
   $('lobbyTip').innerHTML = netGame==='throw'
     ? (myRole==='thrower'
-        ? '🎯 <b>던지는 사람</b> — 상대 화면을 보며 눌러서 던져요. 무기는 ⚡에너지로, <b>낙하 속도(🐢느리게~🚀초고속)는 공짜로</b> 바꿀 수 있어요. 상대가 놓칠수록 콤보가 쌓여요!'
+        ? '🎯 <b>던지는 사람</b> — 상대 화면을 보며 눌러서 던져요. 무기는 <b>누르는 대로 나가고</b> ⚡에너지만 써요. <b>낙하 속도(🐢느리게~🚀초고속)는 공짜로</b> 바꿀 수 있어요. 상대가 놓칠수록 콤보가 쌓여요!'
         : '💥 <b>터트리는 사람</b> — 젤리가 저절로 안 나와요. 상대가 던진 것만 내려옵니다. 90초를 버티면 승리!')
     : '젤리를 터뜨리면 게이지가 차고, 방해 아이템으로 <b>다른 사람 화면에 젤리를 던집니다.</b>'
       +'<br>최대 '+MAX_PLAYERS+'명까지 함께! <b>목숨을 다 잃으면 탈락</b>, 마지막까지 살아남은 사람이 우승이에요.'
@@ -5340,6 +5352,25 @@ function lobbyTick(){
   const sec=Math.ceil(left/1000);
   // 여기만 갱신한다 — 참가자 목록을 다시 그리면 흐르는 글씨가 매초 처음으로 돌아간다
   $('lobbyWaitInfo').textContent='⏳ '+Math.floor(sec/60)+'분 '+String(sec%60).padStart(2,'0')+'초 뒤 자동으로 홈으로 돌아가요';
+}
+// 역할 맞바꾸기. 방장의 역할(hostRole)만 뒤집으면 손님은 자동으로 반대가 된다.
+// 누가 눌러도 되게 하고, 바꾼 뒤에는 둘 다 '준비'를 다시 눌러야 시작한다 —
+// 준비 상태를 그대로 두면 바뀐 역할을 모르는 채 판이 시작될 수 있다.
+function swapRoles(){
+  if(netGame!=='throw'){ toast('🎯 던지기 게임에서만 바꿀 수 있어요'); return; }
+  if(!net.foe){ toast('친구가 들어오면 바꿀 수 있어요'); return; }
+  hostRole=(hostRole==='thrower')?'popper':'thrower';
+  netSend({t:'role',hostRole:hostRole});
+  roleSwapped();
+}
+function roleSwapped(){
+  computeRole();
+  net.ready=false; net.foeReady=false;
+  peerList().forEach(p=>{ p.ready=false; });
+  if(net.host&&netPublic&&!aiOn) hubAdvertise();      // 목록에 뜬 역할도 따라 바꾼다
+  renderLobby();
+  playLevelUp();
+  toast('🔄 역할을 바꿨어요 — 나는 '+roleLabel(myRole)+' (준비를 다시 눌러주세요)');
 }
 function lobbyReady(){
   if(!net.foe||net.ready) return;
@@ -5579,11 +5610,15 @@ function doHex(id){
 // 미러는 '내가 던진 젤리'만으로 만들어지므로 좌표를 통째로 주고받을 필요가 없다.
 // 상대는 젤리가 어떻게 됐는지(jgone)만 알려주면 된다.
 // 던질 무기 — 에너지를 써서 고른다. 일반 젤리는 무료라 할 일이 끊기지 않는다.
+// 무기마다 '쉬는 시간(cd)'을 66~96프레임(1.1~1.6초)씩 뒀는데, 에너지가 남아 있어도
+// 그만큼 기다려야 해서 "일반 젤리는 누르는 대로 나오는데 다른 건 한참 뒤에 나온다"는
+// 느낌을 줬다. 이제 전부 일반 젤리와 같은 5프레임 — 값은 ⚡에너지 하나로만 매긴다.
+const TW_CD=5;
 const TW={
-  normal:{name:'일반',  emoji:'🍡', cost:0,  cd:5,  desc:'기본 젤리 — 누르는 대로 나가요'},
-  ghost :{name:'유령',  emoji:'👻', cost:26, cd:66, desc:'반투명해서 잘 안 보여요'},
-  bomb  :{name:'폭탄',  emoji:'💣', cost:18, cd:66, desc:'터뜨리면 목숨이 깎여요'},
-  rain  :{name:'젤리비',emoji:'🌧️', cost:35, cd:96, desc:'한 번에 5개!'},
+  normal:{name:'일반',  emoji:'🍡', cost:0,  cd:TW_CD, desc:'기본 젤리 — 누르는 대로 나가요'},
+  ghost :{name:'유령',  emoji:'👻', cost:26, cd:TW_CD, desc:'반투명해서 잘 안 보여요 (⚡26)'},
+  bomb  :{name:'폭탄',  emoji:'💣', cost:18, cd:TW_CD, desc:'터뜨리면 목숨이 깎여요 (⚡18)'},
+  rain  :{name:'젤리비',emoji:'🌧️', cost:35, cd:TW_CD, desc:'한 번에 5개! (⚡35)'},
 };
 const TW_ORDER=['normal','ghost','bomb','rain'];
 // 속도는 던지는 사람이 직접 돌린다. 공짜로 바꿀 수 있어야 '조절하는 재미'가 생긴다.
@@ -5662,7 +5697,8 @@ function startThrower(){
 }
 const MIRROR_MAX=18;                       // 화면에 동시에 떠 있을 수 있는 젤리 수
 function throwAt(x){
-  if(!throwerAlive||throwCd>0) return;
+  if(!throwerAlive) return;
+  if(throwCd>0) return;                    // 5프레임(0.08초) — 사람은 못 느낀다
   const w=TW[tKind]||TW.normal;
   if(mirror.length>=MIRROR_MAX){ toast('화면이 꽉 찼어요! 좀 내려가면 다시 던져요'); return; }
   if(tEnergy<w.cost){ toast('⚡ 에너지가 부족해요 ('+Math.floor(tEnergy)+'/'+w.cost+')'); return; }
@@ -6775,6 +6811,7 @@ $('battlePlayBtn').onclick=()=>{ensureAudio();openSetup();};
 $('netCreateBtn').onclick=netCreate;
 $('netJoinBtn').onclick=netJoinByCode;
 $('lobbyReadyBtn').onclick=lobbyReady;
+$('lobbySwapBtn').onclick=swapRoles;
 $('lobbyCopyBtn').onclick=()=>copyText(
   '🍡 젤리슈팅 같이 하자!\n'+location.origin+location.pathname+'?r='+net.room+
   '\n(안 열리면 방 코드 '+net.room+' 직접 입력)','🔗 복사됨! 붙여넣어 보내세요');
