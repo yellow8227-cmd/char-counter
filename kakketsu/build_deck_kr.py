@@ -495,60 +495,58 @@ foot(s)
 # ── 10 · LOOK DEVELOPMENT ──────────────────────────────────────────────────
 s = blank(prs)
 head(s, "08", "LOOK DEVELOPMENT", "룩 개발 — 4안")
-gw = (SW - ML - MR - 3 * 0.26) / 4
-gh = gw / 1.5
-for i, (img, t, b, pick) in enumerate([
-        ("sheet_wet",   "A · WET / BLACK", "흑색 점액 톤.\n원혼과 머리카락이 단일 질량으로 읽힌다.", False),
-        ("sheet_wet2",  "B · WET / DETAIL", "개체 식별성 강화.\n클로즈업 · 리빌 시퀀스용.", False),
-        ("sheet_color", "C · SAEKDONG", "색동 채도 유지.\n반전 단서의 가시성이 가장 높다.", True),
-        ("sheet_mist",  "D · MIST", "저채도 실루엣.\n티저 · 키비주얼용.", False)]):
-    gx = ML + i * (gw + 0.26)
-    pic_fit(s, img, gx, 1.62, gw, gh)
-    tf = textbox(s, gx, 1.62 + gh + 0.18, gw, 0.8)
-    p = para(tf, t, 12, BONE, bold=True, spc=0.6, line=1.2, first=True)
-    if pick:
-        tail(p, "   · 기준안", 10, RED, bold=True)
-    para(tf, b, 10.5, BONE_MID, line=1.45, before=5)
 
-hairline(s, ML, 4.78, SW - ML - MR, BONE, 20)
-tf = textbox(s, ML, 5.04, 5.0, 0.28)
-para(tf, "운용 전략", 9.5, RED, bold=True, spc=1.6, line=1.0, first=True)
-plans = [("본편", "C · SAEKDONG", "색 자체가 반전의 복선으로 기능한다."),
-         ("티저 · 키비주얼", "D · MIST", "형태를 지우고 실루엣만 남긴다."),
-         ("클로즈업 · 리빌", "B · WET / DETAIL", "원혼 하나하나의 얼굴이 읽힌다.")]
-pw = (SW - ML - MR - 2 * 0.34) / 3
-for i, (k, v, b) in enumerate(plans):
-    px = ML + i * (pw + 0.34)
-    tf = textbox(s, px, 5.42, pw, 1.0)
-    para(tf, k, 10.5, RED_DIM, bold=True, spc=1.2, line=1.0, first=True)
-    para(tf, v, 15, BONE, bold=True, spc=0.6, line=1.2, before=7)
-    para(tf, b, 10.5, BONE_MID, line=1.45, before=6)
+col = (SW - ML - MR - 3 * 0.30) / 4          # 컬럼 2.72"
+iw = 1.85
+ih = iw / 0.5210                              # 크롭 비율 고정 — 네 컷의 하단선이 맞는다
+for i, (img, t, desc, pick) in enumerate([
+        ("look_a", "A · WET / BLACK",
+         "젖은 흑색 점액 톤.\n원혼과 머리카락이 한 덩어리.", False),
+        ("look_b", "B · WET / DETAIL",
+         "같은 톤에서 원혼 개체 분리.\n클로즈업 · 리빌 시퀀스용.", False),
+        ("look_c", "C · SAEKDONG",
+         "색동의 채도를 살린 안.\n반전 단서가 가장 먼저 읽힌다.", True),
+        ("look_d", "D · MIST",
+         "안개 · 저채도 실루엣.\n티저 · 키비주얼용.", False)]):
+    cx = ML + i * (col + 0.30)
+    if pick:
+        tf = textbox(s, cx, 1.26, col, 0.26)
+        para(tf, "본편 기준안", 10, RED, bold=True, spc=1.6, line=1.0, first=True)
+    pic_fit(s, img, cx + (col - iw) / 2, 1.56, iw, ih)
+    tf = textbox(s, cx, 5.34, col, 1.0)
+    para(tf, t, 12, BONE, bold=True, spc=0.6, line=1.2, first=True)
+    para(tf, desc, 10.5, BONE_MID, line=1.45, before=7)
+
+hairline(s, ML, 6.40, SW - ML - MR, BONE, 20)
+tf = textbox(s, ML, 6.56, 11.4, 0.3)
+para(tf, "네 안 모두 동일한 실루엣과 비율을 공유한다. 차이는 채도와 질감뿐이다.",
+     12, BONE_MID, line=1.2, first=True)
 foot(s)
 
 
 # ── 11 · TURNAROUND & SCALE ────────────────────────────────────────────────
 s = blank(prs)
 head(s, "09", "TURNAROUND & SCALE", "3면도 · 크기 설계")
-pic_fit(s, "sheet_size", ML, 1.58, 5.55, 3.28)
-pic_fit(s, "scale_chart", ML + 5.85, 1.58, 5.55, 3.28)
+pic_fit(s, "sheet_size", ML, 1.56, 6.20, 3.44)
+pic_fit(s, "scale_chart", ML + 6.42, 1.56, 4.98, 3.44)
 
-tf = textbox(s, ML, 5.06, 5.55, 0.28)
+tf = textbox(s, ML, 5.20, 6.20, 0.28)
 para(tf, "파트별 확정 항목", 9.5, RED, bold=True, spc=1.6, line=1.0, first=True)
-tf = textbox(s, ML, 5.38, 5.55, 0.9)
+tf = textbox(s, ML, 5.52, 6.20, 0.9)
 para(tf, "3면 실루엣  ·  이마 부적  ·  색동 탈색 단계\n"
          "피부와 관절  ·  젖은 발목  ·  원혼 밀도  ·  손등 질감",
      11.5, BONE_MID, line=1.55, first=True)
 
-tf = textbox(s, ML + 5.85, 5.06, 5.55, 0.28)
+tf = textbox(s, ML + 6.42, 5.20, 4.98, 0.28)
 para(tf, "스케일 운용", 9.5, RED, bold=True, spc=1.6, line=1.0, first=True)
 for i, (k, v) in enumerate([("150cm", "일상 · 미행 — 사람 크기. 무해해 보여야 한다."),
                             ("180cm", "대면 — 눈높이가 맞는 순간의 압박."),
                             ("190cm", "추격 — 공간을 좁히는 크기."),
                             ("260cm", "굿판 · 강림 — 공간 자체를 압도한다.")]):
-    yy = 5.40 + i * 0.38
-    tfn = textbox(s, ML + 5.85, yy, 0.74, 0.28)
+    yy = 5.54 + i * 0.36
+    tfn = textbox(s, ML + 6.42, yy, 0.80, 0.28)
     para(tfn, k, 13, RED, font=LAT, bold=True, line=1.0, first=True)
-    tf2 = textbox(s, ML + 6.62, yy - 0.02, 4.78, 0.28)
+    tf2 = textbox(s, ML + 7.25, yy - 0.02, 4.15, 0.28)
     para(tf2, v, 11.5, BONE_MID, line=1.2, first=True)
 foot(s)
 
@@ -556,29 +554,31 @@ foot(s)
 # ── 12 · COSTUME ───────────────────────────────────────────────────────────
 s = blank(prs)
 head(s, "10", "COSTUME", "의상 컨셉 — 4벌")
-cw3 = (SW - ML - MR - 3 * 0.26) / 4
-for i, (img, t, b) in enumerate([
-        ("cost_skirt_a", "A · 저고리 & 치마", "저채도 흙빛. 세트에 묻히는 톤."),
-        ("cost_skirt_b", "B · 저고리 & 치마", "색동 채도 유지. 반전 단서 노출."),
-        ("cost_skirt_c", "C · 저고리 & 치마", "삭아 풀린 올. 세월과 하중의 질감."),
-        ("cost_pants",   "D · 저고리 & 바지", "액션 · 와이어 리그 촬영용 변형.")]):
-    gx = ML + i * (cw3 + 0.26)
-    pic_fit(s, img, gx, 1.56, cw3, 3.30)
-    tf = textbox(s, gx, 5.00, cw3, 0.66)
-    para(tf, t, 11.5, BONE, bold=True, line=1.2, first=True)
-    para(tf, b, 10, BONE_MID, line=1.45, before=5)
 
-hairline(s, ML, 5.86, SW - ML - MR, BONE, 20)
-pic_fit(s, "detail_talisman_tag", ML, 6.06, 0.70, 0.62)
-tf = textbox(s, ML + 0.92, 6.08, 5.1, 0.66)
-para(tf, "소품 — 「封神」 부적", 12, BONE, bold=True, line=1.2, first=True)
-para(tf, "무당이 자신의 피로 그린 부적. 극 중 유일하게 색을 잃지 않는다.",
+pic_fit(s, "detail_talisman_tag", 7.10, 0.58, 0.52, 0.46)
+tf = textbox(s, 7.80, 0.54, 4.75, 0.6)
+para(tf, "소품 — 「封神」 부적", 11.5, BONE, bold=True, line=1.2, first=True)
+para(tf, "무당이 자신의 피로 그린 부적. 색을 잃지 않는 유일한 물건.",
      10.5, BONE_MID, line=1.4, before=4)
-tf = textbox(s, SW - MR - 5.3, 6.08, 5.3, 0.7)
-para(tf, "구성 — 색동 소매 저고리 + 홍색 끈 · 술 노리개 + 갈래 치마", 10.5,
-     BONE_MID, line=1.4, align=PP_ALIGN.RIGHT, first=True)
-para(tf, "제작 — 동일 패턴 3벌 + 스턴트용 바지 변형 1벌", 10.5, BONE_MID,
-     line=1.4, before=4, align=PP_ALIGN.RIGHT)
+tf = textbox(s, 7.10, 1.22, 5.45, 0.7)
+para(tf, "구성 — 색동 소매 저고리 + 홍색 끈 · 술 노리개 + 갈래 치마",
+     11, BONE_MID, line=1.4, first=True)
+para(tf, "제작 — 동일 패턴 3벌 + 스턴트용 바지 변형 1벌",
+     11, BONE_MID, line=1.4, before=5)
+
+col = (SW - ML - MR - 3 * 0.30) / 4
+gw = 1.58
+gh = gw / 0.380                              # 네 벌의 비율을 통일해 놓았다
+for i, (img, t, desc) in enumerate([
+        ("cost_a", "A · 저고리 & 치마", "저채도 흙빛. 세트에 묻힌다."),
+        ("cost_b", "B · 저고리 & 치마", "색동 채도 유지. 기준안."),
+        ("cost_c", "C · 저고리 & 치마", "삭아 풀린 올. 하중의 질감."),
+        ("cost_d", "D · 저고리 & 바지", "액션 · 와이어 리그용 변형.")]):
+    cx = ML + i * (col + 0.30)
+    pic_fit(s, img, cx + (col - gw) / 2, 1.92, gw, gh)
+    tf = textbox(s, cx, 6.20, col, 0.9)
+    para(tf, t, 11.5, BONE, bold=True, line=1.2, first=True)
+    para(tf, desc, 10.5, BONE_MID, line=1.4, before=6)
 foot(s)
 
 
