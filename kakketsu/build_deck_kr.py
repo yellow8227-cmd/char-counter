@@ -302,15 +302,15 @@ scrim(s, "scrim_left", SW * 0.45, 0, SW * 0.30, SH)
 head(s, "01", "THE TURN", "저주가 아니라\n수호였다", width=5.7)
 
 tf = textbox(s, ML, 2.34, 5.7, 0.8)
-para(tf, "「그것」은 개인도 유령도 아니다. 가문이 축적한 죄와\n"
+para(tf, "「그것」은 특정 인물도, 유령도 아니다. 가문이 축적한 죄와\n"
          "원념이 형태를 얻은, 저주의 얼굴을 한 봉인이다.",
      13.5, BONE, bold=True, line=1.5, first=True)
 hairline(s, ML, 3.22, 5.7, BONE, 26)
 
 for i, (n, tag, t, b) in enumerate([
-        ("01", "STALK", "추적", "1582년 처형장에서 발생. 이름도 얼굴도 아닌, 핏줄만을 기준으로 이동한다."),
-        ("02", "ATTRITION", "소멸", "조부 동필, 부친 종문. 두 세대가 동일한 방식으로 제거된다."),
-        ("03", "ABSENCE", "부재", "아들이 죽자 걸음을 되찾고 퇴장한다. 지옥은 그 다음에 시작된다.")]):
+        ("01", "STALK", "추적", "1587년 굿판에서 형상을 얻고, 이름도 얼굴도 아닌 핏줄만을 따라 이동한다."),
+        ("02", "ATTRITION", "희생", "조부 동필, 부친 종문. 두 세대가 같은 방식으로 죽는다."),
+        ("03", "ABSENCE", "부재", "아들이 죽자 「그것」은 걸음을 되찾고 떠난다. 지옥은 그 다음이다.")]):
     y = 3.56 + i * 1.10
     tfn = textbox(s, ML, y - 0.02, 0.62, 0.36)
     para(tfn, n, 16, RED, font=LAT, bold=True, line=1.0, first=True)
@@ -332,9 +332,9 @@ head(s, "02", "BLOODLINE", "핏줄의 계보 — 「그것」이 따라온 길")
 
 tl = [("1582", "조선 · 평양", "처형장의 망나니.\n피와 원망이 땅에 쌓인다."),
       ("1587", "굿판", "무당이 노모의 시신을\n부적으로 봉인한다."),
-      ("1945", "일제강점기", "순사 백동필.\n제복을 입고 동족을 벤다."),
+      ("1945", "일제강점기", "순사 백동필.\n제복을 입고 독립투사를 고문한다."),
       ("1984", "일본 오사카", "사형집행관 백종문.\n버튼으로 사람을 죽인다."),
-      ("2011", "일본 후쿠오카", "산부인과 의사 슈.\n생명을 지우며 산다."),
+      ("2006", "일본 후쿠오카", "산부인과 의사 슈.\n저주를 과학으로 부정한다."),
       ("현재", "그리고 하루마", "핏줄이 끊긴 자리에\n저주가 되돌아온다.")]
 cw = (SW - ML - MR) / 6
 for i, (yv, place, body) in enumerate(tl):
@@ -350,8 +350,8 @@ for i, (yv, place, body) in enumerate(tl):
 hairline(s, ML + 0.055, 2.352, SW - ML - MR - cw + 0.055, BONE, 26)
 
 note(s, ML, 4.94, SW - ML - MR, "이 계보가 만드는 것",
-     ["네 세대 모두 사람을 죽이는 직업을 가졌다.  칼 → 제복 → 버튼 → 메스.",
-      "도구는 문명화되었지만 행위는 같다. 「그것」은 그 400년을 목격한 유일한 증인이다."],
+     ["네 세대 모두 죽음을 다루는 자리에 있었다.  칼 → 제복 → 버튼 → 메스.",
+      "도구는 문명화되었지만 하는 일은 같다. 「그것」은 그 400년을 지켜본 유일한 목격자다."],
      size=12.5)
 foot(s)
 
@@ -363,7 +363,7 @@ rect(s, 0, 0, SW * 0.46, SH, INK)
 scrim(s, "scrim_left", SW * 0.40, 0, SW * 0.26, SH)
 head(s, "03", "CHARACTER SPEC", "封神  봉신", width=5.0)
 
-for i, (k, v) in enumerate([("신장", "150cm  ·  연출 스케일 180 / 190 / 260"),
+for i, (k, v) in enumerate([("신장", "150cm  ·  연출 스케일 180 / 190 / 260cm"),
                             ("성별 · 연령", "여성 · 노인"),
                             ("정체", "망나니의 노모 — 굿판에서 봉인된 시신")]):
     y = 2.10 + i * 0.56
@@ -400,8 +400,9 @@ head(s, "04", "DESIGN ANCHOR 01", "부적 「封神」", width=5.55,
 
 cur = 2.20
 cur += note(s, ML, cur, 5.55, "문화 주석",
-            ["부적은 좋은 기운을 부르는 오마모리가 아니다.",
-             "위험한 존재를 눌러 봉하는 물건 — 후다(札) · 인(印) · 결계(結界)에 가깝다."]) + 0.24
+            ["부적은 복을 부르는 물건이 아니다.",
+             "위험한 것을 눌러 가두는 물건이다.",
+             "「封神」 — 봉할 봉, 귀신 신."]) + 0.24
 cur += note(s, ML, cur, 5.55, "연출 의도",
             ["얼굴이 없으므로 표정 연기가 성립하지 않는다.",
              "의도를 판독할 수 없다는 사실이 서스펜스를 만든다."]) + 0.20
@@ -426,7 +427,7 @@ head(s, "05", "DESIGN ANCHOR 02", "색동저고리", x=CX, sub="아이를 지키
 cur = 2.20
 cur += note(s, CX, cur, 4.75, "문화 주석",
             ["색동저고리는 아이에게 입히는 옷이다.",
-             "액을 막고 무사히 자라기를 비는 보호복이다.",
+             "액을 막고 무사히 자라기를 비는 옷이다.",
              "배색은 오방색 — 청·적·황·백·흑."]) + 0.24
 cur += note(s, CX, cur, 4.75, "연출 의도",
             ["위협적인 형상에 가장 다정한 옷을 입힌다.",
@@ -450,11 +451,11 @@ head(s, "06", "DESIGN ANCHOR 03", "짚신과 뒤틀린 다리", width=6.0,
 
 cur = 2.20
 cur += note(s, ML, cur, 5.9, "문화 주석",
-            ["짚신은 일본의 와라지와 형상만 비슷하다.",
+            ["짚신은 신분의 바닥을 뜻하는 신발이다.",
              "업을 짊어진 채 계속 걸어가는 인간의 상징이다."]) + 0.24
 cur += note(s, ML, cur, 5.9, "연출 의도 — 절룩임은 상해가 아니라 하중이다",
             ["수백의 원혼을 대신 짊어져 무거워진 결과다.",
-             "핏줄이 끊어지는 순간, 보행은 정상으로 돌아온다.",
+             "핏줄이 끊어지는 순간, 걸음은 정상으로 돌아온다.",
              "관객이 반전을 대사 없이 알아채는 지점."]) + 0.20
 
 pic_fit(s, "tile_shoe_walk", ML, cur, 1.36, 0.84)
@@ -506,13 +507,13 @@ for i, (img, t, b, pick) in enumerate([
     tf = textbox(s, gx, 1.62 + gh + 0.18, gw, 0.8)
     p = para(tf, t, 12, BONE, bold=True, spc=0.6, line=1.2, first=True)
     if pick:
-        tail(p, "   ★", 11, RED, bold=True)
+        tail(p, "   · 기준안", 10, RED, bold=True)
     para(tf, b, 10.5, BONE_MID, line=1.45, before=5)
 
 hairline(s, ML, 4.78, SW - ML - MR, BONE, 20)
 tf = textbox(s, ML, 5.04, 5.0, 0.28)
 para(tf, "운용 전략", 9.5, RED, bold=True, spc=1.6, line=1.0, first=True)
-plans = [("본편", "C · SAEKDONG", "반전 단서의 가시성이 가장 높다. 기준안."),
+plans = [("본편", "C · SAEKDONG", "색 자체가 반전의 복선으로 기능한다."),
          ("티저 · 키비주얼", "D · MIST", "형태를 지우고 실루엣만 남긴다."),
          ("클로즈업 · 리빌", "B · WET / DETAIL", "원혼 하나하나의 얼굴이 읽힌다.")]
 pw = (SW - ML - MR - 2 * 0.34) / 3
@@ -540,10 +541,10 @@ para(tf, "3면 실루엣  ·  이마 부적  ·  색동 탈색 단계\n"
 
 tf = textbox(s, ML + 5.85, 5.06, 5.55, 0.28)
 para(tf, "스케일 운용", 9.5, RED, bold=True, spc=1.6, line=1.0, first=True)
-for i, (k, v) in enumerate([("150", "일상 · 미행 — 사람 크기. 무해해 보여야 한다."),
-                            ("180", "대면 — 눈높이가 맞는 순간의 압박."),
-                            ("190", "추격 — 공간을 좁히는 크기."),
-                            ("260", "굿판 · 강림 — 공간 자체를 압도한다.")]):
+for i, (k, v) in enumerate([("150cm", "일상 · 미행 — 사람 크기. 무해해 보여야 한다."),
+                            ("180cm", "대면 — 눈높이가 맞는 순간의 압박."),
+                            ("190cm", "추격 — 공간을 좁히는 크기."),
+                            ("260cm", "굿판 · 강림 — 공간 자체를 압도한다.")]):
     yy = 5.40 + i * 0.38
     tfn = textbox(s, ML + 5.85, yy, 0.74, 0.28)
     para(tfn, k, 13, RED, font=LAT, bold=True, line=1.0, first=True)
@@ -627,8 +628,8 @@ pic_fit(s, "keyart", 0.12, 0, 6.30, SH)
 scrim(s, "scrim_right", SW * 0.30, 0, SW * 0.70, SH)
 KX = 7.30
 tf = textbox(s, KX, 0.96, 5.2, 0.3)
-para(tf, "KEY ART   ·   VISUAL SYSTEM", 10.5, RED, font=LAT, bold=True,
-     spc=3.0, line=1.0, first=True)
+p = para(tf, "12", 12, RED, font=LAT, bold=True, spc=1.4, line=1.0, first=True)
+tail(p, "   KEY ART  ·  VISUAL SYSTEM", 10, BONE_DIM, font=LAT, bold=True, spc=1.8)
 tf = textbox(s, KX, 1.42, 5.2, 1.9)
 para(tf, "罪 · 血 · 記憶", 31, BONE, bold=True, spc=2.0, line=1.2, first=True)
 para(tf, "티저는 「그것」을 정면으로 노출하지 않는다.\n"
@@ -658,7 +659,7 @@ foot(s, x=KX)
 
 # ── 15 · IP EXTENSION ──────────────────────────────────────────────────────
 s = blank(prs)
-head(s, "12", "IP EXTENSION", "머천다이징 — 실루엣이 곧 상품이다")
+head(s, "13", "IP EXTENSION", "머천다이징 — 실루엣이 곧 상품이다")
 pic_fit(s, "goods_keyring_hanja", ML, 1.60, 4.00, 4.00)
 pic_fit(s, "goods_keyring_hangul", ML + 4.24, 1.60, 4.00, 4.00)
 
@@ -683,24 +684,24 @@ pic_cover(s, "early_white", SW * 0.50, 0, SW * 0.50, SH)
 rect(s, 0, 0, SW * 0.54, SH, INK)
 scrim(s, "scrim_left", SW * 0.46, 0, SW * 0.30, SH)
 
-tf = textbox(s, ML, 2.06, 5.9, 1.7)
-para(tf, "“저주는 사라진 것이 아니다.\n다만, 형태를 바꿨을 뿐이다.”", 26, BONE,
+tf = textbox(s, ML, 2.30, 5.9, 1.8)
+para(tf, "“저주는 사라진 것이 아니다.\n다만, 형태를 바꿨을 뿐이다.”", 27, BONE,
      bold=True, line=1.5, spc=-0.5, first=True)
-hairline(s, ML, 3.82, 2.1, BONE, 42)
 
-tf = textbox(s, ML, 4.10, 5.9, 0.28)
-para(tf, "NEXT STEP", 9.5, RED, bold=True, spc=1.8, line=1.0, first=True)
-tf = textbox(s, ML, 4.44, 5.9, 1.5)
-bullets(tf, ["룩 C(색동) 기준 확정 → 실물 의상 제작 · 슈트 액터 캐스팅",
-             "원혼 덩어리 시뮬레이션 파일럿 (대청 시퀀스 30초)",
-             "일본 투자사 제출용 — 문화 주석 확장판 (8월 말)"],
-        size=11.5, gap=10, first=True)
+hairline(s, ML, 4.24, 2.1, BONE, 42)
 
-hairline(s, ML, 6.10, 5.9, BONE, 20)
-tf = textbox(s, ML, 6.30, 6.0, 0.6)
-para(tf, "赫血  KAKKETSU", 14, BONE, bold=True, spc=1.6, line=1.2, first=True)
-para(tf, "WALLAH PROJECT  ×  SUPERNOVA STUDIOS   |   각본 · 감독  한동하",
-     10.5, BONE_DIM, line=1.4, before=5)
+tf = textbox(s, ML, 4.56, 6.0, 1.0)
+para(tf, "赫血  KAKKETSU  ·  각혈", 19, BONE, bold=True, spc=1.4, line=1.2,
+     first=True)
+para(tf, "「그것」 封神 · 봉신   —   캐릭터 컨셉 레퍼런스", 13, BONE_MID,
+     line=1.35, before=9)
+
+hairline(s, ML, 5.86, 5.9, BONE, 18)
+
+tf = textbox(s, ML, 6.08, 6.2, 0.8)
+para(tf, "각본 · 감독   한동하", 12, BONE, line=1.35, first=True)
+para(tf, "제작   WALLAH PROJECT  ×  SUPERNOVA STUDIOS", 11, BONE_DIM,
+     line=1.35, before=6)
 foot(s)
 
 
