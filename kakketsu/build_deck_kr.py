@@ -78,6 +78,29 @@ def textbox(slide, x, y, w, h, anchor=MSO_ANCHOR.TOP):
     return tf
 
 
+def _linebreak(p):
+    """실제 <a:br/> 를 넣는다. endParaRPr 앞에 와야 유효하다."""
+    br = parse_xml("<a:br %s/>" % nsdecls("a"))
+    p._p.insert_element_before(br, "a:endParaRPr")
+
+
+def _runs(p, text, size, color, font, bold, spc):
+    """text 의 \n 을 <a:br/> 로 끊어 여러 run 으로 넣는다."""
+    last = None
+    for i, seg in enumerate(text.split("\n")):
+        if i:
+            _linebreak(p)
+        r = p.add_run()
+        r.text = seg
+        r.font.size, r.font.bold, r.font.name = Pt(size), bold, font
+        r.font.color.rgb = color
+        if spc:
+            r._r.get_or_add_rPr().set("spc", str(int(spc * 100)))
+        cjk(r, font if font != LAT else KR)
+        last = r
+    return last
+
+
 def para(tf, text, size, color, *, font=KR, bold=False, spc=0, line=1.4,
          before=0, align=PP_ALIGN.LEFT, first=False):
     p = tf.paragraphs[0] if first else tf.add_paragraph()
@@ -85,25 +108,12 @@ def para(tf, text, size, color, *, font=KR, bold=False, spc=0, line=1.4,
     p.line_spacing = line
     p.space_before = Pt(before)
     p.space_after = Pt(0)
-    r = p.add_run()
-    r.text = text
-    r.font.size, r.font.bold, r.font.name = Pt(size), bold, font
-    r.font.color.rgb = color
-    if spc:
-        r._r.get_or_add_rPr().set("spc", str(int(spc * 100)))
-    cjk(r, font if font != LAT else KR)
+    _runs(p, text, size, color, font, bold, spc)
     return p
 
 
 def tail(p, text, size, color, *, font=KR, bold=False, spc=0):
-    r = p.add_run()
-    r.text = text
-    r.font.size, r.font.bold, r.font.name = Pt(size), bold, font
-    r.font.color.rgb = color
-    if spc:
-        r._r.get_or_add_rPr().set("spc", str(int(spc * 100)))
-    cjk(r, KR)
-    return r
+    return _runs(p, text, size, color, font, bold, spc)
 
 
 def _src(name):
@@ -291,7 +301,7 @@ scrim(s, "scrim_light_left", 0, 0, SW, SH)
 
 tf = textbox(s, ML, 1.24, 3.0, 0.3)
 para(tf, "LOGLINE", 11, RED, font=LAT, bold=True, spc=3.2, line=1.0, first=True)
-tf = textbox(s, ML, 1.82, 6.5, 3.3)
+tf = textbox(s, ML, 1.82, 7.0, 3.3)
 para(tf, "대대로 이어진 가문의 저주를 끊기 위해\n싸워온 한 남자는, 그 저주라 믿었던 존재가\n"
          "사실은 가족을 지켜온 수호였음을 깨닫고\n핏줄과 죄의 진짜 의미와 마주한다.",
      23, DARKINK, bold=True, line=1.62, spc=-0.4, first=True)
@@ -339,11 +349,11 @@ scrim(s, "scrim_85")
 scrim(s, "vignette")
 head(s, "02", "BLOODLINE", "핏줄의 계보 — 「그것」이 따라온 길")
 
-tl = [("1582", "조선 · 평양", "처형장의 망나니.\n피와 원망이 땅에 쌓인다."),
+tl = [("1582", "조선 · 평양", "처형장의 망나니.\n피와 원망이 쌓인다."),
       ("1587", "굿판", "무당이 노모의 시신을\n부적으로 봉인한다."),
-      ("1945", "일제강점기", "순사 백동필.\n제복을 입고 독립투사를 고문한다."),
-      ("1984", "일본 오사카", "사형집행관 백종문.\n버튼으로 사람을 죽인다."),
-      ("2006", "일본 후쿠오카", "산부인과 의사 슈.\n저주를 과학으로 부정한다."),
+      ("1945", "일제강점기", "순사 백동필.\n제복을 입고\n독립투사를 고문한다."),
+      ("1984", "일본 오사카", "사형집행관 백종문.\n버튼으로 죽인다."),
+      ("2006", "일본 후쿠오카", "산부인과 의사 슈.\n저주를 과학으로\n부정한다."),
       ("현재", "그리고 하루마", "핏줄이 끊긴 자리에\n저주가 되돌아온다.")]
 cw = (SW - ML - MR) / 6
 for i, (yv, place, body) in enumerate(tl):
@@ -352,10 +362,10 @@ for i, (yv, place, body) in enumerate(tl):
     d.fill.solid()
     d.fill.fore_color.rgb = RED if i in (1, 5) else BONE_MID
     d.line.fill.background(); d.shadow.inherit = False
-    tf = textbox(s, x, 2.62, cw - 0.32, 1.9)
+    tf = textbox(s, x, 2.62, cw - 0.14, 1.9)
     para(tf, yv, 21, BONE, font=LAT, bold=True, line=1.0, first=True)
     para(tf, place, 10.5, RED_DIM, bold=True, spc=0.8, line=1.2, before=6)
-    para(tf, body, 10.5, BONE_MID, line=1.55, before=8)
+    para(tf, body, 10, BONE_MID, line=1.5, before=8)
 hairline(s, ML + 0.055, 2.352, SW - ML - MR - cw + 0.055, BONE, 26)
 
 note(s, ML, 4.94, SW - ML - MR, "네 세대의 공통점",
@@ -393,7 +403,7 @@ bullets(tf, ["이마의 붉은 부적이 얼굴을 대신한다",
 
 callout(s, 9.35, 3.02, 6.26, 2.84, 2.55, "이마의 부적 「封神」", "얼굴이 있어야 할 자리")
 callout(s, 9.42, 4.44, 6.26, 4.26, 2.55, "빛바랜 색동저고리", "색이 거의 빠진 누더기")
-callout(s, 10.72, 1.82, 11.00, 1.64, 1.58, "원혼 덩어리", "등에 결박된 수백의 원혼",
+callout(s, 10.58, 1.82, 10.86, 1.64, 1.72, "원혼 덩어리", "등에 결박된 수백의 원혼",
         side="right")
 callout(s, 9.30, 6.52, 6.26, 6.34, 2.55, "뒤틀린 다리 · 짚신", "질질 끌리는 한쪽 발")
 foot(s)
@@ -510,7 +520,7 @@ iw = 1.85
 ih = iw / 0.5210                              # 크롭 비율 고정 — 네 컷의 하단선이 맞는다
 for i, (img, t, desc, pick) in enumerate([
         ("look_a", "A · WET / BLACK",
-         "젖은 흑색 점액 톤이다.\n원혼과 머리카락이 한 덩어리로 보인다.", False),
+         "젖은 흑색 점액 톤이다.\n원혼과 머리카락이 한 덩어리다.", False),
         ("look_b", "B · WET / DETAIL",
          "같은 톤에서 원혼을 개체로 분리했다.\n클로즈업 장면에 쓴다.", False),
         ("look_c", "C · SAEKDONG",
@@ -646,21 +656,21 @@ para(tf, "티저에서는 「그것」을 정면으로 보여주지 않는다.\n
          "관객이 형상을 스스로 맞추게 한다.",
      12, BONE_MID, line=1.55, before=20)
 
-hairline(s, KX, 3.54, 5.2, BONE, 24)
-tf = textbox(s, KX, 3.76, 5.2, 0.28)
+hairline(s, KX, 3.62, 5.2, BONE, 24)
+tf = textbox(s, KX, 3.86, 5.2, 0.28)
 para(tf, "컬러 팔레트", 9.5, RED, bold=True, spc=1.6, line=1.0, first=True)
 swx = KX
 for hexv, _ in PALETTE:
-    rect(s, swx, 4.08, 0.56, 0.72, RGBColor.from_string(hexv))
+    rect(s, swx, 4.16, 0.56, 0.72, RGBColor.from_string(hexv))
     swx += 0.585
-tf = textbox(s, KX, 4.96, 5.2, 0.4)
+tf = textbox(s, KX, 5.04, 5.2, 0.4)
 para(tf, "무채색 화면에 두 가지 색만 쓴다. 색동의 청과 부적의 홍이다.\n"
          "화면에서 색을 가진 것은 「그것」뿐이다.",
      11, BONE_MID, line=1.45, first=True)
 
-tf = textbox(s, KX, 5.72, 5.2, 0.28)
+tf = textbox(s, KX, 5.88, 5.2, 0.28)
 para(tf, "컨셉 키워드", 9.5, RED, bold=True, spc=1.6, line=1.0, first=True)
-tf = textbox(s, KX, 6.04, 5.2, 0.4)
+tf = textbox(s, KX, 6.20, 5.2, 0.4)
 para(tf, "원한 · 저주 · 무거움 · 억압 · 끌려다님 · 구속 · 공포", 13, BONE,
      bold=True, line=1.3, first=True)
 foot(s, x=KX)
@@ -721,3 +731,58 @@ print("slides:", len(prs.slides._sldIdLst), "| 사용 이미지:", len(used))
 allimg = {os.path.splitext(f)[0] for f in os.listdir(A) if f.endswith((".jpg", ".png"))}
 skip = {n for n in allimg if n.startswith(("scrim", "vignette", "title_lockup"))}
 print("미사용:", sorted(allimg - set(used) - skip))
+
+
+# ── 줄 넘침 사전 검사 ───────────────────────────────────────────────────────
+# 수동 줄바꿈(\n)으로 잡아둔 줄이 상자 폭에 아슬아슬하면, 폰트가 다른 환경
+# (LibreOffice ↔ 실제 파워포인트의 맑은 고딕)에서 한 줄이 두 줄로 접히면서
+# 아래 요소를 밀어낸다. 빌드할 때마다 폭 대비 몇 % 인지 재서 경고한다.
+def _glyph_w(ch):
+    o = ord(ch)
+    if ch == " ":
+        return 0.30
+    if 0xAC00 <= o <= 0xD7A3 or 0x4E00 <= o <= 0x9FFF:      # 한글 · 한자
+        return 1.0
+    if 0x3000 <= o <= 0x303F or 0xFF00 <= o <= 0xFFEF:      # 「」 등 전각 기호
+        return 1.0
+    if o in (0x2014, 0x2026, 0x2192, 0x2605):               # — … → ★
+        return 1.0
+    if o == 0x00B7:                                          # ·
+        return 0.35
+    if o < 128:
+        return 0.30 if ch in ".,:;'\"()[]{}/|!?" else 0.55
+    return 0.60
+
+
+def audit_line_widths(prs, limit=0.90):
+    warn = []
+    for n, slide in enumerate(prs.slides, 1):
+        for sh in slide.shapes:
+            if not sh.has_text_frame or sh.width is None:
+                continue
+            box_pt = sh.width / 914400.0 * 72.0
+            if box_pt < 36:
+                continue
+            for p in sh.text_frame.paragraphs:
+                sizes = [r.font.size.pt for r in p.runs if r.font.size is not None]
+                if not sizes:
+                    continue
+                size = max(sizes)
+                segs = [t.strip() for t in p.text.replace("\n", "\v").split("\v")]
+                segs = [t for t in segs if t]
+                if len(segs) < 2:
+                    continue          # 줄바꿈을 지정하지 않은 문단은 접혀도 무방
+                for seg in segs:
+                    est = sum(_glyph_w(c) for c in seg) * size
+                    if est > box_pt * limit:
+                        warn.append((n, round(est / box_pt * 100), size, seg[:46]))
+    return warn
+
+
+_w = audit_line_widths(prs)
+if _w:
+    print("\n[줄 폭 경고] 상자 폭의 90%% 를 넘는 줄 — 다른 폰트에서 접힐 수 있다")
+    for n, pct, size, seg in _w:
+        print("  p%02d  %3d%%  %.1fpt  %s" % (n, pct, size, seg))
+else:
+    print("줄 폭 검사: 이상 없음")
