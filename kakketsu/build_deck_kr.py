@@ -273,7 +273,7 @@ hairline(s, ML, 5.96, 2.4, BONE, 42)
 tf = textbox(s, ML, 6.16, 8.6, 0.7)
 para(tf, "장편 오컬트 호러 · 세대극   |   한국 – 일본   |   각본 · 감독  한동하",
      12, BONE_MID, line=1.5, first=True)
-para(tf, "2026 투자 검토용   ·   CONFIDENTIAL", 10, RED_DIM, line=1.4, before=5)
+para(tf, "2026 프리프로덕션 자료   ·   대외비", 10, RED_DIM, line=1.4, before=5)
 
 
 # ── 02 · LOGLINE ───────────────────────────────────────────────────────────
