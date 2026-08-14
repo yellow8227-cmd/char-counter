@@ -15,7 +15,7 @@ from pptx import Presentation
 from pptx.util import Inches as In, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
-from pptx.enum.shapes import MSO_SHAPE
+from pptx.enum.shapes import MSO_SHAPE, MSO_CONNECTOR
 from pptx.oxml.ns import qn, nsdecls
 from pptx.oxml import parse_xml
 from PIL import Image
@@ -158,11 +158,18 @@ def rect(slide, x, y, w, h, rgb, alpha=100):
     return s
 
 
-def hairline(slide, x, y, w, rgb=BONE, alpha=26, weight=0.6):
-    s = rect(slide, x, y, w, 0.01, rgb)
-    s.height = Pt(weight)
-    set_alpha(s, alpha)
-    return s
+def hairline(slide, x, y, w, rgb=BONE, alpha=26, weight=0.75):
+    """구분선. 얇은 사각형이 아니라 스트로크로 그려야 PDF 에서 두께가 유지된다."""
+    c = slide.shapes.add_connector(MSO_CONNECTOR.STRAIGHT,
+                                   In(x), In(y), In(x + w), In(y))
+    c.line.color.rgb = rgb
+    c.line.width = Pt(weight)
+    set_line_alpha(c, alpha)
+    try:
+        c.shadow.inherit = False
+    except (AttributeError, NotImplementedError):
+        pass
+    return c
 
 
 def blank(prs):
@@ -232,10 +239,11 @@ def callout(slide, tx, ty, lx, ly, lw, label, body, *, side="left"):
     d.line.color.rgb = BONE; d.line.width = Pt(0.75)
     set_line_alpha(d, 75); d.shadow.inherit = False
     x0, x1 = (lx + lw, tx) if side == "left" else (tx, lx)
-    ln = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, In(min(x0, x1)),
-                                In(ty - 0.004), In(abs(x1 - x0)), Pt(0.75))
-    ln.fill.solid(); ln.fill.fore_color.rgb = BONE
-    set_alpha(ln, 50); ln.line.fill.background(); ln.shadow.inherit = False
+    ln = slide.shapes.add_connector(MSO_CONNECTOR.STRAIGHT, In(min(x0, x1)),
+                                    In(ty), In(max(x0, x1)), In(ty))
+    ln.line.color.rgb = BONE
+    ln.line.width = Pt(0.75)
+    set_line_alpha(ln, 50)
     al = PP_ALIGN.RIGHT if side == "left" else PP_ALIGN.LEFT
     tf = textbox(slide, lx, ly, lw, 0.7)
     para(tf, label, 11, BONE, bold=True, line=1.15, align=al, first=True)
@@ -273,7 +281,7 @@ hairline(s, ML, 5.96, 2.4, BONE, 42)
 tf = textbox(s, ML, 6.16, 8.6, 0.7)
 para(tf, "장편 오컬트 호러 · 세대극   |   한국 – 일본   |   각본 · 감독  한동하",
      12, BONE_MID, line=1.5, first=True)
-para(tf, "2026 프리프로덕션 자료   ·   대외비", 10, RED_DIM, line=1.4, before=5)
+para(tf, "2026 프리프로덕션 자료", 10, RED_DIM, line=1.4, before=5)
 
 
 # ── 02 · LOGLINE ───────────────────────────────────────────────────────────
