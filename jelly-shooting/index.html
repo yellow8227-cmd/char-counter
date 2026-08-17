@@ -255,6 +255,32 @@
     background:linear-gradient(180deg,#fff3f8,#ffe3ee);
     box-shadow:0 2px 0 #f2bcd4,inset 0 0 0 1.5px rgba(255,138,180,0.65);}
 
+  /* 채팅 */
+  .chatbox{height:216px;overflow-y:auto;padding:9px;border-radius:var(--r-sm);
+    background:linear-gradient(180deg,rgba(255,255,255,0.94),rgba(255,244,250,0.72));
+    box-shadow:inset 0 2px 8px -4px rgba(160,90,130,0.35),inset 0 0 0 1.5px rgba(255,255,255,0.9);
+    display:flex;flex-direction:column;gap:7px;}
+  .chatbox.small{height:132px;}
+  .cmsg{display:flex;gap:6px;align-items:flex-start;text-align:left;}
+  /* .rrow .ava 규칙은 여기까지 안 닿는다 — 크기를 안 주면 64px 원본으로 나온다 */
+  .cmsg img.ava{flex:0 0 auto;width:30px;height:30px;margin:0;border-radius:30%;
+    background:linear-gradient(180deg,#fff,#ffeef6);
+    box-shadow:0 1px 0 rgba(160,90,130,0.22),inset 0 0 0 1.5px rgba(255,255,255,0.9);}
+  .cmsg .cbody{min-width:0;}
+  .cmsg .cwho{font-weight:900;font-size:11px;color:#a8557a;line-height:1.25;
+    display:flex;align-items:center;gap:5px;}
+  /* 회수 — 내 말에만 붙는다. 모바일에서는 hover 가 없으니 늘 보이게 둔다. */
+  .cdel{border:none;background:rgba(160,90,130,0.10);color:#a8557a;font-family:var(--font);
+    font-weight:900;font-size:10px;padding:2px 7px;border-radius:999px;cursor:pointer;
+    line-height:1.5;min-height:0;}
+  .cdel:active{background:rgba(160,90,130,0.22);}
+  .cmsg .ctx{font-weight:700;font-size:13.5px;color:#5b3550;line-height:1.35;
+    word-break:break-word;overflow-wrap:anywhere;}
+  .cmsg.me .cwho{color:var(--pink-d);}
+  .csys{font-weight:800;font-size:12px;color:#9a7d92;text-align:center;}
+  .chatrow{display:flex;gap:6px;margin-top:9px;}
+  .chatrow input{flex:1;min-width:0;}
+
   /* coins */
   .coinbadge{background:var(--btn-gloss),
       linear-gradient(180deg,#fff6d8 0%,#ffe08a 34%,#ffd05a 64%,#f0a91f 100%);
@@ -299,8 +325,18 @@
   .mini{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;}
   .minichip{border:none;background:#fff2f8;color:#b0567c;font-weight:800;font-size:13px;padding:9px 11px;border-radius:11px;cursor:pointer;box-shadow:0 2px 0 #f2cddd;min-height:35px;}
   .minichip.on{background:linear-gradient(180deg,#b28cff,#8a5cff);color:#fff;box-shadow:0 2px 0 #6a3edb;}
-  .emochip{width:40px;height:40px;font-size:22px;border-radius:12px;border:none;background:#fff2f8;cursor:pointer;box-shadow:0 2px 0 #f2cddd;}
+  .emochip{width:40px;height:40px;font-size:22px;border-radius:12px;border:none;background:#fff2f8;cursor:pointer;box-shadow:0 2px 0 #f2cddd;
+    padding:0;display:inline-flex;align-items:center;justify-content:center;}
   .emochip.on{outline:3px solid #8a5cff;outline-offset:1px;}
+  .emochip img{width:34px;height:34px;display:block;}
+  /* 공방 목록은 쓰는 자리별로 묶는다 — 30개를 한 줄로 늘어놓으면 뭘 고르는지 모른다 */
+  /* #caEmojis 는 .mini(flex·가운데 정렬)라서 라벨도 flex 항목이 되어 가운데로 밀렸다.
+     묶음 목록일 때는 세로로 쌓아야 한다. */
+  #caEmojis{display:block;}
+  .caGrpLabel{font-weight:900;font-size:12px;color:#a8557a;letter-spacing:.2px;
+    margin:12px 0 6px;text-align:left;}
+  .caGrpLabel:first-child{margin-top:0;}
+  .caGrpRow{justify-content:flex-start;}
   /* id를 하나씩 나열하다가 나중에 추가한 입력칸들이 전부 빠졌다(닉네임 4개, 방 코드).
      그 칸들만 브라우저 기본 모양으로 높이 18px짜리 작은 상자가 됐다.
      화면 안의 입력칸을 통째로 잡아서 새로 만들어도 자동으로 적용되게 한다. */
@@ -670,6 +706,7 @@
       <button class="modebtn aim" id="aiBtn"><span class="e">🤖</span><span class="n">AI와 대결</span><span class="d">인터넷 없이 바로 붙기</span></button>
     </div>
     <div class="rowbtn">
+      <button class="btn ghost" id="chatBtn" style="padding:12px 22px;font-size:16px;">💬 채팅</button>
       <button class="btn ghost" id="profileBtn" style="padding:12px 22px;font-size:16px;">🙋 내 프로필</button>
       <button class="btn ghost" id="shopBtn" style="padding:12px 22px;font-size:16px;">🛒 창작소</button>
       <button class="btn ghost" id="attendBtn" style="padding:12px 22px;font-size:16px;">📅 출석부</button>
@@ -687,6 +724,25 @@
     <button class="btn ghost" id="shopBackBtn">← 홈으로</button>
   </div>
 
+  <!-- 💬 월드 채팅 -->
+  <div id="chatScreen" class="screen hide">
+    <div class="h2">💬 월드 채팅</div>
+    <div class="tag2" id="chatWho">🇰🇷 한국 서버 · 연결 중…</div>
+    <div class="card hide" id="chatNickCard">
+      <div class="label">🙋 닉네임</div>
+      <input id="nickInputC" maxlength="10" placeholder="닉네임을 정하면 말할 수 있어요">
+    </div>
+    <div class="card">
+      <div id="chatBox" class="chatbox"></div>
+      <div class="chatrow">
+        <input id="chatInput" maxlength="60" placeholder="메시지를 적어보세요 (60자)">
+        <button class="chip" id="chatSend" style="padding:11px 15px;">보내기</button>
+      </div>
+      <div class="tag2" id="chatHint" style="text-align:left;margin-top:7px;"></div>
+    </div>
+    <button class="btn ghost" id="chatBackBtn">← 홈으로</button>
+  </div>
+
   <!-- 🙋 내 프로필 — 캐릭터를 정하는 곳은 여기 한 군데다 -->
   <div id="profileScreen" class="screen hide">
     <div class="h2">🙋 내 프로필</div>
@@ -696,7 +752,10 @@
     <div class="card">
       <div class="label">🙋 닉네임</div>
       <input id="nickInputP" maxlength="10" placeholder="닉네임을 입력하세요">
-      <div class="tag2" style="text-align:left;margin-top:6px;">랭킹에 이 이름과 <b>내 프로필 사진</b>이 같이 올라가요!</div>
+      <div style="text-align:center;margin-top:9px;">
+        <button class="chip" id="nickBtn">✅ 이 이름으로 정하기</button></div>
+      <div class="tag2" id="nickHint" style="text-align:left;margin-top:8px;"></div>
+      <div class="tag2" id="nickWho" style="text-align:left;margin-top:4px;opacity:.7;"></div>
     </div>
     <div class="card">
       <div class="label">🐾 캐릭터</div>
@@ -941,6 +1000,15 @@
       <div class="tag2" id="lobbyInfo" style="margin-top:8px;text-align:left;"></div>
       <div class="tag2" id="lobbyWaitInfo" style="margin-top:4px;text-align:left;"></div>
     </div>
+    <div class="card" id="roomChatCard">
+      <div class="label">💬 방 채팅</div>
+      <div id="roomChatBox" class="chatbox small"></div>
+      <div class="chatrow">
+        <input id="roomChatInput" maxlength="60" placeholder="같은 방 친구에게 (60자)">
+        <button class="chip" id="roomChatSend" style="padding:11px 15px;">보내기</button>
+      </div>
+    </div>
+    <div class="tag2 hide" id="lobbyAgainTip">🔁 방은 그대로예요 — 준비만 누르면 바로 또 해요!</div>
     <div class="tag2" id="lobbyTip"></div>
     <button class="btn lg" id="lobbyReadyBtn">준비 완료!</button>
     <button class="btn ghost" id="lobbyLeaveBtn">← 홈으로</button>
@@ -1129,8 +1197,9 @@ $('tSoundBtn').addEventListener('click',toggleSound);
 // ================= Character =================
 // 'human' 은 남자아이다. 이미 저장된 캐릭터가 'human'이라 id를 바꾸지 않는다(그러면 기존 사용자가 고양이로 초기화된다).
 const KINDS=[{id:'cat',label:'고양이 🐱'},{id:'dog',label:'강아지 🐶'},{id:'bunny',label:'토끼 🐰'},{id:'bear',label:'곰 🐻'},{id:'human',label:'남자아이 🧒'},{id:'girl',label:'여자아이 👧'}];
-const COLORS=['#ffb3c9','#ffe36e','#ffd59e','#b6e3a0','#a3d5ff','#d9b8ff','#ffffff','#8a6b5a','#5a5566'];
-const ACCS=[{id:'none',label:'없음'},{id:'bow',label:'리본 🎀'},{id:'hat',label:'모자 🎩'},{id:'glasses',label:'안경 👓'},{id:'flower',label:'꽃 🌸'},{id:'crown',label:'왕관 👑'},{id:'horns',label:'뿔 😈'}];
+const COLORS=['#ffb3c9','#ff9db2','#ffd59e','#ffe36e','#f6f19a','#b6e3a0','#8fe0c8','#a3d5ff',
+  '#9db8ff','#d9b8ff','#f0b8ff','#ffffff','#f2e7dc','#c9a27a','#8a6b5a','#8f9bb3','#5a5566','#3f3a4a'];
+const ACCS=[{id:'none',label:'없음'},{id:'bow',label:'리본 🎀'},{id:'hat',label:'모자 🎩'},{id:'glasses',label:'안경 👓'},{id:'shades',label:'선글라스 🕶️'},{id:'flower',label:'꽃 🌸'},{id:'crown',label:'왕관 👑'},{id:'horns',label:'뿔 😈'}];
 let character=loadChar()||{kind:'cat',color:'#ffb3c9',acc:'bow',accColor:'#ff5c8a'};
 function saveChar(){try{localStorage.setItem('jelly_char',JSON.stringify(character));}catch(e){}}
 function loadChar(){try{return JSON.parse(localStorage.getItem('jelly_char'));}catch(e){return null;}}
@@ -1164,6 +1233,23 @@ function charSafe(o){
   // 이모지는 글자 수만 막는다. 캔버스 글자로만 쓰이니 HTML 로 새지 않는다.
   if(out.acc==='__preview') out.accEmoji=(typeof em==='string'&&em)?[...em].slice(0,3).join(''):'🎀';
   return out; }
+
+// ---- 만난 사람의 차림새를 기억한다 ----
+// 온라인 랭킹에 남의 얼굴을 띄우려면 scores 표에 차림새 칸(ch)이 있어야 하는데, 그건 손으로
+// SQL 한 줄을 돌려야 한다. 그때까지도 최소한 '한 번이라도 만난 사람'의 얼굴은 띄울 수 있다 —
+// 방 안에서·방 목록에서 이미 차림새를 주고받고 있으니 그걸 이름과 함께 적어 두면 된다.
+let seenChars=loadJSON('jelly_seen',{});
+function seenSave(){ try{ localStorage.setItem('jelly_seen',JSON.stringify(seenChars)); }catch(e){} }
+function seenPut(name,ch){
+  const n=(name||'').trim(); if(!n||!ch) return;
+  const v=JSON.stringify(ch);
+  if(seenChars[n]===v) return;                      // 안 바뀌었으면 저장도 안 한다
+  seenChars[n]=v;
+  const ks=Object.keys(seenChars);
+  if(ks.length>240) delete seenChars[ks[0]];        // 너무 쌓이면 오래된 것부터
+  seenSave(); }
+function seenGet(name){ const v=seenChars[(name||'').trim()];
+  if(!v) return null; try{ return charSafe(JSON.parse(v)); }catch(e){ return null; } }
 
 // ---- 프로필 사진 (랭킹·로비 줄에 붙는 작은 얼굴) ----
 // 줄마다 캔버스를 새로 그리면 목록 열 때마다 열 번 그리는 셈이다. 차림새별로 한 번만
@@ -1284,6 +1370,7 @@ function drawAvatar(g,cx,cy,R,cfg,mood,t){ mood=mood||'idle';t=t||0; g.save(); g
                : (mood==='happy'||mood==='wow') ? Math.abs(Math.sin(t*0.4))*6 : 0;
   g.translate(0,-bounce);
   const squish=1+Math.sin(t*0.15)*0.03; g.scale(1/squish,squish);
+  drawAccBack(g,R,cfg);      // 머리에 두르는 것(🎧)은 머리 뒤에 — 그래야 얼굴이 가운데 온다
   const col=cfg.color,dark=shade(col,-28),isHuman=(cfg.kind==='human'||cfg.kind==='girl'),isGirl=cfg.kind==='girl';
   const nf=kfx(cfg.kind);   // 종류별 실루엣·눈·볼
   g.fillStyle=col;
@@ -1485,31 +1572,689 @@ function kindExtras(g,R,cfg,mood){
   }
 }
 function twinkle(g,x,y,s){g.save();g.translate(x,y);g.beginPath();for(let i=0;i<8;i++){const a=i/8*Math.PI*2,rr=i%2?s*0.38:s;g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);}g.closePath();g.fill();g.restore();}
-function drawAcc(g,R,cfg){ const ac=cfg.accColor||'#ff5c8a';
-  // 내가 만든 악세서리 — 머리 위에 모양을 얹고, 고른 색으로 뒤에서 빛을 준다
-  const mine=(cfg.acc==='__preview')?{emoji:cfg.accEmoji||'🎀'}:customAccs.find(a=>a.id===cfg.acc);
-  if(mine){
-    // 빛무리는 '있는 줄도 모르게' 있어야 한다. 처음엔 리본만큼 큰 덩어리를 깔았더니
-    // 머리에 분홍 풍선을 하나 더 얹은 꼴이 됐다(얼굴보다 악세서리가 커 보였다).
-    // 그래서 ① 모양 자체를 줄이고 ② 빛무리는 모양보다 작게, ③ 중간 정지점을 넣어
-    // 가장자리가 뚜렷한 테두리로 보이지 않게 한다.
-    const y=-R*0.99, sz=R*0.60;
-    const gl=g.createRadialGradient(0,y,1,0,y,sz*0.66);
-    gl.addColorStop(0,hexA(ac,0.24)); gl.addColorStop(0.55,hexA(ac,0.10)); gl.addColorStop(1,hexA(ac,0));
-    g.fillStyle=gl; g.beginPath(); g.ellipse(0,y,sz*0.66,sz*0.48,0,0,7); g.fill();
-    g.save(); g.textAlign='center'; g.textBaseline='middle';
-    g.font=sz+'px sans-serif';
-    g.shadowColor=hexA(ac,0.40); g.shadowBlur=R*0.09;
-    g.fillText(mine.emoji||'🎀',0,y);
-    g.restore(); g.textBaseline='alphabetic';
-    return;
+// ================= 악세서리를 '머리에 얹기' =================
+// 악세서리 자리를 R 배수로 못 박아 두면 종류마다 어긋난다. 👧는 머리카락이 정수리보다
+// 높아서 물건이 공중에 떴고, 🐱은 귀가 더 위라 이마에 박혔다. 그래서 캐릭터를 한 번
+// 실제로 그려 보고 위쪽 실루엣선을 재 둔다 — 캐릭터 그림을 고쳐도 저절로 따라온다.
+const HEAD=new Map();
+function headShape(kind){
+  if(HEAD.has(kind)) return HEAD.get(kind);
+  const R=64, N=256, cx=N/2, cy=N/2;
+  const c=document.createElement('canvas'); c.width=c.height=N;
+  const g=c.getContext('2d');
+  // t=0·idle 이라야 통통 튀는 변형이 없어 기하가 깔끔하다. acc:'none' 이므로 되돌지 않는다.
+  drawAvatar(g,cx,cy,R,{kind:kind,color:'#ffb3c9',acc:'none',accColor:'#ff5c8a'},'idle',0);
+  const d=g.getImageData(0,0,N,N).data;
+  const A=(x,y)=>d[((y*N+x)<<2)+3];
+  // 열마다 '물건을 얹을 수 있는' 윗선 (R 단위, 위가 음수).
+  // 첫 화소가 아니라 '두께 0.3R 이상으로 이어지는 첫 자리'를 찾는다. 🧒 애교머리 한 올은
+  // 정수리보다 0.3R 위로 삐죽 나와 있는데, 그 끝을 윗선으로 잡으면 모자가 공중에 뜬다.
+  const RUN=Math.round(R*0.30);
+  const top=new Float32Array(N).fill(NaN);
+  for(let x=0;x<N;x++){
+    let run=0, start=-1;
+    for(let y=0;y<N;y++){
+      if(A(x,y)>60){ if(run===0) start=y; run++; if(run>=RUN){ top[x]=(start-cy)/R; break; } }
+      else run=0; } }
+  const hw=new Float32Array(N);                 // 행마다 반너비 (R 단위)
+  for(let y=0;y<N;y++){ let l=-1,r=-1;
+    for(let x=0;x<N;x++) if(A(x,y)>60){ if(l<0)l=x; r=x; }
+    hw[y]= l<0?0:Math.max(cx-l,r-cx)/R; }
+  // 정수리 = '모자를 얹을 수 있는' 첫 줄. 가운데(x=0)를 지나 이어진 폭이 0.45R 이상인
+  // 가장 위 줄이다. 열마다 재는 방식으로는 🧒 애교머리를 못 걸러낸다 — 가늘지만 머리에
+  // 붙어 있어서 위에서 아래로 한 덩어리로 이어지기 때문이다. 이 방식이면 가느다란 것
+  // (애교머리)과 가운데를 안 지나는 것(🐰🐱 귀)이 저절로 빠진다.
+  let crown=-1;
+  for(let y=0;y<N;y++){
+    if(A(cx,y)<=60) continue;
+    let l=cx,r=cx;
+    while(l>0&&A(l-1,y)>60) l--;
+    while(r<N-1&&A(r+1,y)>60) r++;
+    if((r-l)/R>=0.45){ crown=(y-cy)/R; break; } }
+  const s={N,R,cx,cy,top,hw,crown};
+  HEAD.set(kind,s); return s; }
+function headCrown(kind){ return headShape(kind).crown; }
+// x 구간(R 단위)의 머리선 — 물건이 놓일 자리.
+// 가장 높은 값을 쓰면 안 된다. 🧒 는 애교머리 한 올이 정수리보다 0.3R 위로 삐죽 나와
+// 있어서, 그 끝에 모자를 올리면 머리와 모자 사이가 뻥 뜬다. 가운데값(중앙값)을 쓰면
+// 가느다란 삐죽함은 무시되고 실제로 손이 닿는 면을 잡는다.
+// 게임 중에는 1초에 60번 불린다 — 매번 정렬하지 않게 구간마다 답을 적어 둔다.
+const TOPQ=new Map();
+function headTop(kind,a,b){
+  const key=kind+'|'+a.toFixed(3)+'|'+b.toFixed(3);
+  if(TOPQ.has(key)) return TOPQ.get(key);
+  const s=headShape(kind), v=[];
+  const xa=Math.max(0,Math.round(s.cx+a*s.R)), xb=Math.min(s.N-1,Math.round(s.cx+b*s.R));
+  for(let x=xa;x<=xb;x++) if(!isNaN(s.top[x])) v.push(s.top[x]);
+  v.sort((p,q)=>p-q);
+  const r=v.length?v[v.length>>1]:-1;
+  TOPQ.set(key,r); return r; }
+function headHalf(kind,yR){ const s=headShape(kind);
+  const y=Math.max(0,Math.min(s.N-1,Math.round(s.cy+yR*s.R))); return s.hw[y]||1; }
+
+// 이모지는 글자마다 실제 칠해지는 범위가 다르다(☁️는 위쪽, 🔥는 아래쪽에 몰려 있다).
+// 그런데 이모지 폰트는 measureText 로 물어보면 전부 같은 상자를 답한다 — 실제로 그려서 잰다.
+const INK=new Map();
+function accInk(em){
+  if(INK.has(em)) return INK.get(em);
+  const S=100, N=220, c=document.createElement('canvas'); c.width=c.height=N;
+  const g=c.getContext('2d'); g.font=S+'px sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+  g.fillText(em,N/2,N/2);
+  const d=g.getImageData(0,0,N,N).data;
+  let x0=N,x1=-1,y0=N,y1=-1;
+  for(let y=0;y<N;y++) for(let x=0;x<N;x++) if(d[((y*N+x)<<2)+3]>16){
+    if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
+  const v=(x1<0)                                  // 글자가 없으면(폰트 없음) 정사각으로 본다
+    ? {left:-0.45,right:0.45,top:-0.45,bot:0.45,w:0.9,h:0.9}
+    : {left:(x0-N/2)/S,right:(x1-N/2)/S,top:(y0-N/2)/S,bot:(y1-N/2)/S,
+       w:(x1-x0)/S,h:(y1-y0)/S};
+  INK.set(em,v); return v; }
+
+// 고른 색으로 물건을 다시 칠한다.
+// 이모지는 여러 색이 박힌 그림 글자라 fillStyle 로는 색이 안 바뀐다 — 그래서 지금까지
+// 겉의 빛무리만 색이 바뀌었다. 'color' 혼합은 색조·채도만 갈아끼우고 밝기는 남기므로
+// 원래 음영·테두리·하이라이트가 그대로 살아 '같은 모양의 다른 색 물건'이 된다.
+const TINT=new Map();
+function accSprite(em,col,px){
+  px=Math.max(8,Math.round(px/2)*2);              // 2px 단위로 묶어 캐시가 안 터지게
+  const key=em+'|'+col+'|'+px;
+  if(TINT.has(key)) return TINT.get(key);
+  const P=Math.ceil(px*2), c=document.createElement('canvas'); c.width=c.height=P;
+  const g=c.getContext('2d');
+  const put=()=>{ g.font=px+'px sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+                  g.fillText(em,P/2,P/2); };
+  put();
+  g.globalCompositeOperation='color'; g.fillStyle=col; g.fillRect(0,0,P,P);
+  g.globalCompositeOperation='destination-in'; put();   // 혼합이 투명한 곳까지 덮는다 → 글자 모양으로 잘라낸다
+  g.globalCompositeOperation='source-over';
+  if(TINT.size>48) TINT.delete(TINT.keys().next().value);
+  TINT.set(key,c); return c; }
+
+// 물건마다 쓰는 자리가 다르다. 전부 정수리에 올리면 헤드폰은 머리에 얹은 모자가 되고
+// 막대사탕은 머리에 꽂은 꼬치가 된다. 물건의 성질대로 자리를 나눈다.
+//   ears  머리에 두른다 — 머리 폭보다 넓게 늘려 '머리 뒤'로 넣는다. 그러면 밴드는 정수리
+//         위로, 귀 덮개는 양옆으로 나오고 가운데는 얼굴이 가린다(실제로 쓴 모양).
+//   mouth 입에 문다 — 혀도 살짝 내민다.
+//   side  머리 옆에 꽂는다 (기본 꽃·리본과 같은 자리).
+//   hat   눌러쓴다.  crown  정수리에 얹는다.
+const ACC_WEAR={
+  '🎧':'ears', '🧢':'hat','🎩':'hat',
+  // 먹는 건 입에 문다 (딸기·수박·가마보코·소프트아이스크림·버블티…)
+  '🍭':'mouth','🍓':'mouth','🍉':'mouth','🍦':'mouth','🍥':'mouth','🍬':'mouth','🍡':'mouth',
+  '🍩':'mouth','🍪':'mouth','🥕':'mouth','🍒':'mouth','🍑':'mouth','🍇':'mouth','🧋':'mouth',
+  '🍧':'mouth','🍮':'mouth','🥐':'mouth',
+  // 작은 장식은 머리 옆에 꽂는다
+  '🎀':'side','🌸':'side','🦋':'side','🍀':'side','🐚':'side','🍁':'side','🍃':'side',
+  '🔔':'side','🐣':'side','🪷':'side',
+  // 그 밖(⭐💎🌙☁️❄️🔥🍄🧁🍰🎈🎁🪩🌻🎃🪐)은 정수리
+  '*jl':'jelly','*ap':'jelly','*em':'jelly','*sc':'jelly','*er':'jelly',
+  '*bn':'jelly','*hb':'jelly','*fl':'jelly','*nk':'jelly' };
+// 이모지가 아니라 직접 그리는 물건. 이모지 자리에 짧은 표를 넣어 두면 방 메시지·랭킹 칸에
+// 그대로 실려 가고(3글자라 charSafe 를 그냥 통과한다) 받는 쪽도 똑같이 그린다.
+const ACC_DRAWN={
+  '*jl':{label:'젤리곰',draw:(g,R,c,a)=>drawJellyBlob(g,R,c,a)},
+  '🎧' :{label:'헤드폰',draw:(g,R,c,a)=>drawPhones(g,R,c,a)},
+  // half:true — 칩에서는 한쪽만 크게 보여준다. 양쪽을 다 담으면 알이 너무 작아진다.
+  '*ap':{label:'에어팟',half:true,draw:(g,R,c,a)=>drawBuds(g,R,c,a)},
+  '*em':{label:'귀마개',draw:(g,R,c,a)=>drawMuffs(g,R,c,a)},
+  '*sc':{label:'스카프',draw:(g,R,c,a)=>drawScarf(g,R,c,a)},
+  '*er':{label:'귀걸이',half:true,draw:(g,R,c,a)=>drawEarrings(g,R,c,a)},
+  '*bn':{label:'비니',   draw:(g,R,c,a)=>drawBeanie(g,R,c,a)},
+  '*hb':{label:'머리띠', draw:(g,R,c,a)=>drawHeadband(g,R,c,a)},
+  '*fl':{label:'화관',   draw:(g,R,c,a)=>drawWreath(g,R,c,a)},
+  '*nk':{label:'목걸이', draw:(g,R,c,a)=>drawNecklace(g,R,c,a)} };
+const WEAR={ crown:{w:0.42,sink:0.06,tilt:0},
+             side :{w:0.34,sink:0.12,tilt:0},
+             hat  :{w:0.74,sink:0.30,tilt:-0.05},
+             ears :{w:1.06,h:1.16,tilt:0},
+             mouth:{w:0.34,tilt:0.22} };
+// 입 높이(입선 가운데) — 종류마다 다르다. 화소로 재서 맞춘 값이다:
+// 고양이·곰·사람·여자아이 입선 0.39~0.48R, 토끼 ω 입 0.23~0.43R, 강아지는 주둥이가 더 아래.
+function mouthY(kind){ return kind==='bunny'?0.36:(kind==='dog'?0.50:0.44); }
+// 물고 있으면 혀가 살짝 나온다. 강아지는 원래 나와 있어서 겹치지 않게 건너뛴다.
+// 혀는 입선 '아래'로 나와야 한다. 처음엔 0.29~0.46R 에 그려서 입선(0.39~0.48R)보다 위에
+// 있었고, 그래서 입과 떨어진 것처럼 보였다.
+function drawTongue(g,R,cfg){
+  if(cfg.kind==='dog') return;
+  const my=mouthY(cfg.kind)*R;
+  g.fillStyle='#ff7d9c'; g.beginPath(); g.ellipse(0,my+R*0.10,R*0.115,R*0.088,0,0,7); g.fill();
+  g.fillStyle='rgba(200,70,110,0.40)'; g.beginPath(); g.ellipse(0,my+R*0.135,R*0.048,R*0.050,0,0,7); g.fill(); }
+
+// 🎧 만은 직접 그린다.
+// 이모지를 얹어서는 '쓰고 있는' 모양이 안 된다. 정면 제품 사진이라 띠와 귀 덮개의 간격이
+// 고정돼 있어서, 덮개를 귀에 맞추려고 키우면 띠가 머리보다 훨씬 커져 도넛을 뒤집어쓴
+// 꼴이 되고, 띠를 머리에 맞추면 덮개가 얼굴 가운데로 들어온다.
+// 직접 그리면 띠는 '재어 둔 머리 윗선'을 그대로 따라가고 덮개는 귀 높이 양옆에 붙는다 —
+// 캐릭터마다 머리 모양이 달라도 늘 쓴 모양이 된다.
+// 옆에 꽂는 장식(리본·꽃·나비…)이 놓이는 선.
+// 그 위치의 머리선을 그냥 쓰면 🐰는 긴 귀 끝까지 타고 올라가 머리에서 한참 떨어진다.
+// 얼굴 표면보다 0.18R 넘게 올라가지 못하게 막으면, 귀가 있는 애는 귀에 얹히고 없는 애는
+// 머리 옆에 붙는다.
+const SIDE_X=0.58;
+function sideLine(kind){
+  const nf=kfx(kind);
+  const face=-nf.sy*Math.sqrt(1-SIDE_X*SIDE_X);      // 그 x 에서의 얼굴 표면
+  return Math.max(headTop(kind,nf.sx*SIDE_X-0.18,nf.sx*SIDE_X+0.18), face-0.14); }
+const EAR_Y=0.06;                       // 귀(덮개) 높이, R 단위
+function smooth01(t){ t=Math.max(0,Math.min(1,t)); return t*t*(3-2*t); }
+function drawPhones(g,R,cfg,ac){
+  const kind=cfg.kind;
+  const hx=Math.max(kfx(kind).sx,headHalf(kind,EAR_Y));   // 그 높이의 머리 반너비
+  const hy=-headCrown(kind)+0.035;                        // 정수리 높이 + 살짝 띄우기
+  const cupW=R*0.235, cupH=R*0.335, band=R*0.10;
+  // ── 띠: 덮개에서 정수리를 넘어 덮개까지, 머리 크기에 맞춘 타원 호.
+  //    실루엣 윗선을 그대로 따라가게 했더니 🐰·🐱은 띠가 귀 모양을 타고 올라가 'M자'가
+  //    됐다 — 띠는 귀와 상관없이 머리를 넘어가는 것이다.
+  const pts=[], S=26;
+  for(let i=0;i<=S;i++){
+    const t=-1+2*i/S, x=t*hx;
+    const y=EAR_Y-(EAR_Y+hy)*Math.sqrt(Math.max(0,1-t*t));
+    pts.push([x*R,y*R]);
   }
+  g.save();
+  g.lineCap='round'; g.lineJoin='round';
+  const stroke=(col,wd)=>{ g.strokeStyle=col; g.lineWidth=wd; g.beginPath();
+    g.moveTo(pts[0][0],pts[0][1]);
+    for(let i=1;i<pts.length;i++) g.lineTo(pts[i][0],pts[i][1]);
+    g.stroke(); };
+  stroke('rgba(70,34,56,0.24)',band*1.34);        // 머리와 구분되게 얇은 테두리
+  stroke(ac,band);
+  stroke(hexA(mixHex(ac,'#ffffff',0.55),0.55),band*0.34);  // 띠 위쪽 광택
+  // ── 귀 덮개: 귀 높이 양옆. 살짝 밖으로 나오게 두면 '덮고 있다'고 읽힌다.
+  [-1,1].forEach(sd=>{
+    const cx=sd*(hx*R+cupW*0.16), cy=EAR_Y*R;
+    // 네모난 알약보다 둥근 덮개가 훨씬 부드럽다 (실제 헤드폰 이어패드도 타원이다)
+    const el=(x,y,w,h)=>{ g.beginPath(); g.ellipse(x,y,w,h,0,0,7); };
+    g.fillStyle='rgba(70,34,56,0.22)'; el(cx,cy,cupW*1.12,cupH*1.08); g.fill();
+    const lg=g.createLinearGradient(cx-cupW,cy-cupH,cx+cupW,cy+cupH);
+    lg.addColorStop(0,mixHex(ac,'#ffffff',0.34)); lg.addColorStop(1,shade(ac,-26));
+    g.fillStyle=lg; el(cx,cy,cupW,cupH); g.fill();
+    // 안쪽 쿠션 — 이게 있어야 납작한 알약이 아니라 덮개로 보인다
+    g.fillStyle=hexA(shade(ac,-42),0.55);
+    g.beginPath(); g.ellipse(cx-sd*cupW*0.16,cy,cupW*0.52,cupH*0.66,0,0,7); g.fill();
+    g.fillStyle='rgba(255,255,255,0.34)';
+    g.beginPath(); g.ellipse(cx+sd*cupW*0.30,cy-cupH*0.42,cupW*0.34,cupH*0.16,0,0,7); g.fill();
+  });
+  g.restore(); }
+// 🎩 모자 — 예전에는 납작한 네모 두 개였다. 브림이 1.0R 폭밖에 안 돼서 2R 짜리 머리
+// 위에 걸터앉은 꼴이었고, 그래서 "머리에서 떠 있다"는 느낌이 났다. 브림을 머리 폭까지
+// 넓히고 정수리보다 아래로 내려 눌러쓴 모양으로 다시 그린다.
+function drawHat(g,R,cfg,ac){
+  const nf=kfx(cfg.kind), top=headCrown(cfg.kind);
+  const brimY=(top+0.19)*R;                                   // 정수리보다 아래 → 눌러쓴 느낌
+  const hw=Math.max(nf.sx*0.99,headHalf(cfg.kind,top+0.26))*R; // 브림은 머리 폭까지
+  const cw=hw*0.62, ch=R*0.50, bandH=R*0.11;
+  g.save();
+  // 브림 아래 그늘 — 이게 있어야 머리에 '닿아' 보인다
+  g.fillStyle='rgba(86,42,68,0.16)';
+  g.beginPath(); g.ellipse(0,brimY+R*0.045,hw*0.9,R*0.075,0,0,7); g.fill();
+  // 크라운(윗통) — 위가 둥근 통
+  const cg=g.createLinearGradient(-cw,0,cw,0);
+  cg.addColorStop(0,shade(ac,-16)); cg.addColorStop(0.42,mixHex(ac,'#ffffff',0.16)); cg.addColorStop(1,shade(ac,-26));
+  g.fillStyle=cg;
+  g.beginPath();
+  g.moveTo(-cw,brimY);
+  g.lineTo(-cw,brimY-ch+R*0.16);
+  g.quadraticCurveTo(-cw,brimY-ch,-cw+R*0.16,brimY-ch);
+  g.lineTo(cw-R*0.16,brimY-ch);
+  g.quadraticCurveTo(cw,brimY-ch,cw,brimY-ch+R*0.16);
+  g.lineTo(cw,brimY); g.closePath(); g.fill();
+  // 밴드 — 크라운과 브림 사이에 한 줄. 없으면 통짜 상자처럼 보인다.
+  g.fillStyle=hexA(shade(ac,-52),0.72);
+  g.fillRect(-cw,brimY-bandH,cw*2,bandH);
+  // 브림 — 머리 폭까지 넓은 타원
+  const bg=g.createLinearGradient(0,brimY-R*0.09,0,brimY+R*0.09);
+  bg.addColorStop(0,mixHex(ac,'#ffffff',0.22)); bg.addColorStop(1,shade(ac,-30));
+  g.fillStyle=bg; g.beginPath(); g.ellipse(0,brimY,hw,R*0.115,0,0,7); g.fill();
+  // 브림 윗면 하이라이트
+  g.fillStyle='rgba(255,255,255,0.28)';
+  g.beginPath(); g.ellipse(0,brimY-R*0.022,hw*0.9,R*0.045,0,0,7); g.fill();
+  g.restore(); }
+
+// 🕶️ 선글라스 — 렌즈를 반투명으로 깔아서 눈이 살짝 비친다.
+// 악세서리는 얼굴보다 나중에 그려지므로, 반투명으로 덮으면 아래 눈이 그대로 배어 나온다.
+function drawShades(g,R,cfg,ac){
+  const nf=kfx(cfg.kind), ex=R*nf.eyeGap, ey=-R*0.04;
+  const lw=R*Math.max(nf.eyeW*1.95,0.235), lh=R*Math.max(nf.eyeH*1.30,0.245);
+  const frame=shade(ac,-58);
+  g.save();
+  // 다리 — 얼굴 옆까지
+  g.strokeStyle=hexA(frame,0.85); g.lineWidth=R*0.052; g.lineCap='round';
+  [-1,1].forEach(sd=>{ g.beginPath(); g.moveTo(sd*(ex+lw*0.9),ey-lh*0.30);
+    g.lineTo(sd*Math.min(nf.sx*1.03,1.16)*R,ey-lh*0.10); g.stroke(); });
+  // 브릿지
+  g.beginPath(); g.moveTo(-ex+lw*0.82,ey-lh*0.34); g.quadraticCurveTo(0,ey-lh*0.62,ex-lw*0.82,ey-lh*0.34); g.stroke();
+  [-1,1].forEach(sd=>{
+    const cx=sd*ex;
+    // 렌즈 — 위는 진하고 아래는 옅게. 아래쪽에서 눈이 비친다.
+    const lg=g.createLinearGradient(cx,ey-lh,cx,ey+lh);
+    lg.addColorStop(0,hexA(shade(ac,-30),0.86));
+    lg.addColorStop(0.55,hexA(ac,0.68));
+    lg.addColorStop(1,hexA(mixHex(ac,'#ffffff',0.30),0.44));
+    g.fillStyle=lg;
+    g.beginPath(); g.ellipse(cx,ey,lw,lh,0,0,7); g.fill();
+    // 유리 반사 — 이게 없으면 눈을 색종이로 가린 것처럼 보인다
+    g.save(); g.beginPath(); g.ellipse(cx,ey,lw,lh,0,0,7); g.clip();
+    g.fillStyle='rgba(255,255,255,0.42)';
+    g.beginPath(); g.moveTo(cx-lw*0.95,ey+lh*0.25); g.lineTo(cx-lw*0.15,ey-lh*1.05);
+    g.lineTo(cx+lw*0.22,ey-lh*1.05); g.lineTo(cx-lw*0.58,ey+lh*0.25); g.closePath(); g.fill();
+    g.fillStyle='rgba(255,255,255,0.22)';
+    g.beginPath(); g.moveTo(cx+lw*0.38,ey+lh*0.25); g.lineTo(cx+lw*0.86,ey-lh*0.62);
+    g.lineTo(cx+lw*1.02,ey-lh*0.40); g.lineTo(cx+lw*0.62,ey+lh*0.30); g.closePath(); g.fill();
+    g.restore();
+    // 테
+    g.strokeStyle=hexA(frame,0.92); g.lineWidth=R*0.042;
+    g.beginPath(); g.ellipse(cx,ey,lw,lh,0,0,7); g.stroke();
+  });
+  g.restore(); }
+
+// 🧸 젤리곰 — 머리 위에 올려놓는 반투명 곰돌이 젤리(하리보 같은 것).
+// 처음엔 둥근 슬라임 방울로 그렸는데 "너무 별로"였다. 젤리다움은 '속이 비치는 것'만으로는
+// 안 되고 실루엣이 있어야 한다 — 하리보 곰은 귀·팔·다리가 붙은 그 모양이 곧 정체성이다.
+// 작게, 귀엽게. 이모지에는 없어서 직접 그린다.
+function drawJellyBlob(g,R,cfg,ac){
+  const kind=cfg.kind, nf=kfx(kind);
+  const u=nf.sx*R*0.20;                       // 곰 한 마리의 기준 크기 (작게!)
+  const tp=headCrown(kind)*R;
+  const by=tp-u*0.62;                         // 엉덩이가 정수리에 물리게
+  // 하리보 곰 실루엣 — 머리 · 귀 · 몸통 · 팔 · 다리
+  const shape=()=>{
+    g.beginPath();
+    // 머리 (위)
+    g.moveTo(-u*0.62,by-u*1.62);
+    g.bezierCurveTo(-u*0.62,by-u*2.30, u*0.62,by-u*2.30, u*0.62,by-u*1.62);
+    g.bezierCurveTo( u*0.62,by-u*1.18, u*0.30,by-u*1.10, u*0.24,by-u*1.06);
+    // 오른팔
+    g.bezierCurveTo( u*0.92,by-u*1.02, u*1.14,by-u*0.72, u*1.06,by-u*0.44);
+    g.bezierCurveTo( u*1.00,by-u*0.22, u*0.78,by-u*0.16, u*0.66,by-u*0.22);
+    // 오른다리
+    g.bezierCurveTo( u*0.86,by+u*0.10, u*0.80,by+u*0.44, u*0.44,by+u*0.46);
+    g.bezierCurveTo( u*0.18,by+u*0.48, u*0.10,by+u*0.30, u*0.08,by+u*0.16);
+    g.lineTo(-u*0.08,by+u*0.16);
+    // 왼다리
+    g.bezierCurveTo(-u*0.10,by+u*0.30,-u*0.18,by+u*0.48,-u*0.44,by+u*0.46);
+    g.bezierCurveTo(-u*0.80,by+u*0.44,-u*0.86,by+u*0.10,-u*0.66,by-u*0.22);
+    // 왼팔
+    g.bezierCurveTo(-u*0.78,by-u*0.16,-u*1.00,by-u*0.22,-u*1.06,by-u*0.44);
+    g.bezierCurveTo(-u*1.14,by-u*0.72,-u*0.92,by-u*1.02,-u*0.24,by-u*1.06);
+    g.bezierCurveTo(-u*0.30,by-u*1.10,-u*0.62,by-u*1.18,-u*0.62,by-u*1.62);
+    g.closePath(); };
+  g.save();
+  // 머리에 닿는 그늘
+  g.fillStyle='rgba(96,48,74,0.13)';
+  g.beginPath(); g.ellipse(0,tp+R*0.02,u*0.86,R*0.045,0,0,7); g.fill();
+  // 귀 — 몸보다 먼저 그려 밑동이 머리에 묻히게
+  [-1,1].forEach(sd=>{ g.fillStyle=hexA(mixHex(ac,'#ffffff',0.10),0.60);
+    g.beginPath(); g.arc(sd*u*0.56,by-u*2.16,u*0.30,0,7); g.fill(); });
+  // 몸 — 얕게 깔아서 아래 머리가 비쳐 보이게. 위는 밝고 아래에 색이 고인다.
+  const bg=g.createLinearGradient(0,by-u*2.46,0,by+u*0.50);
+  bg.addColorStop(0,   hexA(mixHex(ac,'#ffffff',0.66),0.34));
+  bg.addColorStop(0.40,hexA(mixHex(ac,'#ffffff',0.22),0.40));
+  bg.addColorStop(0.66,hexA(ac,0.50));
+  bg.addColorStop(1,   hexA(shade(ac,-26),0.68));
+  g.fillStyle=bg; shape(); g.fill();
+  // 테두리 빛 — 유리 끝동
+  g.strokeStyle=hexA(mixHex(ac,'#ffffff',0.62),0.60); g.lineWidth=Math.max(1,u*0.10);
+  shape(); g.stroke();
+  g.save(); shape(); g.clip();
+  // 위쪽 빛 + 또렷한 반사점 (젤리 표면)
+  const sp=g.createRadialGradient(-u*0.34,by-u*2.06,1,-u*0.34,by-u*2.06,u*1.10);
+  sp.addColorStop(0,'rgba(255,255,255,0.72)'); sp.addColorStop(1,'rgba(255,255,255,0)');
+  g.fillStyle=sp; g.beginPath(); g.ellipse(-u*0.30,by-u*2.02,u*0.52,u*0.34,-0.3,0,7); g.fill();
+  g.fillStyle='rgba(255,255,255,0.86)';
+  g.beginPath(); g.ellipse(-u*0.36,by-u*2.06,u*0.17,u*0.11,-0.35,0,7); g.fill();
+  g.fillStyle='rgba(255,255,255,0.42)';
+  g.beginPath(); g.ellipse(u*0.40,by-u*0.66,u*0.14,u*0.20,0.3,0,7); g.fill();
+  g.restore();
+  // 눈·코 — 하리보 곰의 눌린 눈. 아주 작아도 이게 있어야 곰으로 읽힌다.
+  const ink=hexA(shade(ac,-64),0.62);
+  g.fillStyle=ink;
+  [-1,1].forEach(sd=>{ g.beginPath(); g.ellipse(sd*u*0.24,by-u*1.86,u*0.085,u*0.10,0,0,7); g.fill(); });
+  g.beginPath(); g.ellipse(0,by-u*1.60,u*0.115,u*0.085,0,0,7); g.fill();
+  g.restore(); }
+
+// ── 두르는 것들 (전부 직접 그린다) ──
+// 이모지로는 '쓰고 있는' 모양이 안 나온다. 정면 제품 사진이라 머리에 맞춰 놓을 수가 없다.
+// 귀 높이(EAR_Y)의 머리 반너비를 재서 그 자리에 붙인다.
+function earAnchor(kind){ return Math.max(kfx(kind).sx,headHalf(kind,EAR_Y)); }
+// 귀는 종류마다 완전히 다른 곳에 있다. 얼굴 옆 제일 넓은 곳에 붙이면 🐱🐰 처럼 귀가 머리
+// 위에 있는 애들은 귀걸이가 볼에 달린 꼴이 된다. 실제로 귀를 그린 좌표에서 두 점을 뽑았다.
+//   in   = 귀 안쪽 (에어팟을 꽂는 자리)
+//   lobe = 귓불 (귀걸이가 달랑거리는 자리)
+// 값은 '그려 보고 잰' 것이다. 귀 그리는 코드의 좌표에서 유추했더니 동물은 전부 어긋났다
+// (귀는 몸보다 먼저 그려져 안쪽이 덮이므로, 코드의 중심점은 보이는 귀의 중심이 아니다).
+// 보이는 귀 = 몸 타원 바깥에 칠해진 곳. 그 중심이 in, 아래·바깥 끝이 lobe.
+const EAR_PT={
+  cat  :{in:[0.63,-0.87], lobe:[0.85,-0.50]},   // 머리 위 삼각귀
+  dog  :{in:[1.02,-0.34], lobe:[0.86, 0.56]},   // 옆으로 늘어진 귀 → 귀걸이는 그 끝에
+  bunny:{in:[0.51,-1.24], lobe:[0.76,-0.64]},   // 위로 솟은 긴 귀
+  bear :{in:[0.80,-0.84], lobe:[0.95,-0.54]},   // 머리 위 동그란 귀
+  human:{in:[0.90, 0.04], lobe:[0.90, 0.17]},   // 옆에 붙은 사람 귀 (이건 나중에 그려서 맞았다)
+  girl :{in:[0.90, 0.06], lobe:[0.90, 0.19]} };
+function earPt(kind,which){ const e=EAR_PT[kind]||EAR_PT.cat; return e[which]; }
+
+// 🎵 에어팟 — 귀에 콕 꽂는 작은 것. 대(stem)가 아래로 살짝 내려온다.
+function drawBuds(g,R,cfg,ac){
+  const pt=earPt(cfg.kind,'in'), bw=R*0.105, bh=R*0.128;
+  g.save();
+  [-1,1].forEach(sd=>{ const cx=sd*pt[0]*R, y=pt[1]*R;
+    g.fillStyle='rgba(70,34,56,0.20)';
+    g.beginPath(); g.ellipse(cx,y,bw*1.18,bh*1.12,0,0,7); g.fill();
+    // 대
+    g.strokeStyle=shade(ac,-14); g.lineWidth=bw*0.62; g.lineCap='round';
+    g.beginPath(); g.moveTo(cx+sd*bw*0.10,y+bh*0.30); g.lineTo(cx+sd*bw*0.24,y+bh*1.90); g.stroke();
+    g.strokeStyle=hexA(mixHex(ac,'#ffffff',0.5),0.5); g.lineWidth=bw*0.20;
+    g.beginPath(); g.moveTo(cx+sd*bw*0.02,y+bh*0.40); g.lineTo(cx+sd*bw*0.16,y+bh*1.70); g.stroke();
+    // 몸통
+    const lg=g.createLinearGradient(cx-bw,y-bh,cx+bw,y+bh);
+    lg.addColorStop(0,mixHex(ac,'#ffffff',0.42)); lg.addColorStop(1,shade(ac,-20));
+    g.fillStyle=lg; g.beginPath(); g.ellipse(cx,y,bw,bh,0,0,7); g.fill();
+    g.fillStyle=hexA(shade(ac,-48),0.45);
+    g.beginPath(); g.ellipse(cx-sd*bw*0.20,y,bw*0.42,bh*0.52,0,0,7); g.fill();
+    g.fillStyle='rgba(255,255,255,0.60)';
+    g.beginPath(); g.ellipse(cx+sd*bw*0.32,y-bh*0.42,bw*0.30,bh*0.16,0,0,7); g.fill(); });
+  g.restore(); }
+
+// 🧣 귀마개 — 헤드폰과 다르게 '푹신한' 것. 띠는 얇고 덮개는 털처럼 울퉁불퉁.
+function drawMuffs(g,R,cfg,ac){
+  const kind=cfg.kind, hx=earAnchor(kind), hy=-headCrown(kind)+0.03;
+  const pw=R*0.24, band=R*0.075;
+  g.save(); g.lineCap='round'; g.lineJoin='round';
+  const pts=[]; for(let i=0;i<=24;i++){ const t=-1+2*i/24;
+    pts.push([t*hx*R,(EAR_Y-(EAR_Y+hy)*Math.sqrt(Math.max(0,1-t*t)))*R]); }
+  const stroke=(col,wd)=>{ g.strokeStyle=col; g.lineWidth=wd; g.beginPath();
+    g.moveTo(pts[0][0],pts[0][1]);
+    for(let i=1;i<pts.length;i++) g.lineTo(pts[i][0],pts[i][1]); g.stroke(); };
+  stroke('rgba(70,34,56,0.22)',band*1.40); stroke(shade(ac,-18),band);
+  stroke(hexA(mixHex(ac,'#ffffff',0.55),0.5),band*0.34);
+  [-1,1].forEach(sd=>{ const cx=sd*(hx*R+pw*0.14), cy=EAR_Y*R;
+    g.fillStyle='rgba(70,34,56,0.20)';
+    g.beginPath(); g.ellipse(cx,cy,pw*1.10,pw*1.12,0,0,7); g.fill();
+    // 털 — 둥근 돌기를 둘러 붙여 푹신하게
+    const lg=g.createRadialGradient(cx-sd*pw*0.3,cy-pw*0.3,1,cx,cy,pw*1.2);
+    lg.addColorStop(0,mixHex(ac,'#ffffff',0.46)); lg.addColorStop(1,shade(ac,-22));
+    g.fillStyle=lg;
+    for(let i=0;i<9;i++){ const a=i/9*Math.PI*2;
+      g.beginPath(); g.arc(cx+Math.cos(a)*pw*0.62,cy+Math.sin(a)*pw*0.66,pw*0.44,0,7); g.fill(); }
+    g.beginPath(); g.ellipse(cx,cy,pw*0.86,pw*0.90,0,0,7); g.fill();
+    g.fillStyle='rgba(255,255,255,0.34)';
+    g.beginPath(); g.ellipse(cx-sd*pw*0.24,cy-pw*0.38,pw*0.34,pw*0.18,0,0,7); g.fill(); });
+  g.restore(); }
+
+// 🧶 스카프 — 턱 밑을 한 바퀴 감고 한쪽으로 흘러내린다.
+function drawScarf(g,R,cfg,ac){
+  const kind=cfg.kind, nf=kfx(kind);
+  const y=nf.sy*R*0.74;                        // 턱 밑
+  const hw=Math.max(headHalf(kind,y/R),nf.sx*0.60)*R*0.96;
+  const th=R*0.175;
+  g.save();
+  g.fillStyle='rgba(70,34,56,0.18)';
+  g.beginPath(); g.ellipse(0,y+th*0.30,hw*1.03,th*1.15,0,0,7); g.fill();
+  // 흘러내린 자락 (오른쪽) — 목도리답게 한쪽으로
+  const tg=g.createLinearGradient(hw*0.2,y,hw*0.9,y+R*0.9);
+  tg.addColorStop(0,shade(ac,-10)); tg.addColorStop(1,shade(ac,-34));
+  g.fillStyle=tg;
+  g.beginPath();
+  g.moveTo(hw*0.32,y-th*0.20);
+  g.quadraticCurveTo(hw*1.00,y+R*0.20,hw*0.86,y+R*0.54);
+  g.quadraticCurveTo(hw*0.62,y+R*0.62,hw*0.44,y+R*0.48);
+  g.quadraticCurveTo(hw*0.60,y+R*0.20,hw*0.12,y+th*0.46);
+  g.closePath(); g.fill();
+  // 자락 끝 술
+  g.strokeStyle=shade(ac,-40); g.lineWidth=Math.max(1,R*0.022); g.lineCap='round';
+  for(let i=-1;i<=1;i++){ g.beginPath();
+    g.moveTo(hw*(0.56+i*0.11),y+R*0.52); g.lineTo(hw*(0.58+i*0.13),y+R*0.64); g.stroke(); }
+  // 목에 감긴 띠
+  const bg=g.createLinearGradient(0,y-th,0,y+th);
+  bg.addColorStop(0,mixHex(ac,'#ffffff',0.28)); bg.addColorStop(1,shade(ac,-26));
+  g.fillStyle=bg;
+  g.beginPath(); g.ellipse(0,y,hw,th,0,0,7); g.fill();
+  // 뜨개 무늬 — 이게 없으면 그냥 색 띠다
+  g.strokeStyle=hexA(shade(ac,-42),0.45); g.lineWidth=Math.max(1,R*0.020);
+  g.save(); g.beginPath(); g.ellipse(0,y,hw,th,0,0,7); g.clip();
+  for(let x=-hw;x<hw;x+=R*0.10){ g.beginPath();
+    g.moveTo(x,y-th); g.lineTo(x+R*0.05,y+th); g.stroke(); }
+  g.restore();
+  g.fillStyle='rgba(255,255,255,0.30)';
+  g.beginPath(); g.ellipse(0,y-th*0.42,hw*0.88,th*0.26,0,0,7); g.fill();
+  g.restore(); }
+
+// 💧 귀걸이 — 양쪽에 조그맣게 달랑달랑.
+function drawEarrings(g,R,cfg,ac){
+  const pt=earPt(cfg.kind,'lobe');
+  const r0=R*0.045, dl=R*0.155, r1=R*0.072;
+  g.save();
+  [-1,1].forEach(sd=>{ const cx=sd*pt[0]*R, y=pt[1]*R;
+    // 고리
+    g.strokeStyle=shade(ac,-30); g.lineWidth=Math.max(1,R*0.020);
+    g.beginPath(); g.arc(cx,y-r0*0.2,r0,0.15*Math.PI,0.85*Math.PI); g.stroke();
+    // 줄
+    g.beginPath(); g.moveTo(cx,y+r0*0.6); g.lineTo(cx,y+dl-r1*0.7); g.stroke();
+    // 물방울 알
+    const lg=g.createRadialGradient(cx-sd*r1*0.3,y+dl-r1*0.4,1,cx,y+dl,r1*1.5);
+    lg.addColorStop(0,mixHex(ac,'#ffffff',0.62)); lg.addColorStop(1,shade(ac,-22));
+    g.fillStyle='rgba(70,34,56,0.20)';
+    g.beginPath(); g.ellipse(cx,y+dl,r1*1.16,r1*1.28,0,0,7); g.fill();
+    g.fillStyle=lg;
+    g.beginPath(); g.moveTo(cx,y+dl-r1*1.30);
+    g.bezierCurveTo(cx+r1*0.95,y+dl-r1*0.35,cx+r1*0.80,y+dl+r1,cx,y+dl+r1);
+    g.bezierCurveTo(cx-r1*0.80,y+dl+r1,cx-r1*0.95,y+dl-r1*0.35,cx,y+dl-r1*1.30);
+    g.closePath(); g.fill();
+    g.fillStyle='rgba(255,255,255,0.70)';
+    g.beginPath(); g.ellipse(cx-sd*r1*0.28,y+dl-r1*0.22,r1*0.26,r1*0.34,-0.4,0,7); g.fill(); });
+  g.restore(); }
+
+// 머리 윗선을 따라가는 호 — 비니·화관·머리띠가 같이 쓴다.
+// 실루엣 윗선을 그대로 따라가면 🐰🐱은 귀 모양을 타고 올라가 'M자'가 된다(헤드폰에서 배웠다).
+// 머리 크기로 만든 타원 호를 쓰면 귀와 상관없이 머리를 넘어간다.
+function crownArc(kind,hxR,apexR,endY,steps){
+  const pts=[], S=steps||26;
+  for(let i=0;i<=S;i++){ const t=-1+2*i/S;
+    pts.push([t*hxR, endY+(apexR-endY)*Math.sqrt(Math.max(0,1-t*t))]); }
+  return pts; }
+function strokePts(g,pts,col,wd){ g.strokeStyle=col; g.lineWidth=wd; g.lineCap='round'; g.lineJoin='round';
+  g.beginPath(); g.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++) g.lineTo(pts[i][0],pts[i][1]); g.stroke(); }
+
+// 🧶 비니 — 눌러쓰는 니트 모자. 접힌 밑단 + 뜨개 결 + 방울.
+function drawBeanie(g,R,cfg,ac){
+  const kind=cfg.kind, top=headCrown(kind);
+  const brim=(top+0.28)*R, apex=(top-0.50)*R;
+  const hx=Math.max(kfx(kind).sx*0.92,headHalf(kind,top+0.34))*R;
+  const dome=()=>{ const pts=crownArc(kind,hx,apex,brim);
+    g.beginPath(); g.moveTo(pts[0][0],pts[0][1]);
+    for(let i=1;i<pts.length;i++) g.lineTo(pts[i][0],pts[i][1]);
+    g.closePath(); };
+  g.save();
+  g.fillStyle='rgba(86,42,68,0.15)';
+  g.beginPath(); g.ellipse(0,brim+R*0.05,hx*0.94,R*0.06,0,0,7); g.fill();
+  const bg=g.createLinearGradient(0,apex,0,brim);
+  bg.addColorStop(0,mixHex(ac,'#ffffff',0.26)); bg.addColorStop(1,shade(ac,-24));
+  g.fillStyle=bg; dome(); g.fill();
+  // 뜨개 결 — 세로로 촘촘히. 이게 없으면 그냥 색 돔이다.
+  g.save(); dome(); g.clip();
+  g.strokeStyle=hexA(shade(ac,-40),0.34); g.lineWidth=Math.max(1,R*0.022);
+  for(let x=-hx;x<=hx;x+=R*0.085){ g.beginPath(); g.moveTo(x,apex); g.lineTo(x+R*0.03,brim); g.stroke(); }
+  g.restore();
+  // 접힌 밑단
+  const cg=g.createLinearGradient(0,brim-R*0.10,0,brim+R*0.10);
+  cg.addColorStop(0,mixHex(ac,'#ffffff',0.36)); cg.addColorStop(1,shade(ac,-16));
+  g.fillStyle=cg; g.beginPath(); g.ellipse(0,brim,hx*1.02,R*0.115,0,0,7); g.fill();
+  g.strokeStyle=hexA(shade(ac,-44),0.40); g.lineWidth=Math.max(1,R*0.020);
+  g.save(); g.beginPath(); g.ellipse(0,brim,hx*1.02,R*0.115,0,0,7); g.clip();
+  for(let x=-hx;x<hx;x+=R*0.075){ g.beginPath(); g.moveTo(x,brim-R*0.12); g.lineTo(x+R*0.03,brim+R*0.12); g.stroke(); }
+  g.restore();
+  // 방울
+  const py=apex-R*0.02, pr=R*0.135;
+  g.fillStyle='rgba(86,42,68,0.14)';
+  g.beginPath(); g.arc(0,py,pr*1.10,0,7); g.fill();
+  const pg=g.createRadialGradient(-pr*0.3,py-pr*0.35,1,0,py,pr*1.3);
+  pg.addColorStop(0,mixHex(ac,'#ffffff',0.52)); pg.addColorStop(1,shade(ac,-20));
+  g.fillStyle=pg;
+  for(let i=0;i<8;i++){ const a=i/8*Math.PI*2;
+    g.beginPath(); g.arc(Math.cos(a)*pr*0.44,py+Math.sin(a)*pr*0.44,pr*0.46,0,7); g.fill(); }
+  g.beginPath(); g.arc(0,py,pr*0.70,0,7); g.fill();
+  g.restore(); }
+
+// 🌸 화관 — 머리 위를 한 바퀴 두르는 꽃. 결혼사진 같은 것.
+function drawWreath(g,R,cfg,ac){
+  const kind=cfg.kind, top=headCrown(kind);
+  const hx=kfx(kind).sx*0.90*R, apex=(top+0.02)*R, endY=-0.40*R;
+  const pts=crownArc(kind,hx,apex,endY,9);
+  g.save();
+  // 줄기
+  strokePts(g,pts,hexA(shade(ac,-52),0.42),Math.max(1,R*0.030));
+  strokePts(g,pts,hexA(mixHex(ac,'#8fd94f',0.62),0.55),Math.max(1,R*0.020));
+  // 꽃 — 크기를 조금씩 달리해 손으로 엮은 느낌
+  pts.forEach((p,i)=>{
+    const big=(i%2===0), fr=R*(big?0.105:0.070);
+    g.fillStyle=hexA(shade(ac,-34),0.20);
+    g.beginPath(); g.arc(p[0],p[1]+fr*0.22,fr*1.15,0,7); g.fill();
+    g.fillStyle=big?mixHex(ac,'#ffffff',0.16):mixHex(ac,'#ffffff',0.46);
+    for(let k=0;k<5;k++){ const a=k/5*Math.PI*2+i;
+      g.beginPath(); g.arc(p[0]+Math.cos(a)*fr*0.62,p[1]+Math.sin(a)*fr*0.62,fr*0.50,0,7); g.fill(); }
+    g.fillStyle=hexA('#fff3a8',0.92);
+    g.beginPath(); g.arc(p[0],p[1],fr*0.34,0,7); g.fill(); });
+  g.restore(); }
+
+// 🎀 머리띠 — 머리 위를 지나는 얇은 띠 + 한쪽에 리본.
+function drawHeadband(g,R,cfg,ac){
+  const kind=cfg.kind, top=headCrown(kind);
+  const hx=Math.max(kfx(kind).sx*0.97,headHalf(kind,-0.34))*R;
+  const apex=(top+0.08)*R, endY=-0.34*R;
+  const pts=crownArc(kind,hx,apex,endY);
+  const w=Math.max(2,R*0.075);
+  g.save();
+  strokePts(g,pts,'rgba(70,34,56,0.22)',w*1.42);
+  strokePts(g,pts,shade(ac,-12),w);
+  strokePts(g,pts,hexA(mixHex(ac,'#ffffff',0.62),0.55),w*0.32);
+  // 리본 — 오른쪽 위에
+  const bi=Math.round(pts.length*0.74), bp=pts[bi];
+  const bw=R*0.155, bh=R*0.105;
+  g.fillStyle=shade(ac,-6);
+  [[-1],[1]].forEach(([sd])=>{ g.beginPath();
+    g.moveTo(bp[0],bp[1]);
+    g.quadraticCurveTo(bp[0]+sd*bw*1.05,bp[1]-bh*1.25,bp[0]+sd*bw*1.15,bp[1]-bh*0.05);
+    g.quadraticCurveTo(bp[0]+sd*bw*1.00,bp[1]+bh*0.90,bp[0],bp[1]);
+    g.closePath(); g.fill(); });
+  g.fillStyle=hexA('#ffffff',0.30);
+  [[-1],[1]].forEach(([sd])=>{ g.beginPath();
+    g.ellipse(bp[0]+sd*bw*0.60,bp[1]-bh*0.34,bw*0.30,bh*0.22,sd*0.4,0,7); g.fill(); });
+  g.fillStyle=shade(ac,-30);
+  g.beginPath(); g.arc(bp[0],bp[1]-bh*0.08,R*0.045,0,7); g.fill();
+  g.restore(); }
+
+// 📿 목걸이 — 턱 밑에 얇은 줄 + 하트 알.
+function drawNecklace(g,R,cfg,ac){
+  const kind=cfg.kind, nf=kfx(kind);
+  const y=nf.sy*R*0.72;
+  const hw=Math.max(headHalf(kind,y/R),nf.sx*0.56)*R*0.88;
+  g.save();
+  // 줄 — 아래로 살짝 처지게
+  g.strokeStyle=hexA(shade(ac,-40),0.55); g.lineWidth=Math.max(1,R*0.030);
+  g.beginPath(); g.moveTo(-hw,y-R*0.05); g.quadraticCurveTo(0,y+R*0.16,hw,y-R*0.05); g.stroke();
+  g.strokeStyle=hexA(mixHex(ac,'#ffffff',0.70),0.70); g.lineWidth=Math.max(1,R*0.014);
+  g.beginPath(); g.moveTo(-hw,y-R*0.055); g.quadraticCurveTo(0,y+R*0.15,hw,y-R*0.055); g.stroke();
+  // 작은 알 세 개
+  [-0.34,0,0.34].forEach((t,i)=>{ const bx=t*hw, byy=y+R*0.145-Math.abs(t)*R*0.10;
+    if(i===1) return;
+    g.fillStyle=mixHex(ac,'#ffffff',0.40);
+    g.beginPath(); g.arc(bx,byy,R*0.030,0,7); g.fill(); });
+  // 하트 알
+  const py=y+R*0.21, ps=R*0.105;
+  g.fillStyle='rgba(70,34,56,0.20)';
+  g.beginPath(); g.ellipse(0,py+ps*0.16,ps*1.14,ps*1.06,0,0,7); g.fill();
+  const hg=g.createLinearGradient(-ps,py-ps,ps,py+ps);
+  hg.addColorStop(0,mixHex(ac,'#ffffff',0.46)); hg.addColorStop(1,shade(ac,-24));
+  g.fillStyle=hg;
+  g.beginPath();
+  g.moveTo(0,py+ps*0.92);
+  g.bezierCurveTo(-ps*1.30,py-ps*0.10,-ps*0.58,py-ps*1.02,0,py-ps*0.34);
+  g.bezierCurveTo(ps*0.58,py-ps*1.02,ps*1.30,py-ps*0.10,0,py+ps*0.92);
+  g.closePath(); g.fill();
+  g.fillStyle='rgba(255,255,255,0.62)';
+  g.beginPath(); g.ellipse(-ps*0.36,py-ps*0.28,ps*0.24,ps*0.16,-0.5,0,7); g.fill();
+  g.restore(); }
+
+// 머리 '뒤'에 들어가는 악세서리 자리. 지금은 쓰는 것이 없다(🎧 는 앞에서 직접 그린다).
+function drawAccBack(g,R,cfg){}
+function drawCustomAcc(g,R,cfg,mine,ac){
+  const em=mine.emoji||'🎀', st=ACC_WEAR[em]||'crown', W=WEAR[st];
+  if(ACC_DRAWN[em]){ ACC_DRAWN[em].draw(g,R,cfg,ac); return; }   // 이모지가 아니라 직접 그린다
+  const ink=accInk(em), kind=cfg.kind;
+  // ① 크기는 그 캐릭터 얼굴 폭(KIND_FX.sx)에 맞춘다 — 곰(1.13)과 여자아이(0.94)는 다르다.
+  //    실루엣 폭을 쓰면 강아지 늘어진 귀·토끼 귀까지 머리 폭으로 세어 들쭉날쭉해진다.
+  const wantW=2*kfx(kind).sx*W.w;
+  const px=R*wantW/Math.max(ink.w,0.15);
+  const iw=ink.w*px, ih=ink.h*px;
+  // ② 자리는 물건의 성질에 따라 다르다
+  let xc=0, yc, tp=null;
+  if(st==='mouth'){
+    drawTongue(g,R,cfg);                           // 물고 있으니 혀가 살짝
+    // 사탕이 입에 닿고 막대는 아래쪽으로 — 잉크 왼쪽 위 끝을 입가에 붙인다
+    xc=iw*0.5+R*0.02; yc=mouthY(kind)*R-R*0.02+ih*0.5;
+  } else if(st==='side'){
+    // 옆에 꽂는 것은 그 위치의 머리선에 얹는다 (기본 꽃·리본과 같은 방식)
+    xc=kfx(kind).sx*0.58*R;
+    tp=sideLine(kind)*R;
+    yc=tp+R*W.sink;
+  } else {
+    // 정수리·모자는 '가운데 좁은 띠'의 머리선 위. 물건 폭 전체로 재면 토끼는 귀 끝에,
+    // 고양이는 귀 위에 올라앉아 공중에 뜬다 — 리본은 귀 사이에 놓여야 한다.
+    tp=headCrown(kind)*R;
+    yc=tp+R*W.sink-ih*0.5;
+  }
+  // 빛무리 — 물건 크기를 따라가되 물건보다 작게(크게 하면 분홍 풍선이 된다)
+  const gl=g.createRadialGradient(xc,yc,1,xc,yc,iw*0.60);
+  gl.addColorStop(0,hexA(ac,0.22)); gl.addColorStop(0.55,hexA(ac,0.09)); gl.addColorStop(1,hexA(ac,0));
+  g.fillStyle=gl; g.beginPath(); g.ellipse(xc,yc,iw*0.60,ih*0.58,0,0,7); g.fill();
+  // 머리에 닿는 그늘 — 이게 없으면 아무리 잘 놓아도 스티커처럼 떠 보인다
+  if(tp!=null){ g.fillStyle='rgba(96,48,74,0.14)';
+    g.beginPath(); g.ellipse(xc,tp+R*0.03,iw*0.38,R*0.05,0,0,7); g.fill(); }
+  // ③ 고른 색으로 칠한 물건을 얹는다. 스프라이트 안 잉크 중심을 (xc,yc) 에 맞춘다.
+  const sp=accSprite(em,ac,px), P=sp.width, s=Math.max(8,Math.round(px/2)*2);
+  const dx=xc-(P/2+(ink.left+ink.right)/2*s), dy=yc-(P/2+(ink.top+ink.bot)/2*s);
+  g.save();
+  if(W.tilt){ g.translate(xc,yc); g.rotate(W.tilt); g.translate(-xc,-yc); }
+  // 옅은 물건(☁️)이 흰 캐릭터 위에서 사라지지 않게, 그리고 '얹혀 있다'고 읽히게 그늘 한 겹
+  g.shadowColor='rgba(78,38,62,0.30)'; g.shadowBlur=R*0.07; g.shadowOffsetY=R*0.03;
+  g.drawImage(sp,dx,dy);
+  g.restore(); }
+
+function drawAcc(g,R,cfg){ const ac=cfg.accColor||'#ff5c8a';
+  if(!cfg.acc||cfg.acc==='none') return;           // headShape 가 되돌지 않게 여기서 끊는다
+  const mine=(cfg.acc==='__preview')?{emoji:cfg.accEmoji||'🎀'}:customAccs.find(a=>a.id===cfg.acc);
+  if(mine){ drawCustomAcc(g,R,cfg,mine,ac); return; }
+  // 기본 악세서리 좌표는 고양이 머리에 손으로 맞춘 값이다. 종류마다 정수리 높이와 얼굴
+  // 폭이 다르니 그 차이만큼 묶어서 옮기고 키운다 — 개별 값을 여섯 번 고치지 않는다.
+  // 안경·선글라스는 눈에, 모자는 스스로 정수리를 재서 쓴다 — 묶음으로 옮기지 않는다
+  if(cfg.acc==='glasses'||cfg.acc==='shades'||cfg.acc==='hat'){ drawBuiltinAcc(g,R,cfg,ac); return; }
+  const s=kfx(cfg.kind).sx/kfx('cat').sx;
+  // 옆에 꽂는 것(리본·꽃)은 정수리가 아니라 '그 위치의 머리선'에 얹어야 한다.
+  // 통째로 옮기면 강아지처럼 얼굴이 넓은 애는 리본이 머리 밖 허공에 떠 버렸다.
+  const SIDE={bow:[0.62,-0.72],flower:[0.72,-0.62]};
+  if(SIDE[cfg.acc]){
+    const a=SIDE[cfg.acc], xs=kfx(cfg.kind).sx*SIDE_X;
+    const ys=sideLine(cfg.kind)+0.12;
+    g.save(); g.translate(xs*R,ys*R); g.scale(s,s); g.translate(-a[0]*R,-a[1]*R);
+    drawBuiltinAcc(g,R,cfg,ac); g.restore(); return; }
+  const dy=(headCrown(cfg.kind)-headCrown('cat')*s)*R;
+  g.save(); g.translate(0,dy); g.scale(s,s);
+  drawBuiltinAcc(g,R,cfg,ac);
+  g.restore(); }
+function drawBuiltinAcc(g,R,cfg,ac){
   if(cfg.acc==='bow'){ const bx=R*0.62,by=-R*0.72;g.fillStyle=ac;
     g.beginPath();g.moveTo(bx,by);g.lineTo(bx-R*0.34,by-R*0.2);g.lineTo(bx-R*0.34,by+R*0.2);g.closePath();g.fill();
     g.beginPath();g.moveTo(bx,by);g.lineTo(bx+R*0.34,by-R*0.2);g.lineTo(bx+R*0.34,by+R*0.2);g.closePath();g.fill();
     g.fillStyle=shade(ac,-20);g.beginPath();g.arc(bx,by,R*0.1,0,7);g.fill();
-  } else if(cfg.acc==='hat'){ g.fillStyle=ac;g.fillRect(-R*0.5,-R*1.02,R,R*0.16);g.fillRect(-R*0.34,-R*1.5,R*0.68,R*0.5);g.fillStyle=shade(ac,-25);g.fillRect(-R*0.34,-R*1.12,R*0.68,R*0.1);
-  } else if(cfg.acc==='glasses'){ g.strokeStyle='#4a3a44';g.lineWidth=R*0.06;g.beginPath();g.arc(-R*0.34,-R*0.05,R*0.24,0,7);g.stroke();g.beginPath();g.arc(R*0.34,-R*0.05,R*0.24,0,7);g.stroke();g.beginPath();g.moveTo(-R*0.1,-R*0.05);g.lineTo(R*0.1,-R*0.05);g.stroke();
+  } else if(cfg.acc==='hat'){ drawHat(g,R,cfg,ac);
+  } else if(cfg.acc==='shades'){ drawShades(g,R,cfg,ac);
+  } else if(cfg.acc==='glasses'){ const nf=kfx(cfg.kind), ex=R*nf.eyeGap, ey=-R*0.05, rr=R*Math.max(nf.eyeW*1.55,0.20);
+    g.strokeStyle='#4a3a44';g.lineWidth=R*0.055;
+    g.beginPath();g.arc(-ex,ey,rr,0,7);g.stroke();g.beginPath();g.arc(ex,ey,rr,0,7);g.stroke();
+    g.beginPath();g.moveTo(-ex+rr,ey);g.lineTo(ex-rr,ey);g.stroke();
+    [-1,1].forEach(sd=>{ g.beginPath();g.moveTo(sd*(ex+rr),ey);
+      g.lineTo(sd*Math.min(nf.sx*1.02,1.15)*R,ey-R*0.05);g.stroke(); });
   } else if(cfg.acc==='flower'){ const fx=R*0.72,fy=-R*0.62;g.fillStyle=ac;for(let i=0;i<5;i++){const a=i/5*Math.PI*2;g.beginPath();g.arc(fx+Math.cos(a)*R*0.16,fy+Math.sin(a)*R*0.16,R*0.12,0,7);g.fill();}g.fillStyle='#ffe27a';g.beginPath();g.arc(fx,fy,R*0.11,0,7);g.fill();
   } else if(cfg.acc==='crown'){ const cy=-R*0.92;g.fillStyle='#ffce3d';g.beginPath();g.moveTo(-R*0.5,cy);g.lineTo(-R*0.5,cy-R*0.32);g.lineTo(-R*0.25,cy-R*0.08);g.lineTo(0,cy-R*0.42);g.lineTo(R*0.25,cy-R*0.08);g.lineTo(R*0.5,cy-R*0.32);g.lineTo(R*0.5,cy);g.closePath();g.fill();g.fillStyle='#ff5c8a';[-0.3,0,0.3].forEach(dx=>{g.beginPath();g.arc(dx*R,cy-R*0.04,R*0.06,0,7);g.fill();});
   } else if(cfg.acc==='horns'){ g.fillStyle=ac;hornAt(g,-R*0.62,-R*0.72,R,-1);hornAt(g,R*0.62,-R*0.72,R,1); } }
@@ -1679,14 +2424,58 @@ function buildShop(){
 const ACC_COSTS=[3000,5000,8000,12000,18000];
 function accCost(){ const n=customAccs.length;
   return n<ACC_COSTS.length ? ACC_COSTS[n] : ACC_COSTS[ACC_COSTS.length-1]+8000*(n-ACC_COSTS.length+1); }
-const CA_EMOJIS=['🎀','👑','🌸','⭐','🍓','🧢','🎩','🦋','💎','🍀','🌙','☁️','🔥','🍭','🐚','🎧'];
-const CA_COLORS=['#ff5c8a','#8a5cff','#ffce3d','#4fc65f','#4fa8ff','#ff8a5c','#ffffff','#5a5566'];
-let caEmoji='🎀', caColor='#ff5c8a';
+// 공방에서 만들 수 있는 것.
+// 기본 악세서리(무료)와 겹치는 건 넣지 않는다 — 리본🎀·왕관👑·꽃🌸·모자🎩🧢·안경👓·
+// 선글라스🕶️·뿔😈 은 프로필의 '악세서리'에서 공짜로 고를 수 있다. 여기는 돈 내고 만들
+// 만한 것만 둔다. 어떻게 쓰는 물건인지(머리 위·옆·입)에 따라 묶어서 보여준다.
+// 색을 갈아끼우면 정체를 잃는 것은 넣지 않는다. 🌈무지개·🐞무당벌레처럼 '여러 색이 곧
+// 그 물건'인 것은 한 색으로 칠하면 그냥 덩어리가 된다. 🪄요술봉·🧷핀처럼 가느다란 것도
+// 작게 그리면 뭔지 안 보인다. (실제로 그려 보고 걸렀다)
+const CA_GROUPS=[
+  {label:'✨ 머리 위에', items:['*jl','⭐','💎','🌙','☁️','❄️','🔥','🍄','🧁','🍰','🎈','🎁','🪩','🌻','🎃','🪐']},
+  {label:'🌿 머리 옆에', items:['🦋','🍀','🐚','🍁','🍃','🔔','🐣','🪷']},
+  {label:'🍬 입에 물기', items:['🍓','🍉','🍦','🍥','🍭','🍬','🍡','🍩','🍪','🥕','🍒','🍑','🍇','🧋','🍧','🍮','🥐']},
+  {label:'🎧 두르고 걸기', items:['🎧','*em','*ap','*er','*sc','*bn','*hb','*fl','*nk']},
+];
+const CA_EMOJIS=CA_GROUPS.flatMap(g=>g.items);
+// 색이 물건 자체에 칠해지므로(‘color’ 혼합) 팔레트가 넓을수록 만들 재미가 커진다.
+const CA_COLORS=['#ff5c8a','#ff3b5c','#ff8a5c','#ffb03a','#ffce3d','#f5e663','#8fd94f','#4fc65f',
+  '#3fd1b0','#40dfe6','#4fa8ff','#4a6cff','#8a5cff','#b96cff','#ff6cd6','#ffc0d4',
+  '#ffffff','#cfd6e6','#8f8aa3','#3a3546'];
+let caEmoji='*jl', caColor='#40dfe6';   // 처음 보이는 건 이 게임다운 물건 — 머리 위 젤리
+// 직접 그리는 물건(젤리곰·에어팟·스카프…)은 이모지가 없어서 칩에 그림을 그려 넣는다.
+// 물건마다 놓이는 자리가 달라서(정수리 위 / 귀 옆 / 턱 밑) 한 좌표로는 담을 수 없다.
+// 크게 한 번 그려 보고 칠해진 곳만 잘라서 칩에 맞춘다.
+function accChipImg(em){
+  const N=280, big=document.createElement('canvas'); big.width=big.height=N;
+  const bg=big.getContext('2d');
+  bg.save(); bg.translate(N/2,N/2);
+  ACC_DRAWN[em].draw(bg,64,{kind:'cat',color:'#ffb3c9'},caColor);
+  bg.restore();
+  const d=bg.getImageData(0,0,N,N).data;
+  let x0=N,x1=-1,y0=N,y1=-1;
+  for(let y=0;y<N;y++) for(let x=0;x<N;x++) if(d[((y*N+x)<<2)+3]>16){
+    if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
+  const S=64, c=document.createElement('canvas'); c.width=c.height=S;
+  if(x1<0) return c.toDataURL('image/png');
+  if(ACC_DRAWN[em].half) x0=Math.max(x0,Math.round(N/2)+1);   // 한 쌍 중 오른쪽만
+  const w=x1-x0+1, h=y1-y0+1, k=Math.min((S-6)/w,(S-6)/h);
+  const g=c.getContext('2d');
+  g.drawImage(big,x0,y0,w,h,(S-w*k)/2,(S-h*k)/2,w*k,h*k);
+  return c.toDataURL('image/png'); }
 function buildCreator(){
   const em=$('caEmojis'); if(!em) return; em.innerHTML='';
-  CA_EMOJIS.forEach(e=>{const b=document.createElement('button');
-    b.className='emochip'+(caEmoji===e?' on':'');b.textContent=e;
-    b.onclick=()=>{caEmoji=e;buildCreator();};em.appendChild(b);});
+  // 어떻게 쓰는 물건인지(머리 위·옆·입·두르기)로 묶어서 보여준다. 30개를 한 줄로 늘어놓으면
+  // 뭘 고르는지 알 수 없다.
+  CA_GROUPS.forEach(grp=>{
+    const t=document.createElement('div'); t.className='caGrpLabel'; t.textContent=grp.label;
+    em.appendChild(t);
+    const row=document.createElement('div'); row.className='mini caGrpRow'; em.appendChild(row);
+    grp.items.forEach(e=>{ const b=document.createElement('button');
+      b.className='emochip'+(caEmoji===e?' on':'');
+      if(ACC_DRAWN[e]){ b.innerHTML='<img src="'+accChipImg(e)+'" alt="">'; b.title=ACC_DRAWN[e].label; }
+      else b.textContent=e;
+      b.onclick=()=>{caEmoji=e;buildCreator();}; row.appendChild(b); }); });
   const co=$('caColors'); co.innerHTML='';
   CA_COLORS.forEach(c=>{const b=document.createElement('button');
     b.className='sw'+(caColor===c?' on':'');b.style.background=c;b.title=c;
@@ -1774,6 +2563,8 @@ function openProfile(from){ ensureAudio(); profFrom=from||'startScreen';
 function buildProfile(){
   $('profName').textContent=nick?('🙋 '+nick):'닉네임을 정해주세요';
   $('profCoins').textContent='🪙 '+coins;
+  $('nickWho').textContent='이 기기의 내 번호 '+playerId+' — 같은 기기로 들어오면 같은 사람으로 알아봐요';
+  syncNickInputs(); syncNickUI();
   buildSetupUI();          // 화면이 보이는 중이므로 공방(buildCreator)까지 이어서 그려진다
 }
 let heroT=0;
@@ -2190,7 +2981,7 @@ function gameOver(){
   showScreen('overScreen'); lockOverActions(); startAttract(); }
 
 // ================= Screens & flow =================
-const SCREENS=['startScreen','setupScreen','shopScreen','profileScreen','settingsScreen','attendScreen','rankScreen','battleScreen','netScreen','aiScreen','lobbyScreen','acceptScreen','pauseScreen','overScreen'];
+const SCREENS=['startScreen','setupScreen','shopScreen','profileScreen','chatScreen','settingsScreen','attendScreen','rankScreen','battleScreen','netScreen','aiScreen','lobbyScreen','acceptScreen','pauseScreen','overScreen'];
 function showScreen(id){ if(id!=='overScreen')clearOverLock(); SCREENS.forEach(s=>$(s).classList.add('hide')); if(id)$(id).classList.remove('hide'); }
 // ---- 결과 화면 실수 탭 방지 ----
 // 죽는 순간 화면에 있던 손가락이 '다시 하기'를 눌러 판이 새로 시작되는 사고를 막는다.
@@ -2225,10 +3016,70 @@ function buildCalendar(){
 }
 // ================= 온라인: 닉네임 + 랭킹 =================
 let nick=localStorage.getItem('jelly_nick')||'';
-function saveNick(v){ nick=(v||'').trim().slice(0,10); localStorage.setItem('jelly_nick',nick); syncNickInputs(); }
+// 이름은 신분이다. 아무 때나 바꿀 수 있으면 랭킹·채팅에서 누가 누군지 알 수 없다.
+// 한 번 정하면 잠기고, 바꾸려면 값을 낸다.
+const NICK_FEE=5000;
+let nickSet=(localStorage.getItem('jelly_nick_set')==='1')&&!!nick;
+let nickDraft=nick;              // 정하기 전에 적고 있는 이름
+let nickChanging=false;          // 값을 내고 바꾸는 중인가
+function nickLocked(){ return nickSet&&!!nick; }
+// v 를 내 이름으로 확정한다. 확정하면 잠긴다.
+function saveNick(v){
+  nick=(v||'').trim().slice(0,10); nickDraft=nick;
+  try{ localStorage.setItem('jelly_nick',nick);
+    if(nick){ nickSet=true; localStorage.setItem('jelly_nick_set','1'); } }catch(e){}
+  syncNickInputs(); syncNickUI(); }
+// 아직 확정 안 한 이름(초안). 화면에는 보이지만 내 이름은 아니다.
+function draftNick(v){ if(nickLocked()) return; nickDraft=(v||'').trim().slice(0,10); syncNickInputs(); }
+const NICK_IDS=['nickInput','nickInput2','nickInput3','nickInputO','nickInputL','nickInputN','nickInputP','nickInputC'];
 // 닉네임 입력칸이 화면마다 있으니 한 곳에서 고치면 나머지도 따라간다 (입력 중인 칸은 건드리지 않음)
-function syncNickInputs(){ ['nickInput','nickInput2','nickInput3','nickInputO','nickInputL','nickInputN','nickInputP'].forEach(id=>{
-  const el=$(id); if(el&&el.value!==nick&&document.activeElement!==el)el.value=nick; }); }
+function syncNickInputs(){ const show=nickLocked()?nick:nickDraft;
+  NICK_IDS.forEach(id=>{
+    const el=$(id); if(el&&el.value!==show&&document.activeElement!==el)el.value=show; }); }
+// 잠겨 있으면 칸을 못 고치게 하고, 프로필의 버튼 글자를 상태에 맞춘다.
+function syncNickUI(){
+  const locked=nickLocked();
+  NICK_IDS.forEach(id=>{ const el=$(id); if(!el) return;
+    el.readOnly=locked;
+    el.placeholder=locked?nick:'닉네임을 입력하세요';
+    el.style.opacity=locked?'0.85':''; });
+  const b=$('nickBtn'); if(b){
+    b.textContent=locked?('✏️ 이름 바꾸기 ('+NICK_FEE.toLocaleString()+'🪙)')
+                        :(nickChanging?'✅ 새 이름으로 정하기':'✅ 이 이름으로 정하기');
+    b.classList.toggle('gold',locked); }
+  const h=$('nickHint'); if(h) h.innerHTML=locked
+    ? '🙋 <b>'+escapeHtml(nick)+'</b> — 이 이름이 내 것이에요. 랭킹·채팅에 이 이름으로 올라가요.'
+      +'<br>바꾸려면 <b>🪙 '+NICK_FEE.toLocaleString()+'코인</b>이 들어요.'
+    : '한 번 정하면 <b>이 이름이 내 것</b>이 돼요. 랭킹·채팅에 이 이름으로 올라가요.'
+      +'<br>나중에 바꾸려면 <b>🪙 '+NICK_FEE.toLocaleString()+'코인</b>이 들어요.'; }
+// 잠긴 칸을 눌렀을 때 — 왜 안 고쳐지는지 알려준다
+function nickTapLocked(){ if(nickLocked()) toast('🙋 이름은 내 프로필에서 바꿀 수 있어요 ('+NICK_FEE.toLocaleString()+'🪙)'); }
+// 초안을 확정한다. 값을 내는 경우(바꾸기)는 확인을 한 번 받는다.
+function nickCommitAsk(){
+  const v=(nickDraft||'').trim().slice(0,10);
+  if(!v||v===nick){
+    if(nickChanging){ nickChanging=false; nickSet=!!nick; nickDraft=nick; syncNickInputs(); syncNickUI(); }
+    return; }
+  const fee=nickChanging?NICK_FEE:0;
+  if(fee&&coins<fee){ toast('코인이 부족해요! (🪙 '+fee.toLocaleString()+' 필요)'); return; }
+  showInvite('🙋 이름을 "'+v+'" 로 정할까요?\n'
+    +(fee?('🪙 '+fee.toLocaleString()+'코인이 빠져나가요.'):'한 번 정하면 이 이름이 내 것이 돼요.')
+    +'\n다음에 바꾸려면 🪙 '+NICK_FEE.toLocaleString()+'코인이 들어요.',
+    fee?'바꾸기':'이 이름으로 정하기',
+    ()=>{ if(fee){ coins-=fee; saveEconomy(); $('startCoins').textContent='🪙 '+coins;
+            if($('profCoins')) $('profCoins').textContent='🪙 '+coins; }
+      nickChanging=false; saveNick(v); playLevelUp();
+      toast(fee?('✏️ 이름을 '+v+'(으)로 바꿨어요 (🪙 -'+fee.toLocaleString()+')')
+               :('🙋 반가워요, '+v+'님!')); }); }
+// 이름 바꾸기 — 값은 새 이름을 정할 때 빠진다(그만두면 지금 이름 그대로)
+function nickChangeAsk(){
+  if(!nickLocked()){ nickCommitAsk(); return; }
+  if(coins<NICK_FEE){ toast('코인이 부족해요! (🪙 '+NICK_FEE.toLocaleString()+' 필요)'); return; }
+  showInvite('✏️ 이름을 바꿀까요?\n새 이름을 정할 때 🪙 '+NICK_FEE.toLocaleString()+'코인이 빠져나가요.\n'
+    +'(그만두면 지금 이름 그대로예요)','바꾸기',
+    ()=>{ nickChanging=true; nickSet=false; nickDraft=nick;
+      syncNickInputs(); syncNickUI();
+      const el=$('nickInputP'); if(el){ el.readOnly=false; el.focus(); try{el.select();}catch(e){} } }); }
 function escapeHtml(s){ return (s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
 // "인터넷 연결이 필요해요"는 거짓말이 될 수 있다. 실제로는 SDK를 못 불러온 것
 // (미리보기·사내망의 CSP 차단)일 수도 있으므로 원인을 구분해서 알려준다.
@@ -2295,8 +3146,9 @@ function bestByName(data){
 // 줄 앞에 붙는 얼굴. 내 줄은 지금 내 차림새, 남의 줄은 받아 온 것. 없으면 자리를 비운다.
 function rowAva(name,ch){
   if(name===nick) return avaTag();
-  if(!ch) return '';
-  try{ return avaTag(charSafe(typeof ch==='string'?JSON.parse(ch):ch)); }catch(e){ return ''; } }
+  if(ch){ try{ return avaTag(charSafe(typeof ch==='string'?JSON.parse(ch):ch)); }catch(e){} }
+  const mem=seenGet(name);                          // DB 에 없으면 만난 적 있는 사람인지 본다
+  return mem?avaTag(mem):''; }
 async function scoreRows(board,limit){
   const sel=(chCol===false)?'name,score':'name,score,ch';
   const q=()=>getSupa().from('scores').select(sel)
@@ -2319,9 +3171,17 @@ async function loadLeaderboard(){
     box.innerHTML='<div class="rrow">랭킹 준비 중이에요 (DB 설정 확인)</div>'; return; }
   if(want!==lbMode) return;                         // 그새 탭을 바꿨으면 이 응답은 버린다
   if(!rows.length){ box.innerHTML='<div class="rrow">이 판의 1등이 되어보세요! 🥇</div>'; return; }
-  let h=''; rows.forEach((r,i)=>{ const me=r.name===nick;
+  let h=''; let noFace=0;
+  rows.forEach((r,i)=>{ const me=r.name===nick, av=rowAva(r.name,r.ch);
+    if(!av) noFace++;
     h+='<div class="rrow'+(me?' me':'')+'"><span>'+(['🥇','🥈','🥉'][i]||((i+1)+'.'))+' '+
-       rowAva(r.name,r.ch)+escapeHtml(r.name)+'</span><span>⭐ '+r.score+'</span></div>'; });
+       av+escapeHtml(r.name)+'</span><span>⭐ '+r.score+'</span></div>'; });
+  // 왜 어떤 사람은 얼굴이 없는지 알려 준다. 모르면 '고장'으로 보인다.
+  if(noFace) h+='<div class="tag2" style="text-align:left;margin-top:7px;">'
+    +(chCol===false
+      ? '얼굴이 없는 사람은 <b>아직 못 만난 사람</b>이에요. 모두의 얼굴을 보려면 Supabase 에서 한 줄만 실행해주세요 — <b>alter table scores add column if not exists ch text;</b>'
+      : '얼굴이 없는 사람은 <b>칸이 생기기 전에 올린 기록</b>이에요. 한 판 더 하면 얼굴이 붙어요 🙂')
+    +'</div>';
   box.innerHTML=h;
 }
 // 결과 화면용 — 그 난이도의 남들 순위와 내 위치를 보여준다.
@@ -2370,6 +3230,135 @@ function runBoard(wasNet){
 }
 function noRankMsg(){ $('overLbTitle').textContent='🌍 온라인 랭킹';
   $('overLb').innerHTML='<div class="rrow">🤖 AI 대결은 온라인 랭킹에 올라가지 않아요</div>'; }
+// ================= 실시간 채팅 =================
+// 두 군데가 있다.
+//   월드 채팅  jelly:chat:kr  — 아무나 들어와 이야기하는 한국 서버 방
+//   방 채팅    이미 붙어 있는 방 채널(net.ch)에 {t:'chat'} 로 얹는다 — 새 연결이 필요 없다
+// broadcast 는 지나간 말을 보관하지 않는다(서버에 저장되지 않는다). 그래서 들어온 뒤부터
+// 보이고, 화면을 닫으면 사라진다 — 그 점을 화면에 적어 둔다.
+const CHAT_MAX=60;            // 한 마디 글자 수
+const CHAT_KEEP=60;           // 화면에 남겨 두는 마디 수
+const CHAT_GAP=1200;          // 도배 막기 — 이 간격보다 빨리 보내면 무시
+let chatCh=null, chatMsgs=[], roomMsgs=[], chatLast=0, chatCount=0, chatT=null;
+function chatClean(t){
+  // 줄바꿈·제어문자를 지우고 길이를 자른다. 화면에는 escapeHtml 로만 넣는다.
+  return String(t==null?'':t).replace(/[\u0000-\u001f\u007f\u200b-\u200f\u2028\u2029]/g,' ')
+    .replace(/\s+/g,' ').trim().slice(0,CHAT_MAX); }
+let chatSeq=0;
+function chatId(){ return (myId||'me')+'-'+(++chatSeq); }
+function chatPush(list,m){ list.push(m); while(list.length>CHAT_KEEP) list.shift(); }
+// 회수 — 보낸 사람만 자기 말을 지운다. 받은 쪽에서도 같은 번호를 지운다.
+// broadcast 에는 '누가 보냈는지'를 서버가 보증해 주지 않으므로, 지울 때도 이름을 같이 보고
+// 그 말의 주인과 같을 때만 지운다(채팅 자체와 같은 수준의 믿음이다).
+function chatDrop(list,id,who){
+  const i=list.findIndex(m=>m.id===id);
+  if(i<0) return false;
+  if(who!=null && list[i].name!==who) return false;
+  list.splice(i,1); return true; }
+function chatRender(boxId,list,emptyMsg){
+  const box=$(boxId); if(!box) return;
+  if(!list.length){ box.innerHTML='<div class="csys">'+emptyMsg+'</div>'; return; }
+  const world=(boxId==='chatBox');
+  box.innerHTML=list.map(m=>{
+    if(m.sys) return '<div class="csys">'+escapeHtml(m.text)+'</div>';
+    const me=(m.name===nick&&m.mine);
+    const cfg=m.ch?charSafe(m.ch):((m.name===nick)?character:null);
+    return '<div class="cmsg'+(me?' me':'')+'">'
+      +(cfg?'<img class="ava" src="'+avatarURL(cfg)+'" alt="">':'')
+      +'<div class="cbody"><div class="cwho">'+escapeHtml(m.name||'누군가')+(me?' (나)':'')
+      +(me?'<button class="cdel" data-id="'+escapeHtml(m.id||'')+'" data-w="'+(world?1:0)
+           +'" title="회수">회수</button>':'')+'</div>'
+      +'<div class="ctx">'+escapeHtml(m.text)+'</div></div></div>';
+  }).join('');
+  box.querySelectorAll('.cdel').forEach(b=>b.onclick=()=>chatUnsend(b.dataset.id,b.dataset.w==='1'));
+  box.scrollTop=box.scrollHeight; }
+// 회수 누름 — 내 화면에서 지우고 상대에게도 알린다
+function chatUnsend(id,world){
+  if(!id) return;
+  if(world){
+    if(!chatDrop(chatMsgs,id,nick)) return;
+    if(chatCh){ try{ chatCh.send({type:'broadcast',event:'del',payload:{id:id,name:nick}}); }catch(e){} }
+    chatRender('chatBox',chatMsgs,'첫 마디를 남겨보세요! 💬');
+  } else {
+    if(!chatDrop(roomMsgs,id,nick)) return;
+    netSend({t:'unsay',id:id,name:nick});
+    roomChatRender();
+  }
+  toast('↩️ 메시지를 회수했어요'); }
+function chatCanSend(){
+  if(!nick) return '닉네임을 먼저 정해주세요 🙋';
+  if(!supaReady()) return netWhyOffline();
+  if(performance.now()-chatLast<CHAT_GAP) return '조금 천천히 보내주세요 🐢';
+  return ''; }
+
+// ---- 월드 채팅 ----
+function chatOpen(){ ensureAudio(); showScreen('chatScreen'); syncNickInputs();
+  $('chatNickCard').classList.toggle('hide',!!nick);
+  chatJoin(); chatSyncUI(); chatRender('chatBox',chatMsgs,'첫 마디를 남겨보세요! 💬'); }
+function chatSyncUI(){
+  const why=chatCanSend();
+  $('chatSend').disabled=!!why&&why!=='조금 천천히 보내주세요 🐢';
+  $('chatInput').disabled=!nick;
+  $('chatWho').textContent='🇰🇷 한국 서버 · '+(!supaReady()?netWhyOffline()
+    :(chatCh?('지금 '+chatCount+'명'):'연결 중…'));
+  $('chatHint').innerHTML=nick
+    ? '지나간 이야기는 보관되지 않아요 — <b>들어온 뒤부터</b> 보입니다. 서로 예쁘게 이야기해요 🌷'
+    : '닉네임을 정하면 이야기할 수 있어요. 프로필 사진도 같이 보여요 🙋'; }
+function chatJoin(){
+  if(!supaReady()||chatCh) { chatSyncUI(); return; }
+  chatCh=getSupa().channel('jelly:chat:kr');
+  chatCh.on('broadcast',{event:'msg'},p=>{
+    const m=p&&p.payload; if(!m) return;
+    const text=chatClean(m.text); if(!text) return;
+    const name=chatClean(m.name).slice(0,10)||'누군가';
+    seenPut(name,m.ch);
+    chatPush(chatMsgs,{id:String(m.id||'').slice(0,40),name:name,ch:m.ch,text:text});
+    if(!$('chatScreen').classList.contains('hide')) chatRender('chatBox',chatMsgs,'');
+  });
+  chatCh.on('broadcast',{event:'del'},p=>{     // 상대가 회수했다
+    const d=p&&p.payload; if(!d||!d.id) return;
+    if(chatDrop(chatMsgs,String(d.id).slice(0,40),chatClean(d.name).slice(0,10))
+       && !$('chatScreen').classList.contains('hide')) chatRender('chatBox',chatMsgs,'');
+  });
+  chatCh.on('presence',{event:'sync'},()=>{
+    let n=0; try{ const st=chatCh.presenceState()||{};
+      Object.keys(st).forEach(k=>{ (st[k]||[]).forEach(p=>{ n++; if(p) seenPut(p.n,p.ch); }); });
+    }catch(e){}
+    chatCount=n; if(!$('chatScreen').classList.contains('hide')) chatSyncUI();
+  });
+  chatCh.subscribe(st=>{
+    if(st==='SUBSCRIBED'){ try{ chatCh.track({n:nick||'구경중',ch:charPack()}); }catch(e){} }
+    else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED'){
+      try{ getSupa().removeChannel(chatCh); }catch(e){} chatCh=null;
+      if(!$('chatScreen').classList.contains('hide')) chatT=setTimeout(chatJoin,1800); }
+    chatSyncUI();
+  }); }
+function chatLeave(){ if(chatT){ clearTimeout(chatT); chatT=null; }
+  if(chatCh){ try{ chatCh.untrack(); }catch(e){} try{ getSupa().removeChannel(chatCh); }catch(e){} chatCh=null; }
+  chatCount=0; }
+function chatSay(){
+  const why=chatCanSend(); if(why){ toast(why); chatSyncUI(); return; }
+  const text=chatClean($('chatInput').value); if(!text) return;
+  if(!chatCh){ toast('아직 연결 중이에요 🔌'); return; }
+  chatLast=performance.now(); $('chatInput').value='';
+  const m={id:chatId(),name:nick,ch:charPack(),text:text};
+  try{ chatCh.send({type:'broadcast',event:'msg',payload:m}); }catch(e){}
+  chatPush(chatMsgs,{...m,mine:true});        // 보낸 사람에게는 안 되돌아온다 — 직접 넣는다
+  chatRender('chatBox',chatMsgs,''); }
+
+// ---- 방 안 채팅 ----
+function roomChatRender(){ chatRender('roomChatBox',roomMsgs,'같은 방 친구와 이야기해보세요 💬'); }
+function roomChatSay(){
+  if(!nick){ toast('닉네임을 먼저 정해주세요 🙋'); return; }
+  if(!net.ch){ toast('아직 방에 연결되지 않았어요 🔌'); return; }
+  if(performance.now()-chatLast<CHAT_GAP){ toast('조금 천천히 보내주세요 🐢'); return; }
+  const text=chatClean($('roomChatInput').value); if(!text) return;
+  chatLast=performance.now(); $('roomChatInput').value='';
+  const id=chatId();
+  netSend({t:'chat',id:id,name:nick,char:charPack(),text:text});
+  chatPush(roomMsgs,{id:id,name:nick,ch:charPack(),text:text,mine:true});
+  roomChatRender(); }
+
 // ================= QR 코드 =================
 // 옆에 있는 친구는 코드를 받아 적을 이유가 없다. 스캔하면 끝.
 // 외부 라이브러리는 CSP·오프라인에서 못 쓰니 직접 만든다.
@@ -2597,7 +3586,18 @@ let shieldT=0, revealT=0, bolt=0;                    // 🛡️ 실드 · 🔮 �
 // 예전에는 상대가 한 명(net.foe)이라는 전제로 짜여 있었다. 참가자 목록(net.peers)을
 // 두고, net.foe는 '첫 번째 참가자'로 계속 채운다 — 던지기 게임과 기존 화면이 그대로 돌게.
 const MAX_PLAYERS=4;
+// 번호가 두 가지 필요하다. 하나로 합치면 안 된다.
+//   myId     이번 연결(창)의 번호 — 켤 때마다 새로 만든다. 방 메시지에서 '내가 보낸 것'을
+//            가려내는 데 쓰므로, 기기에 저장하면 같은 기기의 두 창이 같은 번호가 되어
+//            서로의 말을 자기 메시지로 알고 전부 무시한다(실제로 그렇게 깨졌다).
+//   playerId 나를 알아보는 번호 — 기기에 저장한다. 같은 기기로 다시 들어오면 같은 사람이다.
 const myId=(Math.random().toString(36).slice(2,7)+Date.now().toString(36).slice(-3)).toUpperCase();
+const playerId=(function(){
+  let v=null; try{ v=localStorage.getItem('jelly_pid'); }catch(e){}
+  if(!v||v.length<6){
+    v=(Math.random().toString(36).slice(2,7)+Date.now().toString(36).slice(-4)).toUpperCase();
+    try{ localStorage.setItem('jelly_pid',v); }catch(e){} }
+  return v; })();
 function peerList(){ return Object.keys(net.peers||{}).map(k=>net.peers[k]).filter(p=>!p.gone); }
 function peerCount(){ return peerList().length; }
 function playerCount(){ return 1+peerCount(); }          // 나까지
@@ -2619,7 +3619,7 @@ function netRoster(){ if(!net.host) return;
   netSend({t:'roster',ps:peerList().map(p=>({id:p.id,name:p.name,char:p.char}))}); }
 function recvRoster(hostPid,ps){
   if(net.host||!Array.isArray(ps)) return;              // 명부는 방장만 만든다
-  ps.forEach(p=>{ if(p&&p.id&&p.id!==myId) peerUpsert(p.id,{name:p.name,char:p.char,gone:false}); });
+  ps.forEach(p=>{ if(p&&p.id&&p.id!==myId){ peerUpsert(p.id,{name:p.name,char:p.char,gone:false}); seenPut(p.name,p.char); } });
   // 명부에 없으면 나간 사람이다. 단, 판이 도는 중에는 지우지 않는다 — 방장 화면이
   // 한 박자 늦으면 멀쩡한 사람이 사라져 생존자 수가 틀어진다.
   if(!netMode){
@@ -2643,6 +3643,7 @@ function netLeave(){
   aiStop(); hubUnadvertise();
   netMode=false; net.foe=null; net.ready=false; net.foeReady=false; net.foeGone=false;
   net.peers={}; net.order=[]; net.mp=false; net.mpWin=false;   // 참가자 명부를 비운다 — 다음 방에 이전 사람이 남으면 안 된다
+  roomMsgs=[];                                 // 방을 나가면 그 방 이야기도 비운다
   net.room=''; net.status=''; net.statusMsg=''; sdkT0=0;   // 방을 비워야 대기 중인 재시도가 멈춘다
   lobbyStopWait();
 }
@@ -2731,6 +3732,21 @@ function netOnMsg(m){
   if(m.to&&m.to!==myId) return;                   // 남에게 보낸 귓속말
   const pid=m.from||'AI';                         // AI 대결은 보낸 사람 표시가 없다
   net.lastFoe=performance.now(); net.foeGone=false;
+  // 상대가 '한 판 더'를 눌렀다 — 나도 대기실로 돌아간다(방은 그대로다)
+  if(m.t==='again'){
+    if($('lobbyScreen').classList.contains('hide')){
+      toast('🔁 '+(m.name||'친구')+'님이 한 판 더 하고 싶어해요!'); rematch(false); }
+    return; }
+  // 방 채팅 — 이미 붙어 있는 방 채널에 얹혀 온다. hello/hi 블록 안에 두면 도달하지 못한다.
+  if(m.t==='chat'){
+    const text=chatClean(m.text); if(!text) return;
+    const who=chatClean(m.name).slice(0,10)||'친구';
+    seenPut(who,m.char);
+    chatPush(roomMsgs,{id:String(m.id||'').slice(0,40),name:who,ch:m.char,text:text});
+    roomChatRender(); return; }
+  if(m.t==='unsay'){                            // 상대가 방 채팅을 회수했다
+    if(chatDrop(roomMsgs,String(m.id||'').slice(0,40),chatClean(m.name).slice(0,10))) roomChatRender();
+    return; }
   // 대전이 아닌데 오는 게임 메시지는 버린다. 안 버리면 방을 열어둔 채 혼자 하는 판에
   // 상대가 던진 젤리가 날아든다.
   if(!netMode&&!throwerAlive&&['throw','jthrow','jgone','hex','stat','tstat'].indexOf(m.t)>=0) return;
@@ -2750,6 +3766,7 @@ function netOnMsg(m){
       netSend({t:'full',to:pid}); return; }
     const isNew=!net.peers[pid];
     peerUpsert(pid,{name:m.name||'친구',char:m.char,gone:false});
+    seenPut(m.name,m.char);
     netHelloStop();                       // 상대를 알았으니 인사를 멈춘다
     if(m.t==='hello') netSend({t:'hi',name:nick,char:charPack()});   // 늦게 들어온 쪽에 내 정보 전달
     if(net.host){
@@ -2868,7 +3885,9 @@ function hubRead(){
   if(!hub) return [];
   let st={}; try{ st=hub.presenceState()||{}; }catch(e){ return []; }
   const out=[];
-  Object.keys(st).forEach(k=>(st[k]||[]).forEach(p=>{ if(p&&p.room&&p.room!==net.room) out.push(p); }));
+  Object.keys(st).forEach(k=>(st[k]||[]).forEach(p=>{ if(!p||!p.room) return;
+    seenPut(p.name,p.ch);                           // 목록에서 본 사람도 기억해 둔다
+    if(p.room!==net.room) out.push(p); }));
   return out;
 }
 function hubLeave(){ if(hubT){ clearTimeout(hubT); hubT=null; }
@@ -2878,7 +3897,7 @@ function hubLeave(){ if(hubT){ clearTimeout(hubT); hubT=null; }
 function hubAdvertise(){
   if(!hub||!net.room||!net.host||!netPublic||aiOn) return;
   try{ hub.track({room:net.room,name:nick||'누군가',game:netGame,mode:netModeName,role:hostRole,
-    n:playerCount(),max:MAX_PLAYERS}); }catch(e){}
+    n:playerCount(),max:MAX_PLAYERS,ch:charPack()}); }catch(e){}
 }
 function hubUnadvertise(){ if(hub){ try{ hub.untrack(); }catch(e){} } }
 function renderRoomList(){
@@ -3032,7 +4051,9 @@ function aiStart(){
 }
 function aiStop(){ aiOn=false; if(aiT){ clearInterval(aiT); aiT=null; } }
 function aiMatch(){
-  if(!nick) saveNick('나');
+  // 예전에는 이름이 없으면 '나'로 정해 버렸다. 이제 이름은 한 번 정하면 잠기므로
+  // 여기서 몰래 정해 버리면 '나'라는 이름에 갇힌다. AI 대결은 이름 없이도 된다.
+  if(!nick) nickDraft='나';
   netLeave(); hubLeave();
   netSeed=(Math.random()*1e9)>>>0;
   if(!MODES[netModeName]) netModeName=userMode;   // 화면에서 고른 난이도
@@ -3263,7 +4284,9 @@ function renderLobby(){
        '\n코드는 위에 있으니 먼저 친구에게 보내두세요. 연결되면 대전을 시작할 수 있어요.';
   $('lobbyRetryBtn').classList.toggle('hide',net.status==='ok'||net.status==='connecting');
   $('lobbyNickCard').classList.toggle('hide',!!nick);
+  $('roomChatInput').disabled=!nick; roomChatRender();
   if(foe) lobbyStopWait(); else if(!lobbyTickT) lobbyStartWait();
+  $('lobbyAgainTip').classList.toggle('hide',!net.playedOnce);
   const rb=$('lobbyReadyBtn'), ok=(net.status==='ok');
   const others=ps.length, allReady=others>0&&ps.every(p=>p.ready);
   // 방장은 모두 준비되면 '시작하기'가 뜬다. 참가자는 준비만 하면 된다.
@@ -3318,7 +4341,7 @@ function netBeginCountdown(){
   const t=setInterval(()=>{
     n--;
     if(n<=0){ clearInterval(t); $('countWrap').classList.add('hide'); hubUnadvertise();
-      netMode=true; computeRole();
+      netMode=true; net.playedOnce=true; computeRole();
       if(netGame==='throw'&&myRole==='thrower') startThrower(); else startGame();
       return; }
     $('countNum').textContent=n; ensureAudio(); playSquish(n);
@@ -3904,14 +4927,34 @@ function copyText(s,okMsg){ if(navigator.clipboard&&navigator.clipboard.writeTex
 function syncAgainBtn(){
   const b=$('againBtn'); if(!b) return;
   b.textContent = lastPlay.kind==='ai' ? '🤖 AI와 다시'
-                : lastPlay.kind==='online' ? '🔁 다시 매칭'
+                : lastPlay.kind==='online' ? (roomAlive()
+                    ? ('🔁 '+((net.foe&&net.foe.name)||'친구')+'랑 다시')
+                    : '🔁 다시 매칭')
                 : '🔁 다시 하기';
+}
+// 판이 끝나도 방 채널은 그대로 붙어 있다. 그런데 '다시 하기'가 방 만들기 화면으로 되돌려
+// 보내서, 같은 친구랑 한 판 더 하려면 방을 또 파고 코드를 또 보내야 했다. 그럴 필요가 없다.
+function roomAlive(){ return !!(net.ch && net.room && !aiOn && peerCount()>0 && !net.foeGone); }
+// 방을 그대로 두고 대기실로 되돌린다. 점수·준비·탈락 순서만 비운다.
+function rematch(send){
+  if(!roomAlive()){ restoreMode(); openNetMode(lastPlay.game); return; }
+  if(send) netSend({t:'again',name:nick||'친구'});
+  netMode=false; throwerAlive=false; running=false; paused=false;
+  ['hud','audioBar','itemBar','pauseBtn','netBar','throwWrap','throwerView'].forEach(id=>$(id).classList.add('hide'));
+  canvas.style.display='';
+  net.ready=false; net.myOver=false; net.myScore=0; net.myReason='';
+  net.order=[]; net.mp=false; net.mpWin=false; net.target='';
+  net.foeStat={score:0,lives:0};
+  peerList().forEach(p=>{ p.ready=false; p.over=false; p.reason=''; p.score=0; p.lives=0; });
+  restoreMode();
+  if(net.host){ netSeed=(Math.random()*1e9)|0; hubAdvertise(); }   // 다음 판은 새 판으로
+  openLobby();
 }
 function playAgain(){
   if(lastPlay.kind==='ai'){
     netGame=lastPlay.game; hostRole=lastPlay.role||'thrower';
     restoreMode(); aiMatch(); return; }
-  if(lastPlay.kind==='online'){ restoreMode(); openNetMode(lastPlay.game); return; }
+  if(lastPlay.kind==='online'){ rematch(true); return; }
   restoreMode(); startGame();
 }
 function shareResult(){
@@ -4015,18 +5058,31 @@ function openStart(){
   $('throwerView').classList.add('hide'); canvas.style.display='';
   restoreMode();
   showScreen('startScreen'); $('battleResult').classList.add('hide'); const b=bestScore(),el=$('startBest'); if(b>0){el.textContent='🏆 최고기록 '+b+'점';el.classList.remove('hide');}else el.classList.add('hide'); $('startCoins').textContent='🪙 '+coins; checkDaily(); loopHero(); startAttract(); }
-function openSetup(){ showScreen('setupScreen'); buildSetupUI(); loopPreview(); }
+function openSetup(){ chatLeave(); showScreen('setupScreen'); buildSetupUI(); loopPreview(); }
 $('playBtn').onclick=()=>{ensureAudio();openSetup();};
 $('shopBtn').onclick=()=>openShop();
 $('shopBackBtn').onclick=()=>openStart();
 $('profileBtn').onclick=()=>openProfile('startScreen');
+$('chatBtn').onclick=()=>chatOpen();
+$('chatBackBtn').onclick=()=>{ chatLeave(); openStart(); };
+$('chatSend').onclick=()=>chatSay();
+$('chatInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); chatSay(); } });
+// 이름 칸은 전부 같은 방식으로 다룬다 — 글자마다 저장하지 않고(그러면 "카"에서 잠긴다)
+// 칸을 떠나거나 Enter 를 눌렀을 때 확인을 받아 확정한다.
+NICK_IDS.forEach(id=>{ const el=$(id); if(!el) return;
+  el.addEventListener('input',e=>{ draftNick(e.target.value); });
+  el.addEventListener('blur',()=>nickCommitAsk());
+  el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); e.target.blur(); } });
+  el.addEventListener('click',()=>nickTapLocked()); });
+$('nickBtn').onclick=()=>nickChangeAsk();
+$('roomChatSend').onclick=()=>roomChatSay();
+$('roomChatInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); roomChatSay(); } });
 $('shopToProfBtn').onclick=()=>openProfile('shopScreen');
 $('toProfileBtn').onclick=()=>openProfile('setupScreen');
 // 프로필은 홈·창작소·준비하기 세 곳에서 들어온다 — 왔던 곳으로 되돌린다
 $('profBackBtn').onclick=()=>{ if(profFrom==='setupScreen')openSetup();
   else if(profFrom==='shopScreen')openShop(); else openStart(); };
-$('nickInputP').addEventListener('input',e=>{ saveNick(e.target.value);
-  $('profName').textContent=nick?('🙋 '+nick):'닉네임을 정해주세요'; });
+
 $('dailyBtn').onclick=claimDaily;
 $('createBtn').onclick=createCustom;
 $('openSetBtn').onclick=openSettings;
@@ -4054,7 +5110,7 @@ $('roomRefreshBtn').onclick=()=>{ hubEnsure(); if(hub){ hubRooms=hubRead(); } re
 $('netPublicBtn').onclick=()=>{ netPublic=!netPublic; syncPublicBtn();
   if(netPublic){ hubJoin(); hubAdvertise(); } else hubUnadvertise();
   toast(netPublic?'🌍 목록에 공개해요':'🔒 코드를 아는 사람만 들어와요'); };
-$('nickInputN').addEventListener('input',e=>saveNick(e.target.value));
+
 $('throwerHomeBtn').onclick=()=>{ if(giveUpArmed){ giveUpArmed=false; throwerQuit(); } else armGiveUp(); };
 // 무기 버튼은 buildThrowBar()에서 만든다
 $('rankBackBtn').onclick=()=>openStart();
@@ -4083,16 +5139,20 @@ $('lbRefresh').onclick=loadLeaderboard;
 $('joinChBtn').onclick=()=>joinByCode($('chCodeInput').value);
 $('acceptStartBtn').onclick=startAcceptChallenge;
 $('acceptBackBtn').onclick=()=>openStart();
-['nickInput','nickInput2','nickInput3','nickInputO'].forEach(id=>$(id).addEventListener('input',e=>saveNick(e.target.value)));
+
 // 대기실에서 닉네임을 정하면 곧바로 상대에게 알린다
-$('nickInputL').addEventListener('input',e=>{ saveNick(e.target.value);
-  if(net.status==='ok'&&nick) netSend({t:'hello',name:nick,char:charPack()});
+$('nickInputL').addEventListener('input',()=>{ if(net.ch&&nick) netSend({t:'hello',name:nick,char:charPack()});
   renderLobby(); });
 $('homeBtn').onclick=()=>openStart();
 $('shareBtn').onclick=shareResult;
 $('sendChBtn').onclick=sendChallenge;
-$('overNickOk').onclick=()=>{ saveNick($('nickInputO').value); if(!nick){toast('닉네임을 입력해주세요 🙋');return;}
-  $('overNickCard').classList.add('hide'); sendChallenge(); };
+$('overNickOk').onclick=()=>{
+  const v=($('nickInputO').value||'').trim().slice(0,10);
+  if(!v){ toast('닉네임을 입력해주세요 🙋'); return; }
+  if(nickLocked()){ $('overNickCard').classList.add('hide'); sendChallenge(); return; }
+  nickDraft=v; showInvite('🙋 이름을 "'+v+'" 로 정할까요?\n한 번 정하면 이 이름이 내 것이 돼요.\n'
+    +'나중에 바꾸려면 🪙 '+NICK_FEE.toLocaleString()+'코인이 들어요.','이 이름으로 정하기',
+    ()=>{ saveNick(v); $('overNickCard').classList.add('hide'); sendChallenge(); }); };
 window.addEventListener('keydown',e=>{ if(e.key==='Escape'&&running){ paused?resumeGame():pauseGame(); } });
 $('setSound').onclick=toggleSound;
 $('setBgm').onclick=toggleBgm;
@@ -4129,12 +5189,21 @@ window.__auditEach=function(scan){
   const prep={
     shopScreen:()=>{openShop();}, setupScreen:()=>{buildSetupUI();},
     // 프로필은 칩·공방까지 다 채워야 진짜 높이가 나온다 (빈 화면은 넘침을 못 잡는다)
+    chatScreen:()=>{ chatMsgs.length=0;
+      [['젤리왕','안녕! 다들 몇 점이야?'],['하늘','나 방금 32831점 찍었어 🔥'],
+       ['카미','대박 나도 도전한다!!'],['초코','던지기 같이 할 사람 ㅇㅇ']].forEach(([n,t],i)=>
+        chatMsgs.push({name:n,ch:{k:['cat','bear','girl','dog'][i],c:'#ffb3c9',a:'bow',ac:'#ff5c8a'},text:t}));
+      chatSyncUI(); chatRender('chatBox',chatMsgs,''); },
     profileScreen:()=>{ if(!customAccs.length){ const a={id:'ca_demo',label:'별하늘',emoji:'⭐',color:'#8a5cff'};
         customAccs.push(a); ACCS.push({id:a.id,label:a.emoji+' '+a.label,custom:true}); }
       buildProfile(); },
     rankScreen:()=>{lbGame='throw';lbMode='throw_thrower';buildLbTabs();
       $('lbBox').innerHTML='<div class="rrow me"><span>🥇 젤리왕</span><span>⭐ 32831</span></div>';}, netScreen:()=>{openNetMode('throw');},
-    lobbyScreen:()=>{net.room='ABC123';net.foe=null;renderLobby();},
+    lobbyScreen:()=>{net.room='ABC123';net.foe=null;
+      roomMsgs.length=0;
+      roomMsgs.push({name:'젤리왕',ch:{k:'bear',c:'#c9a27a',a:'crown',ac:'#ffce3d'},text:'준비 다 됐어!'});
+      roomMsgs.push({name:'카미',ch:charPack(),text:'좋아 시작하자 🔥'});
+      renderLobby();},
     attendScreen:()=>{buildCalendar();}, settingsScreen:()=>{syncSettingsUI();buildTolUI();},
     overScreen:()=>{renderRank([32831,11224,10085],10085);
       $('overLb').innerHTML='<div class="rrow">🥇 젤리왕 <span>⭐ 32831</span></div>';},
