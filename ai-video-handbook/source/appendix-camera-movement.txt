@@ -1,0 +1,29 @@
+
+=== PAGE 1 ===
+AI CAMERA MOVEMENT KEEPKWAN
+=== PAGE 2 ===
+STATICPANTILT
+CAMERA MOVEMENT
+=== PAGE 3 ===
+TRAKINGTRUCKINGARCING
+CAMERA MOVEMENT
+=== PAGE 4 ===
+CRANEDOLLY / PULL OUTDOLLY / PULL IN
+CAMERA MOVEMENT
+=== PAGE 5 ===
+PROMPT (영상을 위한 추천 프롬프트)Fast Motion:[Shot Type] of [Subject + Action], high speed, motion blur, chaotic, kinetic, hyperkinetic, [Style]Lighting Focused:[Shot Type], [Subject + Action], [Lighting], [Lighting Description]ColorgradeFocus:[Shot Type], [Subject + Action], [Color Grading + Description]Fast Zoom-In:Hyperspeedshot: [Scene]. Camera Movement: Fast ZoomFPV Drone Shot:[Subject]. Hyper-speed fly, dynamic motion, dynamic blur, timelapse, 30x speed. In the style of [Describe Style; ex. cinematic, muted color palette]
+=== PAGE 6 ===
+PROMPT (샷 타입 별 추천 프롬프트)Wide Shot: 전체 장면을 촬영Establishing Shot: 장면 속 위치와 분위기를 촬영Close-Up: 피사체를 근접하게 촬영Extreme Close-Up: 피사체를 매우 근접하게 촬영 Medium Shot: 허리 위쪽에서 바라본 프레임, 균형 잡힌 디테일Long Shot: 넓은 환경 내에서 피사체를 촬영Over-the-Shoulder: 대화 중인 장면, 원근감 추가하는 어깨 너머로 촬영한 장면
+=== PAGE 7 ===
+PROMPT (샷 타입 별 추천 프롬프트)Point of View (POV): 캐릭터의 관점/눈을 통해 바라본 장면Two-Shot: 상호작용을 보여주는 두 캐릭터의 프레임High Angle: 위에서 촬영한 장면Low Angle: 아래에서 촬영한 장면Dutch Angle: 긴장감이나 불안감을 조성하는 기울어진 샷Aerial Shot: 공중에서 촬영한 샷Whip Pan: 역동적인 전환을 위한 빠르고 갑작스러운 팬 샷
+=== PAGE 8 ===
+PROMPT (카메라 모션 별 추천 프롬프트)Pan: 장면을 가로지르는 수평 모션Tilt: 수직 이동Zoom: 더 가까이 또는 더 넓게 볼 수 있도록 초점 거리 조정Tracking: 피사체의 움직임을 부드럽게 따라감Crane:카메라 올리기 또는 내리기Handheld: 손으로 파지한 촬영한 영상, 날 것 그대로의 불안정한 몰입감 추가Steadicam: 이동 중에도 균형잡힌 유연한 움직임Roll: 극적인 방향 전환 효과를 위한 카메라 회전 Rack Focus: 강조를 위해 두 지점 간 초점 이동Push-In: 피사체를 향해 천천히 움직이며 초점 강화Pull-Out: 피사체에서 물러나 거리 만들기Vertigo: 돌리면서 확대하기Arcing: 피사체를 중심으로 카메라 이동
+=== PAGE 9 ===
+PROMPT (카메라 렌즈 별 추천 프롬프트)Prime Lens: 고정 초점 거리, 풍부한 디테일로 선명하고 빠름Zoom Lens: 유연한 프레이밍을 위한 가변 초점 거리 Anamorphic Lens:독특한 보케와 렌즈 플레어가 있는 와이드스크린 화면Wide-Angle Lens: 깊이와 공간을 강조하는 광활한 뷰Telephoto Lens: 거리를 압축하여 피사체를 배경에서 분리Macro Lens: 정교한 디테일의 극한 클로즈업 캡처 Fish-Eye Lens: 창의적인 효과를 위한 매우 넓고 왜곡된 모습 /. 360도 장면 / 핀홀 촬영장면 등 연출 Super 35mm Lens: 균형 잡힌 깊이를 지닌 클래식 시네마틱 스타일Tilt-Shift Lens: 초점면 조정, 축소된 모습 만들기Soft Focus Lens: 피사체 주변에 부드럽고 몽환적인 블러 효과 생성Portrait Lens: 아찔한 보케로 클로즈업에 최적화됨Ultra-Wide Lens: 큰 장면을 위한 드라마틱하고 넓은 원근감 High-Speed Lens: 저조도 환경에서 노이즈를 최소화하며 촬영Vintage Lens: 자연스러운 비네팅과 부드러움으로 개성을 더함
+=== PAGE 10 ===
+PROMPT (카메라 스피드 별 추천 프롬프트)Slow Motion: 슬로우모션Fast Motion: 패스트모션Time-Lapse: 긴 길이의 장면을 빠른 장면으로 압축하여 캡처합니다.Looping Motion: 반복되는 장면Speed Ramp: 빠른 속도에서 느린 속도로 또는 그 반대로 점진적인 속도 변화 Hyperlapse: 동적 카메라 움직임이 포함된 타임랩스 Strobe Motion: 빠른 스타카토 버스트로 고르고 엣지 있는 룩 연출 Natural Dynamic Motion: 부드럽고 연속적인 카메라 움직임
+=== PAGE 11 ===
+PROMPT (조명/빛 타입 별 추천 프롬프트)Fill Light: 그림자를 줄이고 키 라이트의 밸런스를 조정Backlight: 뒤에서 비추는 조명으로 깊이감 만들기Side Light: 그림자로 드라마를 더하고 질감을 강조Hard Light: 높은 콘트라스트 + 그림자를 위한 강력하고 직접적인 조명Soft Light: 부드럽고 돋보이는 효과를 위한 확산 조명Practical Lighting: 씬 내에서 가시광선 사용 Ambient Light: 공간을 채우는 일반적인 빛, 종종 자연광High-Key Lighting: 밝고 콘트라스트가 낮은 조명으로 통풍이 잘되는 분위기 연출Low-Key Lighting: 어둡고 콘트라스트가 높은 조명으로 분위기 있는 룩 연출하기Color Gel Lighting: 조명에 색상을 추가하여 창의적인 효과 구현Motivated Lighting: 자연광을 모방한 조명Rembrandt Lighting: 얼굴 뺨/볼에 드리운 삼각형 빛Silhouette Lighting: 배경을 밝게 하고 피사체는 그림자로 남김
+=== PAGE 12 ===
+@thisiskeepkwan
+thisiskeepkwan@gmail.com

@@ -1,0 +1,146 @@
+
+=== PAGE 1 ===
+일관성을 유지하는
+AI영상 제작
+=== PAGE 2 ===
+PART 2
+스토리
+=== PAGE 3 ===
+CLIP
+기획하고 만드는 AI영상
+스토리보드
+스토리
+=== PAGE 4 ===
+일관성을 유지하는 AI영상 제작
+영상물의 시퀀스를 프레임이나 패널로  구분하여 
+시각화한 문서(화면 구도 / 카메라 앵글 / 시점 / 빛 등을 표현한 스케치도 포함)
+
+=== PAGE 5 ===
+일관성을 유지하는 AI영상 제작
+스토리의 시각화 텍스트로 정리된 이야기를 이미지와 장면으로 시각화하여 정리/전달 가능
+구조와 흐름 정리 영상의 시작부터 끝까지 전달되는 내용을 계획하고 정리
+프롬프트 메모 이미지를 영상으로, 텍스트를 영상으로 생성할 때 필요한 프롬프트를 
+메모하고 적용
+커뮤니케이션 프로젝트 진행 시 협업하는 관계자와 커뮤니케이션 도구로 활용
+결과물 예측 스토리보드 기반으로 상상한 스토리와 결과물 간의 간극을 줄이고 비교 
+검증에 활용
+AI영상을 위한 스토리보드의 역할과 중요성
+=== PAGE 6 ===
+일관성을 유지하는 AI영상 제작
+쇼트(Shot) 씬(Scene) 시퀀스(Sequence)
+영상의 구성단위
+문장(sentence) 문단(paragraph) 장(chapter)
+=== PAGE 7 ===
+일관성을 유지하는 AI영상 제작
+영상의 구성단위
+
+=== PAGE 8 ===
+일관성을 유지하는 AI영상 제작
+카메라 앵글 Camera pull out
+장면 한 여성이 숲 속에서 깨어난다, 아침 햇빛이 주변을 감싸고 있는 장면
+중요포인트 적당한 속도의 카메라 모션, 햇살과 나뭇잎의 움직임
+카메라 앵글 Camera Dolly in
+장면 나뭇잎 사이에서 생각에 잠긴 여성이 천천히 카메라를 바라본다
+중요포인트 눈의 움직임, 시선처리 중요
+AI영상을 위한 스토리보드(초안) 예시
+=== PAGE 9 ===
+일관성을 유지하는 AI영상 제작
+스케치 
+스토리보드
+(초안)
+피드백/반영 생성 이미지 
+스토리보드 결정 영상작업
+AI영상 제작을 위한 커뮤니케이션
+=== PAGE 10 ===
+일관성을 유지하는 AI영상 제작
+AI영상을 위한 스토리보드(초안)
+=== PAGE 11 ===
+일관성을 유지하는 AI영상 제작
+AI영상을 위한 스토리보드(이미지 구성)
+=== PAGE 12 ===
+CLIP
+스토리보드 장면 별 묘사를 위한 
+미드저니 활용법
+스토리
+=== PAGE 13 ===
+일관성을 유지하는 AI영상 제작
+기존 스토리보드 (스케치)
+=== PAGE 14 ===
+일관성을 유지하는 AI영상 제작
+Scene 1 Shot 1
+스토리 스케치
+카메라
+장면묘사
+디테일/메모
+전환효과
+AI영상을 위한 스토리보드 구성
+씬 해당 패널에 해당하는 Scene 번호 기록
+쇼트 해당 패널에 해당하는 Shot 번호 기록
+스토리 생성형AI로 스케치한 Shot 이미지
+카메라 이미지를 영상화 할 때 사용하게 될 카메라 
+앵글/모션
+장면묘사 이미지를 영상화 할 때 필요한 장면 연출
+디테일/메
+모 추가적으로 장면 연출에 필요한 디테일
+전환효과 씬, 시퀀스 사이에 넣게 될 전환효과 
+=== PAGE 15 ===
+일관성을 유지하는 AI영상 제작
+pencil sketch for storyboard, side view and closeup woman's mouth with sunlight 
+casting dramatic shadows on them, background is forest 
+1. 목적 = 스토리보드 2. 장면묘사
+=== PAGE 16 ===
+일관성을 유지하는 AI영상 제작
+Cinematic, film still, side view and closeup woman's mouth with sunlight casting 
+dramatic shadows on them, background is forest, shot on Haseelblad, hyper-realistic
+1. 목적 = 이미지 소스 2. 장면묘사
+
+=== PAGE 17 ===
+일관성을 유지하는 AI영상 제작
+Scene 1 Shot 1
+카메라 pan up, hand held cam
+장면 입술에서 시작하여 카메라가 위로 살짝 움직인다 , 햇살의 움
+직임
+디테일/메모 배경의 잎과 그림자가 움직이면 좋겠다
+전환 Fade to black
+
+=== PAGE 18 ===
+일관성을 유지하는 AI영상 제작
+pencil sketch for storyboard, [각 Shot별 장면 묘사를 위한 스토리 
+입력하는 공간]
+1. 목적 2. 장면묘사 (수정)
+스토리보드용 프롬프트 템플릿화
+pencil sketch for storyboard, side view and closeup woman's mouth with sunlight 
+casting dramatic shadows on them, background is forest 
+1. 목적 2. 장면묘사
+=== PAGE 19 ===
+CLIP
+스토리보드 작성 시 도움되는 팁
+스토리
+=== PAGE 20 ===
+일관성을 유지하는 AI영상 제작
+작업의 단순화 자주 사용하고, 생성했을 때 효과가 좋았던 프롬프트들을 정리해 
+모아두세요.
+템플릿 활용 처음에는 기존 템플릿을 활용하면서, 자신만의 스타일로 된 템플릿을 
+구축하세요.
+적합한 툴 찾기 스토리보드 작성을 돕는 다양한 툴들 중 가장 적합한 툴을 찾으세요.
+커뮤니케이션 자신에게 전달하는 작업 지시서이자, 커뮤니케이션을 위한 도구로 
+사용하세요
+결과물 검토 자신이 기획한 내용과 결과물 간의 간극을 살피면서 검증하며 
+마무리하세요.
+스토리보드 작성 꿀팁
+=== PAGE 21 ===
+일관성을 유지하는 AI영상 제작
+StoryTribe – http://storytribeapp.com
+=== PAGE 22 ===
+일관성을 유지하는 AI영상 제작
+Canva – http://canva.com
+=== PAGE 23 ===
+일관성을 유지하는 AI영상 제작
+Figma – http://figma.com
+=== PAGE 24 ===
+일관성을 유지하는 AI영상 제작
+Powerpoint
+=== PAGE 25 ===
+일관성을 유지하는 AI영상 제작
+봉준호 & 박찬욱 감독 스토리보드북
+봉준호 감독 <기생충> 박찬욱 감독 <헤어질 결심>

@@ -1,0 +1,776 @@
+
+=== PAGE 1 ===
+일관성을 유지하는
+AI영상 제작
+=== PAGE 2 ===
+PART 3
+이미지
+=== PAGE 3 ===
+CLIP
+원하는 장면, 캐릭터를 연출하는
+프롬프트 블록 활용법
+이미지
+=== PAGE 4 ===
+MIDJOURNEY
+어떻게 활용하시나요?
+일관성을 유지하는 AI영상 제작
+=== PAGE 5 ===
+David Holz
+FOUNDER AND CEO
+“인간을 더 상상력이 풍부하게 만드는 것이며
+상상력이 풍부한 기계를 만드는 것이 아닙니다.”
+일관성을 유지하는 AI영상 제작
+=== PAGE 6 ===
+MIDJOURNEY
+중간의… 여정/여행
+일관성을 유지하는 AI영상 제작
+=== PAGE 7 ===
+협업 생성
+인간 AI
+인간의 상상 + AI의 기술
+일관성을 유지하는 AI영상 제작
+=== PAGE 8 ===
+미드저니
+PPT 장표
+썸네일 아트
+현수막/X배너
+스토리보드
+프로토타입
+아이디에이션
+영상 이미지소스
+일관성을 유지하는 AI영상 제작
+=== PAGE 9 ===
+디스코드
+https://discord.com/
+미드저니 웹
+https://www.midjourney.com/
+일관성을 유지하는 AI영상 제작
+=== PAGE 10 ===
+Midjourney 버전 --V 1~6
+V 1 V 2 V 3 V 4 V 5 V 5.1 V 5.2 V 6~6.1
+일관성을 유지하는 AI영상 제작
+=== PAGE 11 ===
+prompt 프롬프트 블록
+일관성을 유지하는 AI영상 제작
+모든 생성형 도구에 활용할 수 있는
+=== PAGE 12 ===
+목적
+스토리
+만드는 도구
+디테일한 묘사
+컬러/무드
+Prompt blocks 
+일관성을 유지하는 AI영상 제작
+=== PAGE 13 ===
+prompt 목적 스토리 만드는 도구 디테일한 묘사 컬러/무드
+일관성을 유지하는 AI영상 제작
+모든 생성형 도구에 활용할 수 있고
+생각한 구상을 프롬프트로 정리할 수 있는
+=== PAGE 14 ===
+어떤 목적의 이미지를 만들까?
+(사진, 일러스트, 유화, 영화장면…)
+이미지 안에는 어떤 이야기를 넣을까?
+(프레임 안에 들어갈 이야기 짓기)
+실제로 만든다면 어떤 도구로 
+써야하나?
+(목적에 맞는 도구를 활용, 사진이라면 카메라)
+이야기를 좀 더 구체적으로 만들자!
+(프레임 안에 들어갈 디테일 추가하기)
+분위기를 만드는 색감은?
+(전체적인 색감과 분위기 설정)
+미드저니 기본 제공 파라미터로 
+마무리
+(--ar / --style raw / --s / --w…)
+1 2
+3 4
+5 6
+일관성을 유지하는 AI영상 제작
+=== PAGE 15 ===
+목적 cinematic, film still
+스토리
+a door in a bedroom leading to a ocean, open the door, a 
+ocean with big waves
+만드는 도구 wide angle, Nikon FA, film grain, kodak potra 400
+디테일한 묘사 Collage posters on the bedroom wall
+컬러/무드 dramatic atmosphere, sunset lighting, natural colors
+파라미터 4:5
+일관성을 유지하는 AI영상 제작
+=== PAGE 16 ===
+목적 cinematic, film still
+스토리
++변화
+a door in a bedroom leading to ocean, a sea of glow blue 
+slime, and waves of glow blue slime entering the bedroom
+만드는 도구 wide angle, Nikon FA, film grain, kodak potra 400
+디테일한 묘사 Collage posters on the bedroom wall
+컬러/무드 dramatic atmosphere, at night
+파라미터 4:5
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 17 ===
+목적 cinematic, film still
+스토리
++장소
+a door in a bathroom leading to a ocean, open the door, a 
+ocean with big waves
+만드는 도구
++도구 변화
+wide angle, shot on Sony A7
+디테일한 묘사
++장소
+One bathtub, one basin
+컬러/무드
++시간대
+dramatic atmosphere, harsh morning sun light, natural colors
+파라미터 4:5
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 18 ===
+목적
++목적의 변화
+masterpiece watercolors painting
+스토리
+a door in a bedroom leading to a ocean, open the door, a 
+ocean with big waves
+만드는 도구
++도구의 변화
+use sable brush, soft blending,
+디테일한 묘사 Collage posters on the bedroom wall
+컬러/무드 dramatic atmosphere, sunset lighting, natural colors
+파라미터 4:5
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 19 ===
+CLIP
+기본적인 카메라 앵글 학습
+이미지
+=== PAGE 20 ===
+일관성을 유지하는 AI영상 제작
+카메라 앵글에 따라 ‘스토리’를 읽을 수 있다.
+=== PAGE 21 ===
+일관성을 유지하는 AI영상 제작
+어떻게 써야할지 모를 때/잘 쓰고 싶을 때
+미드저니를 목적에 따른 도구로 
+생각해보세요.
+prompt 목적 스토리 만드는 도구 디테일한 묘사 컬러/무드
+=== PAGE 22 ===
+일관성을 유지하는 AI영상 제작
+=
+
+=== PAGE 23 ===
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 24 ===
+일관성을 유지하는 AI영상 제작
+Eye level shot / front view (눈높이 / 정면)
+느낌 쟈연스럽고 친숙함, 주제와의 관련성이 높음, 피사체의 
+성격
+사용시기 1인칭 시점, 인물과의 교감, 캐릭터의 소개
+=== PAGE 25 ===
+일관성을 유지하는 AI영상 제작
+Low angle shot from below ( 로우앵글)
+느낌 피사체가 강한 힘을 소유하고, 고압적이고, 지배적인 인상이고, 
+잠재적으로 위협적인 인상
+사용시기 캐릭터의 감정 고조, 권위, 건축물이나 풍경에 대한 경외감, 
+영웅심 전달
+=== PAGE 26 ===
+일관성을 유지하는 AI영상 제작
+high angle shot from above ( 하이앵글)
+느낌 피사체를 무력하게함, 압도 당하는 듯한 느낌, 외로움, 방황 
+사용시기
+넓은 환경에서 목적지 없는 길을 걷는 캐릭터, 갈등 속에서의 
+취약성, 고민, 걱정, 슬픔, 외로움 등 약한 감정 등을 표현 할 때 
+사용
+=== PAGE 27 ===
+일관성을 유지하는 AI영상 제작
+Hip level shot (엉덩이 높이 기준선)
+
+=== PAGE 28 ===
+일관성을 유지하는 AI영상 제작
+Knee level shot (무릎 높이 기준선)
+
+=== PAGE 29 ===
+일관성을 유지하는 AI영상 제작
+Over the shoulder shot (어깨너머)
+
+=== PAGE 30 ===
+일관성을 유지하는 AI영상 제작
+aerial shot (공중 촬영샷)
+
+=== PAGE 31 ===
+일관성을 유지하는 AI영상 제작
+Extreme wide shot / Extreme long shot( 와이드샷/롱샷)
+
+=== PAGE 32 ===
+일관성을 유지하는 AI영상 제작
+Extreme closeup (극단적인 클로즈업)
+
+=== PAGE 33 ===
+일관성을 유지하는 AI영상 제작
+CCTV footage from a high angle camera (CCTV)
+
+=== PAGE 34 ===
+일관성을 유지하는 AI영상 제작
+Shot on Microscope lens (현미경)
+
+=== PAGE 35 ===
+일관성을 유지하는 AI영상 제작
+목적 nature photography
+스토리
+Extreme closeup, side view of Atlantic 
+canary head
+만드는 도구 Macro Shot on Sony A7
+디테일한 묘사 Highly realistic feather
+컬러/무드 minimalist beauty, moody lighting
+파라미터 2:3
+Extreme closeup
+
+=== PAGE 36 ===
+일관성을 유지하는 AI영상 제작
+목적 cinematic film still
+스토리
+Low angle shot from below of a girl is sits on 
+desk in the classroom alone at night
+만드는 도구 Shot on hasselblad
+디테일한 묘사 cinematic lighting, looking sad, 
+컬러/무드 Dark
+파라미터 2:3
+Low angle
+
+=== PAGE 37 ===
+일관성을 유지하는 AI영상 제작
+목적 cinematic film still
+스토리 Aerial shot of frost steampunk city
+만드는 도구 Shot on drone camera
+디테일한 묘사 Smoke and dust
+컬러/무드 Cool colors
+파라미터 2:3Aerial shot
+
+=== PAGE 38 ===
+일관성을 유지하는 AI영상 제작
+목적 Nature photography
+스토리 Macro shot of virus
+만드는 도구 Shot on microscope lenses
+디테일한 묘사 In a dystopian future, apocalypee
+컬러/무드 Black and white colors
+파라미터 4:5Aerial shot
+
+=== PAGE 39 ===
+일관성을 유지하는 AI영상 제작
+다양한 앵글로 촬영된 이미지를 많이 찾아보는 것
+다양한 렌즈로 촬영된 이미지들을 접하는 것
+실제 영화/사진 속 앵글에 담긴 의미를 알아보는 것
+=== PAGE 40 ===
+CLIP
+장면묘사를 위한 카메라 앵글 
+실습
+이미지
+=== PAGE 41 ===
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 42 ===
+일관성을 유지하는 AI영상 제작
+foreground
+background
+=== PAGE 43 ===
+일관성을 유지하는 AI영상 제작
+목적 Cinematic, film still
+스토리
+A scene from the Middle Ages, The grass is 
+lush in the foreground, and a burning castle is 
+faintly visible in the distant background,
+만드는 도구 shot on Haseelblad
+디테일한 묘사 Smoke, cloudy
+컬러/무드 Hyper-realistic
+파라미터 4:5
+=== PAGE 44 ===
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 45 ===
+일관성을 유지하는 AI영상 제작
+목적 Cinematic, film still
+스토리
+Photo taken at a Mediterranean resort, with a 
+shipwreck washed ashore in the blurred 
+background and people in white robes 
+walking along the beach with their hands in 
+prayer in the foreground.
+만드는 도구 shot on Haseelblad
+디테일한 묘사 Surprisingly bright sunshine
+컬러/무드 Hyper-realistic, mysterious atmosphere
+파라미터 4:5
+=== PAGE 46 ===
+일관성을 유지하는 AI영상 제작
+Right side
+Left side
+=== PAGE 47 ===
+일관성을 유지하는 AI영상 제작
+목적 Cinematic, film still
+스토리
+Photo taken at a Mediterranean resort, with a 
+shipwreck washed ashore in the right side and 
+people in white robes walking along the 
+beach with their hands in prayer in the left 
+side.
+만드는 도구 shot on Haseelblad
+디테일한 묘사 Surprisingly bright sunshine
+컬러/무드 Hyper-realistic, mysterious atmosphere
+파라미터 4:5
+=== PAGE 48 ===
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 49 ===
+일관성을 유지하는 AI영상 제작
+POV
+Point of view
+=== PAGE 50 ===
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 51 ===
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 52 ===
+일관성을 유지하는 AI영상 제작
+목적 bodycam screenshot
+스토리
+POV shot, police chase holding a gun, tiger is 
+running toward me 
+만드는 도구
+fast move, policeman POV from chest bodycam on 
+1.5m height
+디테일한 묘사 supermarket aisle
+컬러/무드 bodycam footage, photorealistic
+파라미터 3:4
+
+=== PAGE 53 ===
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 54 ===
+일관성을 유지하는 AI영상 제작
+Aerial shot
+Drone perspective
+Bird eye view
+=== PAGE 55 ===
+일관성을 유지하는 AI영상 제작
+목적 Landscape photography
+스토리 Bird eye view, Antarctica's frozen coastline 
+만드는 도구 Bird perspective
+디테일한 묘사 A view from a high altitude 
+컬러/무드 Hyper-realistic colored photography, fresh
+파라미터 3:4
+=== PAGE 56 ===
+일관성을 유지하는 AI영상 제작
+VHS Instant Camera
+ Super 8
+ Holga
+Analogue photography
+=== PAGE 57 ===
+일관성을 유지하는 AI영상 제작
+목적 Analog photography
+스토리 A girl dressed in 70s fashion
+만드는 도구 Shot on Super 8
+디테일한 묘사 Background is simple
+컬러/무드 Analogue aesthetic
+파라미터 3:4
+Super 8
+
+=== PAGE 58 ===
+일관성을 유지하는 AI영상 제작
+Instant polaroid + 프린팅 기법 (Chemical Splattering)
+
+=== PAGE 59 ===
+일관성을 유지하는 AI영상 제작
+Chemical Splattering Cyanotype
+ Paper toning
+ Fire toning
+Instant polaroid + 프린팅 기법
+=== PAGE 60 ===
+일관성을 유지하는 AI영상 제작
+목적 Analog photography
+스토리 A girl dressed in 70s fashion
+만드는 도구
+Shot on Instant Polaroid,
+printing chemical splattering
+디테일한 묘사 Background is simple
+컬러/무드 Analogue aesthetic
+파라미터 --ar 3:4
+Instant Porlaroid
++ Chemical splattering 
+
+=== PAGE 61 ===
+일관성을 유지하는 AI영상 제작
+Satellite view Google street view isometric Radiographic image
+
+=== PAGE 62 ===
+CLIP
+캐릭터를 위한 카메라 앵글 실습
+이미지
+=== PAGE 63 ===
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 64 ===
+일관성을 유지하는 AI영상 제작
+목적 Vogue Editorial photography
+스토리
+front view of portrait of
+, a celtic male model with slicked back hair, wearing 
+suit style of Alexander McQueen
+만드는 도구 Shot on Nikon Z9
+디테일한 묘사 Background is white
+컬러/무드 in a hyper realistic, detailed style.
+파라미터 3:4
+=== PAGE 65 ===
+일관성을 유지하는 AI영상 제작
+목적 Vogue Editorial photography
+스토리
+Right side view of portrait of
+a celtic male model with slicked back hair, wearing 
+suit style of Alexander McQueen
+만드는 도구 Shot on Nikon Z9
+디테일한 묘사 Background is white
+컬러/무드 in a hyper realistic, detailed style.
+파라미터 3:4
+=== PAGE 66 ===
+일관성을 유지하는 AI영상 제작
+목적 Vogue Editorial photography
+스토리
+Back view of portrait of a celtic male model with 
+slicked back hair, wearing suit style of Alexander 
+McQueen
+만드는 도구 Shot on Nikon Z9
+디테일한 묘사 Background is white
+컬러/무드 in a hyper realistic, detailed style.
+파라미터 3:4
+=== PAGE 67 ===
+일관성을 유지하는 AI영상 제작
+목적 Vogue Editorial photography
+스토리
+full shot, Fullbody, a celtic male model with slicked 
+back hair, wearing suit style of Alexander McQueen
+만드는 도구 Shot on Nikon Z9
+디테일한 묘사 Background is white
+컬러/무드 in a hyper realistic, detailed style.
+파라미터 3:4
+=== PAGE 68 ===
+일관성을 유지하는 AI영상 제작
+목적 Vogue Editorial photography
+스토리
+Extreme closeup of face of a celtic male model with 
+slicked back hair, wearing suit style of Alexander 
+McQueen
+만드는 도구 Shot on Nikon Z9
+디테일한 묘사 Background is white
+컬러/무드 in a hyper realistic, detailed style.
+파라미터 3:4
+=== PAGE 69 ===
+일관성을 유지하는 AI영상 제작
+목적 Vogue Editorial photography
+스토리
+Hight angle shot from above, a celtic male model 
+with slicked back hair, wearing suit style of Alexander 
+McQueen
+만드는 도구 Shot on Nikon Z9
+디테일한 묘사 Background is white
+컬러/무드 in a hyper realistic, detailed style.
+파라미터 3:4
+=== PAGE 70 ===
+일관성을 유지하는 AI영상 제작
+목적 Vogue Editorial photography
+스토리
+Low angle shot from below, a celtic male model with 
+slicked back hair, wearing suit style of Alexander 
+McQueen
+만드는 도구 Shot on Nikon Z9
+디테일한 묘사 Background is white
+컬러/무드 in a hyper realistic, detailed style.
+파라미터 3:4
+=== PAGE 71 ===
+일관성을 유지하는 AI영상 제작
+목적 Vogue Editorial photography
+스토리
+Crowd shot, a celtic male model with slicked back hair, 
+wearing suit style of Alexander McQueen, on the 
+street
+만드는 도구 Shot on Nikon Z9
+디테일한 묘사 Motion blur
+컬러/무드 in a hyper realistic, detailed style.
+파라미터 3:4
+=== PAGE 72 ===
+일관성을 유지하는 AI영상 제작
+Crowd shot Motion blur Looking back Crowd shot Motion blur Back view
+Crowd shot Motion blur High angle Motion blur Low angle
+=== PAGE 73 ===
+CLIP
+효과적인 빛 연출 실습
+이미지
+=== PAGE 74 ===
+일관성을 유지하는 AI영상 제작
+Abstract shadow pattern Lens flare Motion blur
+=== PAGE 75 ===
+일관성을 유지하는 AI영상 제작
+Subsurface scattering Reflection effect Crystal lighting
+=== PAGE 76 ===
+일관성을 유지하는 AI영상 제작
+목적 cinematic, movie still
+스토리
+a female character She's looking out through the 
+window with a depressed expression on her face
+만드는 도구 Shot on Arricam studio cinema camera
+디테일한 묘사 subsurface scattering
+컬러/무드 surreal and exaggerated
+파라미터 3:4
+=== PAGE 77 ===
+일관성을 유지하는 AI영상 제작
+Shimmering lighting effect
+ prismatic holographic
+=== PAGE 78 ===
+일관성을 유지하는 AI영상 제작
+Harsh sun light moonlight sunset
+
+=== PAGE 79 ===
+일관성을 유지하는 AI영상 제작
+Disposable camera with flash Golden hour Blue hour
+=== PAGE 80 ===
+CLIP
+미드저니를 활용한 
+일관된 장면 연출 실습
+이미지
+=== PAGE 81 ===
+Flat vector graphic illustration , holding a mobile man A man sits in a sofa in 
+his living room, simple shapes and lines, a sunset outside living room's 
+window, flat colors, cozy
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 82 ===
+목적 스토리 만드는 도구 디테일 묘사 컬러/무드
+Flat vector graphic 
+illustration
+holding a mobile man A 
+man sits in a sofa in his 
+living room
+simple shapes and lines
+a sunset outside living 
+room's window 
+Flat colors, cozy
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 83 ===
+일관성을 유지하는 AI영상 제작
+일관된 스타일 – 스타일 레퍼런스
+=== PAGE 84 ===
+목적 스토리 만드는 도구 디테일 묘사 컬러/무드 스타일 레퍼런스
+Flat vector graphic 
+illustration
+holding a mobile man 
+A man sits in a sofa in 
+his living room
+simple shapes and 
+lines
+a sunset outside living 
+room's window 
+Flat colors, cozy --sref 3322162017
+일관성을 유지하는 AI영상 제작
+=== PAGE 85 ===
+일관성을 유지하는 AI영상 제작
+목적 스토리 만드는 도구 디테일 묘사 컬러/무드 스타일 레퍼런스
+Cinematic, filmstill
+Korean man is holding 
+a mobile and sitting in 
+an airplane seat
+Shot on Hasselblad
+Window seat on an 
+airplane, blue sky 
+beyond the window. 
+moody --sref 469710847
+
+=== PAGE 86 ===
+일관성을 유지하는 AI영상 제작
+목적 스토리 만드는 도구 디테일 묘사 컬러/무드 스타일 레퍼런스
+Cinematic, filmstill
+Korean man is holding 
+a mobile and sitting in 
+an airplane seat
+Shot on Hasselblad
+Window seat on an 
+airplane, blue sky 
+beyond the window. 
+moody --sref 469710847
+=== PAGE 87 ===
+--sref random
+일관성을 유지하는 AI영상 제작
+=== PAGE 88 ===
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 89 ===
+CLIP
+등장인물로 활용할 수 있는
+캐릭터 생성법
+이미지
+=== PAGE 90 ===
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 91 ===
+일관성을 유지하는 AI영상 제작
+목적 Portrait photography
+스토리
+Half body of eastern european man dressed in black 
+suit without black tie, Deep-set eyes, white skin, light 
+beards, Arms crossed, head turned, looking at the 
+viewer
+만드는 도구 Shot on Nikon FA
+디테일한 묘사 Backgorund is classic gallery
+컬러/무드 Film grain
+파라미터 4:5
+=== PAGE 92 ===
+일관성을 유지하는 AI영상 제작
+목적 Portrait photography
+스토리
+Half body of eastern european man dressed in black 
+suit without black tie, Deep-set eyes, white skin, light 
+beards, Arms crossed, head turned, looking at the 
+viewer
+만드는 도구 Shot on Nikon Z9
+디테일한 묘사 Backgorund is classic gallery
+컬러/무드 Film grain
+파라미터 4:5
+인종, 피부톤, 헤어스타일, 복장, 포즈 등
+캐릭터를 활용하게 될 작품의 형태
+
+=== PAGE 93 ===
+일관성을 유지하는 AI영상 제작
+CREF
+=== PAGE 94 ===
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 95 ===
+일관성을 유지하는 AI영상 제작
+Low angle shot Side view Over head shot Half body
+High angle shot Back view Low  angle shot closeup
+=== PAGE 96 ===
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 97 ===
+CLIP
+캐릭터 외모/의상을 위한 
+프롬프트
+이미지
+=== PAGE 98 ===
+일관성을 유지하는 AI영상 제작
+인종
+ 
+민족
+ 
+피부
+ 
+헤어스타일
+ 
+감정
+ 
+의상
+ 
+카메라
+=== PAGE 99 ===
+일관성을 유지하는 AI영상 제작
+아시아인 (Asians):
+한족 (Han Chinese)
+일본인 (Japanese)
+한국인 (Korean)
+인도인 (Indian)
+아랍인 (Arab)
+유럽인 (Europeans):
+슬라브족 (Slavs)
+게르만족 (Germans)
+로망족 (Romance)
+켈트족 (Celts)
+아프리카인 (Africans):
+베르베르족 (Berbers)
+수단족 (Sudanese)
+줄루족 (Zulu)
+하우사족 (Hausa)
+오세아니아  (Oceanians)
+마오리족 (Māori)
+사모아족 (Samoans)
+하와이안 (Hawaiians)
+아메리카 원주민 (Native Americans):
+나바호족 (Navajo)
+체로키족 (Cherokee)
+인위족 (Inuit)
+마야족 (Maya)
+=== PAGE 100 ===
+일관성을 유지하는 AI영상 제작
+목적 Editorial photography
+스토리
+Close up portrait of a arabic male model with slicked 
+back hair, wearing trendy jacket by Balenciaga, he is 
+angry
+만드는 도구 Shot on Hasselblad
+디테일한 묘사 Background is white
+컬러/무드 in a hyper realistic, detailed style
+파라미터 4:5
+=== PAGE 101 ===
+일관성을 유지하는 AI영상 제작
+목적 Editorial photography
+스토리
+Close up portrait of a american male model with 
+slicked back hair, wearing trendy jacket by Balenciaga, 
+he is laughing
+만드는 도구 Shot on Hasselblad
+디테일한 묘사 Background is white
+컬러/무드 in a hyper realistic, detailed style
+파라미터 4:5
+=== PAGE 102 ===
+일관성을 유지하는 AI영상 제작
+목적 Editorial photography
+스토리
+Close up portrait of a korean male model with slicked 
+back hair, wearing trendy jacket by Balenciaga, he is 
+crying
+만드는 도구 Shot on Hasselblad
+디테일한 묘사 Background is white
+컬러/무드 in a hyper realistic, detailed style
+파라미터 4:5
+=== PAGE 103 ===
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 104 ===
+일관성을 유지하는 AI영상 제작
+목적 cinematic movie still cut
+스토리
+extreme wide shot, a celtic female model with back 
+hair, blue eyes, wearing medieval Full plate armor with 
+metal and ceramic, She's sitting on a rock, She sits 
+with her mouth open in a daze
+만드는 도구 shot on Arricam studio 35mm
+디테일한 묘사
+knights fallen in the mud in the foreground, a blurred 
+ruined castle wall in the background, and the sky is 
+dark
+컬러/무드 in a hyper realistic, detailed style, moody
+파라미터 4:5
+=== PAGE 105 ===
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 106 ===
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 107 ===
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 108 ===
+일관성을 유지하는 AI영상 제작
+White puritan collar
+Power shoulder
+Black full skirt dress (celtic style)
+Celtic woman 
+model
+=== PAGE 109 ===
+일관성을 유지하는 AI영상 제작
+White puritan collar Power shoulder
+Black full skirt dress (celtic style)
+Young Celtic woman
+Cathedral hallwayLow angle shot from below
+=== PAGE 110 ===
+일관성을 유지하는 AI영상 제작
+
+=== PAGE 111 ===
+일관성을 유지하는 AI영상 제작
