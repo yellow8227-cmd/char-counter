@@ -1084,6 +1084,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     <div class="row" id="tgpick" style="margin-bottom:14px">
       <span class="mini" style="margin:0 4px 0 0">어디에 쓰실 건가요</span>
       <label class="chip on" data-tgset="mj">미드저니 <em class="pay">유료</em></label>
+      <label class="chip" data-tgset="rw">런웨이 · 클링 <em class="pay">유료</em></label>
       <label class="chip" data-tgset="veo">Veo / Flow <em class="pay">유료</em></label>
       <label class="chip" data-tgset="gen">그 외 이미지 AI <em class="free">무료 있음</em></label>
     </div>
@@ -1092,6 +1093,8 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <span class="mini" style="margin:0 2px 0 0">그냥 사이트만 열기</span>
       <a class="btn sm gh" href="https://www.midjourney.com/imagine" target="_blank" rel="noopener">미드저니 ↗</a>
       <a class="btn sm gh" href="https://discord.com/channels/@me" target="_blank" rel="noopener">디스코드 ↗</a>
+      <a class="btn sm gh" href="https://runwayml.com" target="_blank" rel="noopener">런웨이 ↗</a>
+      <a class="btn sm gh" href="https://klingai.com" target="_blank" rel="noopener">클링 ↗</a>
       <a class="btn sm gh" href="https://labs.google/fx/tools/flow" target="_blank" rel="noopener">Flow ↗</a>
       <a class="btn sm gh" href="https://labs.google/fx/tools/image-fx" target="_blank" rel="noopener">ImageFX ↗</a>
       <a class="btn sm gh" href="https://www.bing.com/images/create" target="_blank" rel="noopener">Bing ↗</a>
@@ -1117,11 +1120,16 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
         <div class="rule">무엇으로 보이게 할까요 — 이게 결과를 가장 크게 바꿉니다</div>
         <div class="grid g4">
           <label class="f"><span>매체 · 장르</span><select id="v-medium"></select></label>
-          <label class="f"><span>카메라 · 필름</span><select id="v-cam"></select></label>
+          <label class="f" id="cell-cam"><span>카메라 · 필름</span><select id="v-cam"></select></label>
+          <label class="f" id="cell-tool" style="display:none"><span>만드는 도구</span><select id="v-tool"></select></label>
           <label class="f"><span>시대</span><select id="v-era"></select></label>
           <label class="f"><span>구도</span><select id="v-comp"></select></label>
         </div>
         <p class="mini" id="mjhead" style="margin:-4px 0 0"></p>
+        <div class="row" style="margin-top:10px">
+          <button class="btn sm" id="v-sbtog">스토리보드용으로 보기</button>
+          <span class="mini" style="margin:0">같은 장면묘사 그대로, <b>맨 앞 목적만</b> 연필 스케치로 바꿉니다 — 확정되면 다시 눌러 실제 소스로</span>
+        </div>
 
         <details class="faq" style="margin:14px 0 0">
           <summary>같은 스타일로 계속 뽑기 — <code>--sref</code> · <code>--oref</code> <span class="tagx">일관성</span></summary>
@@ -1186,6 +1194,19 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       </div>
     </div>
 
+    <div class="card pcard fold" data-tg="rw">
+      <div class="outhd tgbar"><b>런웨이 · 클링</b><span class="k">한 문장 · 카메라 동작이 맨 앞</span></div>
+      <div class="tgbody">
+        <div class="out empty2" id="o-rw">컷을 선택하세요</div>
+        <div class="row" style="margin-top:13px">
+          <a class="btn pri" href="https://runwayml.com" target="_blank" rel="noopener" data-open="runway">복사하고 런웨이 열기</a>
+          <a class="btn" href="https://klingai.com" target="_blank" rel="noopener" data-open="kling">클링 열기 ↗</a>
+          <button class="btn" data-copy="o-rw">복사만</button>
+        </div>
+        <p class="mini">이미지를 시작 프레임으로 넣을 땐 <b>카메라 방향과 사건을 한 문장에</b> 담으세요 —
+        「Move the camera to the left, a man is rowing a boat」처럼요.</p>
+      </div>
+    </div>
     <div class="card pcard fold" data-tg="veo">
       <div class="outhd tgbar"><b>Veo / Flow</b><span class="k">서술형 · 움직임과 소리 포함</span></div>
       <div class="tgbody">
@@ -1320,7 +1341,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v9 · 2026-08-11</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v10 · 2026-08-17</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -1458,22 +1479,61 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
 
 /* ---------- 어휘표: 한글 라벨 → 영문 프롬프트 구문 ---------- */
 const SHOT = {
-  '':'', '익스트림 롱샷':'extreme wide shot','롱샷 (풀샷)':'wide shot','풀샷':'full body shot',
+  '':'', '익스트림 롱샷':'extreme wide shot','설정샷 (장소 소개)':'establishing shot',
+  '롱샷 (풀샷)':'wide shot','풀샷':'full body shot',
   '미디엄 롱샷':'medium long shot','미디엄샷':'medium shot','미디엄 클로즈업':'medium close-up',
   '클로즈업':'close-up shot','익스트림 클로즈업':'extreme close-up','오버 더 숄더':'over-the-shoulder shot',
   '투샷':'two shot','POV (주관)':'point-of-view shot','인서트':'insert shot, tight detail'
 };
 const ANGLE = {
   '':'', '아이레벨':'eye-level angle','하이앵글':'high angle looking down','로우앵글':'low angle looking up',
+  '힙 레벨':'hip level shot','니 레벨':'knee level shot',
   '버드아이 (부감)':"bird's-eye view","웜즈아이 (앙각)":"worm's-eye view",'더치앵글':'dutch angle, tilted horizon',
-  '오버헤드 (직부감)':'overhead top-down shot','프로파일 (측면)':'profile side view'
+  '오버헤드 (직부감)':'overhead top-down shot','프로파일 (측면)':'profile side view',
+  '드론 (공중)':'aerial shot, drone perspective','바디캠 POV':'bodycam footage, POV shot',
+  'CCTV':'CCTV footage from a high angle camera','위성 뷰':'satellite view',
+  '구글 스트리트뷰':'google street view','아이소메트릭':'isometric view','엑스레이':'radiographic image'
 };
 const MOVE = {
   '':'', '고정':'static locked-off camera','팬':'slow horizontal pan','틸트':'vertical tilt',
   '달리 인':'slow dolly in toward the subject','달리 아웃':'slow dolly out away from the subject',
-  '트래킹':'tracking shot following the subject','크레인 업':'crane shot rising upward',
+  '풀 백':'pull back','푸시 인':'gentle push in',
+  '트래킹':'tracking shot following the subject','트러킹 (좌우 이동)':'trucking shot moving sideways',
+  '크레인 업':'crane shot rising upward','크레인 다운':'crane shot descending',
   '핸드헬드':'handheld camera, subtle shake','스테디캠':'smooth steadicam glide',
-  '줌 인':'slow zoom in','아크 (회전)':'arc shot orbiting the subject','푸시 인':'gentle push in'
+  '줌 인':'slow zoom in','줌 아웃':'slow zoom out','아크 (회전)':'arc shot orbiting the subject',
+  '휩 팬 (급전환)':'whip pan','FPV 드론':'FPV drone shot flying through'
+};
+/* 런웨이·클링은 카메라 동작이 문장 맨 앞에 오는 게 잘 먹힌다.
+   「A cinematic pull back of …」 — 그래서 짧은 표기를 따로 둔다. (필기 Part 4) */
+const MOVE_RW = {
+  '':'shot','고정':'static shot','팬':'pan','틸트':'tilt','달리 인':'dolly in','달리 아웃':'dolly out',
+  '풀 백':'pull back','푸시 인':'fast push in','트래킹':'tracking shot','트러킹 (좌우 이동)':'trucking shot',
+  '크레인 업':'crane up','크레인 다운':'crane down','핸드헬드':'handheld shot','스테디캠':'steadicam glide',
+  '줌 인':'zoom in','줌 아웃':'zoom out','아크 (회전)':'arc shot','휩 팬 (급전환)':'whip pan',
+  'FPV 드론':'FPV hyper-speed fly through'
+};
+/* 카메라 속도 — 무브먼트와 짝을 이룬다 (필기 부록 A) */
+const SPEED = {
+  '':'', '슬로우모션':'slow motion','패스트모션':'fast motion','타임랩스':'timelapse',
+  '하이퍼랩스':'hyperlapse, dynamic camera movement','하이퍼스피드':'hyper speed, dynamic blur',
+  '스피드 램프':'speed ramp from fast to slow','스트로브':'strobe motion, staccato bursts',
+  '자연스러운 움직임':'natural dynamic motion','반복 루프':'looping motion'
+};
+/* 트리거 — 화면 안에서 「사건」이 일어나게 하는 동사.
+   이게 없으면 카메라만 움직이고 장면은 그대로 있는다. (필기 Part 4) */
+const TRIGGER = {
+  '':'', '갑자기 나타난다':'suddenly emerges','서서히 빛나기 시작한다':'begins to glow',
+  '빨려 들어간다':'is quickly sucked in','무너져 내린다':'collapses','밀려든다':'floods in',
+  '피어오른다':'rises and unfurls','솟아오른다':'erupts upward','흩어진다':'scatters apart',
+  '천천히 변한다':'slowly transforms','열린다':'opens up','글자가 새겨진다':'spells out letters across the frame'
+};
+/* 빛 · 질감 효과 — 조명 「타입」과 별개로 얹는 연출 (필기 Part 3) */
+const FX = {
+  '':'', '렌즈 플레어':'lens flare','모션 블러':'motion blur','그림자 패턴':'abstract shadow pattern',
+  '표면 산란 (반투명)':'subsurface scattering','반사':'reflection effect','크리스탈 라이팅':'crystal lighting',
+  '반짝임':'shimmering lighting effect','프리즘 홀로그램':'prismatic holographic',
+  '필름 그레인':'film grain','블룸':'soft bloom','안개':'atmospheric haze'
 };
 const LENS = {
   '':'', '14mm 초광각':'14mm ultra-wide lens, heavy perspective','24mm 광각':'24mm wide-angle lens',
@@ -1482,13 +1542,18 @@ const LENS = {
   '아나모픽':'anamorphic lens, horizontal flares, oval bokeh'
 };
 const LIGHT = {
-  '':'', '자연광':'natural daylight','골든아워':'golden hour, warm low sunlight',
+  '':'', '자연광':'natural daylight','앰비언트':'ambient light filling the space',
+  '필라이트':'fill light softening the shadows','사이드라이트':'side light, texture and drama',
+  '프랙티컬 (화면 안 조명)':'practical lighting from lamps in the scene',
+  '모티베이티드':'motivated lighting imitating natural light',
+  '컬러 젤':'color gel lighting','골든아워':'golden hour, warm low sunlight',
   '블루아워':'blue hour twilight, cool ambient','하드라이트':'hard directional light, sharp shadows',
   '소프트라이트':'soft diffused light','렘브란트':'Rembrandt lighting','역광 (백라이트)':'strong backlight, glowing rim light',
   '실루엣':'silhouette against a bright background','로우키':'low-key lighting, deep shadows, high contrast',
   '하이키':'high-key lighting, bright and airy','네온':'neon practical lights, cyan and magenta glow',
   '촛불':'warm flickering candlelight','형광등':'cold fluorescent overhead light','달빛':'cool blue moonlight',
-  '자동차 헤드라이트':'harsh headlights cutting through darkness'
+  '자동차 헤드라이트':'harsh headlights cutting through darkness',
+  '강한 햇빛':'harsh sun light','일회용 카메라 플래시':'disposable camera with flash'
 };
 const TIME = {
   '':'', '새벽':'at dawn','아침':'in the morning','정오':'at midday','오후':'in the afternoon',
@@ -1504,16 +1569,43 @@ const MOOD = {
    같은 장면이라도 「영화 스틸」인지 「스토리보드 스케치」인지에 따라 완전히 달라진다.
    head: 맨 앞 / tail: 끝에 붙는 화질·질감 선언 / raw: --style raw 권장 여부 */
 const MEDIUM = {
-  '영화 스틸':        {head:'cinematic, film still',                 tail:'hyper-realistic',                         raw:true},
-  '90년대 DVD 화면':  {head:'DVD screengrab, movie still',           tail:'hyper-realistic, detailed style',         raw:true},
-  '다큐 사진':        {head:'documentary photograph',                tail:'natural light, unposed, photojournalism', raw:true},
-  '스토리보드 스케치': {head:'pencil sketch for storyboard',          tail:'rough hatching, black and white',         raw:false},
-  '콘티 마커화':      {head:'storyboard panel, marker sketch',       tail:'loose linework, limited color',           raw:false},
-  '플랫 벡터 일러스트':{head:'flat vector graphic illustration',      tail:'simple shapes and lines, flat colors',    raw:false},
-  '콘셉트 아트':      {head:'cinematic concept art',                 tail:'digital matte painting, highly detailed', raw:false},
-  '애니메이션 스틸':   {head:'anime film still',                      tail:'cel shaded, detailed background art',     raw:false},
-  '광고 · 제품 컷':   {head:'commercial photography still',          tail:'studio lighting, ultra detailed',         raw:true},
-  '(선언 없음)':         {head:'',                                      tail:'',                                        raw:false}
+  '영화 스틸':        {head:'cinematic, film still',                 tail:'hyper-realistic',                         raw:true,  kind:'photo'},
+  '90년대 DVD 화면':  {head:'DVD screengrab, movie still',           tail:'hyper-realistic, detailed style',         raw:true,  kind:'photo'},
+  '다큐 사진':        {head:'documentary photograph',                tail:'natural light, unposed, photojournalism', raw:true,  kind:'photo'},
+  '에디토리얼 사진':   {head:'editorial photography',                 tail:'in a hyper realistic, detailed style',    raw:true,  kind:'photo'},
+  '광고 · 제품 컷':   {head:'commercial photography still',          tail:'studio lighting, ultra detailed',         raw:true,  kind:'photo'},
+  '스토리보드 스케치': {head:'pencil sketch for storyboard',          tail:'rough hatching, black and white',         raw:false, kind:'sketch'},
+  '콘티 마커화':      {head:'storyboard panel, marker sketch',       tail:'loose linework, limited color',           raw:false, kind:'sketch'},
+  '동화 일러스트':     {head:'illustration for a childrens book',     tail:'warm storybook texture',                  raw:false, kind:'paint'},
+  '수채화':           {head:'masterpiece watercolors painting',      tail:'soft bleeding edges',                     raw:false, kind:'paint'},
+  '유화':             {head:'masterpiece oil painting',              tail:'visible brushstrokes, canvas texture',    raw:false, kind:'paint'},
+  '콘셉트 아트':      {head:'cinematic concept art',                 tail:'digital matte painting, highly detailed', raw:false, kind:'paint'},
+  '플랫 벡터 일러스트':{head:'flat vector graphic illustration',      tail:'simple shapes and lines, flat colors',    raw:false, kind:'vector'},
+  '3D 애니메이션':    {head:'3d animation still',                    tail:'stylized character render',               raw:false, kind:'cg'},
+  '애니메이션 스틸':   {head:'anime film still',                      tail:'cel shaded, detailed background art',     raw:false, kind:'anime'},
+  '(선언 없음)':         {head:'',                                      tail:'',                                        raw:false, kind:'photo'}
+};
+/* 만드는 도구 — 필기의 세 번째 블록.
+   「유화로 그린다」가 아니라 어떤 붓·기름·캔버스인지까지 지정해야 상상한 대로 나온다.
+   목적이 사진이 아닐 때 shot on Hasselblad 를 붙이면 서로 부딪치므로,
+   매체의 kind 에 맞는 도구만 내보낸다. (필기 Part 7 STEP 5 「목적 블록 정렬」) */
+const TOOLS = {
+  photo:  {},   /* 사진 계열은 아래 CAM · LENS 가 도구 자리를 맡는다 */
+  sketch: {'':'', '연필':'drawn with a graphite pencil on paper','마커':'rough marker on layout paper',
+           '펜 · 잉크':'ink pen linework','목탄':'charcoal on textured paper'},
+  paint:  {'':'', '세이블 붓 · 부드러운 블렌딩':'use sable brush, soft blending',
+           '두꺼운 임파스토':'thick impasto, palette knife strokes',
+           '수채 · 냉압지':'watercolor on cold-press paper, wet-on-wet',
+           '과슈':'gouache, matte opaque layers',
+           '디지털 매트페인팅':'digital matte painting, layered brushwork'},
+  vector: {'':'', '평면 도형':'clean vector shapes, flat fills','굵은 라인':'bold outlines, limited palette',
+           '부드러운 그라디언트':'subtle gradients, geometric shapes'},
+  cg:     {'':'', '시네마 4D · 옥테인':'rendered in Cinema 4D, Octane render',
+           '언리얼 엔진 5':'Unreal Engine 5 render, ray tracing',
+           '블렌더 · 사이클스':'Blender Cycles render, soft global illumination',
+           '클레이 렌더':'clay render, matte texture'},
+  anime:  {'':'', '셀 애니메이션':'cel animation, hand-inked linework',
+           '디지털 채색':'digital anime coloring, soft gradients'}
 };
 /* 카메라 · 필름 — 필기의 「shot on Hasselblad」 「shot on Nikon FA」.
    미드저니는 실제 기종의 화각·계조·입자를 알아듣는다. */
@@ -1529,7 +1621,13 @@ const CAM = {
   '후지 벨비아 (풍경·진한 색)':'shot on Fujifilm Velvia',
   '35mm 필름':'shot on 35mm film',
   '16mm 필름 (거친 입자)':'shot on 16mm film, visible grain',
-  '폴라로이드':'Polaroid photograph',
+  '폴라로이드':'shot on Instant Polaroid',
+  '소니 A7 · 35mm':'shot on Sony A7, 35mm lens',
+  'VHS 캠코더':'VHS camcorder footage',
+  '슈퍼 8mm':'shot on Super 8',
+  '홀가 (토이 카메라)':'shot on Holga, soft vignetting',
+  '시아노타입':'cyanotype print',
+  '케미컬 스플래터링':'printing chemical splattering, analogue aesthetic',
   '스마트폰':'shot on smartphone, casual'
 };
 /* 시대 — 「in the style of 1990s」 하나로 의상·소품·색감이 통째로 바뀐다 */
@@ -1552,7 +1650,10 @@ const COMP = {
   '대칭':'symmetrical composition',
   '프레임 속 프레임':'frame within a frame composition',
   '리딩 라인':'leading lines drawing the eye to the subject',
-  '여백 강조 (고독)':'negative space dominating the frame, small subject'
+  '여백 강조 (고독)':'negative space dominating the frame, small subject',
+  '전경 / 배경 분리':'strong foreground element with the subject in the distant background',
+  '왼쪽에 배치':'subject placed on the left side of the frame',
+  '오른쪽에 배치':'subject placed on the right side of the frame'
 };
 /* 앵글이 주는 인상 — 고를 때 무엇이 달라지는지 알려준다 (필기 12쪽) */
 const ANGLE_NOTE = {
@@ -1588,6 +1689,22 @@ const LOOK = {
   '스톱모션':'stop-motion claymation, tactile handmade textures',
   '수채화':'soft watercolor illustration',
   '유화':'thick oil painting, visible brushstrokes'
+};
+/* 인종 · 민족 — 필기 Part 3. 캐릭터를 붙잡는 가장 강한 한 단어다.
+   비워두면 아무것도 붙지 않는다(모델이 알아서 정한다). */
+const ETH = {
+  '':'', '한국':'Korean','일본':'Japanese','중국 (한족)':'Han Chinese','인도':'Indian','아랍':'Arab',
+  '동아시아':'East Asian','동남아시아':'Southeast Asian',
+  '슬라브':'Slavic','게르만':'Germanic','라틴 (로망스)':'Southern European','켈트':'Celtic','북유럽':'Nordic',
+  '베르베르':'Berber','수단':'Sudanese','줄루':'Zulu','하우사':'Hausa','서아프리카':'West African',
+  '마오리':'Maori','사모아':'Samoan','하와이':'Hawaiian',
+  '나바호':'Navajo','체로키':'Cherokee','이누이트':'Inuit','마야':'Maya','라틴아메리카':'Latin American'
+};
+/* 컷마다 바뀌는 인물의 감정 — 필기의 「he is angry / laughing / crying」 변주 */
+const EMO = {
+  '':'', '화난':'angry','웃는':'laughing','우는':'crying','놀란':'surprised','겁먹은':'scared',
+  '무표정':'expressionless','생각에 잠긴':'lost in thought','지친':'exhausted','결연한':'determined',
+  '슬픈':'sad','멍한':'dazed','의심하는':'suspicious'
 };
 const AR = {'16:9 (가로)':'16:9','2.39:1 (시네마스코프)':'2.39:1','1.85:1 (극장)':'1.85:1','4:3 (클래식)':'4:3','1:1 (정사각)':'1:1','9:16 (세로/숏폼)':'9:16'};
 
@@ -2033,12 +2150,21 @@ function delWithUndo(msg,removeFn,restoreFn){
 
 /* ---------- 캐릭터 ---------- */
 function newChar(){
-  return {id:nid('c'),name:'',role:'',age:'',sex:'',hairL:'',hairC:'',eye:'',build:'',
+  return {id:nid('c'),name:'',role:'',eth:'',age:'',sex:'',hairL:'',hairC:'',eye:'',build:'',
     outfit:'',outfitEn:'',mark:'',markEn:'',lockManual:'',personality:'',speech:'',arc:''};
+}
+/* 「a man in his forties」 → 「a Korean man in his forties」.
+   관사 바로 뒤가 인종이 들어갈 자리다. 관사가 없으면 앞에 그냥 붙인다. */
+function withEth(who,eth){
+  if(!eth) return who;
+  if(!who) return 'a '+eth+' person';
+  return /^(a|an) /.test(who) ? who.replace(/^(a|an) /, m=>(eth[0].match(/[aeiouAEIOU]/)?'an ':'a ')+eth+' ')
+                              : eth+' '+who;
 }
 function charLock(c){
   if(c.lockManual&&c.lockManual.trim()) return c.lockManual.trim();
-  const p=[], who=whoPhrase(c);
+  const p=[], eth=ETH[c.eth]||'';
+  let who=withEth(whoPhrase(c),eth);
   if(who) p.push(who); else if(c.name) p.push('a person');
   const len=HAIRL[c.hairL]||'', col=HAIRC[c.hairC]||'';
   if(len&&col) p.push(len.replace(/\bhair\b/,col+' hair'));
@@ -2072,6 +2198,7 @@ function renderChars(){
 
       <div class="rule">외형</div>
       <div class="grid g4">
+        <label class="f"><span>인종 · 민족</span><select data-cf="eth">${opts(ETH,c.eth)}</select></label>
         <label class="f"><span>나이대</span><select data-cf="age">${opts(AGE,c.age)}</select></label>
         <label class="f"><span>성별</span><select data-cf="sex">${opts(SEX,c.sex)}</select></label>
         <label class="f"><span>머리 길이</span><select data-cf="hairL">${opts(HAIRL,c.hairL)}</select></label>
@@ -2182,6 +2309,7 @@ $('charlist').addEventListener('click',e=>{
 function newScene(){ return {id:nid('s'),heading:'',loc:'',locEn:'',time:'',summary:'',script:'',cuts:[]}; }
 function newCut(){
   return {id:nid('k'),desc:'',descEn:'',shot:'',angle:'',move:'',lens:'',light:'',mood:'',
+    speed:'',fx:'',trig:'',emo:'',
     dur:4,chars:[],dialogue:'',audio:'',note:'',hasImg:false,open:true};
 }
 function allCuts(){ const r=[]; S.scenes.forEach(s=>s.cuts.forEach(c=>r.push({s,c}))); return r; }
@@ -2288,6 +2416,21 @@ function cutBodyHTML(s,c){
         <label class="f"><span>조명</span><select data-kf="light">${opts(LIGHT,c.light)}</select></label>
         <label class="f"><span>무드</span><select data-kf="mood">${opts(MOOD,c.mood)}</select></label>
       </div>
+      <details class="faq" style="margin:0 0 16px">
+        <summary>더 세밀하게 — 인물 감정 · 속도 · 빛 효과 · 사건</summary>
+        <div class="fa" style="padding:0 18px 16px">
+          <div class="grid g2">
+            <label class="f"><span>인물 감정 <b style="color:var(--sig)">이미지</b></span><select data-kf="emo">${opts(EMO,c.emo)}</select></label>
+            <label class="f"><span>빛 · 질감 효과 <b style="color:var(--sig)">이미지</b></span><select data-kf="fx">${opts(FX,c.fx)}</select></label>
+          </div>
+          <div class="grid g2">
+            <label class="f"><span>카메라 속도 <b style="color:var(--sig)">영상</b></span><select data-kf="speed">${opts(SPEED,c.speed)}</select></label>
+            <label class="f"><span>사건 (트리거) <b style="color:var(--sig)">영상</b></span><select data-kf="trig">${opts(TRIGGER,c.trig)}</select></label>
+          </div>
+          <p class="mini" style="margin:2px 0 0"><b>사건</b>을 비워두면 카메라만 움직이고 장면은 그대로 있습니다.
+          무언가 <b>일어나게</b> 하려면 여기서 골라주세요.</p>
+        </div>
+      </details>
       ${S.chars.length?`<label class="f"><span>등장 캐릭터 — 클릭해서 켜고 끄기</span><div class="row">${chips}</div></label>`
         :`<p class="mini">「기획 → 캐릭터」에서 인물을 먼저 만들면 여기서 골라 고정 블록을 자동으로 붙일 수 있어요</p>`}
       <div class="grid g2">
@@ -3611,7 +3754,7 @@ $('rapply').addEventListener('click',()=>{
 });
 
 /* ---------- 프롬프트 ---------- */
-const STYLE_FIELDS=['look','ar','palette','extra','mj','neg','medium','cam','era','comp'];
+const STYLE_FIELDS=['look','ar','palette','extra','mj','neg','medium','cam','era','comp','tool'];
 function fillStyle(){
   $('v-look').innerHTML=opts(LOOK,S.style.look);
   $('v-ar').innerHTML=opts(AR,S.style.ar);
@@ -3620,10 +3763,43 @@ function fillStyle(){
   if($('v-era'))    $('v-era').innerHTML=opts(ERA,S.style.era||'');
   if($('v-comp'))   $('v-comp').innerHTML=opts(COMP,S.style.comp||'');
   ['palette','extra','mj','neg'].forEach(k=>$('v-'+k).value=S.style[k]||'');
+  syncToolCell();
 }
+/* 목적이 사진이 아니면 카메라·렌즈 칸을 감추고 그 매체의 도구를 보여준다.
+   필기 STEP 5 「목적 블록 정렬」을 화면에서 강제하는 자리다. */
+function syncToolCell(){
+  const m=medium(), photo=(m.kind==='photo');
+  const cc=$('cell-cam'), ct=$('cell-tool');
+  if(!cc||!ct) return;
+  cc.style.display = photo ? '' : 'none';
+  ct.style.display = photo ? 'none' : '';
+  if(!photo){
+    const map=TOOLS[m.kind]||{'':''};
+    if(!(S.style.tool in map)) S.style.tool='';
+    $('v-tool').innerHTML=opts(map,S.style.tool||'');
+  }
+  const sb=$('v-sbtog');
+  if(sb) sb.textContent = (m.kind==='sketch') ? '실제 소스로 되돌리기' : '스토리보드용으로 보기';
+}
+/* 같은 장면묘사를 그대로 두고 맨 앞 목적만 갈아끼운다 (필기 Part 2) */
+$('v-sbtog') && $('v-sbtog').addEventListener('click',()=>{
+  const m=medium();
+  if(m.kind==='sketch'){
+    S.style.medium = S.style.mediumBack || '영화 스틸';
+    toast('실제 소스용 프롬프트로 되돌렸어요 ✓');
+  }else{
+    S.style.mediumBack = S.style.medium || '영화 스틸';
+    S.style.medium = '스토리보드 스케치';
+    toast('스토리보드용 — 맨 앞 목적만 연필 스케치로 바꿨어요 ✓');
+  }
+  mjSync(); save(); fillStyle(); renderPrompt();
+});
 STYLE_FIELDS.forEach(k=>{
   const el=$('v-'+k); if(!el) return;
-  const h=()=>{ S.style[k]=el.value; if(k==='ar') mjSync(); save(); renderPrompt(); };
+  const h=()=>{ S.style[k]=el.value;
+    if(k==='ar'||k==='medium') mjSync();
+    if(k==='medium') syncToolCell();
+    save(); renderPrompt(); };
   el.addEventListener('input',h); el.addEventListener('change',h);
 });
 function syncAR(){
@@ -3770,16 +3946,35 @@ function styleBits(){
    → [카메라·렌즈] → [화질 선언] → [파라미터]
    앞에 무엇을 두느냐가 결과를 가장 크게 좌우하므로 매체 선언을 맨 앞에 못 박는다. */
 function medium(){ return MEDIUM[S.style.medium]||MEDIUM['영화 스틸']; }
+
+/* ③ 만드는 도구 — 목적과 짝이 맞아야 한다.
+   동화 일러스트를 만들면서 「shot on Hasselblad」를 붙이면 서로 부딪친다.
+   그래서 사진 계열일 때만 카메라·렌즈를 내보내고, 아니면 그 매체의 도구를 쓴다. */
+function toolBits(c){
+  const m=medium();
+  if(m.kind==='photo') return [CAM[S.style.cam]||'', (c&&LENS[c.lens])||''].filter(Boolean);
+  return [ (TOOLS[m.kind]||{})[S.style.tool] || '' ].filter(Boolean);
+}
+/* ② 스토리 중 인물 — 외형 고정 블록 + 그 컷에서의 감정 */
+function charBits(c){
+  const out=[];
+  cutChars(c).forEach(ch=>{ const l=charLock(ch); if(l) out.push(l); });
+  if(out.length && EMO[c.emo]) out.push(EMO[c.emo]+' expression');
+  return out;
+}
+/* 필기의 프롬프트 블록 6요소를 그 순서 그대로 조립한다.
+   ① 목적 → ② 스토리(샷·앵글·구도 · 인물 · 행동 · 장소) → ③ 만드는 도구
+   → ④ 디테일(시대 · 시간 · 조명 · 효과) → ⑤ 컬러·무드 → ⑥ 파라미터 */
 function buildMJ(s,c){
   const m=medium(), p=[];
   if(m.head) p.push(m.head);
   [SHOT[c.shot],ANGLE[c.angle],COMP[S.style.comp]].forEach(x=>{ if(x) p.push(x); });
-  cutChars(c).forEach(ch=>{ const l=charLock(ch); if(l) p.push(l); });
+  charBits(c).forEach(x=>p.push(x));
   p.push(c.descEn||c.desc||'');
   if(s.locEn||s.loc) p.push(s.locEn||s.loc);
-  if(ERA[S.style.era]) p.push(ERA[S.style.era]);
-  [TIME[s.time],LIGHT[c.light],MOOD[c.mood]].forEach(x=>{ if(x) p.push(x); });
-  [CAM[S.style.cam],LENS[c.lens]].forEach(x=>{ if(x) p.push(x); });
+  toolBits(c).forEach(x=>p.push(x));
+  [ERA[S.style.era],TIME[s.time],LIGHT[c.light],FX[c.fx]].forEach(x=>{ if(x) p.push(x); });
+  if(MOOD[c.mood]) p.push(MOOD[c.mood]);
   styleBits().forEach(x=>p.push(x));
   if(m.tail) p.push(m.tail);
   return (dedupe(p).join(', ')+' '+(S.style.mj||'')).trim();
@@ -3800,10 +3995,11 @@ function buildVEO(s,c){
   if(subj) L.push('Action: '+subj+'.');
   const setting=[s.locEn||s.loc,TIME[s.time]].filter(Boolean).join(' ');
   if(setting) L.push('Setting: '+setting+'.');
-  const cam=[SHOT[c.shot],ANGLE[c.angle],COMP[S.style.comp],LENS[c.lens],CAM[S.style.cam]].filter(Boolean).join(', ');
+  if(TRIGGER[c.trig]) L.push('Event: mid-shot, the subject '+TRIGGER[c.trig]+'.');
+  const cam=[SHOT[c.shot],ANGLE[c.angle],COMP[S.style.comp],SPEED[c.speed]].concat(toolBits(c)).filter(Boolean).join(', ');
   if(cam) L.push('Camera: '+cam+'.');
   if(ERA[S.style.era]) L.push('Era: '+ERA[S.style.era]+'.');
-  if(LIGHT[c.light]) L.push('Lighting: '+LIGHT[c.light]+'.');
+  if([LIGHT[c.light],FX[c.fx]].filter(Boolean).length) L.push('Lighting: '+[LIGHT[c.light],FX[c.fx]].filter(Boolean).join(', ')+'.');
   if(MOOD[c.mood]) L.push('Mood: '+MOOD[c.mood]+'.');
   const st=dedupe(styleBits()).join(', ');
   if(st) L.push('Style: '+st+'.');
@@ -3818,17 +4014,31 @@ function buildGEN(s,c){
   const m=medium(), p=[];
   if(m.head) p.push(m.head);
   p.push(c.descEn||c.desc||'');
-  cutChars(c).forEach(ch=>{ const l=charLock(ch); if(l) p.push(l); });
+  charBits(c).forEach(x=>p.push(x));
   if(s.locEn||s.loc) p.push(s.locEn||s.loc);
   if(ERA[S.style.era]) p.push(ERA[S.style.era]);
   if(TIME[s.time]) p.push(TIME[s.time]);
-  [SHOT[c.shot],ANGLE[c.angle],COMP[S.style.comp],LENS[c.lens],LIGHT[c.light],MOOD[c.mood]].forEach(x=>{ if(x) p.push(x); });
-  if(CAM[S.style.cam]) p.push(CAM[S.style.cam]);
+  [SHOT[c.shot],ANGLE[c.angle],COMP[S.style.comp]].forEach(x=>{ if(x) p.push(x); });
+  toolBits(c).forEach(x=>p.push(x));
+  [LIGHT[c.light],FX[c.fx],MOOD[c.mood]].forEach(x=>{ if(x) p.push(x); });
   styleBits().forEach(x=>p.push(x));
   if(m.tail) p.push(m.tail);
   let out=dedupe(p).join(', ');
   out+='\n\n[화면비] '+(AR[S.style.ar]||'16:9');
   if(S.style.neg) out+='\n[네거티브] '+S.style.neg;
+  return out;
+}
+/* 런웨이 · 클링 — 한 문장. 카메라 동작을 맨 앞에 두는 게 잘 먹힌다.
+   「A cinematic pull back of a medieval warrior standing exhausted …」 (필기 Part 4) */
+function buildRW(s,c){
+  const m=medium();
+  const subj=[charBits(c).join(', '), c.descEn||c.desc||''].filter(Boolean).join(', ');
+  let out='A cinematic '+(MOVE_RW[c.move]||'shot')+' of '+(subj||'the scene');
+  const tail=[s.locEn||s.loc, TIME[s.time], SPEED[c.speed], LIGHT[c.light], FX[c.fx],
+              ERA[S.style.era], MOOD[c.mood]].concat(styleBits()).filter(Boolean);
+  if(m.kind!=='photo'&&m.head) tail.push('in the style of '+m.head);
+  if(tail.length) out+=', '+dedupe(tail).join(', ');
+  out+= TRIGGER[c.trig] ? '. Then the subject '+TRIGGER[c.trig]+'.' : '.';
   return out;
 }
 const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
@@ -3923,6 +4133,8 @@ $('q-save').addEventListener('click',()=>{
 const SITES={
   mj     :{url:'https://www.midjourney.com/imagine',      out:'o-mj',  name:'미드저니'},
   flow   :{url:'https://labs.google/fx/tools/flow',       out:'o-veo', name:'Flow'},
+  runway :{url:'https://runwayml.com',                    out:'o-rw',  name:'런웨이'},
+  kling  :{url:'https://klingai.com',                     out:'o-rw',  name:'클링'},
   imagefx:{url:'https://labs.google/fx/tools/image-fx',   out:'o-gen', name:'ImageFX'},
   bing   :{url:'https://www.bing.com/images/create',      out:'o-gen', name:'Bing 이미지 크리에이터'}
 };
@@ -3944,7 +4156,9 @@ document.addEventListener('click',e=>{
 function mjOpt(){ if(!S.mj) S.mj={look:'raw',sty:'mid',ver:'7'}; if(!S.mj.ow) S.mj.ow='100'; return S.mj; }
 function mjParams(){
   const o=mjOpt(), p=['--ar '+(AR[S.style.ar]||'16:9')];
-  if(o.look==='raw'&&o.ver!=='niji') p.push('--style raw');
+  // --style raw 는 「사진처럼」이라는 뜻이다. 목적이 그림·스케치인데 이걸 붙이면
+  // 맨 앞 선언과 정면으로 부딪친다. 매체가 그림 계열이면 자동으로 뺀다.
+  if(o.look==='raw'&&o.ver!=='niji'&&medium().raw!==false) p.push('--style raw');
   if(o.sty==='low')  p.push('--stylize 50');
   if(o.sty==='high') p.push('--stylize 600');
   // 화풍 고정 — 코드를 여러 개 적으면 섞인다
@@ -3967,14 +4181,15 @@ function paintMJ(){
   });
   const p=$('mjparam'); if(p) p.textContent=S.style.mj||mjParams();
   const m=medium(), hd=$('mjhead');
-  if(hd) hd.innerHTML = m.head
+  if(hd) hd.innerHTML = (m.head
     ? `맨 앞에 <code>${esc(m.head)}</code>${m.tail?` , 끝에 <code>${esc(m.tail)}</code>`:''} 가 붙습니다`
-    : '매체 선언 없이 내용만 나갑니다';
+    : '매체 선언 없이 내용만 나갑니다')
+    + (m.kind!=='photo' ? ' · 그림 계열이라 <b>카메라·렌즈</b>와 <code>--style raw</code> 는 자동으로 빼둡니다' : '');
   if($('mj-sref')&&document.activeElement!==$('mj-sref')) $('mj-sref').value=o.sref||'';
   if($('mj-oref')&&document.activeElement!==$('mj-oref')) $('mj-oref').value=o.oref||'';
   document.querySelectorAll('[data-ow]').forEach(x=>x.classList.toggle('on',(o.ow||'100')===x.dataset.ow));
   // 니지 버전에서는 「느낌」이 적용되지 않는다 — 흐리게 해서 헷갈리지 않게
-  const lr=$('mj-look').closest('.opt'); if(lr) lr.classList.toggle('off',o.ver==='niji');
+  const lr=$('mj-look').closest('.opt'); if(lr) lr.classList.toggle('off',o.ver==='niji'||medium().raw===false);
 }
 ['mj-sref','mj-oref'].forEach(id=>{
   const el=$(id); if(!el) return;
@@ -4066,6 +4281,7 @@ function renderPrompt(){
     const hint='위에 「무슨 일이 벌어지나요」를 한 줄만 적으면 바로 나옵니다';
     const ok=(c.desc||'').trim();
     set('o-mj', ok?buildMJ(s,c):'', hint);
+    set('o-rw', ok?buildRW(s,c):'', hint);
     set('o-veo',ok?buildVEO(s,c):'',hint);
     set('o-gen',ok?buildGEN(s,c):'',hint);
     paintAfter();
@@ -4076,10 +4292,11 @@ function renderPrompt(){
   const hint='컷을 선택하고 내용을 채우면 여기에 나타납니다';
   if(hit){
     set('o-mj',buildMJ(hit.s,hit.c),hint);
+    set('o-rw',buildRW(hit.s,hit.c),hint);
     set('o-veo',buildVEO(hit.s,hit.c),hint);
     set('o-gen',buildGEN(hit.s,hit.c),hint);
   }else{
-    set('o-mj','',hint); set('o-veo','',hint); set('o-gen','',hint);
+    set('o-mj','',hint); set('o-rw','',hint); set('o-veo','',hint); set('o-gen','',hint);
   }
   paintAfter();
 }
