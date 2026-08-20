@@ -267,6 +267,26 @@ blockquote cite{display:block; font-style:normal; font-family:var(--mono); font-
 .ip-band p{margin:0; font-size:13.5px; color:var(--ink-2)}
 .ip-band .ip-t{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--key); font-weight:600; margin-bottom:4px}
 
+/* ── Episode cards ─────────────────────────────────────── */
+.eps{display:grid; gap:14px; margin:16px 0 22px}
+.ep{border:1px solid var(--line); border-radius:3px; background:var(--surface); overflow:hidden}
+.ep-h{display:flex; flex-wrap:wrap; gap:10px 16px; align-items:baseline; padding:11px 16px; background:var(--surface-2); border-bottom:1px solid var(--line)}
+.ep-n{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--key); font-weight:700}
+.ep-t{font-size:16px; font-weight:750; letter-spacing:-.01em}
+.ep-c{margin-left:auto; font-family:var(--mono); font-size:15px; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; background:var(--sunk); padding:2px 9px; border:1px solid var(--line); border-radius:2px}
+.ep-b{padding:6px 16px 14px}
+.beat{display:grid; grid-template-columns:74px minmax(0,1fr); gap:14px; padding:7px 0; border-bottom:1px solid var(--line-soft); align-items:baseline}
+.beat:last-child{border-bottom:0}
+.beat b{font-family:var(--mono); font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap}
+.beat span{font-size:13.5px; color:var(--ink-2); line-height:1.6}
+.beat.hook{background:var(--key-soft); margin:0 -16px; padding-left:16px; padding-right:16px}
+.beat.end{background:var(--surface-2); margin:0 -16px; padding-left:16px; padding-right:16px}
+.beat em{font-style:normal; color:var(--ink); font-weight:650}
+.rulebox{border:1px solid var(--line); border-left:2px solid var(--fill); border-radius:0 3px 3px 0; background:var(--surface); padding:14px 17px; margin:14px 0 20px}
+.rulebox ol{margin:0; padding-left:20px}
+.rulebox li{font-size:13.5px; color:var(--ink-2); margin-bottom:7px; line-height:1.6}
+.rulebox li b{color:var(--ink)}
+
 /* ── Beat timeline ─────────────────────────────────────── */
 .beats{display:grid; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:3px; overflow:hidden; margin:14px 0 20px}
 .beat{background:var(--surface); display:grid; grid-template-columns:74px 96px minmax(0,1fr); gap:14px; padding:10px 14px; align-items:baseline}
@@ -328,6 +348,7 @@ blockquote cite{display:block; font-style:normal; font-family:var(--mono); font-
       <li><a href="#p7"><span class="num">07</span>프로젝트</a></li>
       <li><a href="#case"><span class="num">★</span>케이스: 귀신 추격</a></li>
       <li><a href="#season"><span class="num">★</span>시즌 1 설계</a></li>
+      <li><a href="#eleven"><span class="num">★</span>11:11 제작 바이블</a></li>
       <li><a href="#ref"><span class="num">A</span>카메라 레퍼런스</a></li>
       <li><a href="#sref"><span class="num">B</span>SREF 100선</a></li>
       <li><a href="#param"><span class="num">C</span>파라미터 치트시트</a></li>
@@ -1040,6 +1061,174 @@ Hip Hop, Lo-Fi, Drum Machine, Synthesizer, Synth stabs, Bass, Groovy, Up-lifting
     </div>
   </section>
 
+
+  <!-- ══════════════════════════ 11:11 ══════════════════════════ -->
+  <section id="eleven">
+    <p class="eyebrow">Production Bible</p>
+    <h3 class="sec">11:11 — 인스타 숏드라마</h3>
+    <p class="sec-note">에피소드형 · 10화 × 1분 완결 · 글로벌(동아시아·중화권 우선) · 무언어 지향</p>
+
+    <p class="lede">매일 밤 11시 11분, 딱 1분 동안만 그를 볼 수 있다. <strong>매 화가 소원 사연 하나로 완결되고</strong>, 그 위에 도하와 린의 이야기가 흐릅니다. 아무 화나 걸려도 이해되도록 설계했습니다 — 알고리즘이 밀어주는 건 언제나 랜덤한 한 화이기 때문입니다.</p>
+
+    <div class="callout"><p><strong>제목이 세 시장에서 동시에 작동합니다.</strong> 서구권에서 11:11은 “소원 비는 시각”, 중화권에서는 双十一·光棍节 — <strong>혼자인 사람들의 날</strong>. 한국에서는 11월 11일. 번역이 필요 없는 제목이면서 세 곳에서 각각 다른 의미로 읽힙니다.</p></div>
+
+    <h4>사연의 원리 — 매 화를 관통하는 한 줄</h4>
+    <div class="callout"><p><strong>소원은 정확히 이뤄진다. 사람들이 정확하게 빌지 않을 뿐이다.</strong> 어머니가 낫게 해달라 빌면 낫는다 — 다만 아들을 알아보지 못한다. ‘낫게’만 빌었으니까. 이 원리 하나로 10개의 사연이 전부 나옵니다.</p></div>
+
+    <h4>인물</h4>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>차도하 · Cha Do-ha</th><th>서린 · Seo-rin (Rin)</th></tr></thead>
+      <tbody>
+        <tr><td class="term">나이 · 성별</td><td class="ko">28 · 남</td><td class="ko">26 · 여</td></tr>
+        <tr><td class="term">신분</td><td class="ko">11시 11분에만 실체가 되는 사람</td><td class="ko">심야 라디오 작가 — 「자정 우편함」</td></tr>
+        <tr><td class="term">성격</td><td class="ko">말수가 없고 표정이 변하지 않는다. 상대가 흘린 말을 정확히 기억한다</td><td class="ko">침착하고 냉담해 보이나 한번 정하면 물러서지 않는다. 관찰력이 좋다</td></tr>
+        <tr><td class="term">특징</td><td class="ko">왼손목의 시계를 풀지 않는다. 기록에 남지 않는다. <strong>그가 만진 물건은 남는다</strong></td><td class="ko">매일 11시 11분에 알람을 맞춘다. 어떤 기록도 남기지 못한다</td></tr>
+        <tr><td class="term">의상</td><td class="ko">흰 드레스 셔츠(소매 걷음) · 검정 슬랙스 · 은색 손목시계 · 검정 구두</td><td class="ko">흰 셔츠 · 검정 슬랙스 · 얇은 은색 손목시계 · 검정 플랫</td></tr>
+      </tbody>
+    </table></div>
+    <p style="font-size:14px;color:var(--muted)"><strong>凛(린/Rin)</strong>은 한·중·일에서 그대로 읽히고 뜻도 같습니다(차갑고 꼿꼿한). <strong>도하</strong>는 어느 언어권에서도 그대로 발음됩니다. 중화권 겨냥에 가장 강한 이름 조합입니다.</p>
+
+    <h4>채널 — 스튜디오 계정으로</h4>
+    <div class="callout"><p><strong>시리즈 계정이 아니라 스튜디오 계정으로 파세요.</strong> 중드·미드까지 제작하실 거면 <code>11:11</code> 전용 계정은 다음 작품 때 버려집니다. 포맷 자체를 이름으로 삼으면 어떤 언어권 작품이든 그 아래 들어갑니다.</p></div>
+    <div class="tw"><table>
+      <thead><tr><th>항목</th><th>값</th></tr></thead>
+      <tbody>
+        <tr><td class="term">핸들</td><td class="ko"><strong>@oneminute.studio</strong> · 대안 <code>@1min.studio</code> · <code>@elevenframe</code></td></tr>
+        <tr><td class="term">이름 필드</td><td class="ko">ONE MINUTE — Vertical Drama Studio <em style="color:var(--muted)">(검색 대상이므로 키워드를 넣습니다)</em></td></tr>
+        <tr><td class="term">Bio</td><td class="ko">1-minute episodes. New series every season.<br>Now airing: <strong>11:11</strong><br>biz@[도메인]</td></tr>
+        <tr><td class="term">언어</td><td class="ko"><strong>전부 영어.</strong> 초기에는 한국어 병기도 빼세요 — 인스타 초기 배포가 계정 언어를 보고 대상을 정합니다</td></tr>
+        <tr><td class="term">표시</td><td class="ko">프로필 설정에서 <strong>AI creator 태그 ON</strong> — 계정 단위로 한 번에 표시됩니다</td></tr>
+      </tbody>
+    </table></div>
+
+    <h4>캐릭터 프로필 — 시트용</h4>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>CHA DO-HA · 차도하</th><th>SEO-RIN (RIN) · 서린</th></tr></thead>
+      <tbody>
+        <tr><td class="term">한자</td><td class="ko">車道河</td><td class="ko">徐凛</td></tr>
+        <tr><td class="term">Age / Sex</td><td class="ko">28 · Male</td><td class="ko">26 · Female</td></tr>
+        <tr><td class="term">Occupation</td><td class="ko">Watch repairer (shop long closed)<br><em style="color:var(--muted)">시계 수리공, 현재는 폐업</em></td><td class="ko">Late-night radio writer — <em>Midnight Mailbox</em><br><em style="color:var(--muted)">심야 라디오 작가 · 「자정 우편함」</em></td></tr>
+        <tr><td class="term">Status</td><td class="ko">Becomes real for one minute a day, at 11:11 PM<br><em style="color:var(--muted)">밤 11시 11분, 1분만 실체가 된다</em></td><td class="ko">The only person who wants <em>him</em>, not a wish<br><em style="color:var(--muted)">소원이 아니라 그를 원한 유일한 사람</em></td></tr>
+        <tr><td class="term">Personality</td><td class="ko">Almost silent, expression rarely changes. Remembers exactly what you said in passing. Shows kindness only through action, so he is often misread.</td><td class="ko">Composed and cool on the surface, never backs down once decided. Sharp observer. Slow to admit what she feels.</td></tr>
+        <tr><td class="term">Signature</td><td class="ko">Never removes the watch on his left wrist. Leaves no trace in photo, video or audio — <strong>but objects he has touched remain.</strong></td><td class="ko">Sets an alarm for 11:11 every night. Tries to record that minute — <strong>nothing ever records.</strong></td></tr>
+      </tbody>
+    </table></div>
+
+    <h5>외형 구성 요소 · Wardrobe &amp; props</h5>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>DO-HA</th><th>RIN</th></tr></thead>
+      <tbody>
+        <tr><td class="term">Top</td><td class="ko">white dress shirt, sleeves rolled <em style="color:var(--muted)">흰 드레스 셔츠, 소매 걷음</em></td><td class="ko">white dress shirt <em style="color:var(--muted)">흰 셔츠</em></td></tr>
+        <tr><td class="term">Bottom</td><td class="ko">black tailored trousers <em style="color:var(--muted)">검정 슬랙스</em></td><td class="ko">black tailored trousers <em style="color:var(--muted)">검정 슬랙스</em></td></tr>
+        <tr><td class="term">Watch ★</td><td class="ko"><strong>silver wristwatch, left wrist</strong> <em style="color:var(--muted)">은색 손목시계, 왼손목</em></td><td class="ko"><strong>slim silver wristwatch</strong> <em style="color:var(--muted)">얇은 은색 손목시계</em></td></tr>
+        <tr><td class="term">Shoes</td><td class="ko">black leather shoes <em style="color:var(--muted)">검정 가죽 구두</em></td><td class="ko">black flat shoes <em style="color:var(--muted)">검정 플랫</em></td></tr>
+        <tr><td class="term">Hair</td><td class="ko">modern short cut, fringe over the forehead <em style="color:var(--muted)">현대식 숏컷, 이마 덮는 앞머리</em></td><td class="ko">long straight black hair past the waist <em style="color:var(--muted)">허리 아래 검은 생머리</em></td></tr>
+        <tr><td class="term">Props</td><td class="ko">pocket watch · watchmaker&#39;s tools · wall clock stopped at 11:11</td><td class="ko">phone showing an 11:11 alarm · voice recorder · handwritten notebook</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout"><p><strong>두 사람이 같은 옷을 입는 건 의도입니다.</strong> 흰 셔츠 + 검정 슬랙스 + 은색 시계. 한 쌍으로 묶이고, 마지막 화에서 <strong>시계가 그녀에게 넘어가는 것</strong>이 대사 없이 성립합니다.</p></div>
+
+    <h5>표정 시트 · Expression sheet</h5>
+    <div class="chips">
+      <span class="chip">neutral 기본</span><span class="chip">faint smile 옅은 미소</span><span class="chip">laughing 웃음</span><span class="chip">angry 분노</span>
+      <span class="chip">sad 슬픔</span><span class="chip">surprised 놀람</span><span class="chip k">cold glare 차가운 응시</span><span class="chip">embarrassed 당황</span>
+    </div>
+
+    <h5>컬러 팔레트</h5>
+    <div class="chips">
+      <span class="chip">#090E12</span><span class="chip">#151E24</span><span class="chip">#202E38</span><span class="chip">#304050</span>
+      <span class="chip">#4A5D75</span><span class="chip">#5E7AA6</span><span class="chip">#97A8C0</span><span class="chip">#E9EEF2</span>
+      <span class="chip k">#E2342B ← 유일한 채도</span>
+    </div>
+    <p style="font-size:14px;color:var(--muted)">앞의 여덟 색은 도하 원본에서 추출한 것입니다. 마지막 붉은색이 화면에서 <strong>유일하게 채도 있는 색</strong>이고, 그게 <code>11:11</code> 숫자입니다.</p>
+
+    <h4>설정 규칙서 — 내부용, 시청자에게 밝히지 않음</h4>
+    <div class="rulebox"><ol>
+      <li>11:11에 빈 소원은 이뤄진다. <b>값은 시간으로 지불된다</b></li>
+      <li>대납자가 있는 동안 아무도 값을 내지 않는다 — 그래서 소원이 공짜로 보인다</li>
+      <li><b>대납자는 한 시대에 한 명.</b> 가장 큰 빚을 진 자가 자리를 물려받는다</li>
+      <li>도하는 항상 존재하나 실체가 아니다. <b>11:11의 1분만 실체가 된다</b></li>
+      <li>시계는 남은 <b>총량</b>을 가리킨다. 1회 출현에 최대 1분 소모</li>
+      <li>그의 1분은 <b>그를 가장 강하게 원하는 사람 앞에서</b> 소모된다 — 선택권이 없다</li>
+      <li>소원은 말할 필요가 없다. 11:11에 마음이 향하면 접수된다</li>
+      <li>그래서 <b>린이 그리워하는 것 자체가 그를 죽인다.</b> 억누르면 오히려 강해진다</li>
+      <li>빚은 이전 가능하다. 단 <b>누구를 위한 값인지 모른 채</b> 동의해야 한다</li>
+      <li>도하가 사라지면 청구서가 소원 빈 본인들에게 간다</li>
+    </ol></div>
+    <p>시청자가 아는 것은 넷뿐입니다 — <strong>11:11에만 온다 · 시간이 줄어든다 · 그녀가 원하면 온다 · 결국 사라진다.</strong> 왜인지는 끝까지 밝히지 않습니다. 규칙은 우리가 일관성을 지키기 위해 갖고 있는 것이지 설명하기 위한 것이 아닙니다.</p>
+
+    <h4>10화 구성</h4>
+    <p>시계는 <code>11:11</code>에서 시작해 <code>0:11</code>로 끝납니다. <strong>매 화 시계값이 모두 <code>:11</code>로 끝나</strong>, 제목이 매 화 화면에 박힙니다.</p>
+    <div class="eps"><div class="ep">
+      <div class="ep-h"><span class="ep-n">EP 01</span><span class="ep-t">줄</span><span class="ep-c">11:11</span></div>
+      <div class="ep-b"><div class="beat"><b>사연</b><span>시험에 붙게 해달라 빈 학생. 붙었다. 같이 준비한 친구가 떨어졌다. 학생은 우연인 줄 안다.</span></div><div class="beat hook"><b>0.0–2.0</b><span><em>어둠 속에 수십 명이 줄지어 서 있다.</em> 전부 같은 곳을 보고 있다</span></div><div class="beat "><b>2.0–2.4</b><span>타이틀 <b>11:11</b> 플래시</span></div><div class="beat "><b>2.4–18</b><span>라디오 부스. 사연 낭독(음성). 린이 주소를 받아적는다</span></div><div class="beat "><b>18–34</b><span>밤거리를 걸어간다. 낡은 간판, 젖은 골목. 손목시계 <b>11:09</b></span></div><div class="beat "><b>34–44</b><span>11:10. 아무도 없다. 돌아서려는 순간</span></div><div class="beat "><b>44–54</b><span><em>11:11:00.</em> 뒤를 돌아본다. 그가 서 있다 — 얼굴은 반쯤 그늘</span></div><div class="beat end"><b>54–60</b><span>카메라가 그의 뒤를 본다. <em>줄이 있다.</em> 수십 명이 어둠 속에서 그를 보고 있다</span></div></div>
+    </div>
+      <div class="ep">
+      <div class="ep-h"><span class="ep-n">EP 02</span><span class="ep-t">어머니</span><span class="ep-c">9:11</span></div>
+      <div class="ep-b"><div class="beat"><b>사연</b><span>어머니가 낫게 해달라 빈 아들. 나았다. 그런데 아들을 알아보지 못한다. ‘낫게’만 빌었으니까.</span></div><div class="beat hook"><b>0.0–2.0</b><span><em>린이 그의 손목을 잡고 달린다</em> — 결말에서 가져온 훅</span></div><div class="beat "><b>2.0–2.4</b><span>타이틀 플래시</span></div><div class="beat "><b>2.4–18</b><span>사연. 병실. 어머니가 아들을 낯설게 본다</span></div><div class="beat "><b>18–34</b><span>어젯밤. 줄 선 사람들이 한 명씩 앞으로 나와 입을 움직인다 — <b>무음</b></span></div><div class="beat "><b>34–46</b><span>그때마다 그의 시계 숫자가 툭툭 떨어진다. 클로즈업 반복. 린이 알아챈다</span></div><div class="beat "><b>46–55</b><span>11:11:50. 시계 급감. 린이 뛰어들어 손목을 잡는다</span></div><div class="beat end"><b>55–60</b><span>11:12. <em>그가 사라진다.</em> 손에 아무것도 없다. 바닥에 시계 부품 하나</span></div></div>
+    </div>
+      <div class="ep">
+      <div class="ep-h"><span class="ep-n">EP 03</span><span class="ep-t">돌아와</span><span class="ep-c">7:11</span></div>
+      <div class="ep-b"><div class="beat"><b>사연</b><span>헤어진 연인이 돌아오게 해달라. 돌아왔다. 그런데 왜 왔는지 본인도 모른다. 사랑은 빌지 않았으니까.</span></div><div class="beat hook"><b>0.0–2.0</b><span><em>그녀의 집 문 앞에 낯선 사람 셋이 서 있다</em></span></div><div class="beat "><b>2.0–2.4</b><span>타이틀 플래시</span></div><div class="beat "><b>2.4–18</b><span>사연. 돌아온 연인이 문 앞에서 멍하니 서 있다</span></div><div class="beat "><b>18–32</b><span>린이 그를 폐건물 옥상으로 옮긴다. 여긴 아무도 모른다</span></div><div class="beat "><b>32–44</b><span>다음 밤 11:11. 안전하다. 그런데 발소리가 올라온다</span></div><div class="beat "><b>44–55</b><span>린이 자기 방송 녹취를 되감아 듣는다</span></div><div class="beat end"><b>55–60</b><span>자기 목소리 — <em>“그 골목은…”</em> 내가 위치를 흘렸다</span></div></div>
+    </div>
+      <div class="ep">
+      <div class="ep-h"><span class="ep-n">EP 04</span><span class="ep-t">거울</span><span class="ep-c">6:11</span></div>
+      <div class="ep-b"><div class="beat"><b>사연</b><span>젊어지게 해달라 빈 남자. 젊어졌다. 이제 아무도 그를 알아보지 못한다.</span></div><div class="beat hook"><b>0.0–2.0</b><span><em>거울 속 자기 얼굴이 낯설다</em></span></div><div class="beat "><b>2.0–2.4</b><span>타이틀 플래시</span></div><div class="beat "><b>2.4–18</b><span>사연. 젊어진 남자가 가족에게 문전박대당한다</span></div><div class="beat "><b>18–32</b><span>린이 코너 폐지를 신청한다. PD가 반대한다 — 청취율이 최고인데</span></div><div class="beat "><b>32–44</b><span>밤. 어제 일을 떠올리려 한다. 안 떠오른다. 노트를 편다 — 자기 글씨인데 내용이 낯설다</span></div><div class="beat "><b>44–55</b><span>11:11. 그가 온다. <em>“나 어떻게 되는 거예요?”</em> 그는 대답하지 않는다</span></div><div class="beat end"><b>55–60</b><span>화장실 거울. 자기 얼굴을 오래 본다</span></div></div>
+    </div>
+      <div class="ep">
+      <div class="ep-h"><span class="ep-n">EP 05</span><span class="ep-t">이름</span><span class="ep-c">4:11</span></div>
+      <div class="ep-b"><div class="beat"><b>사연</b><span>잊게 해달라 빈 사람. 잊었다. 소중한 것까지 전부.</span></div><div class="beat hook"><b>0.0–2.0</b><span><em>벽을 가득 덮은 멈춘 시계 수백 개</em></span></div><div class="beat "><b>2.0–2.4</b><span>타이틀 플래시</span></div><div class="beat "><b>2.4–16</b><span>사연. 아무것도 기억나지 않는 사람이 텅 빈 방에 앉아 있다</span></div><div class="beat "><b>16–30</b><span>린이 시계 부품을 단서로 추적한다. 낡은 시계방. 잠겨 있다</span></div><div class="beat "><b>30–42</b><span>그가 만졌던 부품이 열쇠가 된다. 문이 열린다</span></div><div class="beat "><b>42–54</b><span>안. 멈춘 시계 수백 개. 하나씩 클로즈업 — <em>전부 11:11.</em> 각각 이름표가 붙어 있다</span></div><div class="beat end"><b>54–60</b><span>한 시계의 이름표 — <em>서린</em></span></div></div>
+    </div>
+      <div class="ep">
+      <div class="ep-h"><span class="ep-n">EP 06</span><span class="ep-t">부름</span><span class="ep-c">3:11</span></div>
+      <div class="ep-b"><div class="beat"><b>사연</b><span>다시 만나게 해달라 빈 사람. 만났다. 장례식장에서.</span></div><div class="beat hook"><b>0.0–2.0</b><span><em>그녀가 눈을 감고 있는데 그가 서 있다</em></span></div><div class="beat "><b>2.0–2.4</b><span>타이틀 플래시</span></div><div class="beat "><b>2.4–16</b><span>사연. 장례식장. 오랜만에 마주친 두 사람</span></div><div class="beat "><b>16–32</b><span>린이 규칙을 시험한다. 오늘은 그를 생각하지 않기로</span></div><div class="beat "><b>32–42</b><span>11:11. 그가 오지 않는다. 시계도 줄지 않았다</span></div><div class="beat "><b>42–54</b><span>다음 날. 무심코 떠올린다. 11:11. 그가 온다. <em>시계가 줄어 있다.</em> 몽타주 — 생각한 날 / 안 한 날</span></div><div class="beat end"><b>54–60</b><span><em>내가 그를 죽이고 있다</em> · 선택지 투표</span></div></div>
+    </div>
+      <div class="ep">
+      <div class="ep-h"><span class="ep-n">EP 07</span><span class="ep-t">문장</span><span class="ep-c">2:11</span></div>
+      <div class="ep-b"><div class="beat"><b>사연</b><span>유명해지게 해달라 빈 사람. 됐다. 사고 영상으로.</span></div><div class="beat hook"><b>0.0–2.0</b><span><em>집 앞 골목이 사람으로 가득하다</em></span></div><div class="beat "><b>2.0–2.4</b><span>타이틀 플래시</span></div><div class="beat "><b>2.4–14</b><span>사연. 조회수가 폭발하는 화면. 댓글이 쏟아진다</span></div><div class="beat "><b>14–30</b><span><b>대사 없음.</b> 시계를 서랍에 넣는다. 라디오를 끈다. 불을 끄고 눕는다</span></div><div class="beat "><b>30–42</b><span>11:11에 눈이 떠진다. 그가 서 있다. 다음 날도. 그다음 날도. <em>더 자주</em></span></div><div class="beat "><b>42–54</b><span>창밖. 사람들이 그녀의 집을 찾아냈다</span></div><div class="beat end"><b>54–60</b><span>도하가 처음 입을 연다 — <em>“묻지 마세요. 물을수록 짧아집니다.”</em></span></div></div>
+    </div>
+      <div class="ep">
+      <div class="ep-h"><span class="ep-n">EP 08</span><span class="ep-t">11월 11일</span><span class="ep-c">1:11</span></div>
+      <div class="ep-b"><div class="beat"><b>사연</b><span>오늘 하루만 행복하게 해달라. 이뤄졌다. 딱 하루만.</span></div><div class="beat hook"><b>0.0–2.0</b><span><em>거리 전광판이 전부 11:11</em></span></div><div class="beat "><b>2.0–2.4</b><span>타이틀 플래시</span></div><div class="beat "><b>2.4–14</b><span>사연. 하루가 끝나가는 사람의 얼굴</span></div><div class="beat "><b>14–30</b><span>11월 11일 아침. 도시 전체가 그 숫자. 상점, 광고, 피드</span></div><div class="beat "><b>30–42</b><span>밤이 온다. 사람들이 폰을 꺼내 시각을 확인한다</span></div><div class="beat "><b>42–55</b><span>11:11:00. <em>전 세계가 동시에 빈다.</em> 그의 시계가 초 단위로 떨어진다 — 빠른 컷 연발</span></div><div class="beat end"><b>55–60</b><span>숫자가 멈추지 않는다</span></div></div>
+    </div>
+      <div class="ep">
+      <div class="ep-h"><span class="ep-n">EP 09</span><span class="ep-t">대신</span><span class="ep-c">0:33</span></div>
+      <div class="ep-b"><div class="beat"><b>사연</b><span>누군가를 위해 대신 아프게 해달라 빈 사람. 그건 그대로 이뤄졌다. 시즌에서 유일하게 뒤틀리지 않은 소원.</span></div><div class="beat hook"><b>0.0–2.0</b><span><em>린이 손목을 내민다</em></span></div><div class="beat "><b>2.0–2.4</b><span>타이틀 플래시</span></div><div class="beat "><b>2.4–16</b><span>사연. 병상 옆에 앉은 사람. 이번엔 아무것도 어긋나지 않았다</span></div><div class="beat "><b>16–30</b><span>린이 시계방으로 간다. 자기 이름표가 붙은 시계를 집어 든다</span></div><div class="beat "><b>30–44</b><span>도하 앞에 선다. <em>“내가 대신할게요”</em></span></div><div class="beat "><b>44–54</b><span>그의 표정이 처음으로 흔들린다. 그리고 고개를 젓는다</span></div><div class="beat end"><b>54–60</b><span>그가 그녀의 관자놀이에 손을 얹는다 · 선택지 투표</span></div></div>
+    </div>
+      <div class="ep">
+      <div class="ep-h"><span class="ep-n">EP 10</span><span class="ep-t">11초</span><span class="ep-c">0:11</span></div>
+      <div class="ep-b"><div class="beat"><b>사연</b><span>이 화의 사연은 린의 것이다. 코너에 마지막으로 도착한 사연은 그녀가 쓴 것이었다.</span></div><div class="beat hook"><b>0.0–2.0</b><span><em>시계가 0:11을 가리킨다</em></span></div><div class="beat "><b>2.0–2.4</b><span>타이틀 플래시</span></div><div class="beat "><b>2.4–16</b><span>11월 11일 11시 11분. 마지막 만남. 두 사람은 아무 말도 하지 않는다</span></div><div class="beat "><b>16–38</b><span>11초 카운트다운. 11 · 10 · 9 … 그동안의 컷들이 스치듯 지나간다</span></div><div class="beat "><b>38–48</b><span>도하 — <em>“당신이 처음이었습니다.”</em></span></div><div class="beat "><b>48–54</b><span>0. 그가 사라진다. 아무것도 남지 않는다</span></div><div class="beat end"><b>54–60</b><span>아침. 린이 눈을 뜬다. 아무것도 기억나지 않는다. 손목의 멈춘 시계 — <em>초침이 다시 움직이기 시작한다</em></span></div></div>
+    </div></div>
+
+    <h4>후킹 규칙</h4>
+    <ul class="plain">
+      <li><strong>매 화 첫 2초는 그 화의 마지막에서 가져옵니다.</strong> 결말 이미지를 앞에 던지고 되감는 구조입니다</li>
+      <li><strong>컷은 2~3초.</strong> 60초에 20~25컷. 3초를 넘기면 손가락이 올라갑니다. 예외는 마지막 컷 하나 — 5초 붙잡아 여운을 만듭니다</li>
+      <li><strong>매 화 최소 한 번 숫자가 줄어드는 순간</strong>을 보여줍니다. 시계 클로즈업 + 숫자가 실제로 바뀌는 컷. 이게 시리즈의 심장박동입니다</li>
+      <li><strong>대사는 화당 2줄 이내.</strong> 도하는 시즌 전체에서 <strong>2문장</strong>만 말합니다 (7화·10화)</li>
+      <li><strong>붉은 디지털 <code>11:11</code>이 매 화 최소 한 번</strong> 화면에 뜹니다 — 언어를 몰라도 이 시리즈를 알아보는 표식</li>
+    </ul>
+
+    <h4>컷 리듬</h4>
+    <div class="tw"><table>
+      <thead><tr><th>구간</th><th>컷당</th><th>역할</th></tr></thead>
+      <tbody>
+        <tr><td class="term">0 – 10초</td><td class="num">1.5 – 2초</td><td class="ko">훅. 가장 강한 이미지를 먼저 던진다</td></tr>
+        <tr><td class="term">10 – 35초</td><td class="num">3초</td><td class="ko">전개. 정보가 들어가는 유일한 구간</td></tr>
+        <tr><td class="term">35 – 55초</td><td class="num">1 – 1.5초</td><td class="ko">절정. 속도가 곧 긴장</td></tr>
+        <tr><td class="term">55 – 60초</td><td class="num">5초 한 컷</td><td class="ko">마지막. 길게 붙잡아 여운</td></tr>
+      </tbody>
+    </table></div>
+
+    <h4>운영</h4>
+    <div class="cards">
+      <div class="card"><div class="c-n">업로드</div><h6>매주 밤 11시 11분</h6><p>정해진 요일 그 시각에만 올립니다. 알람 걸어두는 팬이 생기면 초기 도달이 고정됩니다.</p></div>
+      <div class="card"><div class="c-n">역산</div><h6>11월 11일에 10화</h6><p>마지막 화를 실제 11월 11일에 공개하려면 <strong>10주 전</strong>에 1화를 올립니다. 그날 전 세계가 이 숫자를 의식합니다.</p></div>
+      <div class="card"><div class="c-n">참여</div><h6>댓글로 소원 수집</h6><p>캡션마다 “What would you wish for at 11:11?” 그리고 <strong>다음 화 사연에 실제 댓글을 넣습니다.</strong> 자기 소원이 나오면 그 사람이 퍼뜨립니다.</p></div>
+      <div class="card"><div class="c-n">투표</div><h6>질문은 하나</h6><p>“린은 그를 계속 생각해야 할까?” 6화·9화에 던집니다. 그때마다 시계가 줄어 있어 무게가 달라집니다.</p></div>
+    </div>
+  </section>
+
   <!-- ══════════════════════════ APPENDIX A ══════════════════════════ -->
   <section id="ref">
     <p class="eyebrow">Appendix A</p>
@@ -1192,7 +1381,8 @@ Hip Hop, Lo-Fi, Drum Machine, Synthesizer, Synth stabs, Bass, Groovy, Up-lifting
       <tbody>
         <tr><td class="term">--iw</td><td class="ko">이미지 프롬프트<br><em style="color:var(--muted)">프롬프트에 붙인 이미지 URL·업로드</em></td><td class="num">0 – 3 · 1</td><td class="ko">↑ 첨부 이미지에 가까워짐 (텍스트는 보조 설명으로 밀림)<br>↓ 텍스트가 주도, 이미지는 힌트 수준</td></tr>
         <tr><td class="term">--sw</td><td class="ko">스타일 레퍼런스<br><em style="color:var(--muted)">--sref 코드/이미지</em></td><td class="num">0 – 1000 · 100</td><td class="ko">↑ 화풍·색·질감이 강하게 이식됨<br>↓ 내용은 내 프롬프트, 스타일만 살짝</td></tr>
-        <tr><td class="term">--cw</td><td class="ko">캐릭터 레퍼런스<br><em style="color:var(--muted)">--cref 이미지</em></td><td class="num">0 – 100 · 100</td><td class="ko">100 = 얼굴 + 머리 + 의상까지 전부 고정<br>0 = <strong>얼굴만</strong> 고정, 옷·헤어는 새로 생성</td></tr>
+        <tr><td class="term">--cw</td><td class="ko">캐릭터 레퍼런스<br><em style="color:var(--muted)">--cref 이미지 · V6/Niji 6</em></td><td class="num">0 – 100 · 100</td><td class="ko">100 = 얼굴 + 머리 + 의상까지 전부 고정<br>0 = <strong>얼굴만</strong> 고정, 옷·헤어는 새로 생성</td></tr>
+<tr><td class="term">--ow</td><td class="ko">옴니 레퍼런스<br><em style="color:var(--muted)">--oref 이미지 · <strong>V7의 현행 방식</strong></em></td><td class="num">1 – 1000 · 100</td><td class="ko">↑ 레퍼런스의 인물·사물을 강하게 재현<br>실사용 권장 구간은 대체로 50 – 250</td></tr>
       </tbody>
     </table></div>
 
@@ -1235,6 +1425,7 @@ Hip Hop, Lo-Fi, Drum Machine, Synthesizer, Synth stabs, Bass, Groovy, Up-lifting
         <tr><td class="term">--q</td><td class="ko" colspan="2">렌더 품질(연산량). 텍스처가 중요한 컷에서만 올림</td></tr>
       </tbody>
     </table></div>
+    <div class="callout"><p><strong>V7에서는 <code>--cref</code>가 아니라 <code>--oref</code>입니다.</strong> 미드저니 공식 문서 기준으로 <strong>Omni Reference(<code>--oref</code> + <code>--ow</code>)가 V7에서 Character Reference를 대체</strong>했습니다. <code>--cref</code>/<code>--cw</code>는 V6·Niji 6 워크플로에 남아 있는 방식입니다. 교안(2024년, V6 시기)의 <code>--cw 10</code>은 그 당시 기준으로 맞았고, 지금 V7로 작업한다면 같은 의도를 <code>--oref</code> + 낮은 <code>--ow</code>로 옮기면 됩니다.</p></div>
     <div class="callout"><p><strong>버전 주의.</strong> 위 범위는 V7 기준입니다. <code>--iw</code>는 V5 계열에서 <code>0.5 – 2</code>였고 V6부터 <code>0 – 3</code>이 되었습니다. 파라미터 범위는 모델 버전이 올라갈 때 조용히 바뀌는 편이라, 값이 거부되면 먼저 <code>--v</code> 버전을 확인하세요.</p></div>
   </section>
 
