@@ -623,42 +623,96 @@ footer .logo small{color:var(--tx3)}
 /* ---- 시트(결과물) ---- */
 /* cqw 는 「조상 컨테이너」의 가로폭을 따른다 — 자기 자신은 컨테이너가 될 수 없다.
    그래서 겉을 한 겹 싸고, 시트 안쪽 치수를 전부 그 폭의 비율로 적는다.
-   이러면 화면에서 작게 보든 A4로 인쇄하든 글자·여백 비율이 그대로 유지된다. */
+   이러면 화면에서 작게 보든 A4로 인쇄하든 글자·여백 비율이 그대로 유지된다.
+
+   레이아웃은 설정집의 관례를 그대로 따른다 —
+   왼쪽 기둥에 「이름 · 스펙 · 설정 글 · 대표 그림」을 세로로 쌓고,
+   오른쪽을 가로 띠 세 줄(크기 비교 / 디테일 / 아래 띠)로 나눈다. */
 .sheetwrap{container-type:inline-size;width:100%}
-.sheetdoc{background:#fff;color:#1a1a1a;font-family:var(--sans);width:100%;
-  aspect-ratio:297/210;padding:3.2cqw;display:flex;flex-direction:column;gap:2cqw;
+.sheetdoc{background:#f0efec;color:#1a1a1a;font-family:var(--sans);width:100%;
+  aspect-ratio:297/210;padding:2.4cqw 2.6cqw;display:grid;
+  grid-template-columns:30% 1fr;grid-template-rows:1fr auto;gap:1.8cqw 2.2cqw;
   border:1px solid var(--line2)}
 .sheetdoc *{box-sizing:border-box}
-.sheetdoc .sh-hd{display:flex;align-items:flex-end;gap:2.4cqw;border-bottom:1.6px solid #1a1a1a;padding-bottom:1.4cqw}
-.sheetdoc .sh-nm{font-family:var(--disp);font-size:7cqw;line-height:.95;letter-spacing:-.01em}
-.sheetdoc .sh-sub{font-size:1.5cqw;color:#5a5a5a;line-height:1.5;flex:1}
-.sheetdoc .sh-rl{font-family:var(--mono);font-size:1.2cqw;letter-spacing:.18em;text-transform:uppercase;color:#8a8a8a}
-.sheetdoc .sh-body{display:grid;grid-template-columns:20% 26% 1fr;gap:2cqw;flex:1;min-height:0}
-.sheetdoc .sh-col{display:flex;flex-direction:column;gap:1.4cqw;min-height:0}
-.sheetdoc .sh-cap{font-size:1.25cqw;letter-spacing:.16em;color:#fff;background:#1a1a1a;
-  padding:.5cqw .9cqw;display:inline-block;align-self:flex-start}
-.sheetdoc .sh-cell{display:flex;flex-direction:column;gap:.7cqw;flex:1;min-height:0}
-.sheetdoc .sh-trio{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4cqw;flex:1;min-height:0}
-.sheetdoc .sh-box{border:1px solid #d8d5cd;flex:1;min-height:0;display:flex;flex-direction:column}
-.sheetdoc .sh-box>img{width:100%;height:100%;object-fit:contain;flex:1;min-height:0}
-.sheetdoc .sh-ph{flex:1;display:grid;place-items:center;color:#b6b2a8;font-size:1.3cqw;letter-spacing:.1em;text-align:center;padding:1cqw}
-.sheetdoc table{width:100%;border-collapse:collapse;font-size:1.35cqw}
-.sheetdoc th,.sheetdoc td{border-bottom:1px solid #e6e3db;padding:.75cqw .4cqw;vertical-align:top;text-align:left;line-height:1.5}
-.sheetdoc th{width:30%;color:#8a8a8a;font-weight:500;white-space:nowrap}
-/* 한 줄에 여덟 개를 늘어놓으면 칸이 좁아 색 이름이 옆칸을 침범한다. 네 개씩 두 줄. */
-.sheetdoc .sh-pal{display:grid;grid-template-columns:repeat(4,1fr);gap:.6cqw}
-.sheetdoc .sh-pal div{text-align:center;font-size:.95cqw;color:#5a5a5a;line-height:1.35;
-  overflow-wrap:anywhere;font-family:var(--mono)}
-.sheetdoc .sh-pal i{display:block;height:3cqw;border:1px solid #d8d5cd;margin-bottom:.35cqw}
-.sheetdoc .sh-lock{font-family:var(--mono);font-size:1.05cqw;color:#6a6a6a;line-height:1.55;
-  border-top:1px solid #d8d5cd;padding-top:1cqw;word-break:break-word}
+.sheetdoc .sh-cap{font-size:1.15cqw;letter-spacing:.14em;color:#1a1a1a;font-weight:600;
+  display:flex;align-items:center;gap:.6cqw;white-space:nowrap}
+.sheetdoc .sh-cap::before{content:'';width:.5cqw;height:.5cqw;background:#1a1a1a;border-radius:50%;flex:none}
+.sheetdoc .sh-cap::after{content:'';height:1px;background:#c9c6be;flex:1}
+
+/* 왼쪽 기둥 */
+.sheetdoc .sh-L{display:flex;flex-direction:column;gap:1.1cqw;min-height:0;overflow:hidden}
+.sheetdoc .sh-nm{font-family:var(--disp);font-size:4.6cqw;line-height:1;letter-spacing:-.01em}
+.sheetdoc .sh-nm small{font-family:var(--sans);font-size:.36em;letter-spacing:0;color:#5a5a5a;margin-left:.5em}
+.sheetdoc .sh-rl{font-family:var(--mono);font-size:1.05cqw;letter-spacing:.2em;text-transform:uppercase;color:#8a8a8a}
+.sheetdoc .sh-spec{list-style:none;margin:0;padding:0;font-size:1.25cqw;line-height:1.75;color:#2a2a2a}
+.sheetdoc .sh-spec li{display:flex;gap:.5cqw}
+.sheetdoc .sh-spec b{font-weight:600}
+.sheetdoc .sh-spec i{color:#8a8a8a;font-style:normal;min-width:5.4cqw}
+/* 설정 글이 길다고 대표 그림을 굶기면 안 된다 — 글은 일곱 줄까지만 싣고 그림 자리를 지킨다.
+   max-height 는 정확히 일곱 줄(1.15 × 1.72 × 7 ≒ 13.85cqw)에 맞췄다.
+   어중간하게 잡으면 마지막 줄이 글자 중간에서 잘려 고장난 것처럼 보인다. */
+.sheetdoc .sh-desc{font-size:1.15cqw;line-height:1.72;color:#3a3a3a;white-space:pre-wrap;
+  overflow:hidden;flex:0 0 auto;max-height:13.9cqw;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:7;line-clamp:7}
+.sheetdoc .sh-hero{flex:1;min-height:14cqw;display:flex;flex-direction:column}
+.sheetdoc .sh-hero .sh-box{flex:1}
+
+/* 오른쪽 — 가로 띠 */
+.sheetdoc .sh-R{display:flex;flex-direction:column;gap:1.5cqw;min-height:0}
+.sheetdoc .sh-band{display:flex;flex-direction:column;gap:.8cqw;min-height:0}
+.sheetdoc .sh-band.grow{flex:1}
+.sheetdoc .sh-vars{display:grid;gap:1.4cqw;flex:1;min-height:0}
+.sheetdoc .sh-grid{display:grid;gap:.9cqw;flex:1;min-height:0}
+.sheetdoc .sh-cell{display:flex;flex-direction:column;gap:.5cqw;min-height:0}
+.sheetdoc .sh-box{border:1px solid #d3d0c8;background:#e6e4df;flex:1;min-height:0;
+  display:flex;overflow:hidden}
+.sheetdoc .sh-box>img{width:100%;height:100%;object-fit:contain;object-position:center bottom}
+.sheetdoc .sh-ph{flex:1;display:grid;place-items:center;color:#a8a49a;font-size:1.05cqw;
+  letter-spacing:.08em;text-align:center;padding:.8cqw;line-height:1.5}
+.sheetdoc .sh-lab{font-size:1.05cqw;color:#4a4a4a;text-align:center;line-height:1.4;
+  overflow-wrap:anywhere}
+
+/* 키 눈금자 — 그림이 아니라 코드로 그린다. 숫자와 눈금이 항상 정확히 맞는다. */
+.sheetdoc .sh-ruled{display:flex;align-items:flex-end;gap:1.5cqw;flex:1;min-height:0}
+.sheetdoc .sh-ruled .sh-box{flex:1;min-width:0}
+.sheetdoc .sh-rule{width:1px;flex:none;background:#9a968c;position:relative;margin-right:1.4cqw}
+.sheetdoc .sh-rule::before,.sheetdoc .sh-rule::after{content:'';position:absolute;
+  left:-.5cqw;width:1.1cqw;height:1px;background:#9a968c}
+.sheetdoc .sh-rule::before{top:0}
+.sheetdoc .sh-rule::after{bottom:0}
+.sheetdoc .sh-rule em{position:absolute;left:.5cqw;top:50%;font-style:normal;font-size:.9cqw;
+  color:#5a5a5a;background:#f0efec;padding:.4cqw 0;writing-mode:vertical-rl;transform:translateY(-50%);
+  white-space:nowrap}
+
+/* 아래 띠 — 스케일 · 팔레트 · 키워드 */
+.sheetdoc .sh-foot{grid-column:1/-1;display:grid;grid-template-columns:30% 1fr 1fr;gap:2.2cqw;
+  border-top:1px solid #c9c6be;padding-top:1.2cqw}
+.sheetdoc .sh-fcol{display:flex;flex-direction:column;gap:.8cqw;min-width:0}
+/* 사람 실루엣 대조 — 사람 170cm 를 기준으로 캐릭터 키를 비율대로 그린다 */
+.sheetdoc .sh-scale{display:flex;align-items:flex-end;gap:1.2cqw;height:11cqw}
+.sheetdoc .sh-scale svg{height:100%;width:auto;flex:none}
+.sheetdoc .sh-scale .sh-sfig{display:flex;align-items:flex-end;gap:.5cqw;height:100%}
+.sheetdoc .sh-scale .sh-sfig>img{height:100%;width:auto;max-width:9cqw;object-fit:contain;object-position:center bottom}
+.sheetdoc .sh-scale .sh-sbox{height:100%;width:4.5cqw;border:1px dashed #b8b4aa;display:grid;
+  place-items:center;color:#a8a49a;font-size:.85cqw;text-align:center;line-height:1.3}
+.sheetdoc .sh-sm{font-size:.95cqw;color:#5a5a5a;white-space:nowrap;align-self:flex-end;padding-bottom:.3cqw}
+.sheetdoc .sh-pal{display:flex;gap:.5cqw}
+.sheetdoc .sh-pal div{flex:1;min-width:0;text-align:center;font-size:.85cqw;color:#5a5a5a;
+  line-height:1.3;overflow-wrap:anywhere;font-family:var(--mono)}
+.sheetdoc .sh-pal i{display:block;height:3.4cqw;border:1px solid #c9c6be;margin-bottom:.35cqw}
+.sheetdoc .sh-keys{font-size:1.2cqw;line-height:1.9;color:#2a2a2a}
+.sheetdoc .sh-keys s{text-decoration:none;color:#b0aca2;margin:0 .45cqw}
+.sheetdoc .sh-lock{font-family:var(--mono);font-size:.85cqw;color:#8a8a8a;line-height:1.5;
+  overflow-wrap:anywhere;max-height:3.6cqw;overflow:hidden}
 /* 좁은 화면에서 A4 비율을 지키면 글자가 4px 이 되어 아무도 못 읽는다.
    세로로 풀어서 읽히게 하되, 인쇄물과 모양이 다르다는 사실은 화면에 적어 둔다. */
 .narrowonly{display:none}
 @media(max-width:720px){
-  .sheetdoc{aspect-ratio:auto}
-  .sheetdoc .sh-body{grid-template-columns:1fr}
-  .sheetdoc .sh-cell,.sheetdoc .sh-box{min-height:22cqw}
+  .sheetdoc{aspect-ratio:auto;grid-template-columns:1fr;grid-template-rows:none}
+  .sheetdoc .sh-foot{grid-template-columns:1fr}
+  .sheetdoc .sh-box,.sheetdoc .sh-cell{min-height:26cqw}
+  .sheetdoc .sh-hero .sh-box{min-height:60cqw}
+  .sheetdoc .sh-desc{overflow:visible}
   .narrowonly{display:inline}
 }
 
@@ -1540,22 +1594,54 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <span class="mini" id="cs-presethint" style="margin:0"></span>
     </div>
 
-    <div class="rule">① 칸별 프롬프트 · 그림</div>
+    <div class="rule">① 기본 칸 — 프롬프트 · 그림</div>
     <p class="mini" style="margin:0 0 14px"><b>마스터컷부터</b> 마음에 들 때까지 돌리세요. 여기서 타협하면 시트 전체가 흔들립니다.
     나머지 칸은 <b>마스터컷을 참고 이미지로 같이 넣고</b> 뽑아야 같은 인물이 나옵니다.
     칸을 누르면 뽑은 그림을 넣을 수 있어요.</p>
     <div class="shpanels" id="cs-panels"></div>
 
-    <div class="rule">② 프로필 — 시트에 한글로 인쇄됩니다</div>
+    <div class="rule">② 크기 변형 <span class="tagx">키가 다른 판본</span></div>
+    <p class="mini" style="margin:0 0 12px">같은 인물을 <b>키만 바꿔</b> 여러 판본으로 뽑아 나란히 세우는 칸입니다.
+    옆의 <b>키 눈금자는 적어주신 숫자대로 코드가 정확히 그립니다</b> — 그림에 눈금을 그려달라고 하지 마세요, 반드시 틀립니다.</p>
+    <div class="row" style="margin-bottom:12px">
+      <button class="btn sm" id="cs-varadd">＋ 판본 추가</button>
+      <span class="mini" style="margin:0">비워두면 이 칸은 시트에서 통째로 빠집니다</span>
+    </div>
+    <div class="shpanels" id="cs-vars"></div>
+
+    <div class="rule">③ 디테일 클로즈업 <span class="tagx">캡션 달린 확대컷</span></div>
+    <p class="mini" style="margin:0 0 12px">설정집을 설정집처럼 보이게 하는 건 사실 이 줄입니다 —
+    <b>부적 · 손 · 발목 · 재질</b>처럼 확대해서 보여줄 부분을 원하는 만큼 넣으세요.
+    한글 캡션은 시트에 인쇄되고, <b>영문 칸은 프롬프트에 들어갑니다.</b></p>
+    <div class="row" style="margin-bottom:12px">
+      <button class="btn sm" id="cs-detadd">＋ 디테일 추가</button>
+      <button class="btn sm gh" id="cs-dettrans">한글 → 영문 번역</button>
+      <span class="mini" style="margin:0">여섯 개쯤이 보기 좋습니다</span>
+    </div>
+    <div class="shpanels" id="cs-dets"></div>
+
+    <div class="rule">④ 프로필 · 설정 — 시트에 한글로 인쇄됩니다</div>
     <div class="grid g4">
       <label class="f"><span>직업 · 신분</span><input type="text" id="cs-job" placeholder="회사원"></label>
-      <label class="f"><span>키</span><input type="text" id="cs-height" placeholder="185cm"></label>
+      <label class="f"><span>키</span><input type="text" id="cs-height" placeholder="약 150cm"></label>
       <label class="f"><span>몸무게 · 체격</span><input type="text" id="cs-weight" placeholder="105kg"></label>
-      <label class="f"><span>한 줄 소개</span><input type="text" id="cs-tag" placeholder="출근 지각을 피하려는 아빠"></label>
+      <label class="f"><span>한 줄 소개</span><input type="text" id="cs-tag" placeholder="원혼을 등에 지고 다니는 노인"></label>
     </div>
-    <p class="mini" style="margin:-4px 0 0">이름 · 나이 · 성별 · 성격 · 특징은 <b>캐릭터 카드에 쓴 것을 그대로 가져옵니다.</b></p>
+    <div class="grid g2">
+      <label class="f"><span>특징 — 설정 글 (줄바꿈 그대로 · 시트에는 일곱 줄까지)</span>
+        <textarea id="cs-desc" style="min-height:130px" data-lim="7" placeholder="이마의 붉은 부적은 원혼을 봉인할 수 있다.&#10;매우 많은 원혼이 매달린 뒤로, 빛바랜 색동 저고리의 누더기 차림.&#10;&#10;한쪽 다리를 절뚝이며 무겁게 이동한다."></textarea></label>
+      <div>
+        <label class="f"><span>컨셉 키워드 (쉼표로 구분)</span>
+          <input type="text" id="cs-keys" placeholder="원한, 저주, 무거움, 억압, 끌려다님, 구속, 공포"></label>
+        <label class="f" style="margin-top:12px"><span>스케일 대조 — 키 (cm 숫자만)</span>
+          <input type="number" id="cs-cm" placeholder="150" min="1" max="2000"></label>
+        <p class="mini" style="margin:8px 0 0">숫자를 넣으면 시트 아래에 <b>키 170cm 사람 실루엣</b>과
+        나란히 놓고 비율대로 그려줍니다. 비워두면 그 칸이 빠져요.</p>
+      </div>
+    </div>
+    <p class="mini" style="margin:-4px 0 0">이름 · 나이 · 성별 · 성격은 <b>캐릭터 카드에 쓴 것을 그대로 가져옵니다.</b></p>
 
-    <div class="rule">③ 컬러 팔레트</div>
+    <div class="rule">⑤ 컬러 팔레트</div>
     <div class="row" style="margin-bottom:12px">
       <button class="btn sm" id="cs-palauto">마스터컷에서 색 뽑기</button>
       <button class="btn sm gh" id="cs-paladd">＋ 직접 추가</button>
@@ -1563,7 +1649,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     </div>
     <div class="chips" id="cs-pal"></div>
 
-    <div class="rule">④ 조립된 시트</div>
+    <div class="rule">⑥ 조립된 시트</div>
     <div class="sheetwrap" id="cs-preview"></div>
     <p class="mini" style="margin:10px 0 0">인쇄하면 <b>A4 가로 한 장</b>으로 나옵니다.
     <b class="narrowonly">좁은 화면에서는 읽으시라고 세로로 풀어 보여드리는 중이라, 지금 보이는 모양과 인쇄물이 다릅니다.</b>
@@ -4807,20 +4893,24 @@ window.addEventListener('resize',lazyFlush);
 
 /* =========================================================
    캐릭터 시트 조립기
-   시트 한 장을 프롬프트 하나로 뽑으려 하면 반드시 두 군데가 깨진다 —
-   칸마다 얼굴이 조금씩 달라지고, 「표정 시트」 같은 한글 라벨이 뭉개진다.
-   그래서 여기서는 ① 칸을 나눠 각각 뽑고 ② 라벨·표·팔레트는 그림이 아니라
-   HTML로 얹는다. 라벨이 정확하고, 나중에 한 칸만 다시 뽑아 갈아끼울 수 있다.
+
+   시트 한 장을 프롬프트 하나로 뽑으면 반드시 두 군데가 깨진다 —
+   칸마다 얼굴이 미묘하게 달라지고, 「표정 시트」 같은 한글 라벨이 뭉개진다.
+   그래서 칸을 나눠 각각 뽑고, 라벨·표·눈금자·팔레트는 글자와 도형으로 얹는다.
+
+   설정집을 설정집처럼 보이게 하는 건 사실 그림이 아니라 그 둘레의 구조물이다 —
+   키 눈금자, 사람 실루엣 대조, 캡션 달린 확대컷 줄, 컨셉 키워드, 설정 글.
+   그것들은 전부 여기서 코드로 그린다. 그래야 숫자와 눈금이 항상 맞는다.
    ========================================================= */
 const SHEET_PRESET = {
   '작품 스타일 그대로':null,
   '3D 스타일 (픽사풍)':{
-    hint:'참고로 보내주신 「제임스」·「스카이」가 이 계열입니다',
+    hint:'매끈한 3D 애니메이션 영화 느낌',
     render:'stylized 3D character render, appealing slightly exaggerated proportions, smooth subsurface-scattering skin, soft rounded features, detailed hair strands and cloth simulation',
     light:'soft global illumination, three-point studio lighting, gentle rim light',
     tail:'high-end 3D animation studio quality, clean neutral background, 4K'},
   '블록 피규어 (레고풍)':{
-    hint:'「루비 라이더」처럼 관절이 나뉜 조립 피규어',
+    hint:'관절이 나뉜 조립 피규어',
     render:'toy block minifigure style, blocky segmented limbs and torso, simplified printed face, glossy ABS plastic finish, visible joint seams',
     light:'even soft product lighting, gentle top key',
     tail:'collectible toy product render, clean neutral background, 4K'},
@@ -4834,13 +4924,18 @@ const SHEET_PRESET = {
     render:'visible fine skin texture with natural pores, subtle asymmetry and uneven skin tone, slight natural sheen rather than a glossy retouched finish, no digital smoothing, no beauty filter, no AI-airbrushed look',
     light:'soft diffused studio lighting without harsh reflections',
     tail:'high-end but unretouched photography, cinematic realism, 4K, sharp focus on skin texture detail'},
+  '다크 판타지 · 호러':{
+    hint:'설정집형 크리처. 젖은 질감과 어두운 명암',
+    render:'dark fantasy creature concept art, highly detailed organic and wet surface textures, grim desaturated palette with one accent color, intricate layered silhouette, heavy material weight',
+    light:'low-key directional lighting, deep shadows, soft grey studio backdrop',
+    tail:'museum-quality creature design plate, photoreal rendering, extremely detailed, 4K'},
   '게임 컨셉 아트':{
     hint:'실루엣과 재질이 먼저 읽히게',
     render:'painterly game concept art, semi-realistic rendering, clear readable silhouette, material detail called out through rendering',
     light:'neutral even concept-art lighting',
     tail:'professional character concept art, sharp, 4K'}
 };
-/* 인물이 나오는 칸에만 붙이는 금지어. 분해도·소품 칸에는 오히려 방해가 된다. */
+/* 인물이 나오는 칸에만 붙이는 금지어. 분해도·소품·확대컷에는 오히려 방해가 된다. */
 const NEG_ONE = 'exactly one character per view, no duplicate figures, no extra characters, no background objects, no distorted anatomy, no extra fingers';
 const NEG_OBJ = 'no character, no person, no mannequin, no hands';
 const NEG_ALL = 'no text, no watermark, no logos, no frame borders';
@@ -4848,27 +4943,27 @@ const NEG_ALL = 'no text, no watermark, no logos, no frame borders';
 const SHEET_PANEL = [
   {k:'master',t:'① 마스터컷',ar:'2:3',
    d:'정면 전신 · 순백 배경. 이것부터 확정하세요 — 나머지 칸의 기준이 됩니다.',
-   comp:'full-body character reference, standing upright in a neutral straight pose facing the camera, both feet flat on the ground, arms relaxed at the sides, full head-to-toe framing with the whole body and both feet visible, not cropped, pure white seamless studio background',
+   comp:'full-body character reference, standing upright in a neutral straight pose facing the camera, both feet flat on the ground, arms relaxed at the sides, full head-to-toe framing with the whole body and both feet visible, not cropped, plain seamless studio background',
    neg:NEG_ONE},
   {k:'turn',t:'턴어라운드',ar:'16:9',
    d:'정면 · 3/4 · 측면 · 후면 네 컷. 키가 같아야 합니다.',
-   comp:'character turnaround model sheet, four consistent full-body views in a row — front view, three-quarter view, side profile, and back view, evenly spaced, orthographic, identical height and proportions across all four, pure white seamless background',
+   comp:'character turnaround model sheet, four consistent full-body views in a row — front view, three-quarter view, side profile, and back view, evenly spaced, orthographic, identical height and proportions across all four, plain seamless background',
    neg:NEG_ONE},
   {k:'expr',t:'표정 시트',ar:'16:9',
    d:'머리·어깨만 나오는 얼굴 격자.',
-   comp:'character expression sheet, a clean grid of head-and-shoulders portraits showing eight expressions — neutral, smiling, laughing, angry, surprised, sad, embarrassed, determined — same framing and same head size in every cell, pure white seamless background',
+   comp:'character expression sheet, a clean grid of head-and-shoulders portraits showing eight expressions — neutral, smiling, laughing, angry, surprised, sad, embarrassed, determined — same framing and same head size in every cell, plain seamless background',
    neg:NEG_ONE},
   {k:'outfit',t:'의상 분해도',ar:'4:3',
    d:'입고 있는 옷을 벗겨 늘어놓은 그림. 인물은 안 나옵니다.',
-   comp:'knolling flat lay of the outfit pieces worn by the character, each garment and shoe laid out separately and evenly spaced, top-down orthographic view, pure white background',
+   comp:'knolling flat lay of the outfit pieces worn by the character, each garment and shoe laid out separately and evenly spaced, top-down orthographic view, plain background',
    neg:NEG_OBJ},
   {k:'props',t:'소품',ar:'4:3',
    d:'항상 들고 다니는 물건.',
-   comp:'the character\'s signature props isolated on a pure white background, three-quarter product-shot angle, evenly spaced, consistent scale',
+   comp:'the character\'s signature props isolated on a plain background, three-quarter product-shot angle, evenly spaced, consistent scale',
    neg:NEG_OBJ},
   {k:'pose',t:'포즈 시트',ar:'16:9',
    d:'그 인물다운 동작 서너 개.',
-   comp:'character pose sheet, three to four full-body action poses in a row that express the character\'s personality, consistent proportions across poses, pure white seamless background',
+   comp:'character pose sheet, three to four full-body action poses in a row that express the character\'s personality, consistent proportions across poses, plain seamless background',
    neg:NEG_ONE}
 ];
 
@@ -4876,8 +4971,10 @@ function csheet(c){
   if(!c.sheet||typeof c.sheet!=='object') c.sheet={};
   const s=c.sheet;
   if(!(s.preset in SHEET_PRESET)) s.preset='작품 스타일 그대로';
-  ['job','height','weight','tag'].forEach(k=>{ if(typeof s[k]!=='string') s[k]=''; });
+  ['job','height','weight','tag','desc','keys','cm'].forEach(k=>{ if(typeof s[k]!=='string') s[k]=''; });
   if(!Array.isArray(s.pal)) s.pal=[];
+  if(!Array.isArray(s.vars)) s.vars=[];
+  if(!Array.isArray(s.dets)) s.dets=[];
   if(!s.pan||typeof s.pan!=='object') s.pan={};
   return s;
 }
@@ -4890,6 +4987,8 @@ function presetOf(c){
   return {render:LOOK[S.style.look]||'',light:'even soft studio lighting',
           tail:'consistent character model sheet, 4K',hint:''};
 }
+const REF_CHAR='match the attached reference image exactly — same face, same hair, same outfit, ';
+const REF_OBJ ='match the items in the attached reference image exactly — same colors, same materials, same cut, ';
 function sheetPrompt(c,k){
   const p=SHEET_PANEL.find(x=>x.k===k); if(!p) return '';
   const st=presetOf(c), lock=charLock(c);
@@ -4898,11 +4997,28 @@ function sheetPrompt(c,k){
     ? 'the outfit and props belonging to '+(lock||'the character')
     : (k==='master'?'original character, ':'identical original character in every view, ')
       +(lock||'(외형 정보를 먼저 채워주세요)');
-  const ref = k==='master' ? ''
-    : obj ? 'match the items in the attached reference image exactly — same colors, same materials, same cut, '
-          : 'match the attached reference image exactly — same face, same hair, same outfit, ';
+  const ref = k==='master' ? '' : (obj?REF_OBJ:REF_CHAR);
   return [p.comp,ref+who,st.render,st.light,st.tail,p.neg,NEG_ALL]
     .filter(x=>x&&x.trim()).join(', ')+' --ar '+p.ar;
+}
+/* 크기 변형 — 키만 다른 판본. 프롬프트에 키를 박아 비율이 실제로 달라지게 한다. */
+function varPrompt(c,v){
+  const st=presetOf(c), lock=charLock(c), base=SHEET_PANEL[0];
+  const h=(v.cm||'').toString().trim();
+  const tall=h?`the figure is about ${h}cm tall, proportions and mass consistent with that height, `:'';
+  return [base.comp,REF_CHAR+tall+'identical original character, '+(lock||'(외형 정보를 먼저 채워주세요)'),
+          st.render,st.light,st.tail,base.neg,NEG_ALL].filter(x=>x&&x.trim()).join(', ')+' --ar 2:3';
+}
+/* 디테일 확대컷 — 캡션의 영문 칸이 그대로 프롬프트의 주어가 된다. */
+function detPrompt(c,d){
+  const st=presetOf(c), lock=charLock(c);
+  const what=(d.en||'').trim();
+  return ['extreme close-up macro detail shot of '+(what||'(영문 칸을 채워주세요)'),
+          'part of '+(lock||'the character'),
+          REF_CHAR.replace(' — same face, same hair, same outfit,','')+'cropped tight on this detail only',
+          st.render,st.light,st.tail,'shallow depth of field, plain neutral background',
+          'no full body, no face unless it is the subject',NEG_ALL]
+    .filter(x=>x&&x.trim()).join(', ')+' --ar 3:4';
 }
 
 /* ---------- 조립기 화면 ---------- */
@@ -4913,35 +5029,72 @@ function openSheet(id){
   const s=csheet(c);
   $('cs-preset').innerHTML=opts(Object.fromEntries(Object.keys(SHEET_PRESET).map(k=>[k,k])),s.preset);
   $('cs-preset').value=s.preset;
-  ['job','height','weight','tag'].forEach(k=>$('cs-'+k).value=s[k]||'');
+  ['job','height','weight','tag','desc','keys','cm'].forEach(k=>$('cs-'+k).value=s[k]||'');
   $('csmask').classList.add('on');
   paintSheet();
+}
+function thumbHTML(key,has,ds,ph){
+  return `<div class="shthumb" ${ds} ${has?`data-imgof="${key}"`:''}>${has?'':(ph||'＋ 뽑은 그림 넣기')}</div>`;
 }
 function paintSheet(){
   const c=shChar(); if(!c) return;
   const s=csheet(c);
   $('cs-name').textContent=c.name||'이름 없는 캐릭터';
   $('cs-presethint').textContent=presetOf(c).hint||'';
-  $('cs-panels').innerHTML=SHEET_PANEL.map(p=>{
-    const key=panKey(c,p.k), has=!!s.pan[p.k];
-    return `<div class="shp">
+
+  $('cs-panels').innerHTML=SHEET_PANEL.map(p=>`<div class="shp">
       <b>${esc(p.t)}</b><span class="k">${esc(p.d)}</span>
-      <div class="shthumb" data-cspick="${p.k}" ${has?`data-imgof="${key}"`:''}>${has?'':'＋ 뽑은 그림 넣기'}</div>
+      ${thumbHTML(panKey(c,p.k),!!s.pan[p.k],`data-cspick="${p.k}"`)}
       <div class="out">${esc(sheetPrompt(c,p.k))}</div>
       <div class="shrow">
         <button class="btn sm" data-cscopy="${p.k}">프롬프트 복사</button>
-        ${has?`<button class="btn sm gh" data-csdel="${p.k}">그림 빼기</button>`:''}
+        ${s.pan[p.k]?`<button class="btn sm gh" data-csdel="${p.k}">그림 빼기</button>`:''}
+      </div>
+    </div>`).join('');
+
+  $('cs-vars').innerHTML=s.vars.length?s.vars.map((v,i)=>{
+    const k='v_'+v.id;
+    return `<div class="shp" data-vid="${v.id}">
+      <b>판본 ${i+1}</b>
+      <div class="grid g2" style="margin-bottom:9px">
+        <label class="f"><span>이름표</span><input type="text" data-vf="label" value="${esc(v.label)}" placeholder="150cm 버전"></label>
+        <label class="f"><span>키 (cm)</span><input type="number" data-vf="cm" value="${esc(v.cm)}" placeholder="150" min="1" max="2000"></label>
+      </div>
+      ${thumbHTML(panKey(c,k),!!s.pan[k],`data-cspick="${k}"`)}
+      <div class="out">${esc(varPrompt(c,v))}</div>
+      <div class="shrow">
+        <button class="btn sm" data-cscopy="${k}">프롬프트 복사</button>
+        ${s.pan[k]?`<button class="btn sm gh" data-csdel="${k}">그림 빼기</button>`:''}
+        <button class="btn sm dgr" data-vdel="${v.id}">판본 삭제</button>
       </div>
     </div>`;
-  }).join('');
-  hydrateImages($('cs-panels'));
+  }).join(''):'<span class="mini" style="margin:0">판본이 없어요 — 「크기 비교」 칸은 시트에서 빠집니다</span>';
+
+  $('cs-dets').innerHTML=s.dets.length?s.dets.map((d,i)=>{
+    const k='d_'+d.id;
+    return `<div class="shp" data-did="${d.id}">
+      <b>디테일 ${i+1}</b>
+      <label class="f" style="margin-bottom:7px"><span>캡션 (한글 · 시트에 인쇄)</span>
+        <input type="text" data-df="ko" value="${esc(d.ko)}" placeholder="이마의 부적"></label>
+      <label class="f enfield" style="margin-bottom:9px"><span>영문 (프롬프트에 들어감)</span>
+        <input type="text" data-df="en" value="${esc(d.en)}" placeholder="the red paper talisman on the forehead"></label>
+      ${thumbHTML(panKey(c,k),!!s.pan[k],`data-cspick="${k}"`)}
+      <div class="out">${esc(detPrompt(c,d))}</div>
+      <div class="shrow">
+        <button class="btn sm" data-cscopy="${k}">프롬프트 복사</button>
+        ${s.pan[k]?`<button class="btn sm gh" data-csdel="${k}">그림 빼기</button>`:''}
+        <button class="btn sm dgr" data-ddel="${d.id}">디테일 삭제</button>
+      </div>
+    </div>`;
+  }).join(''):'<span class="mini" style="margin:0">디테일이 없어요 — 「디테일」 줄에는 기본 칸(의상·소품·포즈)만 들어갑니다</span>';
+
+  hydrateImages($('cs-panels')); hydrateImages($('cs-vars')); hydrateImages($('cs-dets'));
   paintPal();
   paintPreview();
 }
 function paintPal(){
   const c=shChar(); if(!c) return;
-  const pal=csheet(c).pal;
-  const w=$('cs-pal');
+  const pal=csheet(c).pal, w=$('cs-pal');
   if(!pal.length){ w.innerHTML='<span class="mini" style="margin:0">아직 색이 없어요 — 마스터컷을 넣고 「색 뽑기」를 누르면 자동으로 채워집니다</span>'; return; }
   w.innerHTML=pal.map((p,i)=>`<div class="chip">
     <input class="sw" type="color" value="${esc(p.hex)}" data-cshex="${i}" title="${esc(p.hex)}">
@@ -4950,22 +5103,85 @@ function paintPal(){
   </div>`).join('');
 }
 $('cs-preset').addEventListener('change',()=>{ csheet(shChar()).preset=$('cs-preset').value; save(); paintSheet(); });
-['job','height','weight','tag'].forEach(k=>{
+['job','height','weight','tag','desc','keys','cm'].forEach(k=>{
   $('cs-'+k).addEventListener('input',()=>{ csheet(shChar())[k]=$('cs-'+k).value; save(); paintPreview(); });
 });
-$('cs-panels').addEventListener('click',async e=>{
+
+/* 칸 · 판본 · 디테일 — 그림을 넣고 빼는 동작은 모두 같아서 한 군데서 받는다 */
+async function csPanelClick(e){
   const c=shChar(); if(!c) return;
   const t=e.target;
-  if(t.dataset.cscopy){ copy(sheetPrompt(c,t.dataset.cscopy),'프롬프트 복사 ✓'); return; }
+  const key=t.dataset.cscopy||t.dataset.csdel;
+  if(t.dataset.cscopy){
+    const k=t.dataset.cscopy, s=csheet(c);
+    const txt = k.startsWith('v_') ? varPrompt(c,s.vars.find(v=>'v_'+v.id===k))
+              : k.startsWith('d_') ? detPrompt(c,s.dets.find(d=>'d_'+d.id===k))
+              : sheetPrompt(c,k);
+    copy(txt,'프롬프트 복사 ✓'); return;
+  }
   if(t.dataset.csdel){
     const k=t.dataset.csdel;
     await IDB.del(panKey(c,k)); dropURL(panKey(c,k));
     delete csheet(c).pan[k]; save(); paintSheet(); updQuota(); return;
   }
+  if(t.dataset.vdel){
+    const s=csheet(c), i=s.vars.findIndex(v=>v.id===t.dataset.vdel), v=s.vars[i];
+    await IDB.del(panKey(c,'v_'+v.id)); dropURL(panKey(c,'v_'+v.id));
+    delete s.pan['v_'+v.id]; s.vars.splice(i,1);
+    save(); paintSheet(); updQuota(); return;
+  }
+  if(t.dataset.ddel){
+    const s=csheet(c), i=s.dets.findIndex(d=>d.id===t.dataset.ddel), d=s.dets[i];
+    await IDB.del(panKey(c,'d_'+d.id)); dropURL(panKey(c,'d_'+d.id));
+    delete s.pan['d_'+d.id]; s.dets.splice(i,1);
+    save(); paintSheet(); updQuota(); return;
+  }
   const th=t.closest('[data-cspick]'); if(!th) return;
   const k=th.dataset.cspick;
-  // 턴어라운드는 한 장에 네 컷이 들어가니 컷 썸네일보다 넉넉하게 남긴다(인쇄용)
+  // 확대컷·판본은 인쇄에서 크게 실리므로 컷 썸네일보다 넉넉하게 남긴다
   pickImageTo(panKey(c,k),()=>{ csheet(c).pan[k]=true; save(); paintSheet(); updQuota(); toast('그림을 넣었어요 ✓'); },1800);
+}
+['cs-panels','cs-vars','cs-dets'].forEach(id=>$(id).addEventListener('click',csPanelClick));
+$('cs-vars').addEventListener('input',e=>{
+  const f=e.target.dataset.vf; if(!f) return;
+  const card=e.target.closest('[data-vid]');
+  const v=csheet(shChar()).vars.find(x=>x.id===card.dataset.vid); if(!v) return;
+  v[f]=e.target.value; save();
+  card.querySelector('.out').textContent=varPrompt(shChar(),v);
+  paintPreview();
+});
+$('cs-dets').addEventListener('input',e=>{
+  const f=e.target.dataset.df; if(!f) return;
+  const card=e.target.closest('[data-did]');
+  const d=csheet(shChar()).dets.find(x=>x.id===card.dataset.did); if(!d) return;
+  d[f]=e.target.value; save();
+  card.querySelector('.out').textContent=detPrompt(shChar(),d);
+  paintPreview();
+});
+$('cs-varadd').addEventListener('click',()=>{
+  const s=csheet(shChar());
+  if(s.vars.length>=4){ toast('판본은 네 개까지가 한 장에 보기 좋아요'); return; }
+  s.vars.push({id:nid('v').slice(2),label:'',cm:''}); save(); paintSheet();
+});
+$('cs-detadd').addEventListener('click',()=>{
+  const s=csheet(shChar());
+  if(s.dets.length>=10){ toast('디테일은 열 개까지 넣을 수 있어요'); return; }
+  s.dets.push({id:nid('d').slice(2),ko:'',en:''}); save(); paintSheet();
+});
+/* 디테일 캡션의 영문 칸 채우기 — 크롬 내장 번역이 되면 즉시, 안 되면 요청문을 복사해준다 */
+$('cs-dettrans').addEventListener('click',async()=>{
+  const c=shChar(); if(!c) return;
+  const todo=csheet(c).dets.filter(d=>d.ko&&d.ko.trim()&&!(d.en||'').trim());
+  if(!todo.length){ toast('번역할 한글 캡션이 없거나 영문이 이미 찼어요'); return; }
+  if(await mtProbe()){
+    toast('번역 중…');
+    try{
+      for(const d of todo) d.en=(await mtTranslate(d.ko)).trim();
+      save(); paintSheet(); toast('번역해서 채웠어요 ✓'); return;
+    }catch(err){ toast('자동 번역 실패 — 요청문을 복사합니다'); }
+  }
+  copy('아래 한국어를 AI 이미지 프롬프트에 쓸 영어 명사구로 바꿔주세요. 번호와 화살표 형식 그대로 답해주세요.\n\n'
+    +todo.map((d,i)=>`${i+1}. ${d.ko}`).join('\n'),'요청문 복사 ✓ — AI에 붙여넣으세요');
 });
 $('cs-pal').addEventListener('input',e=>{
   const c=shChar(); if(!c) return;
@@ -4984,7 +5200,7 @@ $('cs-paladd').addEventListener('click',()=>{
   csheet(shChar()).pal.push({hex:'#8a8a8a',label:''}); save(); paintPal(); paintPreview();
 });
 /* 마스터컷에서 대표색 뽑기.
-   순백 배경은 세어봐야 의미가 없으니 빼고, 비슷한 색끼리 묶어 많이 쓰인 순서로 8개. */
+   배경색은 세어봐야 의미가 없으니 빼고, 비슷한 색끼리 묶어 많이 쓰인 순서로 8개. */
 $('cs-palauto').addEventListener('click',async()=>{
   const c=shChar(); if(!c) return;
   if(!csheet(c).pan.master){ toast('마스터컷을 먼저 넣어주세요'); return; }
@@ -5007,14 +5223,18 @@ function pickColors(url){
         const ctx=cv.getContext('2d',{willReadFrequently:true});
         ctx.drawImage(im,0,0,w,h);
         const d=ctx.getImageData(0,0,w,h).data, bin=new Map();
+        /* 네 귀퉁이 색을 배경으로 보고 그와 가까운 픽셀은 세지 않는다.
+           흰 배경만 빼면 회색 스튜디오 배경에서 회색만 잔뜩 뽑힌다. */
+        const at=(x,y)=>{const i=(y*w+x)*4; return [d[i],d[i+1],d[i+2]];};
+        const bg=[at(0,0),at(w-1,0),at(0,h-1),at(w-1,h-1)];
+        const near=(a,b)=>Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1])+Math.abs(a[2]-b[2])<48;
         for(let i=0;i<d.length;i+=4){
-          const r=d[i],g=d[i+1],b=d[i+2];
+          const px=[d[i],d[i+1],d[i+2]];
           if(d[i+3]<200) continue;
-          const mx=Math.max(r,g,b), mn=Math.min(r,g,b);
-          if(mx>240&&mx-mn<14) continue;          // 순백 배경
-          const k=(r>>5)+'|'+(g>>5)+'|'+(b>>5);
+          if(bg.some(g=>near(px,g))) continue;
+          const k=(px[0]>>5)+'|'+(px[1]>>5)+'|'+(px[2]>>5);
           const e=bin.get(k)||[0,0,0,0];
-          e[0]+=r; e[1]+=g; e[2]+=b; e[3]++; bin.set(k,e);
+          e[0]+=px[0]; e[1]+=px[1]; e[2]+=px[2]; e[3]++; bin.set(k,e);
         }
         const h2=n=>Math.round(n).toString(16).padStart(2,'0');
         res([...bin.values()].sort((a,b)=>b[3]-a[3]).slice(0,8)
@@ -5027,55 +5247,117 @@ function pickColors(url){
 }
 
 /* ---------- 시트(결과물) 조립 ---------- */
+/* 키 170cm 사람. viewBox 의 세로 170 이 곧 170cm 라, 캐릭터 키와 그대로 견줄 수 있다. */
+const SILHOUETTE = `<svg viewBox="0 0 48 170" preserveAspectRatio="xMidYMax meet" aria-label="키 170cm 사람">
+<g fill="#b8b4aa"><ellipse cx="24" cy="14" rx="10.5" ry="13"/><rect x="20.5" y="25" width="7" height="8"/>
+<path d="M11.5 44c0-7 5-12 12.5-12s12.5 5 12.5 12v35c0 6 1.5 11 2.5 15h-30c1-4 2.5-9 2.5-15z"/>
+<rect x="5" y="43" width="6" height="49" rx="3"/><rect x="37" y="43" width="6" height="49" rx="3"/>
+<rect x="15" y="93" width="8" height="73" rx="3.5"/><rect x="25" y="93" width="8" height="73" rx="3.5"/>
+<rect x="11" y="163" width="12" height="7" rx="2.5"/><rect x="25" y="163" width="12" height="7" rx="2.5"/></g></svg>`;
+
 function sheetRows(c){
   const s=csheet(c);
-  return [['이름',c.name],['나이',c.age],['성별',c.sex],['직업',s.job],
-          ['키',s.height],['체중',s.weight],['성격',c.personality],['특징',c.mark]]
+  return [['키',s.height],['성별',c.sex],['나이',c.age],['직업',s.job],['체중',s.weight]]
     .filter(r=>r[1]&&String(r[1]).trim());
 }
 function sheetHTML(c,src){
-  const s=csheet(c), pal=s.pal;
-  const cell=(k,t,cls)=>{
-    const u=src[k];
-    return `<div class="sh-cell${cls?' '+cls:''}"><span class="sh-cap">${esc(t)}</span>
-      <div class="sh-box">${u?`<img src="${u}" alt="${esc(t)}">`:`<div class="sh-ph">${esc(t)}<br>아직 비어 있음</div>`}</div></div>`;
-  };
-  const rows=sheetRows(c).map(r=>`<tr><th>${esc(r[0])}</th><td>${esc(r[1])}</td></tr>`).join('');
-  const lock=charLock(c);
+  const s=csheet(c);
+  const box=u=>u?`<img src="${u}" alt="">`:'';
+  const cell=(key,cap,ph)=>`<div class="sh-cell">
+      <div class="sh-box">${src[key]?box(src[key]):`<div class="sh-ph">${esc(ph||cap)}<br>비어 있음</div>`}</div>
+      <div class="sh-lab">${esc(cap)}</div></div>`;
+
+  /* 크기 비교 — 키가 큰 판본을 100% 로 두고 나머지를 비율대로 낮춘다.
+     눈금자 높이가 곧 그림 높이라, 자와 그림이 어긋날 수가 없다. */
+  const vars=s.vars.filter(v=>(v.label||'').trim()||(v.cm||'').toString().trim()||s.pan['v_'+v.id]);
+  const maxCm=Math.max(1,...vars.map(v=>+v.cm||0));
+  const varCells=vars.map(v=>{
+    const cm=+v.cm||0, pct=cm&&maxCm?Math.max(28,cm/maxCm*100):100;
+    const u=src['v_'+v.id];
+    return `<div class="sh-cell">
+      <div class="sh-ruled">
+        <div class="sh-box" style="height:${pct.toFixed(1)}%">${u?box(u):`<div class="sh-ph">비어 있음</div>`}</div>
+        ${cm?`<div class="sh-rule" style="height:${pct.toFixed(1)}%"><em>약 ${cm}cm</em></div>`:''}
+      </div>
+      <div class="sh-lab">${esc(v.label||(cm?cm+'cm 버전':'판본'))}</div></div>`;
+  }).join('');
+
+  /* 디테일 줄 — 직접 넣은 확대컷 뒤에 기본 칸(의상·소품·포즈)을 이어 붙인다 */
+  const detItems=s.dets.filter(d=>(d.ko||'').trim()||s.pan['d_'+d.id])
+      .map(d=>({key:'d_'+d.id,cap:d.ko||'디테일'}))
+    .concat([{key:'outfit',cap:'의상 분해도'},{key:'props',cap:'소품'},{key:'pose',cap:'포즈 시트'}]);
+  const dCols=Math.min(6,Math.max(3,detItems.length));
+
+  const pal=s.pal, keys=(s.keys||'').split(',').map(x=>x.trim()).filter(Boolean);
+  const cm=parseInt(s.cm,10);
+  const scaleMax=cm?Math.max(cm,170):0;
+
   return `<div class="sheetdoc">
-  <div class="sh-hd">
+  <div class="sh-L">
     <div>
       <div class="sh-rl">CHARACTER SHEET${c.role?' · '+esc(c.role):''}</div>
       <div class="sh-nm">${esc(c.name||'이름 없음')}</div>
     </div>
-    <div class="sh-sub">${esc(s.tag||'')}</div>
-  </div>
-  <div class="sh-body">
-    <div class="sh-col">
-      <span class="sh-cap">프로필</span>
-      ${rows?`<table>${rows}</table>`:'<div class="sh-ph" style="flex:0">채운 항목이 없습니다</div>'}
-      ${pal.length?`<span class="sh-cap">컬러 팔레트</span>
-      <div class="sh-pal">${pal.map(p=>`<div><i style="background:${esc(p.hex)}"></i>${esc(p.label||p.hex)}</div>`).join('')}</div>`:''}
-    </div>
-    <div class="sh-col">${cell('master','마스터컷')}</div>
-    <div class="sh-col">
-      ${cell('turn','턴어라운드')}
-      ${cell('expr','표정 시트')}
-      <div class="sh-trio">${cell('outfit','의상 분해도')}${cell('props','소품')}${cell('pose','포즈 시트')}</div>
+    ${s.tag?`<div class="sh-desc" style="flex:none">${esc(s.tag)}</div>`:''}
+    <ul class="sh-spec">${sheetRows(c).map(r=>`<li><i>${esc(r[0])}</i><b>${esc(r[1])}</b></li>`).join('')}</ul>
+    ${s.desc?`<div class="sh-cap">특징</div><div class="sh-desc">${esc(s.desc)}</div>`:''}
+    <div class="sh-hero">
+      <div class="sh-box">${src.master?box(src.master):'<div class="sh-ph">마스터컷<br>비어 있음</div>'}</div>
     </div>
   </div>
-  ${lock?`<div class="sh-lock">외형 고정 블록 — ${esc(lock)}</div>`:''}
+
+  <div class="sh-R">
+    ${varCells?`<div class="sh-band" style="flex:1.15">
+      <div class="sh-cap">크기 비교</div>
+      <div class="sh-vars" style="grid-template-columns:repeat(${vars.length},1fr)">${varCells}</div>
+    </div>`:`<div class="sh-band" style="flex:1.15">
+      <div class="sh-cap">턴어라운드</div>${cell('turn','정면 · 3/4 · 측면 · 후면')}
+    </div>`}
+    <div class="sh-band" style="flex:.9">
+      <div class="sh-cap">${varCells&&s.pan.turn?'턴어라운드':'표정 시트'}</div>
+      ${varCells&&s.pan.turn?cell('turn','정면 · 3/4 · 측면 · 후면'):cell('expr','표정 여덟 가지')}
+    </div>
+    <div class="sh-band grow">
+      <div class="sh-cap">디테일</div>
+      <div class="sh-grid" style="grid-template-columns:repeat(${dCols},1fr)">
+        ${detItems.map(x=>cell(x.key,x.cap)).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div class="sh-foot">
+    <div class="sh-fcol">
+      <div class="sh-cap">스케일</div>
+      ${scaleMax?`<div class="sh-scale">
+        <div class="sh-sfig" style="height:${(170/scaleMax*100).toFixed(1)}%">${SILHOUETTE}</div>
+        <div class="sh-sfig" style="height:${(cm/scaleMax*100).toFixed(1)}%">
+          ${src.master?`<img src="${src.master}" alt="">`:'<div class="sh-sbox">마스터컷<br>비어 있음</div>'}
+        </div>
+        <div class="sh-sm">사람 170cm · <b>${cm}cm</b></div>
+      </div>`:'<div class="sh-ph" style="flex:none;padding:1.6cqw 0">기준 키를 적으면<br>사람과 나란히 그려집니다</div>'}
+    </div>
+    <div class="sh-fcol">
+      <div class="sh-cap">컬러 팔레트</div>
+      ${pal.length?`<div class="sh-pal">${pal.map(p=>`<div><i style="background:${esc(p.hex)}"></i>${esc(p.label||p.hex)}</div>`).join('')}</div>`
+        :'<div class="sh-ph" style="flex:none;padding:1.6cqw 0">아직 색이 없습니다</div>'}
+    </div>
+    <div class="sh-fcol">
+      <div class="sh-cap">컨셉 키워드</div>
+      <div class="sh-keys">${keys.length?keys.map(esc).join('<s>/</s>'):'<span style="color:#a8a49a">아직 없습니다</span>'}</div>
+      ${charLock(c)?`<div class="sh-lock">외형 고정 — ${esc(charLock(c))}</div>`:''}
+    </div>
+  </div>
 </div>`;
 }
 async function sheetSrc(c,asData){
-  const out={};
-  for(const p of SHEET_PANEL){
-    if(!csheet(c).pan[p.k]) continue;
-    const key=panKey(c,p.k);
+  const s=csheet(c), out={};
+  for(const k of Object.keys(s.pan)){
+    if(!s.pan[k]) continue;
+    const key=panKey(c,k);
     if(asData){
-      try{ const b=await IDB.get(key); if(b) out[p.k]=await blobToDataURL(b); }catch(e){}
+      try{ const b=await IDB.get(key); if(b) out[k]=await blobToDataURL(b); }catch(e){}
     }else{
-      const u=await imgURL(key); if(u) out[p.k]=u;
+      const u=await imgURL(key); if(u) out[k]=u;
     }
   }
   return out;
@@ -5122,8 +5404,8 @@ function sheetCSS(){
   const v=n=>cs.getPropertyValue(n).trim();
   return `:root{--disp:${v('--disp')};--sans:${v('--sans')};--mono:${v('--mono')};--line2:${v('--line2')}}
 *{box-sizing:border-box}
-html,body{margin:0;background:#e9e7e1;font-family:var(--sans)}
-.sheetwrap{max-width:1400px;margin:24px auto;padding:0 16px}
+html,body{margin:0;background:#d8d6d0;font-family:var(--sans)}
+.sheetwrap{max-width:1500px;margin:24px auto;padding:0 16px}
 @media print{@page{size:A4 landscape;margin:8mm}
  html,body{background:#fff} .sheetwrap{margin:0;padding:0;max-width:none}
  .sheetdoc{border:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
