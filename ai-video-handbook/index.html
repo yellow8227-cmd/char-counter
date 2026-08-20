@@ -317,6 +317,7 @@ blockquote cite{display:block; font-style:normal; font-family:var(--mono); font-
       <li><a href="#param"><span class="num">C</span>파라미터 치트시트</a></li>
       <li><a href="#tpl"><span class="num">D</span>스토리보드 템플릿</a></li>
       <li><a href="#links"><span class="num">E</span>리소스 링크</a></li>
+      <li><a href="#specs"><span class="num">F</span>툴 실무 사양</a></li>
     </ol>
   </nav>
 
@@ -1192,6 +1193,76 @@ Hip Hop, Lo-Fi, Drum Machine, Synthesizer, Synth stabs, Bass, Groovy, Up-lifting
       <a class="chip" href="https://suno.com" target="_blank" rel="noopener">SUNO</a>
       <a class="chip" href="https://www.midjourney.com/" target="_blank" rel="noopener">Midjourney Web</a>
     </div>
+  </section>
+
+
+  <!-- ══════════════════════════ APPENDIX F ══════════════════════════ -->
+  <section id="specs">
+    <p class="eyebrow">Appendix F</p>
+    <h3 class="sec">툴 실무 사양</h3>
+    <p class="sec-note">교안 슬라이드에 텍스트 없이 시연 영상으로만 있던 구간을, 실제 툴 사양으로 확인해 채운 표</p>
+
+    <p class="lede">교안은 개념과 프롬프트 설계를 다루고, 툴의 구체적인 제약은 강의 영상에서 시연으로만 보여줍니다. 그래서 <strong>“이 기능은 몇 초까지 되나”</strong> 같은 질문에는 슬라이드가 답을 주지 않습니다. 아래는 그 빈칸을 외부 확인으로 메운 것입니다.</p>
+
+    <h4>영상 — Kling AI</h4>
+    <div class="tw"><table>
+      <thead><tr><th>항목</th><th>사양</th></tr></thead>
+      <tbody>
+        <tr><td class="term">모션 브러쉬</td><td class="ko">이미지 안에서 <strong>최대 6개 요소</strong>(인물·사물)의 움직임 궤적을 지정. 정적으로 둘 영역도 따로 지정 가능. Professional Mode에서 지원되며 <strong>생성 결과는 5초</strong></td></tr>
+        <tr><td class="term">일반 생성 길이</td><td class="ko">1회 생성 시 <strong>5초 또는 10초</strong>(기본 5초). 즉 길이 제한은 툴 전체가 아니라 기능별 제약</td></tr>
+        <tr><td class="term">Motion Control 참조영상</td><td class="ko">참조 클립은 <strong>2~5초 권장</strong> — 길면 모션 변화와 조명 변화가 섞여 모션 신호가 희석됨</td></tr>
+        <tr><td class="term">액션 영상 업로드</td><td class="ko">업로드 가능 길이 <strong>3~30초</strong>. 생성 결과의 길이는 업로드한 영상 길이를 따라감</td></tr>
+        <tr><td class="term">교안 내 용도</td><td class="ko">Part 7 에디토리얼 프로젝트에서 <strong>Kling AI Image로 의상 착용</strong> 단계에 사용</td></tr>
+      </tbody>
+    </table></div>
+
+    <h4>영상 — LUMA Dream Machine · Runway</h4>
+    <div class="tw"><table>
+      <thead><tr><th>항목</th><th>사양</th></tr></thead>
+      <tbody>
+        <tr><td class="term">Dream Machine 프롬프트 창</td><td class="ko">업로드한 <strong>이미지의 움직임을 정의</strong>하는 자리. Part 4의 I2V 원칙과 동일 — 카메라 방향과 일어날 사건을 한 문장에 담음</td></tr>
+        <tr><td class="term">Runway Camera Setting</td><td class="ko">Horizontal · Vertical · Pan · Tilt · Roll · Zoom 6축, 각 <strong>−10 ~ +10</strong>. <strong>Gen-3 Turbo 전용</strong>(교안 기준 2024.11)</td></tr>
+        <tr><td class="term">Runway 1회 생성 길이</td><td class="ko">한 이미지당 최대 10초 — Part 7에서 ChatGPT에 스토리보드를 요청할 때 <strong>각 장면을 5~10초로 분배</strong>하라는 조건의 근거</td></tr>
+        <tr><td class="term">Runway의 Blend</td><td class="ko">직접 촬영한 사진과 저작권 프리 이미지를 <strong>섞어서 영상을 만드는 것</strong>. 편집 툴의 ‘혼합’과 다른 개념 (아래 참조)</td></tr>
+      </tbody>
+    </table></div>
+
+    <h4>사운드 — Stable Audio</h4>
+    <div class="tw"><table>
+      <thead><tr><th>항목</th><th>사양</th></tr></thead>
+      <tbody>
+        <tr><td class="term">2.0 최대 길이</td><td class="ko"><strong>최대 3분</strong>의 완성곡(full track). 인트로 · 전개 · 아웃트로 구조를 갖춘 곡이 나옴. 44.1kHz 스테레오</td></tr>
+        <tr><td class="term">무료 사용</td><td class="ko">stableaudio.com에서 무료 가입 후 2.0 사용 가능. <strong>길이가 아니라 생성 횟수로 제한</strong> — 교안 기준 매월 20 Credit, 총 10곡</td></tr>
+        <tr><td class="term">audio-to-audio</td><td class="ko">샘플을 업로드하고 자연어 프롬프트로 변형. 교안의 “녹음한 소리를 활용하여 작곡”, “직접 작곡한 곡을 다른 방식으로 편곡”이 이 기능</td></tr>
+        <tr><td class="term">생성 속도</td><td class="ko">2~3분 트랙 기준 대략 30~60초</td></tr>
+      </tbody>
+    </table></div>
+
+    <h4>편집 — 혼합(Blend)과 키프레임</h4>
+    <div class="callout"><p><strong>이름이 같아 헷갈리는 두 가지.</strong> 편집 툴(CapCut)의 <strong>혼합(Blend)</strong>은 레이어를 겹치고 <strong>불투명도와 혼합 모드를 조절해 이중 노출</strong>을 만드는 기능입니다. Part 4에 나오는 Runway의 <strong>Blend</strong>는 서로 다른 이미지 소스를 섞어 영상을 생성하는 것으로, 전혀 다른 작업입니다.</p></div>
+    <div class="tw"><table>
+      <thead><tr><th>기법</th><th>쓰임</th></tr></thead>
+      <tbody>
+        <tr><td class="term">혼합 / 불투명도</td><td class="ko">두 레이어를 겹쳐 이중 노출. 현실 촬영본과 생성 이미지를 포개는 Part 6 Project 02에 직접 쓰임</td></tr>
+        <tr><td class="term">키프레임</td><td class="ko">시작·끝 상태를 지정해 그 사이를 보간. 위치·크기·불투명도 변화에 사용</td></tr>
+        <tr><td class="term">형태가 바뀌는 장면</td><td class="ko">키프레임만으로는 A가 B로 <em>변하지</em> 않음 — 두 상태 사이를 이어주는 <strong>전환 효과</strong>가 함께 필요</td></tr>
+        <tr><td class="term">스틸프레임</td><td class="ko">생성·촬영한 영상의 한 프레임을 뽑아 다음 샷의 시작 이미지로. 컷 연결에 유리 (Part 4)</td></tr>
+      </tbody>
+    </table></div>
+
+    <h4>교안에 텍스트가 없는 구간</h4>
+    <p>아래는 슬라이드에 캡션조차 없이 <strong>시연 영상으로만 존재</strong>하는 부분입니다. 이 범위의 사실을 확인해야 할 때는 교안이 아니라 강의 영상이나 툴 공식 문서를 봐야 합니다.</p>
+    <div class="chips">
+      <span class="chip">Part 3 · 예시 이미지 슬라이드 다수</span>
+      <span class="chip k">Part 4 · AI VFX 실습</span>
+      <span class="chip k">Part 4 · Video-to-Video</span>
+      <span class="chip k">Part 4 · Kling AI</span>
+      <span class="chip k">Part 4 · LUMA Dream Machine</span>
+      <span class="chip k">Part 4 · KREA Video</span>
+      <span class="chip k">Part 5 · ElevenLabs 화면</span>
+      <span class="chip k">Part 6 · 편집 실습 전반</span>
+    </div>
+    <p style="font-size:14px;color:var(--muted)">Part 6은 각 프로젝트의 ‘실습주제’ 텍스트만 있고 편집 과정은 전부 영상입니다. 반대로 Part 1·2·7은 슬라이드 텍스트가 충실해 교안만으로 내용이 복원됩니다.</p>
   </section>
 
   </main>
