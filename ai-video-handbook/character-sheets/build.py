@@ -7,16 +7,36 @@ from kit import *
 D = os.path.dirname(os.path.abspath(__file__))
 W, H = 3000, 2100
 
-# ── palette (from 11:11 bible) ───────────────────────────────
-INK   = (9, 14, 18)      # #090E12
-INK2  = (21, 30, 36)     # #151E24
-LINE  = (32, 46, 56)     # #202E38
-LINE2 = (48, 64, 80)     # #304050
-MUT   = (94, 122, 166)   # #5E7AA6
-MUT2  = (151, 168, 192)  # #97A8C0
-PAPER = (233, 238, 242)  # #E9EEF2
-RED   = (226, 52, 43)    # #E2342B
-CARD  = (237, 235, 230)
+# ── theme ────────────────────────────────────────────────────
+THEME = (sys.argv[1] if len(sys.argv) > 1 else 'dark').lower()
+RED = (226, 52, 43)      # #E2342B  — constant in both themes
+
+if THEME == 'light':
+    INK   = (237, 234, 227)   # ground bottom
+    INK2  = (247, 245, 240)   # ground top
+    LINE  = (216, 212, 203)   # hairline
+    LINE2 = (170, 165, 154)   # dim rule / ticks
+    MUT   = (122, 128, 138)   # label grey
+    MUT2  = (62, 70, 82)      # body text
+    PAPER = (17, 21, 27)      # primary ink
+    CARD  = (250, 249, 246)
+    CBORD = (221, 217, 208)
+    SHA   = dict(radius=26, spread=14, alpha=46)
+    VIG, GRN = 0.05, 2.6
+    SUF   = '_LIGHT'
+else:
+    INK   = (9, 14, 18)       # #090E12
+    INK2  = (21, 30, 36)      # #151E24
+    LINE  = (32, 46, 56)      # #202E38
+    LINE2 = (48, 64, 80)      # #304050
+    MUT   = (94, 122, 166)    # #5E7AA6
+    MUT2  = (151, 168, 192)   # #97A8C0
+    PAPER = (233, 238, 242)   # #E9EEF2
+    CARD  = (237, 235, 230)
+    CBORD = (206, 204, 198)
+    SHA   = dict(radius=30, spread=16, alpha=120)
+    VIG, GRN = 0.30, 4.2
+    SUF   = ''
 
 PAL = ['#090E12','#151E24','#202E38','#304050','#4A5D75','#5E7AA6','#97A8C0','#E9EEF2','#E2342B']
 
@@ -61,12 +81,12 @@ def panel(im, d, raw, crop, box, num, en, kr, bg):
     T(d, (x0+52, y0-24), en, vf(INT, 21, 600), PAPER, 6.5, 'la')
     d.text((x1, y0-22), kr, font=vf(KRS, 20, 400), fill=MUT, anchor='ra')
     # card
-    shadow(im, box, radius=30, spread=16, alpha=120)
+    shadow(im, box, **SHA)
     im.paste(Image.new('RGB', (x1-x0, y1-y0), CARD), (x0, y0))
     src  = tone(trim(raw.crop(crop), bg, tol=7, pad=4), bg, CARD)
     a, p = fit(src, box, pad=26)
     im.paste(a, p)
-    hairline(d, (x0, y0, x1-1, y1-1), (206,204,198))
+    hairline(d, (x0, y0, x1-1, y1-1), CBORD)
     ticks(d, (x0, y0, x1-1, y1-1), LINE2)
 
 def build(key):
@@ -184,11 +204,11 @@ def build(key):
     T(d, (R, H-M+60), 'ONE MINUTE / 11:11 / SHEET %s' % c['idx'], vf(MONO, 17, 500), LINE2, 2.0, 'ra')
     ticks(d, (M-30, M-40, W-M+30, H-M+96), LINE2, L=28, off=0)
 
-    im = vignette(im, 0.30)
-    im = grain(im, 4.2, seed=11)
-    out = os.path.join(D, 'SHEET_%s.png' % key)
+    if VIG: im = vignette(im, VIG)
+    im = grain(im, GRN, seed=11)
+    out = os.path.join(D, 'SHEET_%s%s.png' % (key, SUF))
     im.save(out)
-    im.resize((W//3, H//3), Image.LANCZOS).save(os.path.join(D, '_pv_%s.jpg' % key), quality=88)
+    im.resize((W//3, H//3), Image.LANCZOS).save(os.path.join(D, '_pv_%s%s.jpg' % (key, SUF)), quality=88)
     print(out, im.size)
 
 for k in CH: build(k)
