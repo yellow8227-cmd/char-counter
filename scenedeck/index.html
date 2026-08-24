@@ -1018,10 +1018,15 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
 
     <div class="card key" id="qcard" style="display:none">
       <h3>빠른 입력 <span class="tagx">저장 안 해도 바로 나옵니다</span></h3>
-      <label class="f"><span>이 장면에서 무슨 일이 벌어지나요</span>
-        <textarea id="q-desc" style="min-height:76px" placeholder="지훈이 우산도 없이 빗속 골목을 걸어 나온다"></textarea></label>
-      <div class="grid g3">
+      <div class="grid g2">
+        <label class="f"><span>이 장면에서 무슨 일이 벌어지나요</span>
+          <textarea id="q-desc" style="min-height:76px" placeholder="지훈이 우산도 없이 빗속 골목을 걸어 나온다"></textarea></label>
+        <label class="f enfield"><span>이 장면에서 무슨 일이 벌어지나요</span>
+          <textarea id="q-descEn" style="min-height:76px" placeholder="한글을 쓰면 여기가 저절로 채워집니다"></textarea></label>
+      </div>
+      <div class="grid g4">
         <label class="f"><span>장소</span><input type="text" id="q-loc" placeholder="비 내리는 뒷골목"></label>
+        <label class="f enfield"><span>장소</span><input type="text" id="q-locEn" placeholder="rain-soaked back alley"></label>
         <label class="f"><span>시간대</span><select id="q-time"></select></label>
         <label class="f"><span>길이 (초)</span><input type="number" id="q-dur" min="0" max="120" value="4"></label>
       </div>
@@ -1348,7 +1353,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v11 · 2026-08-19</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v12 · 2026-08-19</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -2040,6 +2045,7 @@ function autoTargets(){
     add(s,'loc','locEn',`[data-sid="${s.id}"] [data-sf="locEn"]`);
     s.cuts.forEach(c=>add(c,'desc','descEn',`[data-kid="${c.id}"] [data-kf="descEn"]`));
   });
+  if(S.quick){ add(S.quick,'desc','descEn','#q-descEn'); add(S.quick,'loc','locEn','#q-locEn'); }
   return T;
 }
 
@@ -4154,7 +4160,7 @@ const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
    같은 조립기(buildMJ/VEO/GEN)를 그대로 쓰되, 임시 씬·컷을 즉석에서 만들어 넣는다.
    ========================================================= */
 let pQuick=false;
-const QF=['desc','loc','time','dur','shot','angle','move','lens','light','mood','dlg'];
+const QF=['desc','descEn','loc','locEn','time','dur','shot','angle','move','lens','light','mood','dlg'];
 
 function quickState(){ if(!S.quick) S.quick={chars:[]}; if(!S.quick.chars) S.quick.chars=[]; return S.quick; }
 
@@ -4179,9 +4185,9 @@ function fillQuick(){
 
 function quickPair(){
   const q=quickState();
-  const s={id:'quick',heading:'빠른 입력',loc:q.loc||'',locEn:'',time:q.time||'',summary:'',script:'',cuts:[]};
+  const s={id:'quick',heading:'빠른 입력',loc:q.loc||'',locEn:q.locEn||'',time:q.time||'',summary:'',script:'',cuts:[]};
   const c=Object.assign(newCut(),{
-    desc:q.desc||'', shot:q.shot||'', angle:q.angle||'', move:q.move||'', lens:q.lens||'',
+    desc:q.desc||'', descEn:q.descEn||'', shot:q.shot||'', angle:q.angle||'', move:q.move||'', lens:q.lens||'',
     light:q.light||'', mood:q.mood||'', dialogue:q.dlg||'', dur:+q.dur||0, chars:(q.chars||[]).slice()
   });
   return {s,c};
@@ -4204,7 +4210,12 @@ document.addEventListener('click',e=>{
 });
 QF.forEach(k=>{
   const el=$('q-'+k); if(!el) return;
-  const hh=()=>{ quickState()[k]=el.value; save(); renderPrompt(); };
+  const hh=()=>{
+    const q=quickState(); q[k]=el.value;
+    if(/En$/.test(k)) delete q[k+'Auto'];        // 손으로 고친 영문은 이제 안 건드린다
+    else if(k==='desc'||k==='loc') autoMTKick();  // 한글을 쳤으면 잠시 뒤 번역
+    save(); renderPrompt();
+  };
   el.addEventListener('input',hh); el.addEventListener('change',hh);
 });
 $('qchars').addEventListener('click',e=>{
@@ -4222,7 +4233,7 @@ $('q-save').addEventListener('click',()=>{
   const {s,c}=quickPair();
   if(!(c.desc||'').trim()){ toast('무슨 일이 벌어지는지부터 적어주세요'); return; }
   const sc=newScene();
-  sc.loc=s.loc; sc.time=s.time;
+  sc.loc=s.loc; sc.locEn=s.locEn; sc.time=s.time;
   sc.heading=`빠른 입력 — ${s.loc||c.desc.slice(0,18)}`;
   sc.summary=c.desc;
   c.open=false; sc.cuts=[c];
