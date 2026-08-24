@@ -1299,8 +1299,15 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
 
     <div class="card">
       <h3>번역 엔진</h3>
+      <div class="row" style="margin-bottom:12px">
+        <button class="chip" id="mtautotog" data-amt>한글을 치면 바로 영문으로</button>
+        <span class="mini" style="margin:0">켜두면 버튼을 누를 필요가 없습니다</span>
+      </div>
       <div class="row"><span class="status" id="mtstat">확인 전</span><button class="btn sm" id="mtcheck">다시 확인</button></div>
-      <p class="mini">크롬 내장 번역(온디바이스)을 쓰면 인터넷 전송도 요금도 없이 즉시 번역됩니다. 안 되는 환경이면 「번역」의 <b>일괄 방식</b>을 쓰세요 — 어디서든 동작합니다.</p>
+      <p class="mini">한글 칸에 쓰고 <b>잠깐 멈추면</b> 옆 영문 칸이 저절로 채워집니다.
+      <b>손으로 쓴 영문은 절대 덮어쓰지 않고</b>, 자동으로 채운 칸만 한글이 바뀔 때 다시 번역합니다.
+      크롬 내장 번역(온디바이스)이라 <b>글자가 이 컴퓨터 밖으로 나가지 않고</b> 요금도 없습니다.
+      안 되는 환경이면 「번역」의 <b>일괄 방식</b>을 쓰세요 — 어디서든 동작합니다.</p>
     </div>
 
     <div class="card">
@@ -1341,7 +1348,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v10 · 2026-08-17</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v11 · 2026-08-19</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -1356,7 +1363,8 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
     </div>
     <div class="row" style="margin-bottom:16px">
       <span class="status" id="mtstat2">확인 전</span>
-      <button class="btn pri" id="mtauto">자동 번역 실행</button>
+      <button class="chip" data-amt style="margin-right:8px">한글을 치면 바로 영문으로</button>
+      <button class="btn pri" id="mtauto">지금 한꺼번에 번역</button>
       <span class="mini" style="margin:0">크롬 내장 번역이 되는 환경에서만</span>
     </div>
     <div class="rule">되지 않을 때 — 붙여넣기 방식</div>
@@ -1983,7 +1991,7 @@ async function mtTranslate(text){
   return r;
 }
 function paintMT(){
-  const map={unknown:['확인 전',''],checking:['확인 중…','busy'],ok:['자동 번역 사용 가능','ok'],no:['자동 번역 불가 — 붙여넣기 방식 사용','']};
+  const map={unknown:['확인 전',''],checking:['확인 중…','busy'],ok:['내장 번역 준비됨','ok'],no:['내장 번역 없음 — 붙여넣기 방식 사용','']};
   const [t,cls]=map[MT.state]||map.unknown;
   ['mtstat','mtstat2'].forEach(id=>{
     const el=$(id); if(!el) return;
@@ -2004,6 +2012,104 @@ function mtTargets(){
   });
   return T;
 }
+/* =========================================================
+   자동 번역 — 한글을 치고 잠깐 멈추면 영문 칸이 저절로 채워진다.
+   · 손으로 쓴 영문은 절대 건드리지 않는다.
+     자동으로 채운 칸에는 「어떤 한글에서 나왔는지」를 *EnAuto 에 적어두고,
+     그 한글이 바뀌었을 때만 다시 번역한다.
+   · 크롬 내장 번역이라 글자는 이 컴퓨터 밖으로 나가지 않는다.
+   · 언어팩 내려받기는 사용자 동작이 필요하다. 타자 자체가 그 동작이 되지만,
+     거절당하면 한 번만 「번역 켜기」를 눌러달라고 한다.
+   ========================================================= */
+const AMT={timer:null,busy:false,told:false,asked:false};
+const autoOn=()=>S.autoMT!==false;
+
+function autoTargets(){
+  const T=[];
+  const add=(o,koK,enK,sel)=>{
+    const ko=(o[koK]||'').trim(); if(!ko) return;
+    const en=(o[enK]||'').trim(), mark=o[enK+'Auto'];
+    if(en && (!mark || mark===ko)) return;   // 손으로 쓴 영문 · 이미 최신
+    T.push({o,koK,enK,ko,sel});
+  };
+  S.chars.forEach(c=>{
+    add(c,'outfit','outfitEn',`[data-cid="${c.id}"] [data-cf="outfitEn"]`);
+    add(c,'mark','markEn',    `[data-cid="${c.id}"] [data-cf="markEn"]`);
+  });
+  S.scenes.forEach(s=>{
+    add(s,'loc','locEn',`[data-sid="${s.id}"] [data-sf="locEn"]`);
+    s.cuts.forEach(c=>add(c,'desc','descEn',`[data-kid="${c.id}"] [data-kf="descEn"]`));
+  });
+  return T;
+}
+
+function autoAskGesture(){
+  if(AMT.asked) return; AMT.asked=true;
+  toast('번역 언어팩을 한 번만 받으면 그다음부터는 자동입니다',
+        {label:'번역 켜기',fn:async()=>{
+          try{ await mtTranslate('안녕'); toast('준비됐어요 ✓ 이제 한글을 치면 바로 영문이 채워집니다'); autoMTRun(); }
+          catch(e){ toast('언어팩을 받지 못했어요 — 「번역」의 붙여넣기 방식을 쓰세요'); }
+        }});
+}
+
+async function autoMTRun(){
+  if(AMT.busy || !autoOn() || !('Translator' in self)) return;
+  const T=autoTargets(); if(!T.length) return;
+  if(MT.state==='unknown'){ if(!await mtProbe()) return; }
+  if(MT.state!=='ok') return;
+  AMT.busy=true;
+  try{
+    for(const t of T){
+      const el=document.querySelector(t.sel), ph=el?el.placeholder:'';
+      if(el && !el.value) el.placeholder='번역 중…';
+      try{
+        const en=(await mtTranslate(t.ko)).trim();
+        if(!en) continue;
+        if((t.o[t.koK]||'').trim()!==t.ko) continue;   // 그새 또 고쳤으면 버린다
+        t.o[t.enK]=en; t.o[t.enK+'Auto']=t.ko;
+        const e2=document.querySelector(t.sel);
+        if(e2 && document.activeElement!==e2) e2.value=en;
+      }catch(err){
+        if(/NotAllowed|SecurityError/i.test((err&&err.name)||'')){ autoAskGesture(); return; }
+      }finally{ if(el) el.placeholder=ph; }
+    }
+    save(); renderPrompt();
+    if(!AMT.told){ AMT.told=true; toast('한글을 치면 영문 칸이 저절로 채워집니다 ✓'); }
+  }finally{ AMT.busy=false; }
+}
+function autoMTKick(){
+  if(!autoOn()) return;
+  clearTimeout(AMT.timer); AMT.timer=setTimeout(autoMTRun,700);
+}
+function paintAutoMT(){
+  document.querySelectorAll('[data-amt]').forEach(el=>{
+    el.classList.toggle('on',autoOn());
+    el.textContent=(autoOn()?'✓ ':'')+'한글을 치면 바로 영문으로';
+  });
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-amt]'); if(!b) return;
+  S.autoMT=!autoOn(); save(); paintAutoMT();
+  if(autoOn()){ toast('자동 번역을 켰어요 — 한글을 치면 영문 칸이 채워집니다'); autoMTRun(); }
+  else toast('자동 번역을 껐어요 — 「번역」 버튼으로 직접 하시면 됩니다');
+});
+
+/* 한글 칸을 치면 예약, 영문 칸을 손으로 고치면 자동 표식을 지운다 */
+document.addEventListener('input',e=>{
+  const t=e.target; if(!t||!t.dataset) return;
+  const k=t.dataset.kf||t.dataset.sf||t.dataset.cf||'';
+  if(!k) return;
+  if(k==='desc'||k==='loc'||k==='outfit'||k==='mark'){ autoMTKick(); return; }
+  if(/En$/.test(k)){
+    const box=t.closest('[data-kid],[data-sid],[data-cid]'); if(!box) return;
+    const d=box.dataset;
+    const o = d.kid ? allCuts().map(x=>x.c).find(x=>x.id===d.kid)
+            : d.sid ? S.scenes.find(x=>x.id===d.sid)
+            : S.chars.find(x=>x.id===d.cid);
+    if(o) delete o[k+'Auto'];
+  }
+});
+
 function mtRefresh(){
   const T=mtTargets(), box=$('mtreq');
   if(!T.length){ box.textContent='번역할 한글 항목이 없습니다 (영문 칸이 이미 찼거나 한글을 아직 안 쓰셨어요)'; box.classList.add('empty2'); }
@@ -2045,7 +2151,7 @@ async function mtRunAuto(btn,label){
   if(btn){ btn.disabled=false; btn.textContent=label||old; }
   return ok>0;
 }
-$('mtauto').addEventListener('click',()=>mtRunAuto($('mtauto'),'자동 번역 실행'));
+$('mtauto').addEventListener('click',()=>mtRunAuto($('mtauto'),'지금 한꺼번에 번역'));
 $('mtapply').addEventListener('click',()=>{
   const T=mtTargets();
   if(!T.length){ toast('적용할 대상이 없어요'); return; }
@@ -4890,7 +4996,9 @@ function renderAll(){
     const s=newScene(); s.cuts.push(newCut());
     S.scenes.push(s); S.sel={scene:s.id,cut:s.cuts[0].id};
   }
-  renderAll(); setInd('저장됨',true); paintMT(); bootRoute();
+  renderAll(); setInd('저장됨',true); paintMT(); paintAutoMT(); bootRoute();
+  // 열자마자 못 채운 영문 칸이 있으면 조용히 채워 둔다
+  if(autoOn()) setTimeout(autoMTRun,1200);
   window.addEventListener('beforeunload',()=>{
     try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){}
   });
