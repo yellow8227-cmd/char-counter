@@ -1991,7 +1991,7 @@ async function mtTranslate(text){
   return r;
 }
 function paintMT(){
-  const map={unknown:['확인 전',''],checking:['확인 중…','busy'],ok:['자동 번역 사용 가능','ok'],no:['자동 번역 불가 — 붙여넣기 방식 사용','']};
+  const map={unknown:['확인 전',''],checking:['확인 중…','busy'],ok:['내장 번역 준비됨','ok'],no:['내장 번역 없음 — 붙여넣기 방식 사용','']};
   const [t,cls]=map[MT.state]||map.unknown;
   ['mtstat','mtstat2'].forEach(id=>{
     const el=$(id); if(!el) return;
