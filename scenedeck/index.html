@@ -211,6 +211,19 @@ main{max-width:1180px;margin:0 auto;padding:42px 30px 96px}
 .g2{grid-template-columns:1fr 1fr}
 .g3{grid-template-columns:repeat(3,1fr)}
 .g4{grid-template-columns:repeat(4,1fr)}
+/* 카메라 4단 — 무브먼트·속도·프레이밍·종료가 한 덩어리라는 걸 눈으로 보이게 */
+.camblk{border:1px solid var(--line2);background:var(--s1);padding:14px 16px 12px;margin:0 0 14px}
+.camhd{display:flex;align-items:baseline;gap:10px;margin:0 0 10px}
+.camhd b{font-family:var(--disp);font-size:13px;letter-spacing:.02em}
+.camhd span{font-size:11px;color:var(--tx3);letter-spacing:.02em}
+.camwhy{margin:8px 0 0;font-size:11.5px;line-height:1.6;color:var(--tx2);min-height:1.2em}
+.camwhy:not(:empty)::before{content:"↳ ";color:var(--sig)}
+.usehint{color:var(--sig);font-size:11px}
+.lockrow{display:flex;gap:10px;align-items:flex-start;margin:12px 0 0;padding:12px 14px;
+  border:1px solid var(--line);background:var(--s1);font-size:12px;line-height:1.65;color:var(--tx2);cursor:pointer}
+.lockrow input{margin-top:3px;flex:none}
+.lockrow b{color:var(--tx)}
+.lockrow code{font-size:11px}
 @media(max-width:860px){.g2,.g3,.g4{grid-template-columns:1fr}}
 
 label.f{display:block;margin-bottom:16px}
@@ -696,6 +709,52 @@ footer .logo small{color:var(--tx3)}
 slender build, worn grey trench coat, scar through left eyebrow</div>
 
     <div class="shd">
+      <h3>캐릭터 시트는 정확히 3패널</h3>
+      <p>고정 블록만으로 부족할 때는 <b>레퍼런스 이미지</b>를 씁니다. 이때 전면·측면·후면에 표정 모음까지 한 장에 몰아넣은 시트는
+      AI 입장에서 <b>여러 명이 한 화면에 있는 그림</b>으로 읽혀서, 컷마다 얼굴이 섞이는 <b>도플갱어 현상</b>을 만듭니다.
+      「기획 → 캐릭터」의 <b>3패널 시트 프롬프트</b> 버튼은 세 장을 따로 뽑아줍니다.</p>
+    </div>
+    <div class="split">
+      <div class="tblwrap">
+        <table class="tbl">
+          <thead><tr><th>패널</th><th>무엇을 담나</th></tr></thead>
+          <tbody>
+            <tr><td><b>① 전신 정면</b></td><td>머리를 지운 마네킹 — 의상 실루엣과 소재</td></tr>
+            <tr><td><b>② 전신 후면</b></td><td>등판 — 뒤에서 잡을 컷의 근거</td></tr>
+            <tr><td><b>③ 얼굴 클로즈업</b></td><td>이목구비 단독 — 인물 동일성의 유일한 출처</td></tr>
+          </tbody>
+        </table>
+        <p class="mini">①②에 얼굴이 들어가면 ③과 경쟁합니다. 그래서 머리를 아예 지웁니다.
+        의상이 바뀌면 ①②만 다시 뽑고 ③은 원본을 재사용하세요.</p>
+      </div>
+      <div class="tblwrap">
+        <table class="tbl">
+          <thead><tr><th>컷 용도</th><th>권장 길이</th></tr></thead>
+          <tbody>
+            <tr><td>인서트 · 사물 클로즈업</td><td>3–4초</td></tr>
+            <tr><td>인물 이동 · 액션</td><td>5–7초</td></tr>
+            <tr><td>설정샷 (장소 소개)</td><td>5–8초</td></tr>
+            <tr><td>감정선 · 대사</td><td>7–10초</td></tr>
+            <tr><td>롱테이크</td><td>10초 이상</td></tr>
+          </tbody>
+        </table>
+        <p class="mini">15–30초를 한 번에 뽑지 마세요. 27초 지점이 마음에 안 들면 30초를 통째로 다시 뽑아야 합니다.
+        5초 단위로 쪼개면 <b>수정 비용이 4분의 1</b>이 됩니다.</p>
+      </div>
+    </div>
+
+    <div class="shd">
+      <h3>카메라는 4단으로 쓴다</h3>
+      <p>장면 묘사와 카메라 지시를 한 문장에 섞으면 둘 다 흐려집니다. 컷 카드의 <b>카메라 4단</b> 칸은
+      <b>무브먼트 · 속도 · 프레이밍 유지 · 종료 지점</b>을 따로 받아서 영상 프롬프트 맨 앞에 한 줄로 세웁니다.</p>
+    </div>
+    <div class="out">Camera move: Slow dolly in toward the subject, natural dynamic motion,
+keeping the subject centered in frame, ending on a close-up of the face.</div>
+    <p class="mini" style="margin:10px 0 0"><b>종료 지점</b>을 비워두면 클립 마지막 1초가 어정쩡해집니다.
+    그리고 <b>한 컷에 무브먼트는 하나만</b> — 달리 인 하면서 동시에 아크로 돌라고 하면 모델이 둘을 평균 내서 아무 동작도 아닌 것을 만듭니다.
+    두 개가 필요하면 두 컷으로 나누세요.</p>
+
+    <div class="shd">
       <h3>가져오기 · 내보내기</h3>
       <p>이미 쓴 원고가 있다면 「대본 · 컷」 탭에 파일을 끌어다 놓으세요. 결과물은 「설정」 탭에서 내보냅니다.</p>
     </div>
@@ -1033,7 +1092,17 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <div class="grid g3">
         <label class="f"><span>샷 사이즈</span><select id="q-shot"></select></label>
         <label class="f"><span>앵글</span><select id="q-angle"></select></label>
-        <label class="f"><span>카메라 움직임</span><select id="q-move"></select></label>
+        <label class="f"><span>컷 용도 — 길이를 정합니다</span><select id="q-use"></select></label>
+      </div>
+      <div class="camblk">
+        <div class="camhd"><b>카메라 4단</b><span>무브먼트 · 속도 · 프레이밍 유지 · 종료 지점</span></div>
+        <div class="grid g4">
+          <label class="f"><span>① 무브먼트 — 컷당 하나</span><select id="q-move"></select></label>
+          <label class="f"><span>② 속도 <b style="color:var(--sig)">영상</b></span><select id="q-speed"></select></label>
+          <label class="f"><span>③ 프레이밍 유지 <b style="color:var(--sig)">영상</b></span><select id="q-keep"></select></label>
+          <label class="f"><span>④ 종료 지점 <b style="color:var(--sig)">영상</b></span><select id="q-endp"></select></label>
+        </div>
+        <p class="camwhy" id="q-why"></p>
       </div>
       <div class="grid g3">
         <label class="f"><span>렌즈</span><select id="q-lens"></select></label>
@@ -1063,6 +1132,10 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
         <label class="f enfield"><span>미드저니 파라미터</span><input type="text" id="v-mj" placeholder="--ar 16:9 --style raw"></label>
       </div>
       <label class="f enfield"><span>네거티브 프롬프트</span><input type="text" id="v-neg" placeholder="text, watermark, deformed hands"></label>
+      <label class="lockrow"><input type="checkbox" id="v-lock">
+        <span><b>프롬프트 락</b> — 인물이 한 명인 컷에 <code>single person</code> 을 박고,
+        <code>extra person · duplicate face · collage</code> 를 배제 목록에 자동으로 넣습니다.
+        시트를 규격대로 만들어도 프롬프트가 열려 있으면 모델은 인물을 하나 더 만들어 넣습니다.</span></label>
       </div>
     </details>
 
@@ -1353,7 +1426,7 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v12 · 2026-08-19</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v13 · 2026-08-25</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -1494,8 +1567,11 @@ slender build, worn grey trench coat, scar through left eyebrow</div>
 const SHOT = {
   '':'', '익스트림 롱샷':'extreme wide shot','설정샷 (장소 소개)':'establishing shot',
   '롱샷 (풀샷)':'wide shot','풀샷':'full body shot',
-  '미디엄 롱샷':'medium long shot','미디엄샷':'medium shot','미디엄 클로즈업':'medium close-up',
-  '클로즈업':'close-up shot','익스트림 클로즈업':'extreme close-up','오버 더 숄더':'over-the-shoulder shot',
+  '미디엄 롱샷':'medium long shot',
+  '미디엄 풀샷 (카우보이)':'medium full shot, cowboy shot framed at mid-thigh',
+  '미디엄샷':'medium shot','미디엄 클로즈업':'medium close-up',
+  '클로즈업':'close-up shot','빅 클로즈업':'big close-up, forehead to chin',
+  '익스트림 클로즈업':'extreme close-up','오버 더 숄더':'over-the-shoulder shot',
   '투샷':'two shot','POV (주관)':'point-of-view shot','인서트':'insert shot, tight detail'
 };
 const ANGLE = {
@@ -1515,7 +1591,16 @@ const MOVE = {
   '크레인 업':'crane shot rising upward','크레인 다운':'crane shot descending',
   '핸드헬드':'handheld camera, subtle shake','스테디캠':'smooth steadicam glide',
   '줌 인':'slow zoom in','줌 아웃':'slow zoom out','아크 (회전)':'arc shot orbiting the subject',
-  '휩 팬 (급전환)':'whip pan','FPV 드론':'FPV drone shot flying through'
+  '휩 팬 (급전환)':'whip pan','FPV 드론':'FPV drone shot flying through',
+  '돌리 줌 (버티고)':'dolly zoom, vertigo effect, background warping behind the subject',
+  '리버스 트래킹':'reverse tracking shot, camera moving backward ahead of the subject',
+  '사이드 트래킹':'side tracking shot, lateral dolly alongside the subject',
+  '리어 (뒤따르기)':'rear shot following from behind the subject',
+  '드론 풀백':'drone pull back rising away from the subject',
+  '푸시 인 (빠르게)':'fast push in toward the subject',
+  '스노리캠':'snorricam, camera rigged to the body, subject fixed while the world swings',
+  '랙 포커스':'rack focus shifting between foreground and background',
+  'POV (1인칭)':'point-of-view shot, camera as the eyes of the subject'
 };
 /* 런웨이·클링은 카메라 동작이 문장 맨 앞에 오는 게 잘 먹힌다.
    「A cinematic pull back of …」 — 그래서 짧은 표기를 따로 둔다. (필기 Part 4) */
@@ -1524,7 +1609,69 @@ const MOVE_RW = {
   '풀 백':'pull back','푸시 인':'fast push in','트래킹':'tracking shot','트러킹 (좌우 이동)':'trucking shot',
   '크레인 업':'crane up','크레인 다운':'crane down','핸드헬드':'handheld shot','스테디캠':'steadicam glide',
   '줌 인':'zoom in','줌 아웃':'zoom out','아크 (회전)':'arc shot','휩 팬 (급전환)':'whip pan',
-  'FPV 드론':'FPV hyper-speed fly through'
+  'FPV 드론':'FPV hyper-speed fly through','돌리 줌 (버티고)':'dolly zoom','리버스 트래킹':'reverse tracking shot',
+  '사이드 트래킹':'side tracking shot','리어 (뒤따르기)':'rear tracking shot','드론 풀백':'drone pull back',
+  '푸시 인 (빠르게)':'fast push in','스노리캠':'snorricam shot','랙 포커스':'rack focus','POV (1인칭)':'POV shot'
+};
+/* 무브먼트를 왜 쓰는가 — 이름이 아니라 이 의도를 보고 고르면 된다.
+   화면에서는 고른 항목 아래에 한 줄로 뜬다. (가이드북 03:50) */
+const MOVE_WHY = {
+  '고정':'아무것도 하지 않는다. 대사와 연기를 위한 자리.',
+  '팬':'같은 자리에서 시선만 옮긴다. 공간을 훑는다.',
+  '틸트':'위아래로 훑는다. 높이와 규모를 드러낸다.',
+  '달리 인':'물리적으로 다가간다. 몰입과 압박이 함께 올라간다.',
+  '달리 아웃':'물러난다. 관계를 끊거나 상황을 넓힌다.',
+  '풀 백':'뒤로 빠지며 전체를 보여준다. 씬을 닫는 동작.',
+  '푸시 인':'천천히 밀고 들어간다. 감정이 고이는 시간.',
+  '푸시 인 (빠르게)':'확 밀고 들어간다. 발견, 충격, 자각.',
+  '줌 인':'발은 멈춘 채 시선만 좁힌다. 정적인 응시.',
+  '줌 아웃':'대상을 작게 만든다. 거리감, 체념.',
+  '돌리 줌 (버티고)':'배경만 어긋난다. 깨달음의 순간, 현기증.',
+  '트래킹':'따라간다. 동행감, 그리고 목적지가 있다는 신호.',
+  '트러킹 (좌우 이동)':'옆으로 나란히 간다. 속도감과 관찰.',
+  '사이드 트래킹':'옆에서 나란히 간다. 이동의 속도감을 강조.',
+  '리버스 트래킹':'앞서 물러나며 정면을 잡는다. 전진하는 인물의 표정.',
+  '리어 (뒤따르기)':'얼굴을 숨긴다. 정보를 아끼는 컷.',
+  '아크 (회전)':'인물을 돌며 입체로 세운다. 등장·각성·전환점.',
+  '크레인 업':'사건에서 물러나 규모를 보여준다.',
+  '크레인 다운':'내려앉으며 인물에게 초점을 준다.',
+  '드론 풀백':'인물을 점으로 만든다. 고립감, 엔딩, 여운.',
+  '핸드헬드':'사람이 들고 찍는다. 현장감, 긴박함.',
+  '스테디캠':'매끄럽게 흐른다. 긴 호흡의 이동.',
+  '스노리캠':'인물은 고정, 세상이 요동친다. 패닉과 이인감.',
+  '휩 팬 (급전환)':'뭉개질 만큼 빠르게 돌린다. 컷과 컷의 접착제.',
+  '랙 포커스':'초점을 옮긴다. 컷 없이 주의를 이동시키는 방법.',
+  'POV (1인칭)':'인물의 눈이 곧 카메라. 관객을 그 자리에 세운다.',
+  'FPV 드론':'공간을 뚫고 난다. 스케일과 속도.'
+};
+/* 카메라 프롬프트 4단 구조 — 무브먼트 · 속도 · 프레이밍 유지 · 종료 지점.
+   종료 지점을 비워두면 클립 마지막 1초가 어정쩡해진다. (가이드북 04:07) */
+const KEEP = {
+  '':'', '인물을 화면 중앙에 유지':'keeping the subject centered in frame',
+  '얼굴을 계속 프레임 안에':'keeping the face in frame throughout',
+  '두 인물 모두 프레임 안에':'keeping both characters in frame',
+  '수평을 유지':'keeping the horizon level',
+  '피사체 크기를 일정하게':'maintaining a constant subject size',
+  '전경 사물을 계속 걸치고':'keeping the foreground object in frame'
+};
+const ENDP = {
+  '':'', '얼굴 클로즈업에서':'on a close-up of the face',
+  '눈에서':'on an extreme close-up of the eyes',
+  '손 · 물건 인서트에서':'on a tight insert of the hands',
+  '전신이 다 보이는 곳에서':'on a full body shot',
+  '인물이 나간 빈 프레임에서':'on the empty frame after the subject exits',
+  '멀리 물러난 와이드에서':'on a wide shot far from the subject',
+  '문 · 창문 같은 배경에서':'on the background element',
+  '완전한 어둠에서':'in complete darkness'
+};
+/* 컷 길이는 감이 아니라 「컷의 용도」가 정한다. (가이드북 12:38) */
+const USE = {
+  '':                     null,
+  '인서트 · 사물 클로즈업': {a:3, b:4,  t:'손, 물건, 디테일'},
+  '인물 이동 · 액션':      {a:5, b:7,  t:'걷기, 돌아서기, 동작'},
+  '설정샷 (장소 소개)':    {a:5, b:8,  t:'장소와 상황 제시'},
+  '감정선 · 대사':         {a:7, b:10, t:'표정이 변하는 시간'},
+  '롱테이크':             {a:10,b:16, t:'무브먼트는 여전히 하나만'}
 };
 /* 카메라 속도 — 무브먼트와 짝을 이룬다 (필기 부록 A) */
 const SPEED = {
@@ -1765,7 +1912,7 @@ function blank(){
   return {title:'',
     story:{logline:'',genre:'',tone:'',format:'',synopsis:'',act1:'',act2:'',act3:'',theme:'',ref:''},
     style:{look:'실사 시네마틱',ar:'16:9 (가로)',palette:'',extra:'',mj:'--ar 16:9 --style raw',
-           medium:'영화 스틸',cam:'',era:'',comp:'',
+           medium:'영화 스틸',cam:'',era:'',comp:'',lock:true,tool:'',
            neg:'text, watermark, extra fingers, deformed hands, blurry, lowres'},
     chars:[],scenes:[],sel:{scene:'',cut:''}};
 }
@@ -1813,6 +1960,9 @@ function copy(text,msg){
 function opts(map,cur){
   return Object.keys(map).map(k=>`<option value="${esc(k)}"${k===cur?' selected':''}>${esc(k||'— 선택 —')}</option>`).join('');
 }
+/* 컷 용도를 고르면 권장 길이를 그 자리에서 넣어준다 (가이드북 12:38) */
+function useDur(k){ const u=USE[k]; return u?u.a:0; }
+function useHint(k){ const u=USE[k]; return u?`${u.t} · 권장 ${u.a}–${u.b}초`:''; }
 function anchorSave(blob,name){
   const u=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=u; a.download=name;
@@ -2339,8 +2489,10 @@ function renderChars(){
       <div class="row" style="margin:11px 0 0">
         <button class="btn sm" data-clockcopy="${c.id}">복사</button>
         <button class="btn sm gh" data-clockedit="${c.id}">직접 쓰기</button>
-        <button class="btn sm gh" data-csheet="${c.id}">캐릭터 시트 프롬프트</button>
+        <button class="btn sm gh" data-csheet="${c.id}">3패널 시트 프롬프트</button>
       </div>
+      <p class="mini" style="margin:9px 0 0">캐릭터 시트는 <b>정면 마네킹 · 후면 · 얼굴 클로즈업</b> 세 장으로 따로 뽑습니다.
+      전면·측면·후면·표정을 한 장에 몰아넣으면 AI가 <b>여러 명</b>으로 읽어서, 컷마다 얼굴이 딴 사람이 됩니다.</p>
       <label class="f enfield" data-clockwrap="${c.id}" style="display:${c.lockManual?'block':'none'};margin-top:12px">
         <span>직접 작성 (비우면 자동 생성으로 돌아갑니다)</span>
         <textarea data-cf="lockManual" placeholder="영문으로 직접 쓰고 싶다면 여기에">${esc(c.lockManual)}</textarea>
@@ -2397,7 +2549,7 @@ $('charlist').addEventListener('click',e=>{
     const wrap=$('charlist').querySelector(`[data-clockwrap="${t.dataset.clockedit}"]`);
     if(wrap) wrap.style.display=wrap.style.display==='none'?'block':'none';
   }
-  if(t.dataset.csheet) copy(charSheetPrompt(S.chars.find(x=>x.id===t.dataset.csheet)),'캐릭터 시트 프롬프트 복사 ✓');
+  if(t.dataset.csheet) copy(charSheet3(S.chars.find(x=>x.id===t.dataset.csheet)),'3패널 시트 프롬프트 복사 ✓ — 세 장을 따로 뽑으세요');
   if(t.dataset.cask) copy(askChar(S.chars.find(x=>x.id===t.dataset.cask)),'캐릭터 질문지 복사 ✓');
   if(t.dataset.ctrans){
     const c=S.chars.find(x=>x.id===t.dataset.ctrans);
@@ -2421,7 +2573,7 @@ $('charlist').addEventListener('click',e=>{
 function newScene(){ return {id:nid('s'),heading:'',loc:'',locEn:'',time:'',summary:'',script:'',cuts:[]}; }
 function newCut(){
   return {id:nid('k'),desc:'',descEn:'',shot:'',angle:'',move:'',lens:'',light:'',mood:'',
-    speed:'',fx:'',trig:'',emo:'',
+    speed:'',fx:'',trig:'',emo:'',keep:'',endp:'',use:'',
     dur:4,chars:[],dialogue:'',audio:'',note:'',hasImg:false,open:true};
 }
 function allCuts(){ const r=[]; S.scenes.forEach(s=>s.cuts.forEach(c=>r.push({s,c}))); return r; }
@@ -2516,12 +2668,23 @@ function cutBodyHTML(s,c){
         </div>
         <label style="display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--tx3)">
           길이 <input type="number" data-kf="dur" value="${c.dur}" min="1" max="60" style="width:70px"> 초
+          <span class="usehint" data-kuse="${c.id}">${esc(useHint(c.use))}</span>
         </label>
       </div>
       <div class="grid g3">
         <label class="f"><span>샷 사이즈</span><select data-kf="shot">${opts(SHOT,c.shot)}</select></label>
         <label class="f"><span>앵글</span><select data-kf="angle">${opts(ANGLE,c.angle)}</select></label>
-        <label class="f"><span>카메라 무브</span><select data-kf="move">${opts(MOVE,c.move)}</select></label>
+        <label class="f"><span>컷 용도 — 길이를 정합니다</span><select data-kf="use">${opts(USE,c.use)}</select></label>
+      </div>
+      <div class="camblk">
+        <div class="camhd"><b>카메라 4단</b><span>무브먼트 · 속도 · 프레이밍 유지 · 종료 지점</span></div>
+        <div class="grid g4">
+          <label class="f"><span>① 무브먼트 — 컷당 하나</span><select data-kf="move">${opts(MOVE,c.move)}</select></label>
+          <label class="f"><span>② 속도 <b style="color:var(--sig)">영상</b></span><select data-kf="speed">${opts(SPEED,c.speed)}</select></label>
+          <label class="f"><span>③ 프레이밍 유지 <b style="color:var(--sig)">영상</b></span><select data-kf="keep">${opts(KEEP,c.keep)}</select></label>
+          <label class="f"><span>④ 종료 지점 <b style="color:var(--sig)">영상</b></span><select data-kf="endp">${opts(ENDP,c.endp)}</select></label>
+        </div>
+        <p class="camwhy" data-kwhy="${c.id}">${esc(MOVE_WHY[c.move]||'')}</p>
       </div>
       <div class="grid g3">
         <label class="f"><span>렌즈</span><select data-kf="lens">${opts(LENS,c.lens)}</select></label>
@@ -2529,14 +2692,11 @@ function cutBodyHTML(s,c){
         <label class="f"><span>무드</span><select data-kf="mood">${opts(MOOD,c.mood)}</select></label>
       </div>
       <details class="faq" style="margin:0 0 16px">
-        <summary>더 세밀하게 — 인물 감정 · 속도 · 빛 효과 · 사건</summary>
+        <summary>더 세밀하게 — 인물 감정 · 빛 효과 · 사건</summary>
         <div class="fa" style="padding:0 18px 16px">
-          <div class="grid g2">
+          <div class="grid g3">
             <label class="f"><span>인물 감정 <b style="color:var(--sig)">이미지</b></span><select data-kf="emo">${opts(EMO,c.emo)}</select></label>
             <label class="f"><span>빛 · 질감 효과 <b style="color:var(--sig)">이미지</b></span><select data-kf="fx">${opts(FX,c.fx)}</select></label>
-          </div>
-          <div class="grid g2">
-            <label class="f"><span>카메라 속도 <b style="color:var(--sig)">영상</b></span><select data-kf="speed">${opts(SPEED,c.speed)}</select></label>
             <label class="f"><span>사건 (트리거) <b style="color:var(--sig)">영상</b></span><select data-kf="trig">${opts(TRIGGER,c.trig)}</select></label>
           </div>
           <p class="mini" style="margin:2px 0 0"><b>사건</b>을 비워두면 카메라만 움직이고 장면은 그대로 있습니다.
@@ -2572,6 +2732,12 @@ function onSceneEdit(e){
     const c=s.cuts.find(x=>x.id===cc.dataset.kid); if(!c) return;
     const f=e.target.dataset.kf;
     c[f]= f==='dur' ? (parseInt(e.target.value,10)||0) : e.target.value;
+    if(f==='use'){
+      const d=useDur(c.use);
+      if(d){ c.dur=d; const di=cc.querySelector('[data-kf="dur"]'); if(di) di.value=d; }
+      const hi=cc.querySelector(`[data-kuse="${c.id}"]`); if(hi) hi.textContent=useHint(c.use);
+    }
+    if(f==='move'){ const wy=cc.querySelector(`[data-kwhy="${c.id}"]`); if(wy) wy.textContent=MOVE_WHY[c.move]||''; }
     save();
     const bar=cc.querySelector('.cutbar');
     if(bar){
@@ -3875,6 +4041,7 @@ function fillStyle(){
   if($('v-era'))    $('v-era').innerHTML=opts(ERA,S.style.era||'');
   if($('v-comp'))   $('v-comp').innerHTML=opts(COMP,S.style.comp||'');
   ['palette','extra','mj','neg'].forEach(k=>$('v-'+k).value=S.style[k]||'');
+  if($('v-lock')) $('v-lock').checked = S.style.lock!==false;
   syncToolCell();
 }
 /* 목적이 사진이 아니면 카메라·렌즈 칸을 감추고 그 매체의 도구를 보여준다.
@@ -3905,6 +4072,10 @@ $('v-sbtog') && $('v-sbtog').addEventListener('click',()=>{
     toast('스토리보드용 — 맨 앞 목적만 연필 스케치로 바꿨어요 ✓');
   }
   mjSync(); save(); fillStyle(); renderPrompt();
+});
+$('v-lock') && $('v-lock').addEventListener('change',()=>{
+  S.style.lock=$('v-lock').checked; save(); renderPrompt();
+  toast(S.style.lock?'프롬프트 락 켬 ✓':'프롬프트 락 끔');
 });
 STYLE_FIELDS.forEach(k=>{
   const el=$('v-'+k); if(!el) return;
@@ -4067,6 +4238,27 @@ function toolBits(c){
   if(m.kind==='photo') return [CAM[S.style.cam]||'', (c&&LENS[c.lens])||''].filter(Boolean);
   return [ (TOOLS[m.kind]||{})[S.style.tool] || '' ].filter(Boolean);
 }
+/* 카메라 프롬프트 4단 — 무브먼트 + 속도 + 프레이밍 유지 + 종료 지점.
+   장면 묘사와 섞지 않고 따로 세워야 넷 다 살아남는다. (가이드북 04:07)
+   컷당 무브먼트는 하나만 — 둘을 적으면 모델이 평균을 내서 아무것도 아닌 게 된다. (06:57) */
+function camFour(c){
+  const p=[];
+  if(MOVE[c.move])  p.push(MOVE[c.move]);
+  if(SPEED[c.speed])p.push(SPEED[c.speed]);
+  if(KEEP[c.keep])  p.push(KEEP[c.keep]);
+  if(ENDP[c.endp])  p.push('ending '+ENDP[c.endp]);
+  return p.join(', ');
+}
+/* 프롬프트 락 — 시트를 규격대로 만들어도 프롬프트가 열려 있으면
+   모델은 인물을 하나 더 만들어 넣는다. 인원수 · 배경 · 배제를 함께 잠근다. */
+function lockBits(c){
+  if(S.style.lock===false) return {body:[],no:[]};
+  const n=cutChars(c).length;
+  const no=['extra person','duplicate face','multiple views','collage','text','watermark'];
+  const body=[];
+  if(n===1){ body.push('single person, one character only'); no.push('crowd','other people'); }
+  return {body,no};
+}
 /* ② 스토리 중 인물 — 외형 고정 블록 + 그 컷에서의 감정 */
 function charBits(c){
   const out=[];
@@ -4081,6 +4273,8 @@ function buildMJ(s,c){
   const m=medium(), p=[];
   if(m.head) p.push(m.head);
   [SHOT[c.shot],ANGLE[c.angle],COMP[S.style.comp]].forEach(x=>{ if(x) p.push(x); });
+  const lk=lockBits(c);
+  lk.body.forEach(x=>p.push(x));
   charBits(c).forEach(x=>p.push(x));
   p.push(c.descEn||c.desc||'');
   if(s.locEn||s.loc) p.push(s.locEn||s.loc);
@@ -4089,11 +4283,15 @@ function buildMJ(s,c){
   if(MOOD[c.mood]) p.push(MOOD[c.mood]);
   styleBits().forEach(x=>p.push(x));
   if(m.tail) p.push(m.tail);
-  return (dedupe(p).join(', ')+' '+(S.style.mj||'')).trim();
+  let out=(dedupe(p).join(', ')+' '+(S.style.mj||'')).trim();
+  // 파라미터 칸에 --no 를 직접 써두었다면 그쪽을 존중한다
+  if(lk.no.length && !/--no\b/.test(out)) out+=' --no '+lk.no.join(', ');
+  return out;
 }
 function buildVEO(s,c){
   const chs=cutChars(c), L=[];
-  if(MOVE[c.move]) L.push(cap(MOVE[c.move])+'.');
+  const four=camFour(c);
+  if(four) L.push('Camera move: '+cap(four)+'.');
   if(chs.length){
     // 한글 이름을 넣으면 Veo가 화면에 글자로 그려버릴 수 있어 이름은 빼고,
     // 인물이 둘 이상일 때만 Character A / B 로 구분한다.
@@ -4108,8 +4306,8 @@ function buildVEO(s,c){
   const setting=[s.locEn||s.loc,TIME[s.time]].filter(Boolean).join(' ');
   if(setting) L.push('Setting: '+setting+'.');
   if(TRIGGER[c.trig]) L.push('Event: mid-shot, the subject '+TRIGGER[c.trig]+'.');
-  const cam=[SHOT[c.shot],ANGLE[c.angle],COMP[S.style.comp],SPEED[c.speed]].concat(toolBits(c)).filter(Boolean).join(', ');
-  if(cam) L.push('Camera: '+cam+'.');
+  const cam=[SHOT[c.shot],ANGLE[c.angle],COMP[S.style.comp]].concat(toolBits(c)).filter(Boolean).join(', ');
+  if(cam) L.push('Framing: '+cam+'.');
   if(ERA[S.style.era]) L.push('Era: '+ERA[S.style.era]+'.');
   if([LIGHT[c.light],FX[c.fx]].filter(Boolean).length) L.push('Lighting: '+[LIGHT[c.light],FX[c.fx]].filter(Boolean).join(', ')+'.');
   if(MOOD[c.mood]) L.push('Mood: '+MOOD[c.mood]+'.');
@@ -4120,6 +4318,9 @@ function buildVEO(s,c){
   if(c.dialogue) au.push('dialogue: "'+c.dialogue.replace(/"/g,"'")+'"');
   if(au.length) L.push('Audio: '+au.join('; ')+'.');
   if(c.dur) L.push('Duration: about '+c.dur+' seconds.');
+  const lkv=lockBits(c);
+  if(lkv.body.length) L.push('Constraint: '+lkv.body.join(', ')+'.');
+  if(lkv.no.length)   L.push('Avoid: '+lkv.no.join(', ')+'.');
   return L.join('\n');
 }
 function buildGEN(s,c){
@@ -4135,9 +4336,12 @@ function buildGEN(s,c){
   [LIGHT[c.light],FX[c.fx],MOOD[c.mood]].forEach(x=>{ if(x) p.push(x); });
   styleBits().forEach(x=>p.push(x));
   if(m.tail) p.push(m.tail);
+  const lk=lockBits(c);
+  lk.body.forEach(x=>p.push(x));
   let out=dedupe(p).join(', ');
   out+='\n\n[화면비] '+(AR[S.style.ar]||'16:9');
-  if(S.style.neg) out+='\n[네거티브] '+S.style.neg;
+  const neg=dedupe([S.style.neg||''].concat(lk.no)).filter(Boolean).join(', ');
+  if(neg) out+='\n[네거티브] '+neg;
   return out;
 }
 /* 런웨이 · 클링 — 한 문장. 카메라 동작을 맨 앞에 두는 게 잘 먹힌다.
@@ -4149,8 +4353,13 @@ function buildRW(s,c){
   const tail=[s.locEn||s.loc, TIME[s.time], SPEED[c.speed], LIGHT[c.light], FX[c.fx],
               ERA[S.style.era], MOOD[c.mood]].concat(styleBits()).filter(Boolean);
   if(m.kind!=='photo'&&m.head) tail.push('in the style of '+m.head);
+  if(KEEP[c.keep]) tail.push(KEEP[c.keep]);
   if(tail.length) out+=', '+dedupe(tail).join(', ');
   out+= TRIGGER[c.trig] ? '. Then the subject '+TRIGGER[c.trig]+'.' : '.';
+  // 종료 지점을 비워두면 마지막 1초가 어정쩡해진다 (가이드북 04:07)
+  if(ENDP[c.endp]) out+=' The shot ends '+ENDP[c.endp]+'.';
+  const lk=lockBits(c);
+  if(lk.body.length) out+=' '+cap(lk.body.join(', '))+'.';
   return out;
 }
 const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
@@ -4160,7 +4369,7 @@ const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
    같은 조립기(buildMJ/VEO/GEN)를 그대로 쓰되, 임시 씬·컷을 즉석에서 만들어 넣는다.
    ========================================================= */
 let pQuick=false;
-const QF=['desc','descEn','loc','locEn','time','dur','shot','angle','move','lens','light','mood','dlg'];
+const QF=['desc','descEn','loc','locEn','time','dur','shot','angle','use','move','speed','keep','endp','lens','light','mood','dlg'];
 
 function quickState(){ if(!S.quick) S.quick={chars:[]}; if(!S.quick.chars) S.quick.chars=[]; return S.quick; }
 
@@ -4171,12 +4380,17 @@ function fillQuick(){
     $('q-shot').innerHTML=opts(SHOT,q.shot||'');
     $('q-angle').innerHTML=opts(ANGLE,q.angle||'');
     $('q-move').innerHTML=opts(MOVE,q.move||'');
+    $('q-use').innerHTML=opts(USE,q.use||'');
+    $('q-speed').innerHTML=opts(SPEED,q.speed||'');
+    $('q-keep').innerHTML=opts(KEEP,q.keep||'');
+    $('q-endp').innerHTML=opts(ENDP,q.endp||'');
     $('q-lens').innerHTML=opts(LENS,q.lens||'');
     $('q-light').innerHTML=opts(LIGHT,q.light||'');
     $('q-mood').innerHTML=opts(MOOD,q.mood||'');
   }
   QF.forEach(k=>{ const el=$('q-'+k); if(el && el.value!==(q[k]==null?'':String(q[k]))) el.value=q[k]==null?'':q[k]; });
   if($('q-dur').value==='') $('q-dur').value=4;
+  $('q-why').textContent=MOVE_WHY[q.move||'']||'';
   const w=$('qchars');
   w.innerHTML = S.chars.length
     ? S.chars.map(c=>`<label class="chip${q.chars.indexOf(c.id)>=0?' on':''}" data-qch="${c.id}">${esc(c.name||'이름 없음')}</label>`).join('')
@@ -4188,7 +4402,8 @@ function quickPair(){
   const s={id:'quick',heading:'빠른 입력',loc:q.loc||'',locEn:q.locEn||'',time:q.time||'',summary:'',script:'',cuts:[]};
   const c=Object.assign(newCut(),{
     desc:q.desc||'', descEn:q.descEn||'', shot:q.shot||'', angle:q.angle||'', move:q.move||'', lens:q.lens||'',
-    light:q.light||'', mood:q.mood||'', dialogue:q.dlg||'', dur:+q.dur||0, chars:(q.chars||[]).slice()
+    light:q.light||'', mood:q.mood||'', dialogue:q.dlg||'', dur:+q.dur||0, chars:(q.chars||[]).slice(),
+    use:q.use||'', speed:q.speed||'', keep:q.keep||'', endp:q.endp||''
   });
   return {s,c};
 }
@@ -4214,6 +4429,8 @@ QF.forEach(k=>{
     const q=quickState(); q[k]=el.value;
     if(/En$/.test(k)) delete q[k+'Auto'];        // 손으로 고친 영문은 이제 안 건드린다
     else if(k==='desc'||k==='loc') autoMTKick();  // 한글을 쳤으면 잠시 뒤 번역
+    if(k==='use'){ const d=useDur(q.use); if(d){ q.dur=d; $('q-dur').value=d; } }
+    if(k==='move') $('q-why').textContent=MOVE_WHY[q.move||'']||'';
     save(); renderPrompt();
   };
   el.addEventListener('input',hh); el.addEventListener('change',hh);
@@ -4579,10 +4796,49 @@ function scriptDump(limit){
   if(!out.trim()) return '(아직 대본 본문이 없습니다)';
   return out+(cut?'\n\n…(길어서 여기까지만 실었습니다. 나머지는 나눠서 물어봐 주세요)':'');
 }
-function charSheetPrompt(c){
-  const lock=charLock(c);
-  return `character reference sheet, same character in all views, ${lock||'(외형 정보를 먼저 채워주세요)'}, ${LOOK[S.style.look]||''}, neutral grey background, even soft studio lighting, full body turnaround: front view, three-quarter view, side view, back view, plus a row of facial expression studies (neutral, angry, sad, smiling, surprised), consistent proportions, model sheet layout --ar 16:9`;
+/* 캐릭터 시트 3패널 표준.
+   전면·측면·후면에 무기 도해와 표정 모음까지 한 장에 몰아넣은 시트는
+   모델 입장에서 「여러 명이 한 화면에 있는 그림」으로 읽힌다.
+   그 시트를 레퍼런스로 넣는 순간 컷마다 얼굴이 섞인다 — 도플갱어 현상.
+   그래서 세 장을 따로 뽑는다.
+     ① 전신 정면 — 머리 없는 마네킹   ② 전신 후면   ③ 얼굴 클로즈업
+   ①②에 얼굴이 들어가면 ③과 경쟁하므로 머리를 아예 지운다. (가이드북 01:41) */
+function sheetOutfit(c){ return (c.outfitEn||'').trim(); }
+/* 「slender build」에서 형용사만 떼어 마네킹 자체를 묘사한다 —
+   「마네킹이 slender build 를 입고 있다」가 되지 않게 */
+function sheetBuild(c){ return (BUILD[c.build]||'').replace(/\s*build\s*$/,'').trim(); }
+function sheetFace(c){
+  const p=[], eth=ETH[c.eth]||'';
+  const who=withEth(whoPhrase(c),eth); if(who) p.push(who);
+  const len=HAIRL[c.hairL]||'', col=HAIRC[c.hairC]||'';
+  if(len&&col) p.push(len.replace(/\bhair\b/,col+' hair'));
+  else if(len) p.push(len); else if(col) p.push(col+' hair');
+  if(EYEC[c.eye]) p.push(EYEC[c.eye]+' eyes');
+  if(c.markEn) p.push(c.markEn);
+  return dedupe(p).join(', ');
 }
+const SHEET_BASE='plain light grey seamless background, even soft studio lighting, neutral color, sharp focus, full frame';
+function charSheet3(c){
+  const fit=sheetOutfit(c)||'a plain outfit', face=sheetFace(c)||'the character';
+  const man=(sheetBuild(c)?sheetBuild(c)+' ':'')+'headless mannequin';
+  const P1=`full body front view of a ${man} wearing ${fit}, standing straight, arms at the sides, `+
+           `garment shape and fabric clearly visible, ${SHEET_BASE} --no head, face, hair, person, `+
+           `multiple views, collage, turnaround sheet, text --ar 3:4`;
+  const P2=`full body back view of the same ${man} wearing the exact same outfit, ${fit}, `+
+           `seen from directly behind, ${SHEET_BASE} --no head, face, hair, front view, `+
+           `multiple views, collage, turnaround sheet, text --ar 3:4`;
+  const P3=`close-up portrait of ${face}, single person, one character only, facing the camera, `+
+           `neutral expression, looking straight into the lens, natural skin texture, `+
+           `plain white background, even soft studio lighting, sharp focus on the facial features `+
+           `--no body, full body, multiple views, collage, extra person, duplicate face, text --ar 3:4`;
+  return `[① 전신 정면 — 머리 없는 마네킹]\n${P1}\n\n`+
+         `[② 전신 후면]\n${P2}\n\n`+
+         `[③ 얼굴 클로즈업]\n${P3}\n\n`+
+         `— 세 장을 따로 뽑아 따로 보관하세요. 한 장에 합치면 컷마다 얼굴이 섞입니다.\n`+
+         `— 의상이 바뀌면 ①②만 다시 뽑고, ③ 얼굴 패널은 원본을 그대로 재사용합니다.`;
+}
+/* 예전 이름을 쓰던 자리들이 있어 남겨둔다 */
+function charSheetPrompt(c){ return charSheet3(c); }
 document.addEventListener('click',e=>{
   const k=e.target.dataset&&e.target.dataset.ask;
   if(!k||!ASK[k]) return;
