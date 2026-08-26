@@ -1563,7 +1563,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v35 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v36 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -2097,7 +2097,7 @@ function blank(){
   return {title:'',
     story:{logline:'',genre:'',tone:'',format:'',synopsis:'',act1:'',act2:'',act3:'',theme:'',ref:''},
     style:{look:'실사 시네마틱',ar:'16:9 (가로)',palette:'',extra:'',mj:'--ar 16:9 --style raw',
-           medium:'영화 스틸',cam:'',era:'',comp:'',lock:true,tool:'',terse:false,
+           medium:'영화 스틸',cam:'',era:'',comp:'',lock:true,tool:'',terse:false,extras:false,
            neg:'text, watermark, extra fingers, deformed hands, blurry, lowres'},
     chars:[],scenes:[],sel:{scene:'',cut:''},
     refs:{place:{},char:{}}};
@@ -2627,7 +2627,7 @@ const OUTFIT_LEX=[
    en:'a mustard-brown cotton military tunic buttoned to the collar, matching trousers with pale cloth leg wraps, a brown field cap'},
   {re:/독립\s*운?동?가|독립\s*투사|투사|의병|independence fighter|partisan|resistance member/i, wear:'worn',
    ko:'상의 — 표백하지 않은 회백색 무명 저고리, 단추 없이 긴 고름으로 여밈, 목에 흰 동정, 소매가 해져 속이 비침 · 하의 — 통 넓은 무명 바지, 발목을 대님으로 묶음, 무릎이 찢김 · 맨발 · 손목에 밧줄 자국',
-   en:'a jeogori — a short Korean jacket ending at the waist, closed with a long cloth ribbon tie and no buttons, a narrow white collar band at the neck — in unbleached off-white cotton gone grey, sleeves worn sheer; baji — wide Korean trousers gathered and tied at the ankle, torn at the knees; bare feet; rope marks at the wrists'},
+   en:'a jeogori — a short Korean jacket ending at the waist, closed with a long cloth ribbon tie and no buttons, a narrow white collar band at the neck — in unbleached off-white cotton gone grey, sleeves worn sheer; baji — wide Korean trousers gathered and tied at the ankle, torn at the knees; bare feet; the cuffs frayed through'},
   {re:/죄수|수감|포로|사형수|prisoner\w*|inmate\w*|convict\w*/i, wear:'worn',
    ko:'상의 — 잿빛 광목 수의, 앞을 끈으로 여밈, 가슴에 먹으로 쓴 번호 · 하의 — 같은 천 헐렁한 바지, 허리를 끈으로 동임 · 맨발 · 헝클어진 머리',
    en:'a grey coarse-cotton prison smock closed with a cord and no buttons, a number brushed in ink on the chest, loose trousers of the same cloth tied at the waist with a cord, bare feet, matted hair'},
@@ -2711,9 +2711,12 @@ const OUTFIT_ERA=[
    그냥 두면 매 컷 아무 옷이나 입고 나온다. 지문에서 역할 낱말을 찾아
    그 역할의 의상을 한 줄 얹어 준다. 등록된 인물이 이미 그 역할이면 건너뛴다. */
 function extraBits(c){
-  if(!c || c.bg || S.style.extras===false) return [];
+  // 지문 속 단역에게 옷을 입히면 화면에 사람이 한 명 더 생긴다.
+  // 두 사람이 한 프레임에 있는 것 자체가 판정을 부르므로 이제 기본은 꺼짐이다.
+  if(!c || c.bg || S.style.extras!==true) return [];
   const sm=c.soft?SOFTEN[c.soft]:null;
   if(sm && sm.people && sm.people!=='yes') return [];
+  if(sm && sm.solo) return [];
   const hay=[c.desc,c.descEn,c.act,c.actEn].filter(Boolean).join(' ');
   if(!hay) return [];
   const mine=cutChars(c).map(ch=>(ch.role||'')+' '+(ch.name||'')).join(' ');
@@ -5309,7 +5312,7 @@ function fillStyle(){
   if($('v-comp'))   $('v-comp').innerHTML=opts(COMP,S.style.comp||'');
   ['palette','extra','mj','neg'].forEach(k=>$('v-'+k).value=S.style[k]||'');
   if($('v-lock')) $('v-lock').checked = S.style.lock!==false;
-  if($('v-extras')) $('v-extras').checked = S.style.extras!==false;
+  if($('v-extras')) $('v-extras').checked = S.style.extras===true;
   syncToolCell();
 }
 /* 목적이 사진이 아니면 카메라·렌즈 칸을 감추고 그 매체의 도구를 보여준다.
@@ -5750,6 +5753,9 @@ const RISK_RE=/피투성이|핏방울|유혈|피범벅|피가|피를|고문|시�
    「bloodied prisoner」를 「dark wet stain prisoner」로 바꾸면 문장이 깨진다.
    형용사는 형용사로, 명사는 명사로, 동사는 동사로. */
 const SOFT_EN=[
+  [/\bpolice dress uniform\b/gi,'formal uniform'],
+  [/\bpolice tunic\b/gi,'uniform tunic'],
+  [/\bpolice uniform\b/gi,'uniform'],
   [/\btorture chamber\b/gi,'bare stone room'],
   [/\binterrogation room\b/gi,'bare questioning room'],
   [/\bexecution (ground|chamber|site)\b/gi,'ceremonial ground'],
@@ -5915,6 +5921,12 @@ const SOFTEN={
     bits:['the event itself happens entirely off-screen'],
     set:{shot:'클로즈업',lens:'85mm 인물'},
     ph:'문틈으로 지켜보는 아이의 얼굴'},
+  '상대 빼기 (검증됨)':{
+    tip:'한 사람만 화면에 남기고 상대는 통째로 프레임 밖으로 — 동작은 그대로 둔다. 두 사람이 한 프레임에 있으면 판정이 붙는다',
+    people:'yes', solo:true,
+    subj:'one man alone in the frame, mid-gesture, looking off-frame at someone who is not shown',
+    bits:[], set:{}, 
+    ph:'비워두면 원래 지문에서 상대만 빼고 씁니다'},
   '직후':{
     tip:'사건이 끝난 뒤의 빈 공간 — 넘어진 의자, 흐트러진 바닥',
     people:'none',
@@ -5942,10 +5954,10 @@ const SOFTEN={
    화면에는 같은 방이 나온다. 오히려 더 정확하게 나온다. */
 const LOC_ALT=[
   {re:/고문실|취조실|심문실|torture\s*(chamber|room)|interrogation\s*room/i, label:'고문실 · 취조실', alts:[
-    {ko:'창 없는 지하실 — 의자 하나와 바닥 배수구',
-     en:'bare windowless basement room, a single bolted chair, a floor drain, one caged bulb'},
-    {ko:'물 얼룩진 돌방',
-     en:'bare stone room, water-stained walls, a single hanging bulb'},
+    {ko:'물 얼룩진 돌방 (검증됨)',
+     en:'bare stone room with water-stained walls and one caged bulb'},
+    {ko:'창 없는 방 — 의자 하나와 바닥 배수구',
+     en:'bare windowless room, a single bolted chair, a floor drain, one caged bulb'},
     {ko:'책상 하나뿐인 방',
      en:'plain room with one table and two chairs, harsh overhead light'}]},
   {re:/사형장|처형장|execution\s*(ground|chamber|site)/i, label:'사형장 · 처형장', alts:[
@@ -6055,7 +6067,7 @@ function lockBits(c){
   const none = !!(sm && sm.people==='none');
   if(sm && sm.mat && matPhrase(c)) soft=soft.concat(MAT_NO);
   if(S.style.lock===false) return {body:[],no:dedupe(soft)};
-  const n=cutChars(c).length;
+  const n=(sm&&sm.solo)?1:cutChars(c).length;
   const no=['extra person','duplicate face','multiple views','collage','text','watermark'].concat(soft);
   const body=[];
   // 아무도 화면에 없는 우회에서 「single person」을 같이 적으면 --no person 과 부딪친다
@@ -6123,7 +6135,8 @@ function charBits(c){
   // 화면에 사람이 없는 우회(직후 · 사물 인서트 · 그림자)에서는 인물 블록이 방해만 된다
   const sm=c&&c.soft?SOFTEN[c.soft]:null;
   if(sm && sm.people && sm.people!=='yes') return out;
-  const chs=cutChars(c).filter(ch=>charLock(ch));
+  let chs=cutChars(c).filter(ch=>charLock(ch));
+  if(sm && sm.solo) chs=chs.slice(0,1);      // 상대는 프레임 밖이다
   const blk=castBlock(c,chs);
   if(blk) out.push(blk);
   // 둘 사이가 어떤 사이인지 — 이걸 안 적으면 AI 는 늘 착한 쪽으로 읽는다
@@ -6202,14 +6215,14 @@ function terseWho(ch,tight){
   const fit=firstClauses(ch.outfitEn,2);
   return fit?who+' in '+fit:who;
 }
-const TERSE_NO_MAX=10;
+/* --no 도 프롬프트의 일부라 길수록 손해다. 실제로 통과한 프롬프트는
+   인원 통제 몇 개와 text · watermark 뿐이었다. */
+const TERSE_NO_MAX=6;
 function terseNo(list){
   const seen=new Set(), out=[];
   const push=x=>{ const k=String(x).toLowerCase(); if(!seen.has(k)){seen.add(k);out.push(x);} };
-  // 인원 통제가 가장 자주 필요하다 — 먼저 자리를 잡아준다
-  ['crowd','other people','second face','extra person','person','people']
+  ['crowd','other people','person','people','extra person','second face']
     .forEach(x=>{ if(list.some(y=>String(y).toLowerCase()===x)) push(x); });
-  list.forEach(x=>{ if(out.length<TERSE_NO_MAX-2) push(x); });
   push('text'); push('watermark');
   return out.slice(0,TERSE_NO_MAX);
 }
