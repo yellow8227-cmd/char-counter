@@ -269,6 +269,35 @@ DALL·E · Firefly도 같은 방식이고, 필터가 넓게 잡혀서 정상적�
 > 이 다섯 가지는 그 그림을 애초에 그리지 않는 방법입니다.
 > 실제로 만들려는 장면이 규정이 금지하는 바로 그것이라면, 이 기능으로도 통과되지 않고 통과되어서도 안 됩니다.
 
+### 인물이 둘일 때 — 누가 어디에, 그리고 의상
+
+두 인물이 한 컷에 있으면 특징이 **쉼표로 뭉뚱그려져** 모델이 섞습니다.
+「순사 제복 입은 독립투사」가 나오는 이유입니다.
+
+이제 한 덩어리로 묶어 대비시킵니다.
+
+```
+two people — on the left, a Korean man in his late twenties, shaved head,
+a pressed dark Japanese police uniform, brass buttons, polished boots;
+on the right, a Korean man in his early twenties, torn filthy hemp clothes,
+worn thin, rope-marked wrists
+```
+
+컷 카드의 **「누가 어디에」** 에서 고릅니다 —
+왼쪽·오른쪽 / 앞·뒤 / 서 있는·앉은 / 위·아래.
+안 고르면 `the first is … ; the second is …` 로 묶습니다.
+
+**의상이 진짜 열쇠입니다.** 인물이 둘 이상인데 의상이 비어 있으면
+경고가 뜹니다. 그리고 「낡은 옷」 정도로는 부족합니다 —
+
+| 이렇게 쓰면 섞임 | 이렇게 쓰면 갈림 |
+|---|---|
+| `hemp clothes` | `torn filthy hemp clothes, worn thin, rope-marked wrists` |
+| `police uniform` | `a pressed dark Japanese police uniform, brass buttons, polished boots` |
+
+**낡음의 정도와 재질까지** 적어야 제복과 갈립니다.
+한쪽이 「빳빳하게 다린」이면 다른 쪽은 「해져서 얇아진」처럼 **반대로** 써주세요.
+
 ### 같은 동작, 반대의 뜻 — 「의도」 칸
 
 `동훈이 무릎을 꿇는다` — 이건 굴복일 수도, **상대를 올려다보며 압박하는 위협**일 수도 있습니다.
