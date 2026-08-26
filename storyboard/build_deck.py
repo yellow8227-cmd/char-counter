@@ -75,6 +75,55 @@ def fit_font_pt(s: str, max_pt: float) -> float:
     return SIZE_STEPS[-1]
 
 
+# 그림 개체 틀 3.79 × 2.14 in
+PANEL_ASPECT = 3.79 / 2.14  # 1.771:1
+
+
+def fit_to_panel(path: Path, cache: Path) -> Path:
+    """
+    그림 칸에 넣으면 PowerPoint가 가운데를 기준으로 잘라낸다.
+    시네마스코프(2.4:1) 컷은 좌우가 통째로 날아가므로,
+    미리 검은 여백을 붙여 칸 비율에 맞춘 사본을 만들어 그걸 넣는다.
+    """
+    from PIL import Image
+
+    with Image.open(path) as im:
+        im = im.convert("RGB")
+        w, h = im.size
+        aspect = w / h
+        if abs(aspect - PANEL_ASPECT) < 0.02:
+            return path
+
+        if aspect > PANEL_ASPECT:      # 더 넓다 -> 위아래에 여백
+            nw, nh = w, round(w / PANEL_ASPECT)
+        else:                          # 더 좁다 -> 좌우에 여백
+            nw, nh = round(h * PANEL_ASPECT), h
+
+        canvas = Image.new("RGB", (nw, nh), (0, 0, 0))
+        canvas.paste(im, ((nw - w) // 2, (nh - h) // 2))
+
+        cache.mkdir(parents=True, exist_ok=True)
+        out = cache / (path.stem + "_fit.jpg")
+        canvas.save(out, quality=92, optimize=True)
+        return out
+
+
+IMAGE_EXTS = [".png", ".jpg", ".jpeg", ".webp"]
+
+
+def resolve_image(images_dir: Path, name: str) -> Path | None:
+    """확장자가 달라도 이름만 맞으면 찾아준다. png로 적어두고 jpg를 넣어도 된다."""
+    exact = images_dir / name
+    if exact.exists():
+        return exact
+    stem = Path(name).stem
+    for ext in IMAGE_EXTS:
+        cand = images_dir / (stem + ext)
+        if cand.exists():
+            return cand
+    return None
+
+
 def panel_placeholder_indices(panel: int) -> tuple[int, list[int]]:
     """패널 번호(0~5) -> (그림 틀 idx, 텍스트 틀 idx 6개)"""
     base = FIRST_PH_IDX + panel * PH_PER_PANEL
@@ -112,7 +161,7 @@ def fill_text(ph, value: str, field: str) -> None:
             run.font.size = size
 
 
-def fill_panel(slide, panel: int, cut: dict, images_dir: Path) -> None:
+def fill_panel(slide, panel: int, cut: dict, images_dir: Path, cache: Path) -> None:
     pic_idx, text_idxs = panel_placeholder_indices(panel)
     by_idx = {p.placeholder_format.idx: p for p in slide.placeholders}
 
@@ -128,11 +177,11 @@ def fill_panel(slide, panel: int, cut: dict, images_dir: Path) -> None:
     name = cut.get("image")
     if not name:
         return
-    path = images_dir / name
-    if not path.exists():
-        print(f"  · 이미지 없음, 빈 칸으로 둠: {path.name}", file=sys.stderr)
+    path = resolve_image(images_dir, name)
+    if path is None:
+        print(f"  · 이미지 없음, 빈 칸으로 둠: {name}", file=sys.stderr)
         return
-    pic_ph.insert_picture(str(path))
+    pic_ph.insert_picture(str(fit_to_panel(path, cache)))
 
 
 def drop_unused_placeholders(slide, used_panels: int) -> None:
@@ -165,7 +214,7 @@ def build(cuts: list[dict], template: Path, images_dir: Path, out: Path) -> int:
     for i, slide in enumerate(slides):
         chunk = cuts[i * PANELS_PER_SLIDE : (i + 1) * PANELS_PER_SLIDE]
         for panel, cut in enumerate(chunk):
-            fill_panel(slide, panel, cut, images_dir)
+            fill_panel(slide, panel, cut, images_dir, out.parent / "_fit")
         if len(chunk) < PANELS_PER_SLIDE:
             drop_unused_placeholders(slide, len(chunk))
 
