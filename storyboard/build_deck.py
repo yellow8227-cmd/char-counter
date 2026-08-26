@@ -196,6 +196,40 @@ def drop_unused_placeholders(slide, used_panels: int) -> None:
             ph._element.getparent().remove(ph._element)
 
 
+def split_cuts(cuts: list[dict], images_dir: Path) -> tuple[list[dict], list[dict]]:
+    """
+    레퍼런스 덱이므로 그림 칸이 빈 패널을 줄줄이 늘어놓지 않는다.
+    이미지가 있는 컷과, 시안이 꼭 있어야 하는 컷(need)만 슬라이드에 싣고
+    나머지 — 그대로 촬영하면 되는 컷 — 는 목록으로만 남긴다.
+    """
+    on_deck, shoot_only = [], []
+    for cut in cuts:
+        has_image = bool(cut.get("image")) and resolve_image(images_dir, cut["image"])
+        (on_deck if has_image or cut.get("need") else shoot_only).append(cut)
+    return on_deck, shoot_only
+
+
+def write_shoot_list(cuts: list[dict], path: Path) -> None:
+    """슬라이드에서 뺀 컷을 촬영용 목록으로 남긴다."""
+    lines = [
+        "# 촬영 컷 목록 — 시안 없이 그대로 찍는 컷",
+        "",
+        "레퍼런스 덱(`storyboard.pptx`)에서는 뺐지만 컷 번호는 그대로 살아 있습니다.",
+        "덱의 씬·컷 번호가 군데군데 건너뛰는 것은 여기 있는 컷들입니다.",
+        "",
+    ]
+    scene = None
+    for cut in cuts:
+        if cut["scene"] != scene:
+            scene = cut["scene"]
+            lines += ["", f"## 씬 {scene}", "", "| 컷 | 카메라 | 장면묘사 | 디테일 / 메모 |", "|---|---|---|---|"]
+        lines.append(
+            f"| {cut['shot']} | {cut['camera']} | {cut['desc']} | {cut.get('note', '')} |"
+        )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def build(cuts: list[dict], template: Path, images_dir: Path, out: Path) -> int:
     prs = Presentation(str(template))
     layout = prs.slide_layouts[0]
@@ -234,8 +268,16 @@ def main() -> None:
     data = json.loads(Path(args.cuts).read_text(encoding="utf-8"))
     cuts = data["cuts"] if isinstance(data, dict) else data
 
-    n = build(cuts, Path(args.template), Path(args.images), Path(args.out))
-    print(f"컷 {len(cuts)}개 → 슬라이드 {n}장 → {args.out}")
+    out = Path(args.out)
+    on_deck, shoot_only = split_cuts(cuts, Path(args.images))
+    write_shoot_list(shoot_only, out.parent / "촬영컷목록.md")
+
+    blanks = sum(1 for c in on_deck if not resolve_image(Path(args.images), c.get("image") or ""))
+    n = build(on_deck, Path(args.template), Path(args.images), out)
+    print(
+        f"전체 {len(cuts)}컷 · 덱 {len(on_deck)}컷(시안 필요 빈칸 {blanks}) · "
+        f"촬영 목록 {len(shoot_only)}컷 → 슬라이드 {n}장 → {out}"
+    )
 
 
 if __name__ == "__main__":
