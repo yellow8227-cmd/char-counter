@@ -257,6 +257,9 @@ main{max-width:1180px;margin:0 auto;padding:42px 30px 96px}
   .rback dt{margin-top:6px}}
 .chgblk{border:1px solid var(--line2);background:var(--s1);padding:14px 16px 4px;margin:0 0 14px}
 .chgblk .camhd{margin-bottom:10px}
+.casthint{border:1px solid var(--line2);background:var(--s1);padding:11px 14px;margin:-6px 0 14px}
+.casthint .row{margin:0}
+.casthint b{color:var(--tx)}
 .locwarn{border-left:2px solid var(--sig);background:var(--sigbg,var(--s1));padding:11px 14px;margin:0 0 14px}
 .locwarn>b{display:block;font-size:12.5px;color:var(--tx)}
 .locwarn span b{display:inline;color:var(--tx);font-weight:600}
@@ -1543,7 +1546,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v27 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v28 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -2712,7 +2715,7 @@ $('charlist').addEventListener('click',e=>{
 function newScene(){ return {id:nid('s'),heading:'',loc:'',locEn:'',time:'',summary:'',script:'',cuts:[]}; }
 function newCut(){
   return {id:nid('k'),desc:'',descEn:'',shot:'',angle:'',move:'',lens:'',light:'',mood:'',
-    speed:'',fx:'',trig:'',emo:'',keep:'',endp:'',use:'',bg:false,cast:'',soft:'',intent:'',
+    speed:'',fx:'',trig:'',emo:'',keep:'',endp:'',use:'',bg:false,cast:'',soft:'',intent:'',pos:'',
     inframe:'',inframeEn:'',mat:'',tint:'',
     face:'',faceEn:'',outfit:'',outfitEn:'',act:'',actEn:'',
     dur:4,chars:[],dialogue:'',audio:'',note:'',hasImg:false,open:true};
@@ -2807,6 +2810,22 @@ function cutHTML(s,c,si,ci){
 }
 /* 컷 속(입력칸·선택상자 십수 개)은 펼쳤을 때만 만든다.
    컷 300개면 선택상자만 1,800개가 되어 탭 전환이 몇 초씩 걸렸다. */
+/* 인물이 둘 이상인 컷에서만 나온다 — 누가 어디에 있는지, 의상이 비어 있지 않은지 */
+function castHintHTML(s,c){
+  const chs=cutChars(c);
+  if(chs.length<2) return '';
+  const bare=chs.filter(ch=>!(ch.outfitEn||ch.outfit||'').trim()).map(ch=>ch.name||'이름 없음');
+  return `<div class="casthint">
+    <div class="row">
+      <span class="mini" style="margin:0">인물이 ${chs.length}명 — 누가 어디에</span>
+      <select data-kf="pos" style="max-width:190px">${opts(POS,c.pos)}</select>
+      <span class="mini" style="margin:0">고르면 <code>on the left, … ; on the right, …</code> 로 묶입니다</span>
+    </div>
+    ${bare.length?`<p class="mini" style="margin:8px 0 0"><b>${esc(bare.join(' · '))}</b> 의 <b>의상</b>이 비어 있어요 —
+      의상이 없으면 두 인물이 섞입니다. 「기획 → 캐릭터」에서 채워주세요.
+      <br>독립투사라면 <code>torn, filthy hemp clothes, worn thin</code> 처럼 <b>낡음의 정도까지</b> 적어야 순사 제복과 갈립니다.</p>`:''}
+  </div>`;
+}
 function cutBodyHTML(s,c){
   const ci=s.cuts.indexOf(c);
   const chips=S.chars.map(ch=>`<span class="chip${c.chars.includes(ch.id)?' on':''}" data-kchar="${c.id}|${ch.id}">${esc(ch.name||'이름없음')}</span>`).join('');
@@ -2881,7 +2900,8 @@ function cutBodyHTML(s,c){
           무언가 <b>일어나게</b> 하려면 여기서 골라주세요.</p>
         </div>
       </details>
-      ${S.chars.length?`<label class="f"><span>등장 캐릭터 — 클릭해서 켜고 끄기</span><div class="row">${chips}</div></label>`
+      ${S.chars.length?`<label class="f"><span>등장 캐릭터 — 클릭해서 켜고 끄기</span><div class="row">${chips}</div></label>
+      ${castHintHTML(s,c)}`
         :`<p class="mini">「기획 → 캐릭터」에서 인물을 먼저 만들면 여기서 골라 고정 블록을 자동으로 붙일 수 있어요</p>`}
       <div class="grid g2">
         <label class="f"><span>대사</span><textarea data-kf="dialogue" placeholder="지훈: 이제 그만하자."></textarea></label>
@@ -5377,13 +5397,38 @@ function chgBits(c){
   const a=(c.actEn||'').trim()?sof(c.actEn,false):sof((c.act||'').trim(),true);
   return {look, act:a};
 }
+/* 인물이 둘 이상이면 어디에 누가 있는지 못 박아야 한다.
+   안 그러면 특징이 쉼표로 뭉뚱그려져 「순사 제복 입은 독립투사」가 나온다. */
+const POS={
+  '':                null,
+  '왼쪽 · 오른쪽':    ['on the left,','on the right,','in the middle,'],
+  '앞 · 뒤':          ['in the foreground,','behind him,','further back,'],
+  '서 있는 · 앉은':    ['standing,','seated,','kneeling,'],
+  '위 · 아래':        ['above,','below,','beside,']
+};
+const ORD=['the first','the second','the third','the fourth'];
+/* 두 사람을 한 덩어리로 묶어 대비시킨다 —
+   「two people — on the left, A; on the right, B」
+   모델은 이 형태를 가장 잘 알아듣는다. */
+function castBlock(c,locks){
+  if(locks.length<2) return locks[0]||'';
+  const p=POS[c&&c.pos||''];
+  const n=locks.length===2?'two people':locks.length===3?'three people':locks.length+' people';
+  const parts=locks.map((l,i)=>{
+    const tag=p?(p[i]||p[p.length-1]):(ORD[i]||('person '+(i+1)))+' is';
+    return tag+' '+l;
+  });
+  return n+' — '+parts.join('; ');
+}
 function charBits(c){
   const out=[];
   if(c && c.bg) return out;          // 배경 판에는 인물 고정 블록을 넣지 않는다
   // 화면에 사람이 없는 우회(직후 · 사물 인서트 · 그림자)에서는 인물 블록이 방해만 된다
   const sm=c&&c.soft?SOFTEN[c.soft]:null;
   if(sm && sm.people && sm.people!=='yes') return out;
-  cutChars(c).forEach(ch=>{ const l=charLock(ch); if(l) out.push(l); });
+  const locks=cutChars(c).map(ch=>charLock(ch)).filter(Boolean);
+  const blk=castBlock(c,locks);
+  if(blk) out.push(blk);
   chgBits(c).look.forEach(x=>out.push(x));
   if(out.length && EMO[c.emo]) out.push(EMO[c.emo]+' expression');
   const it=intentOf(c);
@@ -5780,8 +5825,8 @@ function readbackKO(s,c,kind){
 
   const chs=cutChars(c);
   if(!c.bg && chs.length){
-    R.push(rbRow('인물',chs.map(x=>b(x.name||'이름 없음')).join(' · '),
-      chs.map(x=>charLock(x)).filter(Boolean).join(' / ').slice(0,110)));
+    R.push(rbRow('인물',chs.map(x=>b(x.name||'이름 없음')).join(' · ')+(c.pos?' · '+esc(c.pos):''),
+      castBlock(c,chs.map(x=>charLock(x)).filter(Boolean)).slice(0,140)));
   }
   const chg=[c.face&&['얼굴',c.face],c.outfit&&['의상',c.outfit],c.act&&['행동',c.act]].filter(Boolean);
   if(chg.length) R.push(rbRow('이 컷만',chg.map(x=>x[0]+' — '+esc(x[1])).join('<br>')));
