@@ -1563,7 +1563,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v36 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v37 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -5921,6 +5921,12 @@ const SOFTEN={
     bits:['the event itself happens entirely off-screen'],
     set:{shot:'클로즈업',lens:'85mm 인물'},
     ph:'문틈으로 지켜보는 아이의 얼굴'},
+  '결과만 (검증됨)':{
+    tip:'동작이 아니라 그 뒤에 남은 것을 찍는다 — 뱉는 순간보다 맞은 뒤의 얼굴이 세다. 「누가 무엇을 한다」가 사라지므로 판정이 붙을 자리가 없다',
+    people:'yes', solo:true, mat:true,
+    subj:'tight on the face and collar of the man it landed on, a scatter of small dark specks across one cheek and the white collar band, his expression completely unchanged',
+    bits:[], set:{shot:'익스트림 클로즈업'},
+    ph:'비워두면 「맞은 뒤의 얼굴과 옷깃」으로 씁니다'},
   '상대 빼기 (검증됨)':{
     tip:'한 사람만 화면에 남기고 상대는 통째로 프레임 밖으로 — 동작은 그대로 둔다. 두 사람이 한 프레임에 있으면 판정이 붙는다',
     people:'yes', solo:true,
@@ -5999,6 +6005,9 @@ function scrub(txt,on,c){
   if(m){
     // 「wine-dark liquid」 안의 「dark liquid」를 또 바꾸면 wine-wine-dark 가 된다
     v=v.replace(/(?<![\w-])dark liquid\b/gi,m.n).replace(/(?<![\w-])dark-stained\b/gi,m.a);
+    // 「결과만」이 쓰는 자국에도 고른 색조가 그대로 먹어야 한다
+    const colOnly=(TINT[(c&&c.tint)||'(그대로)']||MAT[(c&&c.mat)||''].col||'dark');
+    v=v.replace(/(?<![\w-])dark (specks|marks|flecks)\b/gi,(x,w)=>colOnly+' '+w);
     const ko=(c&&c.mat)||'';
     if(ko) v=v.replace(/검은 물기/g,ko).replace(/검게 젖은/g,ko+' 묻은');
   }
@@ -6028,7 +6037,8 @@ function softBits(c){
   const k=c&&c.soft, m=SOFTEN[k];
   if(!m) return [];
   const out=m.bits.slice();
-  const mt=m.mat?matPhrase(c):null;
+  // 「결과만」은 자국이 이미 문장 안에 있다 — 액체 덩어리 문구를 또 붙이면 화면이 둘로 갈린다
+  const mt=(m.mat&&!m.solo)?matPhrase(c):null;
   if(mt&&mt.x) out.push(mt.x);
   return out;
 }
@@ -6065,7 +6075,7 @@ function lockBits(c){
   const eg=eraGuard();
   if(eg && eg.no) soft=soft.concat(eg.no);
   const none = !!(sm && sm.people==='none');
-  if(sm && sm.mat && matPhrase(c)) soft=soft.concat(MAT_NO);
+  if(sm && sm.mat && !sm.solo && matPhrase(c)) soft=soft.concat(MAT_NO);
   if(S.style.lock===false) return {body:[],no:dedupe(soft)};
   const n=(sm&&sm.solo)?1:cutChars(c).length;
   const no=['extra person','duplicate face','multiple views','collage','text','watermark'].concat(soft);
