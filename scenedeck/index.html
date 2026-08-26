@@ -257,6 +257,11 @@ main{max-width:1180px;margin:0 auto;padding:42px 30px 96px}
   .rback dt{margin-top:6px}}
 .chgblk{border:1px solid var(--line2);background:var(--s1);padding:14px 16px 4px;margin:0 0 14px}
 .chgblk .camhd{margin-bottom:10px}
+.locwarn{border-left:2px solid var(--sig);background:var(--sigbg,var(--s1));padding:11px 14px;margin:0 0 14px}
+.locwarn>b{display:block;font-size:12.5px;color:var(--tx)}
+.locwarn span b{display:inline;color:var(--tx);font-weight:600}
+.locwarn span{display:block;font-size:11.5px;color:var(--tx2);line-height:1.7;margin:3px 0 9px}
+.locwarn .row{margin:0}
 .reffld>span{line-height:1.55}
 .reffld>span b{color:var(--sig);font-family:var(--mono);font-size:11px}
 .reffld input{font-family:var(--mono);font-size:12px}
@@ -1538,7 +1543,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v25 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v26 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -2718,6 +2723,16 @@ function statLine(){
   const t=allCuts().reduce((a,x)=>a+(+x.c.dur||0),0);
   return `씬 ${S.scenes.length} · 컷 ${allCuts().length} · 예상 ${Math.floor(t/60)}분 ${t%60}초`;
 }
+/* 걸리는 장소면 대체안을 그 자리에 띄운다 — 누르면 바로 바뀐다 */
+function locWarnHTML(s){
+  const g=locAlt(s); if(!g) return '';
+  return `<div class="locwarn">
+    <b>「${esc(g.label)}」은 이미지 생성이 거부될 수 있어요</b>
+    <span>이 씬의 컷이 전부 막힙니다. 방 이름 대신 <b>방 안에 뭐가 있는지</b>를 쓰면 통과하고, 화면도 더 정확해져요.</span>
+    <div class="row">${g.alts.map((a,i)=>
+      `<button class="btn sm" data-locfix="${s.id}|${i}">${esc(a.ko)}</button>`).join('')}</div>
+  </div>`;
+}
 function renderScenes(){
   const w=$('scenelist');
   $('cutstat').textContent=statLine();
@@ -2742,6 +2757,7 @@ function renderScenes(){
         <label class="f"><span>시간대</span><select data-sf="time">${opts(TIME,s.time)}</select></label>
       </div>
       <div class="row" style="margin:-6px 0 12px"><button class="btn sm" data-strans="${s.id}">장소 한글 → 영문</button></div>
+      ${locWarnHTML(s)}
       <label class="f reffld"><span>이 장소 참조 <b>--sref</b> — 배경 판을 뽑고 나온 코드나 이미지 주소를 넣으세요.
         <b>같은 장소의 모든 컷</b>에 자동으로 붙습니다</span>
         <input type="text" data-splace="${esc(placeKey(s))}" value="${esc((refsOf().place[placeKey(s)]||{}).sref||'')}"
@@ -2921,6 +2937,18 @@ $('scenelist').addEventListener('input',onSceneEdit);
 $('scenelist').addEventListener('change',onSceneEdit);
 $('scenelist').addEventListener('click',async e=>{
   const t=e.target;
+  if(t.dataset.locfix){
+    const [sid,i]=t.dataset.locfix.split('|');
+    const sc=S.scenes.find(x=>x.id===sid); if(!sc) return;
+    const g=locAlt(sc); if(!g) return;
+    const a=g.alts[+i]; if(!a) return;
+    const before={loc:sc.loc,locEn:sc.locEn};
+    sc.loc=a.ko; sc.locEn=a.en; delete sc.locEnAuto;
+    save(); renderAll(); renderPrompt();
+    toast('장소를 바꿨어요 ✓ — 이 씬의 컷 프롬프트가 전부 갱신됐습니다',
+      {label:'되돌리기',fn:()=>{ Object.assign(sc,before); save(); renderAll(); renderPrompt(); toast('되돌렸어요 ✓'); }});
+    return;
+  }
   if(t.dataset.newscene!==undefined){ $('addscene').click(); return; }
   const tog=t.closest('[data-ktoggle]');
   if(tog && !t.closest('button')){
@@ -5153,6 +5181,43 @@ const SOFTEN={
    미드저니는 프롬프트 「텍스트」를 검사하고 --no 도 그 텍스트의 일부다.
    --no blood, gore 라고 쓰는 순간 내가 금지어를 직접 심는 셈이 된다.
    막는 일은 긍정 묘사(빈 방 · 실루엣 · 사물)가 하고, 여기엔 무해한 낱말만 둔다. */
+/* 장소는 씬 단위라 걸리면 그 씬의 컷이 전부 막힌다.
+   그래서 컷마다 순화하는 걸로는 못 잡고, 씬 카드에서 바로 바꿔야 한다.
+
+   요령은 방 이름을 대지 않는 것이다. 「고문실」이라고 쓰면 막히지만
+   「의자 하나와 바닥 배수구가 있는 창 없는 지하실」은 막히지 않으면서
+   화면에는 같은 방이 나온다. 오히려 더 정확하게 나온다. */
+const LOC_ALT=[
+  {re:/고문실|취조실|심문실|torture\s*(chamber|room)|interrogation\s*room/i, label:'고문실 · 취조실', alts:[
+    {ko:'창 없는 지하실 — 의자 하나와 바닥 배수구',
+     en:'bare windowless basement room, a single bolted chair, a floor drain, one caged bulb'},
+    {ko:'물 얼룩진 돌방',
+     en:'bare stone room, water-stained walls, a single hanging bulb'},
+    {ko:'책상 하나뿐인 방',
+     en:'plain room with one table and two chairs, harsh overhead light'}]},
+  {re:/사형장|처형장|execution\s*(ground|chamber|site)/i, label:'사형장 · 처형장', alts:[
+    {ko:'높은 담으로 둘러싸인 모래 마당',
+     en:'sand courtyard enclosed by high walls, a raised wooden platform at dawn'},
+    {ko:'의식의 마당',
+     en:'ceremonial courtyard, worn flagstones, a single wooden frame'}]},
+  {re:/교수대|gallows/i, label:'교수대', alts:[
+    {ko:'나무 단과 그 위의 틀',
+     en:'a bare wooden platform with a tall wooden frame above it'}]},
+  {re:/시체안치소|영안실|morgue|mortuary/i, label:'영안실', alts:[
+    {ko:'차가운 타일 방',
+     en:'cold tiled room, steel drawers along one wall, fluorescent light'}]},
+  {re:/감방|유치장|수감실|prison\s*cell|holding\s*cell/i, label:'감방 · 유치장', alts:[
+    {ko:'좁은 방 — 창살 창 하나',
+     en:'narrow cell, a single barred window, bare concrete walls'}]}
+];
+function locAlt(s){
+  // 프롬프트에 실제로 들어가는 건 장소 칸이다. 씬 제목은 화면에만 있으니 보지 않는다 —
+  // 다만 장소 칸이 비어 있으면 제목에서라도 찾아본다.
+  const hay=[s&&s.loc,s&&s.locEn].filter(Boolean).join(' ') || (s&&s.heading)||'';
+  if(!hay) return null;
+  for(const g of LOC_ALT) if(g.re.test(hay)) return g;
+  return null;
+}
 const SOFT_NO=[];   // 긍정 묘사가 막는 일을 한다. 여기에 무엇을 적든 프롬프트에 그 낱말이 남는다.
 function softenTxt(t,ko){
   let v=String(t||'');
