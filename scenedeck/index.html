@@ -1216,6 +1216,10 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
         <label class="f enfield"><span>미드저니 파라미터</span><input type="text" id="v-mj" placeholder="--ar 16:9 --style raw"></label>
       </div>
       <label class="f enfield"><span>네거티브 프롬프트</span><input type="text" id="v-neg" placeholder="text, watermark, deformed hands"></label>
+      <label class="lockrow"><input type="checkbox" id="v-extras">
+        <span><b>지문 속 단역도 옷을 입힙니다</b> — 지문에 「아이 하나가」 「의료진이」처럼
+        캐릭터로 등록하지 않은 사람이 나오면, 그 역할에 맞는 의상을 한 줄 얹습니다.
+        비워두면 모델이 매 컷 아무 옷이나 입혀서 장면이 흔들립니다.</span></label>
       <label class="lockrow"><input type="checkbox" id="v-lock">
         <span><b>프롬프트 락</b> — 인물이 한 명인 컷에 <code>single person</code> 을 박고,
         <code>extra person · duplicate face · collage</code> 를 배제 목록에 자동으로 넣습니다.
@@ -1546,7 +1550,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v29 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v30 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -2551,89 +2555,116 @@ function newChar(){
    소품을 하나씩 박아 둔다. 놋쇠 단추 · 밧줄 자국 같은 것이 실제로 갈라준다.
    ========================================================= */
 const OUTFIT_LEX=[
-  {re:/순사|경관|경찰/, era:/일제|1910|1920|1930|1940|조선/, wear:'crisp',
-   ko:'빳빳하게 다린 검은 순사 제복, 놋쇠 단추, 챙 모자, 광낸 장화',
-   en:'a pressed dark police uniform, brass buttons, a peaked cap, polished boots'},
-  {re:/헌병/, wear:'crisp',
-   ko:'헌병 제복, 완장, 가죽 허리띠',
-   en:'a military police uniform, an armband, a wide leather belt'},
-  {re:/일본군|병사|군인/, wear:'crisp',
-   ko:'누런 군복, 각반, 전투모',
-   en:'a mustard-brown military uniform, cloth leg wraps, a field cap'},
-  {re:/독립\s*운?동?가|독립\s*투사|투사|의병/, wear:'worn',
-   ko:'해져서 얇아진 무명 저고리, 손목에 밧줄 자국, 맨발',
-   en:'torn filthy hemp clothes worn thin, rope-marked wrists, bare feet'},
-  {re:/죄수|수감|포로|사형수/, wear:'worn',
-   ko:'번호가 찍힌 낡은 수의, 헝클어진 머리',
-   en:'a faded numbered prison smock, matted hair, dirt-streaked skin'},
-  {re:/망나니|처형인|회자수/, wear:'worn',
-   ko:'붉은 머리띠, 소매 걷은 삼베 조끼, 드러난 팔',
-   en:'a red headband, a sleeveless hemp vest, bare muscular arms'},
-  {re:/양반|대감|사또|관리|현감/, wear:'crisp',
-   ko:'옥색 도포, 갓, 세조대',
-   en:'a pale blue scholar robe, a wide-brimmed horsehair hat, a silk sash'},
-  {re:/농민|백성|서민|하인|머슴/, wear:'worn',
-   ko:'물들이지 않은 거친 삼베 저고리와 바지, 짚신, 흙 묻은 손',
-   en:'undyed hemp jacket and trousers, straw shoes, soil-stained hands'},
-  {re:/기생|무희/, wear:'crisp',
-   ko:'짧은 저고리와 넓은 치마, 노리개, 쪽 찐 머리',
-   en:'a short jacket over a wide bell-shaped skirt, a hanging ornament, hair coiled low'},
-  {re:/무당|박수/, wear:'crisp',
-   ko:'오색 두루마기, 방울, 붉은 띠',
-   en:'a five-coloured ritual robe, hand bells, a red sash'},
-  {re:/스님|승려/, wear:'worn',
-   ko:'잿빛 승복, 염주',
-   en:'a grey monastic robe, wooden prayer beads'},
-  {re:/의사|주치의|외과/, wear:'crisp',
-   ko:'흰 가운, 목에 건 청진기, 안쪽에 셔츠와 넥타이',
-   en:'a white coat, a stethoscope around the neck, shirt and tie underneath'},
-  {re:/간호사/, wear:'crisp',
-   ko:'연한 색 근무복, 머리에 쓴 캡',
-   en:'pale scrubs, a nurse cap'},
-  {re:/형사|수사관/, wear:'worn',
-   ko:'구겨진 재킷, 느슨한 넥타이, 낡은 구두',
-   en:'a rumpled jacket, a loosened tie, scuffed shoes'},
-  {re:/변호사|검사|판사/, wear:'crisp',
-   ko:'짙은 정장, 흰 셔츠',
-   en:'a dark tailored suit, a crisp white shirt'},
-  {re:/학생|고등학생|중학생/, wear:'crisp',
-   ko:'교복, 이름표, 멘 가방',
-   en:'a school uniform, a name tag, a satchel'},
-  {re:/선생|교사|교수/, wear:'crisp',
-   ko:'단정한 니트와 슬랙스, 손에 든 서류',
-   en:'a neat knit sweater and slacks, papers in hand'},
-  {re:/사장|회장|간부/, wear:'crisp',
-   ko:'맞춤 정장, 손목시계',
-   en:'a tailored suit, a wristwatch'},
-  {re:/회사원|직장인/, wear:'crisp',
-   ko:'기성복 정장, 사원증',
-   en:'an off-the-rack suit, an ID badge on a lanyard'},
-  {re:/노숙|거지/, wear:'worn',
-   ko:'겹쳐 입은 낡은 옷, 때 묻은 손',
-   en:'layers of worn mismatched clothes, grimed hands'},
-  {re:/할아버지|노인|조부/, wear:'worn',
-   ko:'헐렁한 회색 카디건, 낡은 바지, 굽은 등',
-   en:'a loose grey cardigan, worn trousers, a stooped back'},
-  {re:/할머니|조모/, wear:'worn',
-   ko:'수수한 꽃무늬 블라우스, 몸뻬 바지',
-   en:'a plain floral blouse, baggy work trousers'},
-  {re:/아이|어린|소년|소녀|아들|딸|손자|손녀/, wear:'worn',
-   ko:'조금 큰 옷, 무릎이 헤진 바지',
-   en:'clothes a size too big, knees worn through'},
-  {re:/어머니|엄마|아내/, wear:'worn',
-   ko:'앞치마를 두른 수수한 옷',
-   en:'plain clothes under an apron'},
-  {re:/아버지|아빠|가장/, wear:'worn',
-   ko:'낡은 점퍼, 늘어난 셔츠',
-   en:'a worn jacket over a stretched-out shirt'}
+  {re:/순사|경관|경찰|polic\w*|constable|officer/i, era:/일제|1910|1920|1930|1940|조선/, wear:'crisp',
+   ko:'상의 — 빳빳하게 다린 검정 모직 순사 정복, 놋쇠 단추 다섯 · 하의 — 같은 검정 모직 바지, 칼주름 · 무릎까지 오는 광낸 검정 가죽 장화 · 챙 달린 정모',
+   en:'a pressed black wool police tunic with five brass buttons, matching black wool trousers with a sharp crease, knee-high polished black leather boots, a stiff peaked cap'},
+  {re:/헌병|military police|gendarme/i, wear:'crisp',
+   ko:'상의 — 짙은 카키 모직 상의, 붉은 완장 · 하의 — 같은 카키 승마바지 · 갈색 가죽 각반과 허리띠',
+   en:'a dark khaki wool tunic with a red armband, matching khaki jodhpurs, brown leather leggings and a wide belt'},
+  {re:/일본군|병사|군인|soldier\w*|troops/i, wear:'crisp',
+   ko:'상의 — 누런 겨자색 면 군복, 목까지 채운 단추 · 하의 — 같은 색 바지에 감은 흰 각반 · 갈색 전투모',
+   en:'a mustard-brown cotton military tunic buttoned to the collar, matching trousers with pale cloth leg wraps, a brown field cap'},
+  {re:/독립\s*운?동?가|독립\s*투사|투사|의병|independence fighter|partisan|resistance member/i, wear:'worn',
+   ko:'상의 — 누렇게 바랜 무명 저고리, 소매가 해져 속이 비침 · 하의 — 잿빛 무명 바지, 무릎이 찢김 · 맨발 · 손목에 붉은 밧줄 자국',
+   en:'a yellowed cotton jacket worn sheer at the sleeves, grey cotton trousers torn at the knees, bare feet, raw red rope marks at the wrists'},
+  {re:/죄수|수감|포로|사형수|prisoner\w*|inmate\w*|convict\w*/i, wear:'worn',
+   ko:'상의 — 잿빛 광목 수의, 가슴에 검은 번호 · 하의 — 같은 천 헐렁한 바지, 끈으로 묶음 · 맨발 · 헝클어진 머리',
+   en:'a grey coarse-cotton prison smock with a black number stencilled on the chest, loose trousers of the same cloth tied with a cord, bare feet, matted hair'},
+  {re:/망나니|처형인|회자수|executioner|headsman/i, wear:'worn',
+   ko:'상의 — 소매 없는 거친 삼베 조끼, 맨 팔 · 하의 — 잿빛 삼베 통바지, 종아리를 끈으로 동임 · 붉은 무명 머리띠 · 짚신',
+   en:'a sleeveless coarse hemp vest over bare arms, grey hemp trousers bound at the calves with cord, a red cotton headband, straw sandals'},
+  {re:/양반|대감|사또|관리|현감|nobleman|magistrate|court official/i, wear:'crisp',
+   ko:'상의 — 옥색 명주 도포, 넓은 소매 · 하의 — 흰 명주 바지, 대님으로 묶음 · 검은 말총 갓 · 남색 세조대',
+   en:'a jade-blue silk scholar robe with wide sleeves, white silk trousers tied at the ankles, a black horsehair hat, a navy silk sash'},
+  {re:/농민|백성|서민|하인|머슴|peasant\w*|farmer\w*|villager\w*|servant\w*/i, wear:'worn',
+   ko:'상의 — 물들이지 않은 거친 삼베 저고리, 소매를 걷음 · 하의 — 같은 삼베 통바지, 흙물이 밴 밑단 · 짚신 · 흙 묻은 손',
+   en:'an undyed coarse hemp jacket with rolled sleeves, matching hemp trousers with soil-darkened hems, straw shoes, soil-stained hands'},
+  {re:/기생|무희|courtesan|gisaeng/i, wear:'crisp',
+   ko:'상의 — 연분홍 명주 짧은 저고리, 자주색 고름 · 하의 — 짙은 남색 치마, 종 모양으로 퍼짐 · 노리개 · 쪽 찐 머리에 비녀',
+   en:'a short pale-pink silk jacket with a plum-coloured ribbon tie, a deep indigo skirt falling in a wide bell shape, a hanging silk ornament, hair coiled low with a long pin'},
+  {re:/무당|박수|shaman/i, wear:'crisp',
+   ko:'상의 — 오색 명주 두루마기, 색동 소매 · 하의 — 흰 무명 바지 · 붉은 띠 · 손에 든 놋쇠 방울',
+   en:'a five-coloured silk ritual robe with striped sleeves, white cotton trousers, a red sash, brass hand bells'},
+  {re:/스님|승려|monk/i, wear:'worn',
+   ko:'상의 — 잿빛 무명 장삼 · 하의 — 같은 색 헐렁한 바지 · 목에 건 나무 염주 · 흰 고무신',
+   en:'a grey cotton monastic robe, loose trousers of the same cloth, wooden prayer beads at the neck, white rubber shoes'},
+  {re:/의사|주치의|외과|doctor\w*|surgeon\w*|physician\w*|medical staff/i, wear:'crisp',
+   ko:'상의 — 무릎까지 오는 흰 면 가운, 안에 옅은 하늘색 셔츠와 짙은 넥타이 · 하의 — 회색 슬랙스 · 목에 건 은빛 청진기',
+   en:'a knee-length white cotton coat over a pale blue shirt and dark tie, grey slacks, a silver stethoscope around the neck'},
+  {re:/간호사|nurse\w*/i, wear:'crisp',
+   ko:'상의 — 연한 민트색 면 근무복 · 하의 — 같은 색 바지 · 흰 캡 · 흰 운동화',
+   en:'a pale mint cotton scrub top, matching trousers, a white cap, white sneakers'},
+  {re:/형사|수사관|detective\w*/i, wear:'worn',
+   ko:'상의 — 구겨진 짙은 회색 재킷, 안에 늘어난 흰 셔츠, 느슨한 감색 넥타이 · 하의 — 무릎이 번들거리는 같은 색 바지 · 굽이 닳은 검은 구두',
+   en:'a rumpled charcoal jacket over a stretched white shirt and a loosened navy tie, matching trousers shiny at the knees, black shoes worn down at the heel'},
+  {re:/변호사|검사|판사|lawyer\w*|prosecutor\w*|judge\w*/i, wear:'crisp',
+   ko:'상의 — 짙은 감색 모직 정장 상의 · 하의 — 같은 감색 바지, 칼주름 · 흰 면 셔츠 · 광낸 검은 구두',
+   en:'a dark navy wool suit jacket, matching trousers with a sharp crease, a crisp white cotton shirt, polished black oxfords'},
+  {re:/학생|고등학생|중학생|student\w*|schoolboy|schoolgirl|pupil\w*/i, wear:'crisp',
+   ko:'상의 — 감색 교복 상의, 금색 단추, 가슴에 이름표 · 하의 — 회색 체크 바지(치마) · 흰 양말과 검은 단화 · 어깨에 멘 가방',
+   en:'a navy school jacket with gold buttons and a name tag, grey checked trousers or skirt, white socks and black loafers, a satchel on one shoulder'},
+  {re:/선생|교사|교수|teacher\w*|professor\w*/i, wear:'crisp',
+   ko:'상의 — 오트밀색 니트 스웨터, 안에 셔츠 · 하의 — 갈색 코듀로이 바지 · 손에 든 서류 뭉치',
+   en:'an oatmeal knit sweater over a shirt, brown corduroy trousers, a stack of papers in hand'},
+  {re:/사장|회장|간부|executive\w*|chairman|company president/i, wear:'crisp',
+   ko:'상의 — 짙은 회색 맞춤 정장, 실크 포켓치프 · 하의 — 같은 원단 바지 · 금빛 손목시계 · 광낸 갈색 구두',
+   en:'a charcoal tailored suit with a silk pocket square, matching trousers, a gold wristwatch, polished brown shoes'},
+  {re:/회사원|직장인|office worker\w*|salaryman|clerk\w*/i, wear:'crisp',
+   ko:'상의 — 검정 기성복 정장, 어깨가 약간 큼 · 하의 — 같은 색 바지 · 목에 건 사원증 · 검은 구두',
+   en:'a black off-the-rack suit slightly loose at the shoulders, matching trousers, an ID badge on a lanyard, black shoes'},
+  {re:/노숙|거지|homeless|vagrant|beggar\w*/i, wear:'worn',
+   ko:'상의 — 색이 다 빠진 패딩 위에 겹쳐 입은 셔츠 두 장 · 하의 — 밑단이 헤진 카키 바지 · 끈 없는 운동화 · 때 묻은 손',
+   en:'a colour-drained padded coat over two layered shirts, khaki trousers frayed at the hem, laceless sneakers, grimed hands'},
+  {re:/할아버지|노인|조부|old man|grandfather|elderly man/i, wear:'worn',
+   ko:'상의 — 늘어난 회색 카디건, 안에 누런 러닝 · 하의 — 무릎이 나온 갈색 면바지 · 흰 고무신 · 굽은 등',
+   en:'a stretched grey cardigan over a yellowed undershirt, brown cotton trousers bagged at the knees, white rubber shoes, a stooped back'},
+  {re:/할머니|조모|old woman|grandmother|elderly woman/i, wear:'worn',
+   ko:'상의 — 잔꽃무늬 남색 블라우스 · 하의 — 헐렁한 몸뻬 바지 · 흰 고무신 · 쪽 찐 흰머리',
+   en:'a navy blouse with a small floral print, baggy patterned work trousers, white rubber shoes, white hair pinned back'},
+  {re:/아이|어린|소년|소녀|아들|딸|손자|손녀|child|children|kid|kids|schoolchildren|young boy|young girl/i, wear:'worn',
+   ko:'상의 — 소매가 손등을 덮는 큰 남색 스웨터 · 하의 — 무릎이 헤진 갈색 반바지 · 흘러내린 흰 양말과 낡은 운동화',
+   en:'a navy sweater a size too big with sleeves over the knuckles, brown shorts worn through at the knees, slouched white socks and scuffed sneakers'},
+  {re:/어머니|엄마|아내|mother|mom|wife/i, wear:'worn',
+   ko:'상의 — 빛바랜 연두색 블라우스, 소매를 걷음 · 하의 — 짙은 회색 치마 · 허리에 두른 무명 앞치마 · 물기 마른 손',
+   en:'a faded pale-green blouse with rolled sleeves, a dark grey skirt, a cotton apron at the waist, water-dried hands'},
+  {re:/아버지|아빠|가장|father|dad/i, wear:'worn',
+   ko:'상의 — 소매가 늘어난 밤색 점퍼, 안에 회색 셔츠 · 하의 — 무릎이 번들거리는 진회색 바지 · 굽이 닳은 구두',
+   en:'a maroon jacket stretched at the cuffs over a grey shirt, dark grey trousers shiny at the knees, shoes worn down at the heel'}
 ];
 /* 역할이 비어 있을 때의 마지막 수단 — 시대만이라도 맞춘다 */
 const OUTFIT_ERA=[
-  {re:/조선|사극|고려|삼국/, ko:'무명 저고리와 바지', en:'plain hemp jacket and trousers'},
-  {re:/일제|1910|1920|1930|1940/, ko:'낡은 무명 두루마기', en:'a worn cotton overcoat of the period'},
-  {re:/50년대|60년대|70년대/, ko:'빛바랜 셔츠와 통 넓은 바지', en:'a faded shirt and wide-legged trousers'},
-  {re:/80년대|90년대/, ko:'헐렁한 재킷과 청바지', en:'a loose jacket and jeans'}
+  {re:/조선|사극|고려|삼국/,
+   ko:'상의 — 물들이지 않은 무명 저고리 · 하의 — 같은 천 통바지, 대님으로 묶음 · 짚신',
+   en:'an undyed cotton jacket, matching wide trousers tied at the ankles, straw shoes'},
+  {re:/일제|1910|1920|1930|1940/,
+   ko:'상의 — 잿빛 무명 두루마기 · 하의 — 검정 무명 바지 · 흰 고무신',
+   en:'a grey cotton overcoat of the period, black cotton trousers, white rubber shoes'},
+  {re:/50년대|60년대|70년대/,
+   ko:'상의 — 빛바랜 카키 셔츠 · 하의 — 통 넓은 갈색 바지 · 낡은 가죽 구두',
+   en:'a faded khaki shirt, wide-legged brown trousers, worn leather shoes'},
+  {re:/80년대|90년대/,
+   ko:'상의 — 어깨가 큰 남색 재킷 · 하의 — 밝은 청바지 · 흰 운동화',
+   en:'a navy jacket with wide shoulders, light-wash jeans, white sneakers'}
 ];
+/* 지문에 나오지만 캐릭터로 등록되지 않은 사람들 — 아이 하나, 의료진, 순사들.
+   그냥 두면 매 컷 아무 옷이나 입고 나온다. 지문에서 역할 낱말을 찾아
+   그 역할의 의상을 한 줄 얹어 준다. 등록된 인물이 이미 그 역할이면 건너뛴다. */
+function extraBits(c){
+  if(!c || c.bg || S.style.extras===false) return [];
+  const sm=c.soft?SOFTEN[c.soft]:null;
+  if(sm && sm.people && sm.people!=='yes') return [];
+  const hay=[c.desc,c.descEn,c.act,c.actEn].filter(Boolean).join(' ');
+  if(!hay) return [];
+  const mine=cutChars(c).map(ch=>(ch.role||'')+' '+(ch.name||'')).join(' ');
+  const out=[];
+  for(const e of OUTFIT_LEX){
+    if(out.length>=2) break;
+    if(!e.re.test(hay)) continue;
+    if(mine && e.re.test(mine)) continue;   // 이미 등록된 인물이 맡은 역할
+    out.push(e.en);
+  }
+  return out;
+}
 function suggestOutfit(c){
   const role=[(c&&c.role)||'',(c&&c.name)||''].join(' ');
   const era=String(S.style.era||'');
@@ -2645,10 +2676,19 @@ function suggestOutfit(c){
   }
   if(hit) return {ko:hit.ko,en:hit.en,wear:hit.wear};
   for(const e of OUTFIT_ERA) if(era && e.re.test(era)) return {ko:e.ko,en:e.en,wear:''};
-  // 그마저도 없으면 나이·성별로 무난하게
-  const young=/10대|20대/.test(String(c&&c.age||''));
-  return young ? {ko:'단순한 셔츠와 바지',en:'a simple shirt and trousers',wear:''}
-               : {ko:'수수한 겉옷과 바지',en:'a plain overcoat and trousers',wear:''};
+  // 그마저도 없으면 나이·성별로 — 이름도 역할도 없는 인물을 그냥 두면
+  // 매 컷 다른 옷을 입고 나온다. 무엇이든 정해 주는 편이 낫다.
+  const age=String(c&&c.age||''), sex=String(c&&c.sex||'');
+  const young=/10대|어린이|아동/.test(age), old=/60대|70대|노년/.test(age);
+  const f=/여/.test(sex);
+  if(young) return {ko:'상의 — 소매가 조금 긴 회색 맨투맨 · 하의 — 짙은 남색 면바지 · 낡은 흰 운동화',
+                    en:'a grey sweatshirt with slightly long sleeves, dark navy cotton trousers, scuffed white sneakers',wear:'worn'};
+  if(old)   return {ko:'상의 — 늘어난 베이지 카디건 · 하의 — 갈색 면바지 · 흰 고무신',
+                    en:'a stretched beige cardigan, brown cotton trousers, white rubber shoes',wear:'worn'};
+  return f ? {ko:'상의 — 무채색 리넨 블라우스 · 하의 — 짙은 회색 면 치마 · 굽 낮은 구두',
+              en:'a muted linen blouse, a dark grey cotton skirt, low-heeled shoes',wear:''}
+           : {ko:'상의 — 짙은 회색 면 셔츠 · 하의 — 검정 면바지 · 낡은 검은 구두',
+              en:'a dark grey cotton shirt, black cotton trousers, worn black shoes',wear:''};
 }
 /* 「a man in his forties」 → 「a Korean man in his forties」.
    관사 바로 뒤가 인종이 들어갈 자리다. 관사가 없으면 앞에 그냥 붙인다. */
@@ -4962,6 +5002,7 @@ function fillStyle(){
   if($('v-comp'))   $('v-comp').innerHTML=opts(COMP,S.style.comp||'');
   ['palette','extra','mj','neg'].forEach(k=>$('v-'+k).value=S.style[k]||'');
   if($('v-lock')) $('v-lock').checked = S.style.lock!==false;
+  if($('v-extras')) $('v-extras').checked = S.style.extras!==false;
   syncToolCell();
 }
 /* 목적이 사진이 아니면 카메라·렌즈 칸을 감추고 그 매체의 도구를 보여준다.
@@ -4992,6 +5033,10 @@ $('v-sbtog') && $('v-sbtog').addEventListener('click',()=>{
     toast('스토리보드용 — 맨 앞 목적만 연필 스케치로 바꿨어요 ✓');
   }
   mjSync(); save(); fillStyle(); renderPrompt();
+});
+$('v-extras') && $('v-extras').addEventListener('change',()=>{
+  S.style.extras=$('v-extras').checked; save(); renderPrompt();
+  toast(S.style.extras?'단역도 옷을 입힙니다 ✓':'단역 의상 끔');
 });
 $('v-lock') && $('v-lock').addEventListener('change',()=>{
   S.style.lock=$('v-lock').checked; save(); renderPrompt();
@@ -5515,7 +5560,10 @@ function lockBits(c){
   const no=['extra person','duplicate face','multiple views','collage','text','watermark'].concat(soft);
   const body=[];
   // 아무도 화면에 없는 우회에서 「single person」을 같이 적으면 --no person 과 부딪친다
-  if(n===1 && !none){ body.push('single person, one character only'); no.push('crowd','other people'); }
+  // 지문 속 단역이 함께 나오는 컷에 「single person」을 적으면 서로 부딪친다
+  if(n===1 && !none && !extraBits(c).length){
+    body.push('single person, one character only'); no.push('crowd','other people');
+  }
   return {body,no:dedupe(no)};
 }
 /* ② 스토리 중 인물 — 외형 고정 블록 + 그 컷에서의 감정 */
@@ -5564,6 +5612,8 @@ function charBits(c){
   const locks=cutChars(c).map(ch=>charLock(ch)).filter(Boolean);
   const blk=castBlock(c,locks);
   if(blk) out.push(blk);
+  const ex=extraBits(c);
+  if(ex.length) out.push('others in frame wear '+ex.join('; '));
   chgBits(c).look.forEach(x=>out.push(x));
   if(out.length && EMO[c.emo]) out.push(EMO[c.emo]+' expression');
   const it=intentOf(c);
@@ -5963,6 +6013,8 @@ function readbackKO(s,c,kind){
     R.push(rbRow('인물',chs.map(x=>b(x.name||'이름 없음')).join(' · ')+(c.pos?' · '+esc(c.pos):''),
       castBlock(c,chs.map(x=>charLock(x)).filter(Boolean)).slice(0,140)));
   }
+  const ex=extraBits(c);
+  if(ex.length) R.push(rbRow('지문 속 단역','<i>지문에서 찾아 옷을 입혔습니다</i>',ex.join(' / ').slice(0,110)));
   const chg=[c.face&&['얼굴',c.face],c.outfit&&['의상',c.outfit],c.act&&['행동',c.act]].filter(Boolean);
   if(chg.length) R.push(rbRow('이 컷만',chg.map(x=>x[0]+' — '+esc(x[1])).join('<br>')));
   if(EMO[c.emo]) R.push(rbRow('표정',b(c.emo),EMO[c.emo]));
