@@ -12,9 +12,8 @@ from pathlib import Path
 
 from pptx.dml.color import RGBColor
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
-from pptx.util import Emu, Inches, Pt
+from pptx.util import Inches, Pt
 
-TITLE_RED = RGBColor(0xA9, 0x00, 0x08)  # 타이틀 로고에서 뽑은 붉은색
 BLACK = RGBColor(0x00, 0x00, 0x00)
 BONE = RGBColor(0xD8, 0xD4, 0xD0)
 ASH = RGBColor(0x8A, 0x85, 0x82)
@@ -101,8 +100,6 @@ def add_cover(prs, art_dir: Path, deck_cuts: int, total_cuts: int) -> int:
         # 아래쪽을 눌러 글자가 뜨도록 검은 판을 반투명하게 겹친다
         _rect(slide, 0, Inches(5.9), SLIDE_W, Inches(1.6), BLACK, alpha=0.38)
 
-        _rect(slide, Inches(0.75), Inches(6.32), Inches(1.05), Emu(9525), TITLE_RED)
-
         _text(
             slide, Inches(0.75), Inches(6.52), Inches(7.0), Inches(0.8),
             [
@@ -132,7 +129,6 @@ def add_cover(prs, art_dir: Path, deck_cuts: int, total_cuts: int) -> int:
     if present:
         slide = _blank_slide(prs)
         _rect(slide, 0, 0, SLIDE_W, SLIDE_H, BLACK)
-        _rect(slide, Inches(0.55), Inches(0.72), Inches(0.9), Emu(9525), TITLE_RED)
         _text(
             slide, Inches(0.55), Inches(0.34), Inches(6.0), Inches(0.4),
             [("K E Y   A R T", 13, BONE, True, 3.0)],

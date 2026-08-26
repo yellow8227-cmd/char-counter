@@ -20,10 +20,12 @@ import json
 import sys
 from pathlib import Path
 
-from cover import add_cover
 from pptx import Presentation
 from pptx.enum.text import MSO_ANCHOR
 from pptx.util import Pt
+
+import theme
+from cover import add_cover
 
 HERE = Path(__file__).parent
 
@@ -158,11 +160,14 @@ def fill_text(ph, value: str, field: str) -> None:
     for para in tf.paragraphs:
         para.line_spacing = LINE_RATIO
         para.font.size = size
+        para.font.color.rgb = theme.BONE
         for run in para.runs:
             run.font.size = size
+            run.font.color.rgb = theme.BONE
 
 
-def fill_panel(slide, panel: int, cut: dict, images_dir: Path, cache: Path) -> None:
+def fill_panel(slide, panel: int, cut: dict, images_dir: Path, cache: Path,
+               wells: list | None = None) -> None:
     pic_idx, text_idxs = panel_placeholder_indices(panel)
     by_idx = {p.placeholder_format.idx: p for p in slide.placeholders}
 
@@ -175,14 +180,15 @@ def fill_panel(slide, panel: int, cut: dict, images_dir: Path, cache: Path) -> N
     if pic_ph is None:
         return
 
-    name = cut.get("image")
-    if not name:
+    path = resolve_image(images_dir, cut.get("image") or "")
+    if path is not None:
+        pic_ph.insert_picture(str(fit_to_panel(path, cache)))
         return
-    path = resolve_image(images_dir, name)
-    if path is None:
-        print(f"  · 이미지 없음, 빈 칸으로 둠: {name}", file=sys.stderr)
-        return
-    pic_ph.insert_picture(str(fit_to_panel(path, cache)))
+
+    # 아직 그림이 없다 — 자리표시자를 걷어내고 어두운 판만 남긴다
+    pic_ph._element.getparent().remove(pic_ph._element)
+    if wells and panel < len(wells):
+        theme.mark_empty_well(slide, wells[panel])
 
 
 def drop_unused_placeholders(slide, used_panels: int) -> None:
@@ -241,6 +247,8 @@ def build(cuts: list[dict], template: Path, images_dir: Path, out: Path,
     clear_slide(base_slide)
     clone_layout_placeholders(base_slide, layout)
 
+    wells = theme.restyle_layout(layout)
+
     slides = [base_slide]
     total_slides = -(-len(cuts) // PANELS_PER_SLIDE)  # ceil
     for _ in range(total_slides - 1):
@@ -249,8 +257,9 @@ def build(cuts: list[dict], template: Path, images_dir: Path, out: Path,
 
     for i, slide in enumerate(slides):
         chunk = cuts[i * PANELS_PER_SLIDE : (i + 1) * PANELS_PER_SLIDE]
+        theme.paint_background(slide)
         for panel, cut in enumerate(chunk):
-            fill_panel(slide, panel, cut, images_dir, out.parent / "_fit")
+            fill_panel(slide, panel, cut, images_dir, out.parent / "_fit", wells)
         if len(chunk) < PANELS_PER_SLIDE:
             drop_unused_placeholders(slide, len(chunk))
 
