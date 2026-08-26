@@ -135,7 +135,7 @@ python3 build_deck.py --theme ink     # 어두운 판으로 뽑고 싶을 때
 | 칸 | PPT의 어느 자리 | 넣는 것 |
 |---|---|---|
 | `scene` `shot` | 패널 맨 위 | 씬 번호 · 컷 번호 |
-| `camera` | 카메라 | 프레임 사이즈 + 앵글 + 카메라 4단(무브먼트·속도·유지·종료) |
+| `camera` | 카메라 | 아래 두 형식 중 하나로만 씁니다 |
 | `desc` | 장면묘사 | 무엇이 보이는가 |
 | `note` | 디테일 / 메모 | 소품 · 사운드 · VFX · 연속성 표시 |
 | `trans` | 전환효과 | `CUT TO` `MATCH CUT ← S1` `F.O` `DISSOLVE` `INTER CUT` |
