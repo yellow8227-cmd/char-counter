@@ -1230,7 +1230,9 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
         <p class="camwhy" id="softtip"></p>
         <div class="row" id="softmatrow" style="display:none">
           <span class="mini" style="margin:0">화면에 담을 재료</span>
-          <select id="soft-mat" style="max-width:230px"></select>
+          <select id="soft-mat" style="max-width:190px"></select>
+          <span class="mini" style="margin:0">색조</span>
+          <select id="soft-tint" style="max-width:180px"></select>
           <span class="mini" id="soft-matwhy" style="margin:0">「피」 자리에 이 재료가 들어갑니다</span>
         </div>
         <div class="grid g2" id="softin" style="display:none">
@@ -1522,7 +1524,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v23 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v24 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -2692,7 +2694,7 @@ function newScene(){ return {id:nid('s'),heading:'',loc:'',locEn:'',time:'',summ
 function newCut(){
   return {id:nid('k'),desc:'',descEn:'',shot:'',angle:'',move:'',lens:'',light:'',mood:'',
     speed:'',fx:'',trig:'',emo:'',keep:'',endp:'',use:'',bg:false,cast:'',soft:'',
-    inframe:'',inframeEn:'',mat:'',
+    inframe:'',inframeEn:'',mat:'',tint:'',
     face:'',faceEn:'',outfit:'',outfitEn:'',act:'',actEn:'',
     dur:4,chars:[],dialogue:'',audio:'',note:'',hasImg:false,open:true};
 }
@@ -5041,31 +5043,42 @@ const SOFT_KO=[
    그래서 색이 없는 것을 위에 두고, 붉은 계열에는 표시를 단다. */
 const MAT={
   '':                       null,
-  '어두운 액체 (검증됨)':      {n:'dark liquid',        a:'dark-stained', tone:'safe',
-                             x:'a dark wet patch spreading across the floor'},
-  '먹물':                    {n:'black ink',          a:'ink-stained', tone:'safe',
-                             x:'ink spreading slowly through the grain of the stone'},
-  '젖은 어둠':                {n:'dark wetness',       a:'darkly soaked', tone:'safe',
-                             x:'a dark wet patch spreading outward'},
-  '검은 기름':                {n:'black oil',          a:'oil-stained', tone:'safe',
-                             x:'oil creeping between the floorboards'},
-  '흙탕물':                   {n:'muddy water',        a:'mud-spattered', tone:'safe',
-                             x:'muddy water pooling in the hollows of the stone'},
-  '녹물':                    {n:'rust-coloured water',a:'rust-stained', tone:'warm',
-                             x:'rust seeping between the stones'},
-  '촛농':                    {n:'candle wax',         a:'wax-spattered', tone:'warm',
-                             x:'wax pooling and hardening'},
-  '붉은 실 (붉은색)':          {n:'red thread',         a:'wound in red thread', tone:'red',
-                             x:'red thread trailing across the floor'},
-  '붉은 천 (붉은색)':          {n:'red silk',           a:'draped in red silk', tone:'red',
-                             x:'a length of red silk pooling on the floor'},
-  '붉은 꽃잎 (붉은색)':        {n:'red petals',         a:'covered in red petals', tone:'red',
-                             x:'red petals scattered across the floor'},
-  '옻칠 (붉은색)':            {n:'red lacquer',        a:'lacquer-stained', tone:'red',
-                             x:'glossy red lacquer catching the light'},
-  '물에 번지는 붉은빛 (붉은색)': {n:'red pigment',        a:'tinted deep red', tone:'red',
-                             x:'red pigment blooming through clear water'}
+  '어두운 액체 (검증됨)':      {base:'liquid',      col:'dark',            tone:'safe'},
+  '먹물':                    {base:'ink',         col:'black',           tone:'safe'},
+  '젖은 어둠':                {base:'wetness',     col:'dark',            tone:'safe'},
+  '검은 기름':                {base:'oil',         col:'black',           tone:'safe'},
+  '흙탕물':                   {base:'water',       col:'muddy',           tone:'safe'},
+  '녹물':                    {base:'water',       col:'rust-coloured',   tone:'warm'},
+  '촛농':                    {base:'candle wax',  col:'dark',            tone:'warm'},
+  '옻칠':                    {base:'lacquer',     col:'dark',            tone:'warm'},
+  '실':                      {base:'thread',      col:'dark',            tone:'safe'},
+  '천':                      {base:'silk',        col:'dark',            tone:'safe'},
+  '꽃잎':                    {base:'petals',      col:'dark',            tone:'safe'},
+  '안료':                    {base:'pigment',     col:'dark',            tone:'safe'}
 };
+/* 색조 — 이게 핵심이다.
+   「red」라고 쓰면 구성과 합쳐져 피로 읽혀 막힌다. 그런데 어두운 붉은색을
+   가리키는 이름은 red 말고도 많고, 그것들은 막히지 않으면서 화면에는
+   훨씬 정확한 색을 준다. burgundy · maroon · wine-dark · garnet · iron-oxide.
+   재료만 바꾸면 초콜릿처럼 새까맣게 나오므로 색조를 따로 둔다. */
+const TINT={
+  '(그대로)':          '',
+  '진한 포도주색':      'deep burgundy',
+  '적갈색':            'dark maroon',
+  '와인빛':            'wine-dark',
+  '가넷':              'garnet',
+  '녹슨 붉은빛':        'iron-oxide',
+  '마호가니':          'mahogany',
+  '검붉은 (조심)':      'blackish crimson'
+};
+function matPhrase(c){
+  const m=MAT[(c&&c.mat)||'']; if(!m) return null;
+  const t=TINT[(c&&c.tint)||'(그대로)'];
+  const col=t||m.col;
+  const n=[col,m.base].filter(Boolean).join(' ');
+  return {n, a:col+'-stained',
+    x:n+' spreading slowly across the stone, warm lamplight catching its surface'};
+}
 const SOFTEN={
   '말만 바꾸기':{
     tip:'샷도 구도도 그대로 — 걸리는 낱말만 바꿉니다. 화면에 보이는 건 똑같아요',
@@ -5074,7 +5087,7 @@ const SOFTEN={
     set:{},
     ph:''},
   '재료 바꾸기':{
-    tip:'화면에 담을 재료를 바꾼다 — 먹물이 번지는 돌바닥은 덜 잔인하면서 더 세다. 색이 없는 쪽이 확실하다',
+    tip:'재료와 색조를 따로 고른다. red 를 쓰면 막히지만 burgundy · maroon · wine-dark 는 통과하면서 색은 제대로 나온다',
     people:'yes', bits:[], set:{}, mat:true, ph:''},
   '무대 티내기':{
     tip:'촬영 현장을 그대로 보여준다 — 특수분장과 조명 장비가 보이면 실제가 아니게 된다',
@@ -5131,13 +5144,15 @@ function softenTxt(t,ko){
 /* 마지막 청소 — 장소 · 외형 고정 블록 · 스타일 태그 · 배제 목록 어디에서
    흘러들어왔든 조립이 끝난 프롬프트 전체를 한 번 더 훑는다.
    지문만 순화해서는 「colonial-era torture chamber」 같은 장소가 그대로 남는다. */
-function scrub(txt,on,mat){
+function scrub(txt,on,c){
   if(!on) return txt;
   let v=softenTxt(softenTxt(String(txt||''),false),true);
-  const m=MAT[mat||''];
+  const m=matPhrase(c);
   if(m){
-    v=v.replace(/\bdark liquid\b/gi,m.n).replace(/\bdark-stained\b/gi,m.a)
-       .replace(/검은 물기/g,mat).replace(/검게 젖은/g,mat+' 묻은');
+    // 「wine-dark liquid」 안의 「dark liquid」를 또 바꾸면 wine-wine-dark 가 된다
+    v=v.replace(/(?<![\w-])dark liquid\b/gi,m.n).replace(/(?<![\w-])dark-stained\b/gi,m.a);
+    const ko=(c&&c.mat)||'';
+    if(ko) v=v.replace(/검은 물기/g,ko).replace(/검게 젖은/g,ko+' 묻은');
   }
   return v;
 }
@@ -5160,7 +5175,7 @@ function softBits(c){
   const k=c&&c.soft, m=SOFTEN[k];
   if(!m) return [];
   const out=m.bits.slice();
-  const mt=m.mat?MAT[c.mat||'']:null;
+  const mt=m.mat?matPhrase(c):null;
   if(mt&&mt.x) out.push(mt.x);
   return out;
 }
@@ -5254,7 +5269,7 @@ function buildMJ(s,c){
   let out=(dedupe(p).join(', ')+' '+refParams(s,c,S.style.mj||'')).trim();
   // 파라미터 칸에 --no 를 직접 써두었다면 그쪽을 존중한다
   if(lk.no.length && !/--no\b/.test(out)) out+=' --no '+lk.no.join(', ');
-  return scrub(out,!!(c&&c.soft),c&&c.mat);
+  return scrub(out,!!(c&&c.soft),c);
 }
 function buildVEO(s,c){
   const chs=cutChars(c), L=[];
@@ -5292,7 +5307,7 @@ function buildVEO(s,c){
   const lkv=lockBits(c);
   if(lkv.body.length) L.push('Constraint: '+lkv.body.join(', ')+'.');
   if(lkv.no.length)   L.push('Avoid: '+lkv.no.join(', ')+'.');
-  return scrub(L.join('\n'),!!(c&&c.soft),c&&c.mat);
+  return scrub(L.join('\n'),!!(c&&c.soft),c);
 }
 function buildGEN(s,c){
   const m=medium(), p=[];
@@ -5314,7 +5329,7 @@ function buildGEN(s,c){
   out+='\n\n[화면비] '+(AR[S.style.ar]||'16:9');
   const neg=dedupe([S.style.neg||''].concat(lk.no)).filter(Boolean).join(', ');
   if(neg) out+='\n[네거티브] '+neg;
-  return scrub(out,!!(c&&c.soft),c&&c.mat);
+  return scrub(out,!!(c&&c.soft),c);
 }
 /* 런웨이 · 클링 — 한 문장. 카메라 동작을 맨 앞에 두는 게 잘 먹힌다.
    「A cinematic pull back of a medieval warrior standing exhausted …」 (필기 Part 4) */
@@ -5334,7 +5349,7 @@ function buildRW(s,c){
   const lk=lockBits(c);
   if(lk.body.length) out+=' '+cap(lk.body.join(', '))+'.';
   const rn=refNote(s,c); if(rn) out+=' '+rn;
-  return scrub(out,!!(c&&c.soft),c&&c.mat);
+  return scrub(out,!!(c&&c.soft),c);
 }
 const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
 
@@ -5603,15 +5618,14 @@ function paintSoft(){
     const sel=$('soft-mat');
     if(!sel.options.length) sel.innerHTML=opts(MAT,c.mat||'');
     sel.value=c.mat||'';
-    const mt=MAT[c.mat||''];
-    const why=$('soft-matwhy');
-    if(mt&&mt.tone==='red'){
-      why.innerHTML='<b style="color:var(--sig)">붉은 계열입니다</b> — 「떨어지는 붉은 방울」은 색만으로도 피로 읽혀 막힐 수 있어요. 막히면 위쪽 색 없는 재료로 바꿔보세요.';
-    }else if(mt&&mt.tone==='warm'){
-      why.textContent='붉은 기가 조금 있습니다 — 막히면 위쪽 색 없는 재료로 바꿔보세요';
-    }else{
-      why.textContent='「피」 자리에 이 재료가 들어갑니다 — 색이 없는 쪽이 확실합니다';
-    }
+    const ts=$('soft-tint');
+    if(!ts.options.length) ts.innerHTML=opts(TINT,c.tint||'(그대로)');
+    ts.value=c.tint||'(그대로)';
+    const ph=matPhrase(c), why=$('soft-matwhy');
+    if(!ph) why.textContent='재료를 고르면 「피」 자리에 그것이 들어갑니다';
+    else if(/crimson/.test(ph.n))
+      why.innerHTML='<b style="color:var(--sig)">crimson 은 막힐 수 있어요</b> — 다른 색조로 바꿔보세요';
+    else why.innerHTML='들어갈 문구 → <code>'+esc(ph.n)+'</code>';
   }else mr.style.display='none';
   const box2=$('softin');
   if(m && m.subj){
@@ -5636,10 +5650,15 @@ document.addEventListener('click',e=>{
   toast(c.soft?`${k} — ${m.tip}`:'순화를 껐어요',
     {label:'되돌리기',fn:()=>{ Object.assign(c,before); save(); renderAll(); renderPrompt(); }});
 });
-$('soft-mat') && $('soft-mat').addEventListener('change',()=>{
-  const pair=activePair(); const c=pair&&pair.c; if(!c) return;
-  c.mat=$('soft-mat').value; save(); renderAll(); renderPrompt();
-  toast(c.mat?`「피」 자리에 ${c.mat} 를 씁니다`:'재료를 비웠어요');
+['soft-mat','soft-tint'].forEach(id=>{
+  const el=$(id); if(!el) return;
+  el.addEventListener('change',()=>{
+    const pair=activePair(); const c=pair&&pair.c; if(!c) return;
+    if(id==='soft-mat') c.mat=el.value; else c.tint=el.value;
+    save(); renderAll(); renderPrompt();
+    const ph=matPhrase(c);
+    toast(ph?`「피」 자리에 ${ph.n} 를 씁니다`:'재료를 비웠어요');
+  });
 });
 ['soft-in','soft-inEn'].forEach(id=>{
   const el=$(id); if(!el) return;
