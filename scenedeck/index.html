@@ -1499,12 +1499,15 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
         <button class="btn" id="d-csv">↓ 컷 리스트 CSV</button>
         <button class="btn" id="d-sched">촬영 스케줄표 CSV</button>
         <button class="btn" id="d-call">캐릭터 콜시트 CSV</button>
+        <button class="btn" id="d-chars">캐릭터 프롬프트 CSV</button>
         <button class="btn" id="d-script">대본 TXT</button>
         <button class="btn" id="d-txt">프롬프트 전량 TXT</button>
       </div>
       <p class="mini">CSV는 엑셀·구글시트에서 바로 열립니다.
       <b>촬영 스케줄표</b>는 같은 장소끼리 묶어 정렬해줘요 — 실제 촬영은 씬 순서가 아니라 장소 단위로 몰아 찍으니까요.
-      <b>콜시트</b>는 배우별로 어느 씬에 나오는지 정리합니다.</p>
+      <b>콜시트</b>는 배우별로 어느 씬에 나오는지 정리합니다.
+      <b>캐릭터 프롬프트</b>는 인물이 많을 때 씁니다 — 이름·역할·나이·태도·의상과
+      실제로 프롬프트에 들어가는 <b>고정 블록 전문</b>을 한 표로 뽑아, 엑셀에서 한눈에 비교하고 고칠 수 있어요.</p>
     </div>
 
     <div class="card">
@@ -1558,7 +1561,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v33 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v34 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -3339,11 +3342,13 @@ function cutBodyHTML(s,c){
           <label class="f enfield"><span>행동 변화</span><input type="text" data-kf="actEn" placeholder="slowly raises the blade"></label>
         </div>
       </div>
-      <div class="grid g3">
+      <div class="grid g4">
         <label class="f"><span>렌즈</span><select data-kf="lens">${opts(LENS,c.lens)}</select></label>
         <label class="f"><span>조명</span><select data-kf="light">${opts(LIGHT,c.light)}</select></label>
         <label class="f"><span>무드</span><select data-kf="mood">${opts(MOOD,c.mood)}</select></label>
+        <label class="f"><span>공기 — 장면의 온도</span><select data-kf="tone">${opts(TONE,c.tone)}</select></label>
       </div>
+      ${toneHintHTML(c)}
       <details class="faq" style="margin:0 0 16px">
         <summary>더 세밀하게 — 인물 감정 · 빛 효과 · 사건</summary>
         <div class="fa" style="padding:0 18px 16px">
@@ -5628,11 +5633,85 @@ function guessRel(c,chs){
   }
   return null;
 }
+function toneHintHTML(c){
+  const t=toneOf(c);
+  if(!t) return '';
+  const w=t.tone.warn;
+  return '<p class="mini" style="margin:-8px 0 14px">공기 '+(t.auto?'(관계에서 자동) ':'')+
+    '<b>'+esc(t.key)+'</b> → <code>'+esc(t.tone.en)+'</code>'+
+    (w?' <b style="color:var(--warn,#c2410c)">⚠ 이 말은 걸릴 수 있습니다.</b> 막히면 위쪽 안전한 항목으로 바꿔주세요.'
+      :' 신체를 그리라는 말이 아니라 공기 묘사라서 막히지 않습니다.')+'</p>';
+}
 function relOf(c,chs){
   if(!c) return null;
   if(c.rel){ const r=REL[c.rel]; return (!r||r.off)?null:{key:c.rel,rel:r,auto:false}; }
   return guessRel(c,chs||cutChars(c));
 }
+
+/* =========================================================
+   공기 — 이 장면이 어떤 온도인지
+
+   막히는 것은 「분위기」가 아니라 「묘사」다. 미드저니가 거르는 것은
+   피·상처·잘린 몸을 화면에 그리라는 지시이지, 서늘하다·불길하다 같은
+   공기 묘사가 아니다. 그래서 여기 있는 말은 전부
+     ① 심리 · 공기 어휘일 뿐 신체를 그리라고 하지 않고
+     ② 우리 위험어 검사(RISK_RE)를 통과하는지 확인해서 넣었다.
+   연출로도 이쪽이 세다 — 관객이 스스로 채워 넣기 때문이다.
+
+   warn:true 는 걸릴 수 있는 말이다. 막지는 않되 화면에 표시한다.
+   ========================================================= */
+const TONE={
+  '':null,
+  '없음 — 안 씀':{off:true},
+  '서늘한 위압':      {en:'an atmosphere of quiet menace, the room colder than it looks',
+                     no:['warm','inviting','pleasant']},
+  '숨 막히는 압박':    {en:'oppressive and airless, the walls too close',
+                     no:['open','airy','spacious']},
+  '불길한 예감':      {en:'foreboding, something about to happen and everyone in the room knows it',
+                     no:['carefree','light-hearted']},
+  '조용한 악의':      {en:'quiet malice sitting under a polite surface',
+                     no:['sincere','warm smile','good-natured']},
+  '사무적인 냉정':    {en:'procedural and clinical, unhurried, done many times before',
+                     no:['frantic','emotional','dramatic gesture']},
+  '짓눌린 침묵':      {en:'a silence with weight in it, nobody moving',
+                     no:['lively','bustling','chatter']},
+  '무너지기 직전':    {en:'strung tight, one moment away from breaking',
+                     no:['relaxed','settled']},
+  '체념한 공기':      {en:'hollowed out, the fight already gone out of the room',
+                     no:['hopeful','energetic']},
+  '낯선 정적':        {en:'unnaturally still, wrong in a way nobody names',
+                     no:['ordinary','comfortable']},
+  '위협적인 정중함':  {en:'courteous on the surface and threatening underneath',
+                     no:['genuinely friendly','relaxed']},
+  '차가운 권위':      {en:'the cold authority of a place where the rules are not yours',
+                     no:['casual','informal']},
+  '스산한 예감 (호러)':{en:'dread, horror atmosphere, the air gone wrong',
+                     no:['safe','reassuring']},
+  '잔혹한 (조심)':    {en:'severe and unforgiving in tone', warn:true, no:['gentle','forgiving']},
+  '광기 어린 (조심)': {en:'feverish and unhinged in tone', warn:true, no:['calm','measured']}
+};
+function toneOf(c){
+  if(!c) return null;
+  if(c.tone){ const t=TONE[c.tone]; return (!t||t.off)?null:{key:c.tone,tone:t,auto:false}; }
+  // 차가운 관계를 골라놓고 공기를 비워두면, 그 관계에 맞는 공기를 기본으로 깐다
+  const chs=cutChars(c);
+  if(chs.length>1){
+    const rw=relOf(c,chs);
+    if(rw && rw.rel.cold){
+      const k=REL_TONE[rw.key]||'서늘한 위압';
+      return {key:k,tone:TONE[k],auto:true};
+    }
+  }
+  return null;
+}
+const REL_TONE={
+  '가해 ↔ 당하는 사람':'서늘한 위압',
+  '심문 ↔ 끌려온 사람':'사무적인 냉정',
+  '회유 ↔ 버티는 사람':'위협적인 정중함',
+  '감시 ↔ 갇힌 사람':'숨 막히는 압박',
+  '명령 ↔ 따르는 사람':'차가운 권위',
+  '배신 ↔ 믿었던 사람':'조용한 악의'
+};
 
 /* =========================================================
    순화 — 잔인해서 이미지가 안 만들어질 때.
@@ -5951,6 +6030,7 @@ function lockBits(c){
   if(it && it.no) soft=soft.concat(it.no);
   const chs0=cutChars(c);
   chs0.forEach(ch=>{ const d=dispOf(ch); if(d&&d.no) soft=soft.concat(d.no); });
+  const tnl=toneOf(c); if(tnl && tnl.tone.no) soft=soft.concat(tnl.tone.no);
   if(chs0.length>1){
     const rw=relOf(c,chs0);
     if(rw){ if(rw.rel.no) soft=soft.concat(rw.rel.no); if(rw.rel.cold) soft=soft.concat(COLD_NO); }
@@ -6074,6 +6154,7 @@ function buildMJ(s,c){
   const eg=eraGuard(); if(eg) eg.bits.forEach(x=>p.push(x));
   [TIME[s.time],LIGHT[c.light],FX[c.fx]].forEach(x=>{ if(x) p.push(x); });
   if(MOOD[c.mood]) p.push(MOOD[c.mood]);
+  const tn=toneOf(c); if(tn) p.push(tn.tone.en);
   styleBits().forEach(x=>p.push(x));
   if(m.tail) p.push(m.tail);
   let out=(dedupe(p).join(', ')+' '+refParams(s,c,S.style.mj||'')).trim();
@@ -6107,6 +6188,7 @@ function buildVEO(s,c){
   }
   if([LIGHT[c.light],FX[c.fx]].filter(Boolean).length) L.push('Lighting: '+[LIGHT[c.light],FX[c.fx]].filter(Boolean).join(', ')+'.');
   if(MOOD[c.mood]) L.push('Mood: '+MOOD[c.mood]+'.');
+  const tn0=toneOf(c); if(tn0) L.push('Atmosphere: '+cap(tn0.tone.en)+'.');
   const st=dedupe(styleBits()).join(', ');
   if(st) L.push('Style: '+st+'.');
   const au=[];
@@ -6457,6 +6539,8 @@ function readbackKO(s,c,kind){
     if(rw) R.push(rbRow('관계'+(rw.auto?' (자동)':''),b(rw.key),rw.rel.en));
   }
   rbc.forEach(ch=>{ const d=dispOf(ch); if(d) R.push(rbRow('태도 — '+(ch.name||'인물'),b(ch.disp),d.en)); });
+  const tnb=toneOf(c);
+  if(tnb) R.push(rbRow('공기'+(tnb.auto?' (자동)':''),b(tnb.key),tnb.tone.en));
   if(c.intent) R.push(rbRow('의도 · 문맥',b(c.intent),(intentOf(c)||{}).en));
   if(c.soft){
     const ph=matPhrase(c);
@@ -7138,6 +7222,21 @@ $('d-call').addEventListener('click',()=>{
   });
   csvOut(fileName('callsheet','csv'),rows);
   toast('콜시트를 내보냈어요 ✓');
+});
+
+/* 캐릭터 프롬프트 CSV — 인물이 많을 때 고정 블록을 한 표로 */
+$('d-chars').addEventListener('click',()=>{
+  if(!S.chars.length){ toast('먼저 캐릭터를 만들어주세요'); return; }
+  const rows=[['번호','이름','역할','나이','성별','인종','태도','의상 (한글)','의상 (영문)',
+               '특징','고정 블록 — 프롬프트에 실제로 들어가는 말','손으로 덮어쓴 블록','등장 씬 수']];
+  S.chars.forEach((ch,i)=>{
+    const n=S.scenes.filter(s=>s.cuts.some(c=>c.chars.includes(ch.id))).length;
+    rows.push([i+1, ch.name||'이름없음', ch.role||'', ch.age||'', ch.sex||'', ch.eth||'',
+      ch.disp||'', ch.outfit||'', ch.outfitEn||'', ch.markEn||ch.mark||'',
+      charLock(ch), ch.lockManual&&ch.lockManual.trim()?'예':'', n]);
+  });
+  csvOut(fileName('characters','csv'),rows);
+  toast('캐릭터 '+S.chars.length+'명을 표로 내보냈어요 ✓');
 });
 
 /* 대본 TXT — 씬 머리글 + 본문 */

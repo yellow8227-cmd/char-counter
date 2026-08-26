@@ -350,6 +350,39 @@ two people —
 `닦아준다 · 손수건 · 달래다` 는 **힘을 쥔 쪽이 있을 때만** 회유로 봅니다.
 순사·헌병·간수 같은 역할이 컷에 없으면 어머니가 아이 입가를 닦는 장면이므로 건드리지 않습니다.
 
+### 공기 — 분위기는 금지에 안 걸립니다
+
+**막히는 것은 「분위기」가 아니라 「묘사」입니다.**
+미드저니가 거르는 것은 피·상처·잘린 몸을 **화면에 그리라는 지시**이지,
+서늘하다·불길하다 같은 **공기 묘사**가 아닙니다.
+그래서 마음 놓고 세게 쓸 수 있고, 연출로도 이쪽이 셉니다 — 관객이 스스로 채워 넣으니까요.
+
+컷의 **렌즈 · 조명 · 무드 옆 「공기」** 에서 고릅니다.
+
+| 공기 | 프롬프트에 붙는 말 |
+|---|---|
+| 서늘한 위압 | an atmosphere of quiet menace, the room colder than it looks |
+| 숨 막히는 압박 | oppressive and airless, the walls too close |
+| 불길한 예감 | foreboding, something about to happen and everyone in the room knows it |
+| 조용한 악의 | quiet malice sitting under a polite surface |
+| 사무적인 냉정 | procedural and clinical, unhurried, done many times before |
+| 짓눌린 침묵 | a silence with weight in it, nobody moving |
+| 무너지기 직전 | strung tight, one moment away from breaking |
+| 체념한 공기 | hollowed out, the fight already gone out of the room |
+| 낯선 정적 | unnaturally still, wrong in a way nobody names |
+| 위협적인 정중함 | courteous on the surface and threatening underneath |
+| 차가운 권위 | the cold authority of a place where the rules are not yours |
+| 스산한 예감 (호러) | dread, horror atmosphere, the air gone wrong |
+
+여기 있는 말은 **전부 우리 위험어 검사(RISK_RE)를 통과하는지 확인해서** 넣었습니다.
+`잔혹한` `광기 어린` 두 개만 **⚠ (조심)** 으로 두었고, 고르면 화면에 경고가 뜹니다 —
+막지는 않지만 걸리면 위쪽 안전한 항목으로 바꾸면 됩니다.
+
+**차가운 관계를 골라놓고 공기를 비워두면 그 관계에 맞는 공기가 자동으로 깔립니다.**
+가해 → 서늘한 위압, 심문 → 사무적인 냉정, 회유 → 위협적인 정중함,
+감시 → 숨 막히는 압박, 명령 → 차가운 권위, 배신 → 조용한 악의.
+컷 아래에 무엇이 깔렸는지 한 줄로 보여주고, 안 쓰려면 **「없음」** 을 고릅니다.
+
 ### 태도 — 어떤 사람으로 보일까
 
 「기획 → 캐릭터」의 **외형** 아래에 있습니다. 인물마다 한 번만 골라두면 모든 컷에 따라다닙니다.
@@ -360,6 +393,23 @@ two people —
 가 그 인물에게만 붙고, `--no kindly expression, gentle expression, warm smile` 로
 친절한 표정 쪽으로 새는 것을 막습니다.
 두 인물이 같이 나오는 컷에서 **서로 헷갈리지 않게** 하는 것도 이 값입니다.
+
+### 캐릭터 프롬프트는 어디에 있나
+
+인물이 수십 명이 되면 화면에서 하나씩 펼쳐보기 어렵습니다.
+**「설정 · 내보내기 → 캐릭터 프롬프트 CSV」** 로 전부 한 표에 뽑을 수 있습니다 —
+이름 · 역할 · 나이 · 성별 · 인종 · 태도 · 의상(한글/영문) · 특징 ·
+**고정 블록 전문**(프롬프트에 실제로 들어가는 영문) · 손으로 덮어썼는지 · 등장 씬 수.
+엑셀에서 한눈에 비교하고, 어긋난 인물만 골라 고치면 됩니다.
+
+저장은 **이 브라우저 안**입니다. 서버로 올라가지 않고 계정도 없습니다.
+
+- 글자(캐릭터 · 씬 · 컷 · 프롬프트) → `localStorage` 의 `scenedeck_v1` 키 하나
+- 이미지 → `IndexedDB` 의 `scenedeck` 데이터베이스
+
+주소마다 · 브라우저마다 따로입니다. 그래서 **브라우저 데이터를 지우면 같이 날아갑니다.**
+「설정 → JSON으로 내보내기」 파일 하나에 이미지까지 전부 들어가니 그걸 백업으로 쓰세요.
+남은 용량은 「설정」 맨 위 막대에서 볼 수 있습니다.
 
 ### 인원수 못 박기 — 두 명인데 넷이 나올 때
 
