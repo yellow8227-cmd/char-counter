@@ -1517,7 +1517,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v19 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v20 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -4971,7 +4971,11 @@ const RISK_RE=/피투성이|핏방울|유혈|피범벅|피가|피를|고문|시�
    「bloodied prisoner」를 「dark wet stain prisoner」로 바꾸면 문장이 깨진다.
    형용사는 형용사로, 명사는 명사로, 동사는 동사로. */
 const SOFT_EN=[
-  [/\b(blood-?soaked|bloodied|bloody)\b/gi,'dark-stained'],
+  [/\btorture chamber\b/gi,'bare stone room'],
+  [/\binterrogation room\b/gi,'bare questioning room'],
+  [/\bexecution (ground|chamber|site)\b/gi,'ceremonial ground'],
+  [/\bgallows\b/gi,'wooden platform'],
+  [/\b(blood-?soaked|blood-?stained|bloodied|bloody)\b/gi,'dark-stained'],
   [/\bblood\b/gi,'dark liquid'],
   [/\b(corpse|dead body|cadaver)\b/gi,'motionless figure'],
   [/\b(tortur\w*)\b/gi,'interrogation'],
@@ -4991,6 +4995,9 @@ const SOFT_EN=[
   [/\b(execution|executed)\b/gi,'the ceremony']
 ];
 const SOFT_KO=[
+  [/고문실|취조실/g,'낡은 돌방'],
+  [/사형장|처형장/g,'의식의 마당'],
+  [/교수대/g,'나무 단'],
   [/피투성이|피범벅|유혈낭자/g,'검게 젖은'],
   [/핏방울|피가|피를/g,'검은 물기'],
   [/고문실/g,'취조실'],[/고문/g,'취조'],
@@ -5043,11 +5050,30 @@ const SOFTEN={
     set:{shot:'인서트',lens:'마크로'},
     ph:'바닥에 떨어진 짚신 한 짝, 젖은 마룻바닥'}
 };
-const SOFT_NO=['gore','blood','wound','injury','graphic violence','corpse','disturbing imagery'];
+/* 배제 목록에도 금지어를 적으면 안 된다.
+   미드저니는 프롬프트 「텍스트」를 검사하고 --no 도 그 텍스트의 일부다.
+   --no blood, gore 라고 쓰는 순간 내가 금지어를 직접 심는 셈이 된다.
+   막는 일은 긍정 묘사(빈 방 · 실루엣 · 사물)가 하고, 여기엔 무해한 낱말만 둔다. */
+const SOFT_NO=[];   // 긍정 묘사가 막는 일을 한다. 여기에 무엇을 적든 프롬프트에 그 낱말이 남는다.
 function softenTxt(t,ko){
   let v=String(t||'');
   (ko?SOFT_KO:SOFT_EN).forEach(([re,to])=>{ v=v.replace(re,to); });
   return v;
+}
+/* 마지막 청소 — 장소 · 외형 고정 블록 · 스타일 태그 · 배제 목록 어디에서
+   흘러들어왔든 조립이 끝난 프롬프트 전체를 한 번 더 훑는다.
+   지문만 순화해서는 「colonial-era torture chamber」 같은 장소가 그대로 남는다. */
+function scrub(txt,on){
+  if(!on) return txt;
+  return softenTxt(softenTxt(String(txt||''),false),true);
+}
+/* 조립이 끝난 프롬프트에 아직 걸릴 낱말이 남아 있는지 — 그대로 보여준다 */
+function riskInText(txt){
+  const out=[];
+  String(txt||'').split(/[\s,./·()\[\]]+/).forEach(w=>{
+    if(w && RISK_RE.test(w) && out.indexOf(w)<0) out.push(w);
+  });
+  return out.slice(0,10);
 }
 function riskHits(c){
   if(!c) return [];
@@ -5147,7 +5173,7 @@ function buildMJ(s,c){
   let out=(dedupe(p).join(', ')+' '+refParams(s,c,S.style.mj||'')).trim();
   // 파라미터 칸에 --no 를 직접 써두었다면 그쪽을 존중한다
   if(lk.no.length && !/--no\b/.test(out)) out+=' --no '+lk.no.join(', ');
-  return out;
+  return scrub(out,!!(c&&c.soft));
 }
 function buildVEO(s,c){
   const chs=cutChars(c), L=[];
@@ -5185,7 +5211,7 @@ function buildVEO(s,c){
   const lkv=lockBits(c);
   if(lkv.body.length) L.push('Constraint: '+lkv.body.join(', ')+'.');
   if(lkv.no.length)   L.push('Avoid: '+lkv.no.join(', ')+'.');
-  return L.join('\n');
+  return scrub(L.join('\n'),!!(c&&c.soft));
 }
 function buildGEN(s,c){
   const m=medium(), p=[];
@@ -5207,7 +5233,7 @@ function buildGEN(s,c){
   out+='\n\n[화면비] '+(AR[S.style.ar]||'16:9');
   const neg=dedupe([S.style.neg||''].concat(lk.no)).filter(Boolean).join(', ');
   if(neg) out+='\n[네거티브] '+neg;
-  return out;
+  return scrub(out,!!(c&&c.soft));
 }
 /* 런웨이 · 클링 — 한 문장. 카메라 동작을 맨 앞에 두는 게 잘 먹힌다.
    「A cinematic pull back of a medieval warrior standing exhausted …」 (필기 Part 4) */
@@ -5227,7 +5253,7 @@ function buildRW(s,c){
   const lk=lockBits(c);
   if(lk.body.length) out+=' '+cap(lk.body.join(', '))+'.';
   const rn=refNote(s,c); if(rn) out+=' '+rn;
-  return out;
+  return scrub(out,!!(c&&c.soft));
 }
 const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
 
@@ -5474,10 +5500,16 @@ function paintSoft(){
   const box=$('softbox'); if(!box) return;
   const pair=activePair(); const c=pair&&pair.c;
   if(!c){ box.style.display='none'; return; }
+  // 조립이 끝난 프롬프트를 그대로 검사한다 — 장소·외형·스타일 어디서 흘러들어왔든 잡힌다
+  let built=''; try{ built=buildMJ(pair.s,c); }catch(e){}
+  const left=riskInText(built);
   const hits=riskHits(c);
-  if(!hits.length && !c.soft){ box.style.display='none'; return; }
+  if(!hits.length && !left.length && !c.soft){ box.style.display='none'; return; }
   box.style.display='';
-  $('softwhy').textContent = hits.length ? '걸릴 만한 낱말: '+hits.join(' · ') : '';
+  $('softwhy').textContent = left.length
+    ? '지금 프롬프트에 남아 있는 낱말: '+left.join(' · ')
+    : (c.soft ? '지금 프롬프트에는 걸릴 낱말이 없습니다 ✓' : (hits.length?'걸릴 만한 낱말: '+hits.join(' · '):''));
+  $('softwhy').style.color = left.length ? 'var(--sig)' : 'var(--tx3)';
   const w=$('softchips');
   w.innerHTML=Object.keys(SOFTEN).map(k=>
     `<label class="chip${c.soft===k?' on':''}" data-soft="${esc(k)}">${esc(k)}</label>`).join('');
