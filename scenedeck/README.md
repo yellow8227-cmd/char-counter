@@ -350,6 +350,23 @@ two people —
 `닦아준다 · 손수건 · 달래다` 는 **힘을 쥔 쪽이 있을 때만** 회유로 봅니다.
 순사·헌병·간수 같은 역할이 컷에 없으면 어머니가 아이 입가를 닦는 장면이므로 건드리지 않습니다.
 
+### 「결과만」 — 동작을 결과로 바꾸기
+
+앱이 못 하던 마지막 한 가지였습니다. `spits blood` 를 순화하면 `spits dark liquid` 가 되는데,
+**동사와 대상이 그대로 남아 있어서** 여전히 「누가 누구에게 무엇을 한다」입니다.
+
+순화의 **「결과만 (검증됨)」** 은 동작이 아니라 **그 뒤에 남은 것**을 찍습니다.
+
+```
+Tight on the face and collar of the man it landed on, a scatter of small
+deep burgundy specks across one cheek and the white collar band,
+his expression completely unchanged.
+```
+
+「누가 무엇을 한다」가 사라지므로 판정이 붙을 자리가 없고,
+**연출로도 이쪽이 셉니다** — 뱉는 순간보다 맞은 뒤에 표정이 안 변하는 얼굴이 무섭습니다.
+색은 「재료 · 색조」에서 고른 값이 자국에도 그대로 먹습니다.
+
 ### 실제로 통과한 프롬프트에서 배운 것
 
 막히던 컷과 통과한 컷을 나란히 놓고 차이만 남겼습니다. 통과한 쪽은 —
