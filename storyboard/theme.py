@@ -19,7 +19,7 @@ from pptx.util import Emu, Inches, Pt
 
 PALETTES = {
     "paper": dict(
-        bg_top=RGBColor(0xEA, 0xE6, 0xE1), bg_bottom=RGBColor(0xDF, 0xDA, 0xD4),
+        bg_top=RGBColor(0x3B, 0x3B, 0x3D), bg_bottom=RGBColor(0x2C, 0x2C, 0x2E),
         plate=RGBColor(0xFF, 0xFF, 0xFF),        # 카드 — 칸을 나누지 않는 흰 판
         label_cell=RGBColor(0xFF, 0xFF, 0xFF),
         head_cell=RGBColor(0xFF, 0xFF, 0xFF),
