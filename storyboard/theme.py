@@ -14,7 +14,7 @@ from __future__ import annotations
 from lxml import etree
 from pptx.dml.color import RGBColor
 from pptx.oxml.ns import qn
-from pptx.util import Emu, Pt
+from pptx.util import Emu, Inches, Pt
 
 # 팔레트 — 키 아트의 어두운 화면에서 뽑았다
 INK = RGBColor(0x0B, 0x0A, 0x09)        # 제일 깊은 바닥
@@ -28,16 +28,40 @@ ASH = RGBColor(0x94, 0x8C, 0x86)        # 항목 이름
 DIM = RGBColor(0x5E, 0x57, 0x52)        # 비어 있는 자리 안내
 
 PICTURE_ROW = 1  # 표 6행 중 그림이 들어가는 행
+FIRST_PH_IDX = 10
+PH_PER_PANEL = 7
+
+# ── 칸 비율 ────────────────────────────────────────────────────────────
+# 원본 템플릿은 글 칸이 4줄 모두 0.271in 이라 두 줄만 넘어가도 글자가
+# 5~7pt까지 줄어든다. 그림 칸에서 높이를 덜어 글 칸으로 넘긴다.
+# 덤으로 그림 칸이 2.18:1 이 되어 시네마스코프 소스가 덜 잘린다.
+ROW_H = {          # 인치. 합이 카드 높이 3.502 와 같아야 한다
+    "head":   0.250,
+    "pic":    1.820,   # 3.788 / 1.820 = 2.08:1 — 시네마스코프와 3:2 사이
+    "camera": 0.330,   # 2줄 @9.5pt
+    "desc":   0.440,   # 3줄 @8.5pt · 2줄 @12pt
+    "note":   0.440,
+    "trans":  0.222,   # 1줄 @12pt
+}
+LABEL_COL_W = 0.760   # 「디테일/메모」가 들어가는 왼쪽 칸
+LABEL_PT = 8.0        # 항목 이름 — 한 줄로 유지되는 크기
+HEAD_LABEL_PT = 9.0   # Scene / Shot
+ROW_ORDER = ["head", "pic", "camera", "desc", "note", "trans"]
 
 
-def _set_cell(cell, fill: RGBColor, text_color: RGBColor, *, bold=None) -> None:
+
+def _set_cell(cell, fill: RGBColor, text_color: RGBColor, *, size_pt=None) -> None:
     cell.fill.solid()
     cell.fill.fore_color.rgb = fill
+    cell.text_frame.word_wrap = False   # 항목 이름이 두 줄로 접히지 않게
     for para in cell.text_frame.paragraphs:
+        para.font.color.rgb = text_color
+        if size_pt:
+            para.font.size = Pt(size_pt)
         for run in para.runs:
             run.font.color.rgb = text_color
-            if bold is not None:
-                run.font.bold = bold
+            if size_pt:
+                run.font.size = Pt(size_pt)
 
 
 def _set_borders(cell, color: RGBColor, width_pt: float = 0.5) -> None:
@@ -63,16 +87,39 @@ def _kill_style_banding(table) -> None:
             tblPr.attrib.pop(attr, None)
 
 
-def restyle_layout(layout) -> list[tuple[int, int, int, int]]:
+def restyle_layout(layout) -> dict:
     """
-    레이아웃의 컷 카드 6개를 어둡게 다시 칠한다.
-    돌려주는 값은 패널마다의 그림 자리 (left, top, width, height).
+    레이아웃의 컷 카드 6개를 다시 칠하고, 칸 비율을 다시 잡는다.
+    표만 고치면 글 칸(자리표시자)이 따라오지 않으므로 둘 다 옮긴다.
+
+    돌려주는 값:
+      wells   패널마다의 그림 자리 (left, top, width, height)
+      boxes   글 칸 하나의 실측 크기 {필드: (너비pt, 높이pt)}
     """
     wells = []
     tables = [s for s in layout.shapes if s.has_table]
-    for shape in tables:
+    phs = {ph.placeholder_format.idx: ph for ph in layout.placeholders}
+    boxes = {}
+
+    for panel, shape in enumerate(tables):
         table = shape.table
         _kill_style_banding(table)
+        for row in table.rows:
+            cell = row.cells[0]
+            if "디테일" in cell.text:
+                _rename_cell(cell, "디테일")
+
+        # 열 — 왼쪽 항목 칸만 좁히고 나머지를 셋으로 나눈다
+        rest = (Emu(shape.width) - Inches(LABEL_COL_W)) / 3
+        widths = [Inches(LABEL_COL_W), int(rest), int(rest),
+                  shape.width - Inches(LABEL_COL_W) - int(rest) * 2]
+        for col, w in zip(table.columns, widths):
+            col.width = int(w)
+
+        # 행
+        for row, key in zip(table.rows, ROW_ORDER):
+            row.height = Inches(ROW_H[key])
+
         for r, row in enumerate(table.rows):
             for c, cell in enumerate(row.cells):
                 if r == PICTURE_ROW:
@@ -83,14 +130,37 @@ def restyle_layout(layout) -> list[tuple[int, int, int, int]]:
                     fill, color = PLATE_LABEL, ASH
                 else:
                     fill, color = PLATE, BONE
-                _set_cell(cell, fill, color)
+                pt = HEAD_LABEL_PT if r == 0 else (LABEL_PT if c == 0 else None)
+                _set_cell(cell, fill, color, size_pt=pt)
                 _set_borders(cell, HAIRLINE)
-                cell.margin_left = cell.margin_right = Pt(3)
+                cell.margin_left = cell.margin_right = Pt(4)
                 cell.margin_top = cell.margin_bottom = Pt(1)
 
-        # 그림 자리 = 표 안에서 PICTURE_ROW 가 차지하는 영역
-        top = shape.top + sum(table.rows[i].height for i in range(PICTURE_ROW))
-        wells.append((shape.left, top, shape.width, table.rows[PICTURE_ROW].height))
+        # ── 자리표시자를 새 칸에 맞춰 옮긴다 ────────────────────────
+        base = FIRST_PH_IDX + panel * PH_PER_PANEL
+        left, top = shape.left, shape.top
+        col0, col1, col2, col3 = widths
+        pad = Pt(3)
+
+        y = top + Inches(ROW_H["head"])
+        pic_h = Inches(ROW_H["pic"])
+        if base in phs:
+            _place(phs[base], left, y, shape.width, pic_h)
+        wells.append((left, y, shape.width, pic_h))
+
+        # Scene 번호 = 두 번째 열, Shot 번호 = 네 번째 열
+        head_h = Inches(ROW_H["head"])
+        _place(phs.get(base + 1), left + col0 + pad, top, col1 - pad * 2, head_h)
+        _place(phs.get(base + 2), left + col0 + col1 + col2 + pad, top,
+               col3 - pad * 2, head_h)
+
+        y = top + head_h + pic_h
+        value_w = col1 + col2 + col3
+        for n, key in enumerate(("camera", "desc", "note", "trans"), start=3):
+            h = Inches(ROW_H[key])
+            _place(phs.get(base + n), left + col0 + pad, y, value_w - pad * 2, h)
+            boxes[key] = (Emu(value_w - pad * 2).pt, Emu(h).pt)
+            y += h
 
     for ph in layout.placeholders:
         for para in ph.text_frame.paragraphs:
@@ -98,7 +168,29 @@ def restyle_layout(layout) -> list[tuple[int, int, int, int]]:
             for run in para.runs:
                 run.font.color.rgb = BONE
 
-    return wells
+    return {"wells": wells, "boxes": boxes,
+            "pic_aspect": Inches(3.788) / Inches(ROW_H["pic"])}
+
+
+def _rename_cell(cell, text: str) -> None:
+    """첫 런만 바꾸면 나머지 런이 남아 「디테일 · 메모 / 메모」가 된다."""
+    paras = cell.text_frame.paragraphs
+    first = None
+    for para in paras:
+        for run in para.runs:
+            if first is None:
+                first = run
+                run.text = text
+            else:
+                run._r.getparent().remove(run._r)
+    for para in paras[1:]:
+        para._p.getparent().remove(para._p)
+
+
+def _place(ph, left, top, width, height) -> None:
+    if ph is None:
+        return
+    ph.left, ph.top, ph.width, ph.height = int(left), int(top), int(width), int(height)
 
 
 def paint_background(slide, top: RGBColor = RGBColor(0x10, 0x0D, 0x0C),

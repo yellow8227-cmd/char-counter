@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -37,52 +38,67 @@ FIRST_PH_IDX = 10
 # 텍스트 자리표시자 6개의 순서 (그림 틀 바로 다음부터)
 FIELD_ORDER = ["scene", "shot", "camera", "desc", "note", "trans"]
 
-# 칸별 최대 글자 크기 — 번호 칸은 크게, 설명 칸은 작게.
+# 칸별 최대 글자 크기— 번호 칸은 크게, 설명 칸은 작게.
 # 실제 크기는 칸에 들어가는 만큼 아래에서 자동으로 줄인다.
 FIELD_MAX_PT = {
-    "scene": 12.0,
-    "shot": 12.0,
-    "camera": 8.0,
-    "desc": 8.0,
-    "note": 8.0,
-    "trans": 8.0,
+    "scene": 15.0,
+    "shot": 15.0,
+    "camera": 11.0,
+    "desc": 11.0,
+    "note": 11.0,
+    "trans": 10.0,   # 전환효과는 짧다. 본문보다 앞서 보이면 안 된다
 }
+# 이보다 작아지면 읽기를 포기하게 된다. 여기 걸리면 글을 줄여야 한다.
+FIELD_MIN_PT = 8.0
 
-# 텍스트 칸 한 개의 실측 크기 (템플릿 기준)
-BOX_W_PT = 2.85 * 72  # 205.2pt
-BOX_H_PT = 16.0       # 실측 0.26in 중 안전하게 쓰는 높이 (줄이 아래 칸을 침범하지 않도록)
-LINE_RATIO = 1.15     # 줄간격
-SIZE_STEPS = [12.0, 11.0, 10.0, 9.0, 8.0, 7.5, 7.0, 6.5, 6.0, 5.5, 5.0]
+# 줄간격은 배수가 아니라 pt로 못박는다.
+# 배수로 두면 파워포인트가 글꼴 고유 행간(맑은 고딕은 약 1.33em)에 곱해서
+# 계산보다 훨씬 두꺼워지고, 아랫칸을 침범한다.
+LINE_RATIO = 1.15
+# 칸마다 크기가 제각각이면 지면이 지저분해진다. 세 단으로만 떨어뜨린다.
+SIZE_STEPS = [11.0, 9.5, 8.5]
+NUMBER_STEPS = [15.0, 13.0, 11.0]
+
+# 칸 실측 크기 (너비pt, 높이pt) — theme.restyle_layout 이 채워 넣는다
+BOXES: dict[str, tuple[float, float]] = {}
 
 
 def text_width_units(s: str) -> float:
     """1em을 1.0으로 본 글자 폭의 합. 한글·한자·가나는 1.0, 그 외는 0.5."""
     total = 0.0
     for ch in s:
-        total += 1.0 if ord(ch) > 0x2E80 else 0.5
+        total += 1.0 if ord(ch) > 0x2E80 else 0.55
     return total
 
 
-def fit_font_pt(s: str, max_pt: float) -> float:
-    """칸 안에 다 들어가는 가장 큰 글자 크기를 고른다."""
+SAFETY = 0.95   # 글꼴 폭 추정이 빗나가도 아랫칸을 넘지 않도록
+
+
+def lines_needed(s: str, pt: float, width_pt: float) -> int:
+    usable = width_pt * SAFETY
+    return max(1, math.ceil(text_width_units(s) * pt / usable))
+
+
+def fit_font_pt(s: str, field: str) -> tuple[float, bool]:
+    """
+    칸 안에 다 들어가는 가장 큰 글자 크기.
+    두 번째 값은 최소 크기까지 내려도 넘치는지 여부.
+    """
+    max_pt = FIELD_MAX_PT.get(field, 11.0)
+    w, h = BOXES.get(field, (215.0, 24.0))
+    usable = h - 2.0
     if not s:
-        return max_pt
-    units = text_width_units(s)
-    for pt in SIZE_STEPS:
-        if pt > max_pt:
+        return max_pt, False
+    steps = NUMBER_STEPS if field in ("scene", "shot") else SIZE_STEPS
+    for pt in steps:
+        if pt > max_pt or pt < FIELD_MIN_PT:
             continue
-        lines_needed = -(-int(units * pt) // int(BOX_W_PT))  # ceil
-        lines_fit = int(BOX_H_PT // (pt * LINE_RATIO))
-        if lines_fit >= max(lines_needed, 1):
-            return pt
-    return SIZE_STEPS[-1]
+        if int(usable // (pt * LINE_RATIO)) >= lines_needed(s, pt, w):
+            return pt, False
+    return FIELD_MIN_PT, True
 
 
-# 그림 개체 틀 3.79 × 2.14 in
-PANEL_ASPECT = 3.79 / 2.14  # 1.771:1
-
-
-def fit_to_panel(path: Path, cache: Path) -> Path:
+def fit_to_panel(path: Path, cache: Path, panel_aspect: float) -> Path:
     """
     그림 칸에 넣으면 PowerPoint가 가운데를 기준으로 잘라낸다.
     시네마스코프(2.4:1) 컷은 좌우가 통째로 날아가므로,
@@ -94,19 +110,19 @@ def fit_to_panel(path: Path, cache: Path) -> Path:
         im = im.convert("RGB")
         w, h = im.size
         aspect = w / h
-        if abs(aspect - PANEL_ASPECT) < 0.02:
+        if abs(aspect - panel_aspect) < 0.02:
             return path
 
-        if aspect > PANEL_ASPECT:      # 더 넓다 -> 위아래에 여백
-            nw, nh = w, round(w / PANEL_ASPECT)
+        if aspect > panel_aspect:      # 더 넓다 -> 위아래에 여백
+            nw, nh = w, round(w / panel_aspect)
         else:                          # 더 좁다 -> 좌우에 여백
-            nw, nh = round(h * PANEL_ASPECT), h
+            nw, nh = round(h * panel_aspect), h
 
         canvas = Image.new("RGB", (nw, nh), (0, 0, 0))
         canvas.paste(im, ((nw - w) // 2, (nh - h) // 2))
 
         cache.mkdir(parents=True, exist_ok=True)
-        out = cache / (path.stem + "_fit.jpg")
+        out = cache / f"{path.stem}_{panel_aspect:.3f}.jpg"
         canvas.save(out, quality=92, optimize=True)
         return out
 
@@ -146,49 +162,54 @@ def clone_layout_placeholders(slide, layout) -> None:
         spTree.append(copy.deepcopy(ph._element))
 
 
-def fill_text(ph, value: str, field: str) -> None:
+def fill_text(ph, value: str, field: str) -> bool:
     value = value or ""
     tf = ph.text_frame
     tf.text = value
     tf.word_wrap = True
     # 칸이 좁으니 안쪽 여백을 최대한 없앤다
-    tf.margin_left = tf.margin_right = Pt(1)
+    tf.margin_left = tf.margin_right = 0
     tf.margin_top = tf.margin_bottom = 0
     tf.vertical_anchor = MSO_ANCHOR.TOP
 
-    size = Pt(fit_font_pt(value, FIELD_MAX_PT.get(field, 8.0)))
+    pt, overflow = fit_font_pt(value, field)
+    size = Pt(pt)
     for para in tf.paragraphs:
-        para.line_spacing = LINE_RATIO
+        para.line_spacing = Pt(pt * LINE_RATIO)
         para.font.size = size
         para.font.color.rgb = theme.BONE
         for run in para.runs:
             run.font.size = size
             run.font.color.rgb = theme.BONE
+    return overflow
 
 
 def fill_panel(slide, panel: int, cut: dict, images_dir: Path, cache: Path,
-               wells: list | None = None) -> None:
+               metrics: dict) -> list[str]:
     pic_idx, text_idxs = panel_placeholder_indices(panel)
     by_idx = {p.placeholder_format.idx: p for p in slide.placeholders}
 
+    tight = []
     for field, idx in zip(FIELD_ORDER, text_idxs):
         ph = by_idx.get(idx)
-        if ph is not None:
-            fill_text(ph, str(cut.get(field, "")), field)
+        if ph is not None and fill_text(ph, str(cut.get(field, "")), field):
+            tight.append(field)
 
     pic_ph = by_idx.get(pic_idx)
     if pic_ph is None:
-        return
+        return tight
 
     path = resolve_image(images_dir, cut.get("image") or "")
     if path is not None:
-        pic_ph.insert_picture(str(fit_to_panel(path, cache)))
-        return
+        pic_ph.insert_picture(str(fit_to_panel(path, cache, metrics["pic_aspect"])))
+        return tight
 
     # 아직 그림이 없다 — 자리표시자를 걷어내고 어두운 판만 남긴다
     pic_ph._element.getparent().remove(pic_ph._element)
-    if wells and panel < len(wells):
+    wells = metrics["wells"]
+    if panel < len(wells):
         theme.mark_empty_well(slide, wells[panel])
+    return tight
 
 
 def drop_unused_placeholders(slide, used_panels: int) -> None:
@@ -242,12 +263,17 @@ def build(cuts: list[dict], template: Path, images_dir: Path, out: Path,
     prs = Presentation(str(template))
     layout = prs.slide_layouts[0]
 
+    # 레이아웃을 먼저 고쳐야 한다. 첫 장은 레이아웃을 복제해서 만들기 때문에
+    # 순서가 뒤바뀌면 첫 장만 옛 칸 비율을 그대로 물고 온다.
+    metrics = theme.restyle_layout(layout)
+
     # 템플릿에 딸려 온 첫 슬라이드는 비워두고 첫 장으로 재사용한다.
     base_slide = prs.slides[0]
     clear_slide(base_slide)
     clone_layout_placeholders(base_slide, layout)
-
-    wells = theme.restyle_layout(layout)
+    BOXES.clear()
+    BOXES.update(metrics["boxes"])
+    BOXES["scene"] = BOXES["shot"] = (60.0, 20.0)
 
     slides = [base_slide]
     total_slides = -(-len(cuts) // PANELS_PER_SLIDE)  # ceil
@@ -255,13 +281,19 @@ def build(cuts: list[dict], template: Path, images_dir: Path, out: Path,
         s = prs.slides.add_slide(layout)
         slides.append(s)
 
+    tight: list[str] = []
     for i, slide in enumerate(slides):
         chunk = cuts[i * PANELS_PER_SLIDE : (i + 1) * PANELS_PER_SLIDE]
         theme.paint_background(slide)
         for panel, cut in enumerate(chunk):
-            fill_panel(slide, panel, cut, images_dir, out.parent / "_fit", wells)
+            for field in fill_panel(slide, panel, cut, images_dir, out.parent / "_fit", metrics):
+                tight.append(f"S{cut['scene']}C{cut['shot']} {field}")
         if len(chunk) < PANELS_PER_SLIDE:
             drop_unused_placeholders(slide, len(chunk))
+
+    if tight:
+        print(f"  · 8pt로도 칸을 넘치는 글 {len(tight)}곳: {', '.join(tight[:8])}"
+              + (" …" if len(tight) > 8 else ""), file=sys.stderr)
 
     front = add_cover(prs, art_dir, len(cuts), total_cuts) if art_dir else 0
 
