@@ -971,8 +971,9 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
     <div class="card key" id="sc-raw-wrap" style="display:none">
       <h3>씬 분해</h3>
       <textarea id="sc-raw" style="min-height:180px;font-family:var(--mono);font-size:12.5px" placeholder="S#1. 비 내리는 뒷골목 / 밤&#10;&#10;지훈이 우산 없이 걸어 나온다.&#10;&#10;지훈: 이제 그만하자.&#10;&#10;S#2. 기억 상점 / 심야"></textarea>
-      <p class="mini" id="sc-hint">씬 머리글은 <b>S#1.</b> · <b>씬 1</b> · <b>1.</b> · <b>INT./EXT.</b> 형태를 모두 알아봅니다. 시간대(낮·밤·새벽…)도 자동으로 잡아요.<br>
-      표시가 전혀 없는 원고라도 괜찮아요 — <b>「여기부터 — 줄 직접 고르기」</b>로 씬이 시작하는 줄을 직접 눌러주시면 그대로 나눕니다.</p>
+      <p class="mini" id="sc-hint">씬 머리글은 <b>S#1.</b> · <b>씬 1</b> · <b>제1화</b> · <b>1.</b> · <b>[1]</b> · <b>EP.1</b> · <b>INT./EXT.</b> 를 모두 알아봅니다.
+      번호가 아예 없는 <b>「골목 / 밤」 「기억 상점 (심야)」</b> 같은 줄도 씬 제목으로 잡아요.<br>
+      표시가 하나도 없으면 원고 <b>생김새로 알아서 나눕니다</b> — 그래도 어긋나면 <b>「여기부터 — 줄 직접 고르기」</b>로 직접 눌러주세요.</p>
       <div class="row" style="margin-top:10px">
         <button class="btn pri" id="sc-parse">분해 미리보기</button>
         <select id="sc-mode" style="max-width:230px">
@@ -1465,7 +1466,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v14 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v15 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -3439,18 +3440,43 @@ function headNorm(line){
   s=s.replace(/^[\[\(<{【〔「『]+\s*/,'');      // 여는 괄호
   // 감싼 경우에만 끝 괄호를 뗀다 — 「… 외관 (N)」의 시간 표기를 지워버리면 안 된다
   if(wrapped) s=s.replace(/\s*[\]\)>}】〕」』]+\s*$/,'');
+  // 「[1] 골목」 → 앞괄호를 뗀 「1] 골목」의 남은 닫는 괄호를 구분자로 바꾼다
+  s=s.replace(/^(\s*\d{1,3})\s*[\]\)>}】〕」』]\s*/,'$1. ');
   return s.trim();
 }
 const HEAD_RE=new RegExp(
    '^(?:'
- + '(?:SCENE|SC|S|씬|장면)\\s*[#\\-_.:]?\\s*(\\d{1,3})'   // S#1 · S-1 · SC 1 · 씬1 · 장면 1
- + '|제\\s*(\\d{1,3})\\s*(?:씬|장면)'                        // 제1씬
+ + '(?:SCENE|SC|S|EPISODE|EP|PART|CHAPTER|CH|씬|장면)\\s*[#\\-_.:]?\\s*(\\d{1,3})' // S#1 · SC 1 · EP.1 · PART 1 · 씬1
+ + '|제\\s*(\\d{1,3})\\s*(?:씬|장면|화|장|막|회)'              // 제1씬 · 제1화 · 제3막
  + '|#\\s*(\\d{1,3})'                                      // #7
  + '|(\\d{1,3})\\s*(?:씬|장면)'                              // 1씬
- + '|(\\d{1,3})\\s*(?:장|화)(?![가-힣])'                     // 1장 · 3화 — 뒤가 짧을 때만
- + '|(\\d{1,3})\\s*(?=[.．)、:：])'                          // 1.  12)  — 구분자가 있어야 인정
- + ')\\s*(?:씬|장면|장|화)?\\s*[.．)、:：|\\-–—/\\]\\}>】〕」』]*\\s*(.*)$','i');
+ + '|(\\d{1,3})\\s*(?:장|화|막|회)(?![가-힣])'                // 1장 · 3화 · 2막 — 뒤가 짧을 때만
+ + '|(\\d{1,3})\\s*(?=[.．)、:：\\]\\}>】〕」』])'             // 1.  12)  [1]  <1>  【1】
+ + ')\\s*(?:씬|장면|장|화|막|회)?\\s*[.．)、:：|\\-–—/\\]\\}>】〕」』]*\\s*(.*)$','i');
 const INTEXT_RE=/^(INT\.?|EXT\.?|I\/E\.?|실내|실외)[\s.．,/-]+(.*)$/i;
+/* 「골목 / 밤」 「교실 - 낮」 「기억 상점 (심야)」 「비 내리는 뒷골목 · 밤」.
+   한국 대본에서 제일 흔한 머리글인데 번호도 INT./EXT. 표시도 없다.
+   이걸 못 잡으면 원고 전체가 통짜 한 씬이 된다.
+   본문 문장을 잘못 물지 않도록, 구분자로 쪼갠 조각 중 하나가
+   「순수한 시간 표현」일 때만 머리글로 본다. */
+const PURE_TIME=/^(이른|늦은|깊은|한|초)?\s*(새벽|아침|아침나절|정오|낮|한낮|오후|해질녘|해\s*질\s*녘|노을|저녁|밤|한밤|심야|자정)$|^(LATE\s+)?(NIGHT|DAY|DAWN|DUSK|EVENING|MORNING|AFTERNOON|CONTINUOUS|LATER|MOMENTS\s+LATER|SAME)$/i;
+const HEAD_SPLIT=/[\/|·•‧∙~\-–—(){}\[\],]/;
+function timeHead(raw){
+  const t=headNorm(raw).trim();
+  if(!t || t.length>50) return null;
+  if(/[.!?…]$/.test(t)) return null;                 // 문장은 머리글이 아니다
+  if(/(다|요|까|죠|네|군|은다|는다)$/.test(t)) return null; // 「밤이 깊었다」 같은 서술
+  if(DLG_RE.test(t)) return null;                     // 「지훈: 대사」
+  const parts=t.split(HEAD_SPLIT).map(x=>x.trim()).filter(Boolean);
+  if(parts.length<2) return null;
+  const ti=parts.findIndex(x=>PURE_TIME.test(x.replace(/\s+/g,' ').trim()));
+  if(ti<0) return null;
+  const rest=parts.filter((x,i)=>i!==ti && !LABELS.test(x));
+  if(!rest.length) return null;
+  const loc=rest.reduce((a,b)=>b.length>a.length?b:a);
+  if(!loc || loc.length>34) return null;
+  return {heading:t, loc:loc, time:grabTime(parts[ti])||''};
+}
 const TIMEWORDS=[['새벽','새벽'],['아침','아침'],['정오','정오'],['오후','오후'],['해질녘','해질녘'],['해 질 녘','해질녘'],
   ['노을','해질녘'],['저녁','해질녘'],['심야','심야'],['한밤','심야'],['밤','밤'],['낮','정오'],
   ['NIGHT','밤'],['DAY','정오'],['DAWN','새벽'],['DUSK','해질녘'],['EVENING','해질녘'],['MORNING','아침']];
@@ -3529,10 +3555,75 @@ function headOf(raw){
   const ie=line.match(INTEXT_RE);
   if(ie){ const {loc,time}=splitHeading(ie[2]||''); return {kind:'marked',heading:line,loc,time}; }
   const m=line.match(HEAD_RE);
-  if(!m) return null;
-  const tail=(m[7]||'').trim();
-  if(m[1]||m[2]||m[3]||m[4]){ const {loc,time}=splitHeading(tail); return {kind:'marked',heading:line,loc,time}; }
-  if((m[5]||m[6]) && tail.length<=40){ const {loc,time}=splitHeading(tail); return {kind:'bare',heading:line,loc,time}; }
+  if(m){
+    const tail=(m[7]||'').trim();
+    if(m[1]||m[2]||m[3]||m[4]){ const {loc,time}=splitHeading(tail); return {kind:'marked',heading:line,loc,time}; }
+    if((m[5]||m[6]) && tail.length<=40){ const {loc,time}=splitHeading(tail); return {kind:'bare',heading:line,loc,time}; }
+  }
+  const th=timeHead(raw);
+  if(th) return {kind:'time',heading:th.heading,loc:th.loc,time:th.time};
+  return null;
+}
+/* 표시된 줄들로 씬을 만든다 — 자동 구조 분해와 「줄 직접 고르기」가 함께 쓴다 */
+function scenesFromMarks(lines,marks){
+  const out=[];
+  marks.forEach((start,k)=>{
+    const end = k+1<marks.length ? marks[k+1] : lines.length;
+    const raw=lines[start], hd=headOf(raw), line=headNorm(raw).trim();
+    const sp = hd ? {loc:hd.loc,time:hd.time} : splitHeading(line);
+    out.push({
+      heading: hd ? hd.heading : (line || ('S#'+(k+1))),
+      loc: sp.loc||'', time: sp.time||'',
+      script: lines.slice(start+1,end).join('\n').replace(/\n{3,}/g,'\n\n').trim()
+    });
+  });
+  out.front = lines.slice(0,marks[0]).join('\n').trim();
+  return out;
+}
+/* 머리글을 하나도 못 찾았을 때 — 통짜 한 덩어리로 떨어뜨리지 않는다.
+   원고의 「생김새」로 씬 제목 줄을 찾아낸다. 세 가지를 순서대로 시도한다. */
+function isBlank(l){ return !String(l||'').trim(); }
+function bodyish(raw){
+  const t=headNorm(raw).trim();
+  return !t || t.length>40 || /[.!?…]$/.test(t) || /(다|요|까|죠|네|군|은다|는다)$/.test(t) || DLG_RE.test(t);
+}
+function shapeKey(raw){
+  const t=headNorm(raw).trim();
+  return (/[·•‧∙|\/\-–—(),]/.test(t)?'s':'-')+(grabTime(t)?'t':'-')+(t.length<=16?'S':'L');
+}
+function autoStructure(lines){
+  // ① 빈 줄 사이에 홀로 선 짧은 줄 — 같은 생김새인 것만 (제일 흔한 형태)
+  const isl=[];
+  lines.forEach((l,i)=>{
+    if(isBlank(l)) return;
+    if(bodyish(l)) return;
+    if(!(i===0||isBlank(lines[i-1]))) return;
+    if(!(i+1>=lines.length||isBlank(lines[i+1]))) return;
+    isl.push(i);
+  });
+  if(isl.length>=2){
+    const cnt={}; isl.forEach(i=>{ const k=shapeKey(lines[i]); cnt[k]=(cnt[k]||0)+1; });
+    const best=Object.keys(cnt).reduce((a,b)=>cnt[b]>cnt[a]?b:a);
+    if(cnt[best]>=2){
+      const marks=isl.filter(i=>shapeKey(lines[i])===best);
+      if(marks.length>=2) return {marks,how:'머리글 표시가 없어서 — 빈 줄 사이에 홀로 선 짧은 줄을 씬 제목으로 봤습니다'};
+    }
+  }
+  // ② 빈 줄 다음에 오는 짧은 줄 + 그 아래로 본문이 이어짐
+  const m2=[];
+  lines.forEach((l,i)=>{
+    if(isBlank(l)||bodyish(l)) return;
+    if(!(i===0||isBlank(lines[i-1]))) return;
+    const nx=lines.slice(i+1).find(x=>!isBlank(x));
+    if(!nx || headNorm(nx).trim().length<=headNorm(l).trim().length) return;
+    m2.push(i);
+  });
+  if(m2.length>=2) return {marks:m2,how:'머리글 표시가 없어서 — 빈 줄 뒤의 짧은 줄을 씬 제목으로 봤습니다'};
+  // ③ 빈 줄이 아예 없는 원고 — 짧고 문장이 아닌 줄만
+  const m3=[];
+  lines.forEach((l,i)=>{ if(!isBlank(l)&&!bodyish(l)&&headNorm(l).trim().length<=30) m3.push(i); });
+  if(m3.length>=2 && m3.length<=lines.filter(x=>!isBlank(x)).length*0.4)
+    return {marks:m3,how:'머리글 표시가 없어서 — 짧고 문장이 아닌 줄을 씬 제목으로 봤습니다'};
   return null;
 }
 function parseScript(text){
@@ -3541,13 +3632,16 @@ function parseScript(text){
   /* 원고에 「S#1.」 같은 진짜 머리글이 하나라도 있으면,
      맨 앞의 「1. 망나니 / 2. 할아버지」 같은 등장인물 목록을 씬으로 세면 안 된다.
      표시가 붙은 머리글이 있으면 그것만 씬으로 본다. */
-  const hasMarked=heads.some(x=>x&&x.kind==='marked');
+  // 표시가 붙은 머리글이 있으면 그것만, 없으면 「1.」 같은 맨숫자, 그것도 없으면
+  // 「골목 / 밤」 같은 시간대 머리글. 섞으면 본문 한 줄이 씬으로 잘려 나간다.
+  const rank = heads.some(x=>x&&x.kind==='marked') ? 'marked'
+             : heads.some(x=>x&&x.kind==='bare')   ? 'bare' : 'time';
   const scenes=[];
   let cur=null;
   const push=()=>{ if(cur){ cur.script=cur.buf.join('\n').replace(/\n{3,}/g,'\n\n').trim(); delete cur.buf; scenes.push(cur); } };
   lines.forEach((raw,i)=>{
     const hd=heads[i];
-    const ok=hd && (!hasMarked || hd.kind==='marked');
+    const ok=hd && hd.kind===rank;
     if(ok){ push(); cur={heading:hd.heading,loc:hd.loc,time:hd.time,buf:[]}; }
     else if(cur) cur.buf.push(raw);
     else if(raw.trim()) cur={heading:'(머리글 없음)',loc:'',time:'',buf:[raw]};
@@ -3557,6 +3651,20 @@ function parseScript(text){
   let front='';
   if(scenes.length>1 && scenes[0].heading==='(머리글 없음)') front=scenes.shift().script;
   scenes.front=front;
+  // 머리글을 하나도 못 찾았으면 통짜로 떨어뜨리지 않고 생김새로 다시 나눈다
+  if(scenes.length<2 && lines.filter(l=>l.trim()).length>=4){
+    const au=autoStructure(lines);
+    if(au && au.marks.length>=2){
+      const alt=scenesFromMarks(lines,au.marks);
+      // 본문이 한 글자도 없는 첫 덩어리는 씬이 아니라 작품 제목이다
+      while(alt.length>2 && !alt[0].script){
+        const f=alt.front, h=alt[0].heading;
+        alt.shift(); alt.front=[f,h].filter(Boolean).join('\n');
+      }
+      alt.how=au.how; alt.auto=true;
+      return alt;
+    }
+  }
   return scenes;
 }
 /* 본문에서 대사 줄만 뽑는다 — "이름: 대사" */
@@ -3736,7 +3844,8 @@ function showParsed(how){
 $('sc-parse').addEventListener('click',()=>{
   $('sc-raw-wrap').style.display='block';
   scParsed=parseScript($('sc-raw').value);
-  showParsed();
+  showParsed(scParsed.how||'');
+  if(scParsed.auto) toast('머리글 표시가 없어서 생김새로 나눴어요 — 아래에서 확인하고 아니면 「줄 직접 고르기」를 쓰세요');
 });
 let frontNames=[], parseSnap=null;
 /* 잘못 잡힌 씬을 앞 씬에 도로 붙인다 — 어떤 포맷이 와도 사용자가 직접 고칠 수 있게 */
@@ -3827,10 +3936,12 @@ function pkMatches(sig,i){
   return !!m && (m[1]||'').trim()===sig.pre;
 }
 function pkAutoMarks(){
-  const out=new Set();
   const heads=pkLines.map(headOf);
-  const hasMarked=heads.some(x=>x&&x.kind==='marked');
-  heads.forEach((h,i)=>{ if(h && (!hasMarked || h.kind==='marked')) out.add(i); });
+  const rank = heads.some(x=>x&&x.kind==='marked') ? 'marked'
+             : heads.some(x=>x&&x.kind==='bare')   ? 'bare' : 'time';
+  const out=new Set();
+  heads.forEach((h,i)=>{ if(h && h.kind===rank) out.add(i); });
+  if(out.size<2){ const au=autoStructure(pkLines); if(au) au.marks.forEach(i=>out.add(i)); }
   return out;
 }
 function renderPicker(){
@@ -3904,20 +4015,7 @@ $('sc-pk-close').addEventListener('click',()=>{ $('sc-pickwrap').style.display='
 $('sc-pk-go').addEventListener('click',()=>{
   const marks=[...pkMark].sort((a,b)=>a-b);
   if(!marks.length){ toast('씬이 시작하는 줄을 눌러주세요'); return; }
-  const out=[];
-  marks.forEach((start,k)=>{
-    const end = k+1<marks.length ? marks[k+1] : pkLines.length;
-    const raw = pkLines[start];
-    const hd  = headOf(raw);
-    const line= headNorm(raw).trim();
-    const sp  = hd ? {loc:hd.loc,time:hd.time} : splitHeading(line);
-    out.push({
-      heading: hd ? hd.heading : (line || `S#${k+1}`),
-      loc: sp.loc||'', time: sp.time||'',
-      script: pkLines.slice(start+1,end).join('\n').replace(/\n{3,}/g,'\n\n').trim()
-    });
-  });
-  out.front = pkLines.slice(0,marks[0]).join('\n').trim();
+  const out=scenesFromMarks(pkLines,marks);
   scParsed=out; parseSnap=null;
   $('sc-pickwrap').style.display='none';
   showParsed('※ 직접 고른 줄을 기준으로 나눴습니다.');
