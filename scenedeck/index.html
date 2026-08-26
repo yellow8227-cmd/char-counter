@@ -1558,7 +1558,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v32 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v33 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -2995,6 +2995,11 @@ function renderChars(){
         <label class="f"><span>체형</span><select data-cf="build">${opts(BUILD,c.build)}</select></label>
       </div>
       <div class="grid g2">
+        <label class="f"><span>태도 — 어떤 사람으로 보일까</span><select data-cf="disp">${opts(DISP,c.disp)}</select></label>
+        <p class="mini" style="align-self:end;margin:0 0 10px">두 인물이 같이 나오는 컷에서 서로 구분되게 해줍니다.
+        「야비한」을 고르면 친절한 표정으로 새지 않습니다.</p>
+      </div>
+      <div class="grid g2">
         <label class="f"><span>의상 (한글)</span><input type="text" data-cf="outfit" value="${esc(c.outfit)}" placeholder="낡은 회색 트렌치코트"></label>
         <label class="f enfield"><span>의상</span><input type="text" data-cf="outfitEn" value="${esc(c.outfitEn)}" placeholder="worn grey trench coat"></label>
       </div>
@@ -3343,11 +3348,15 @@ function cutBodyHTML(s,c){
         <summary>더 세밀하게 — 인물 감정 · 빛 효과 · 사건</summary>
         <div class="fa" style="padding:0 18px 16px">
           <div class="grid g3">
+            <label class="f"><span>두 사람의 <b>관계</b> — 누가 쥐고 있나</span><select data-kf="rel">${opts(REL,c.rel)}</select></label>
             <label class="f"><span>이 동작의 <b>의도</b> — 문맥</span><select data-kf="intent">${opts(INTENT,c.intent)}</select></label>
             <label class="f"><span>인물 감정 <b style="color:var(--sig)">이미지</b></span><select data-kf="emo">${opts(EMO,c.emo)}</select></label>
             <label class="f"><span>빛 · 질감 효과 <b style="color:var(--sig)">이미지</b></span><select data-kf="fx">${opts(FX,c.fx)}</select></label>
             <label class="f"><span>사건 (트리거) <b style="color:var(--sig)">영상</b></span><select data-kf="trig">${opts(TRIGGER,c.trig)}</select></label>
           </div>
+          <p class="mini" style="margin:2px 0 0"><b>관계</b>를 비워두면 지문에서 짐작해 채웁니다.
+          짐작이 틀렸으면 골라서 덮으면 되고, 아예 안 쓰려면 「없음」을 고르세요.
+          인물이 둘 이상일 때만 붙습니다.</p>
           <p class="mini" style="margin:2px 0 0"><b>사건</b>을 비워두면 카메라만 움직이고 장면은 그대로 있습니다.
           무언가 <b>일어나게</b> 하려면 여기서 골라주세요.</p>
         </div>
@@ -5530,6 +5539,102 @@ const INTENT={
 function intentOf(c){ return (c&&INTENT[c.intent])||null; }
 
 /* =========================================================
+   태도 · 관계 — 「이 사람이 어떤 사람인가」와 「둘 사이가 어떤 사이인가」
+
+   같은 동작이라도 두 사람 사이가 어떤 사이인지를 안 적으면 AI 는
+   언제나 가장 착한 쪽으로 읽는다. 손수건으로 입가를 닦아주는 손은
+   「돌봐주는 손」이 되고, 무릎을 꿇은 자세는 「간청」이 된다.
+   그래서 관계를 따로 못 박고, 반대쪽(따뜻함)으로 새지 않게 배제까지 붙인다.
+   ========================================================= */
+const DISP={
+  '':null,
+  '야비한 — 속이 검다':      {en:'sly and self-serving, a small cruelty sitting behind a polite face',
+                            no:['kindly expression','gentle expression','warm smile','sympathetic look']},
+  '냉혹한 — 감정이 없다':     {en:'cold and unmoved, watching without feeling',
+                            no:['sympathetic look','tender expression','concerned expression']},
+  '위압적인 — 군림한다':      {en:'imposing, used to being obeyed, taking up the room',
+                            no:['meek','apologetic']},
+  '비굴한 — 힘에 붙는다':     {en:'obsequious, currying favour with whoever holds power',
+                            no:['proud','defiant']},
+  '광기 어린 — 조용히 미쳤다':{en:'unhinged behind a calm surface, too still',
+                            no:['warm expression','friendly expression']},
+  '강직한 — 굽히지 않는다':   {en:'upright and unbending, meeting the eye',
+                            no:['obsequious','cowering']},
+  '지친 — 닳아 있다':        {en:'worn down, running on nothing',
+                            no:['energetic','fresh-faced']},
+  '순박한 — 꾸밈이 없다':     {en:'plain and unguarded, nothing hidden',
+                            no:['scheming','sinister']},
+  '겁먹은 — 눈치를 본다':     {en:'braced and watchful, reading the room for danger',
+                            no:['relaxed','confident']},
+  '자존심 센 — 굽히기 싫다':  {en:'proud, refusing to be seen to bend',
+                            no:['submissive','pleading']}
+};
+function dispOf(ch){ return (ch&&DISP[ch.disp])||null; }
+
+/* cold:true — 「따뜻한 장면」으로 새지 못하게 막는 관계 */
+const COLD_BIT='unsentimental and observational, no comfort in the frame';
+const COLD_NO=['warm golden light','cozy atmosphere','heartwarming','tender moment',
+               'emotional support','soft flattering light'];
+const REL={
+  '':null,
+  '없음 — 관계 안 씀':{off:true},
+  '가해 ↔ 당하는 사람':{roles:['the one in control, unhurried','the one being held, at his mercy'],
+      en:'a scene of power, not of care — one man holds the other and both of them know it', cold:true,
+      no:['helping','first aid','rescue','comforting','tending a wound','caregiving','affection','friendly','sympathy','embrace','concern']},
+  '심문 ↔ 끌려온 사람':{roles:['the one asking, in no hurry','the one brought in, no choice about being there'],
+      en:'an interrogation — one man asks, the other cannot leave', cold:true,
+      no:['helping','friendly','comforting','conversation between equals']},
+  '회유 ↔ 버티는 사람':{roles:['the one offering, wearing a kindness he does not mean','the one refusing it'],
+      en:'a false kindness offered by the man who holds the power and refused — the gesture is ownership, not mercy', cold:true,
+      no:['genuine kindness','tenderness','comforting','warm smile','sympathy','friendship','caregiving','rescue','first aid']},
+  '감시 ↔ 갇힌 사람':{roles:['the one watching','the one being watched'],
+      en:'one man is kept, the other keeps him', cold:true,
+      no:['companionship','friendly','comforting']},
+  '명령 ↔ 따르는 사람':{roles:['the one giving the order','the one obeying'],
+      en:'rank between them — one speaks, the other complies', cold:true,
+      no:['equals','friendly banter']},
+  '배신 ↔ 믿었던 사람':{roles:['the one who turned','the one who trusted him'],
+      en:'the trust between them is already broken and only one of them knows how far', cold:true,
+      no:['warm expression','affectionate','friendly expression']},
+  '대등 — 맞서는 두 사람':{roles:['one man','the other, squared up to him'],
+      en:'neither gives ground', no:['submissive','cowering']},
+  '보호 ↔ 지켜지는 사람':{roles:['the one shielding','the one being shielded'],
+      en:'one puts himself between the other and what is coming', no:[]},
+  '돌봄 ↔ 아픈 사람':{roles:['the one tending','the one being tended'],
+      en:'one cares for the other', no:[]}
+};
+/* 69개 씬 × 컷마다 손으로 고르게 할 수는 없다.
+   비워두면 지문에서 짐작한다 — 마음에 안 들면 골라서 덮으면 된다. */
+const POWER_RE=/순사|형사|헌병|간수|교도관|경찰|장교|소좌|중위|대위|서장|주임|고문관|취조관|간수장|\b(officer|policeman|police|guard|warden|interrogator|sergeant)\b/i;
+const REL_GUESS=[
+  [/때리|후려|걷어차|쥐어박|짓밟|밟고\s*선|목을\s*(조|쥐)|멱살|끌어\s*올리|내던지|처박|고문(?!실)|족치/, '가해 ↔ 당하는 사람'],
+  [/취조|심문|자백|캐묻|추궁|불어\s*라|묻는다|신문한다/,                                   '심문 ↔ 끌려온 사람'],
+  [/닦아\s*준|손수건|달래|회유|권한다|건넨다|웃으며\s*다가|타이른|어깨를\s*짚/,              '회유 ↔ 버티는 사람'],
+  [/철창|수감|가둔다|감시|지켜본다|끌고\s*간다|묶[인여은]|결박|포박|수갑|오라를/,             '감시 ↔ 갇힌 사람'],
+  [/명령|지시|경례|시킨다|따라\s*나선다|복창/,                                             '명령 ↔ 따르는 사람'],
+  [/감싸|막아선다|가로막|앞을\s*막|지킨다/,                                               '보호 ↔ 지켜지는 사람'],
+  [/치료|붕대|약을|간호|업고|상처를\s*살핀/,                                              '돌봄 ↔ 아픈 사람']
+];
+function guessRel(c,chs){
+  const hay=[(c&&c.desc)||'',(c&&c.act)||''].join(' ');
+  if(!hay.trim()) return null;
+  const roles=(chs||[]).map(x=>[x.role,x.name,x.outfit].filter(Boolean).join(' ')).join(' ');
+  const power=POWER_RE.test(roles)||POWER_RE.test(hay);
+  for(const [re,key] of REL_GUESS){
+    if(!re.test(hay)) continue;
+    // 「닦아준다」는 힘을 쥔 쪽이 있을 때만 회유다. 아니면 그냥 돌봄이다.
+    if(key==='회유 ↔ 버티는 사람' && !power) continue;
+    return {key,rel:REL[key],auto:true};
+  }
+  return null;
+}
+function relOf(c,chs){
+  if(!c) return null;
+  if(c.rel){ const r=REL[c.rel]; return (!r||r.off)?null:{key:c.rel,rel:r,auto:false}; }
+  return guessRel(c,chs||cutChars(c));
+}
+
+/* =========================================================
    순화 — 잔인해서 이미지가 안 만들어질 때.
 
    미드저니가 막는 것은 「잘린 신체·피·변형된 몸」 같은 시각적 묘사다.
@@ -5844,6 +5949,12 @@ function lockBits(c){
             no:['person','people','crowd','figure','silhouette','human','text','watermark'].concat(soft)};
   const it=intentOf(c);
   if(it && it.no) soft=soft.concat(it.no);
+  const chs0=cutChars(c);
+  chs0.forEach(ch=>{ const d=dispOf(ch); if(d&&d.no) soft=soft.concat(d.no); });
+  if(chs0.length>1){
+    const rw=relOf(c,chs0);
+    if(rw){ if(rw.rel.no) soft=soft.concat(rw.rel.no); if(rw.rel.cold) soft=soft.concat(COLD_NO); }
+  }
   const eg=eraGuard();
   if(eg && eg.no) soft=soft.concat(eg.no);
   const none = !!(sm && sm.people==='none');
@@ -5853,9 +5964,16 @@ function lockBits(c){
   const no=['extra person','duplicate face','multiple views','collage','text','watermark'].concat(soft);
   const body=[];
   // 아무도 화면에 없는 우회에서 「single person」을 같이 적으면 --no person 과 부딪친다
-  // 지문 속 단역이 함께 나오는 컷에 「single person」을 적으면 서로 부딪친다
-  if(n===1 && !none && !extraBits(c).length){
-    body.push('single person, one character only'); no.push('crowd','other people');
+  // 지문 속 단역이 함께 나오는 컷에 인원수를 못 박으면 서로 부딪친다
+  const EXTRA_NO=['crowd','other people','background people','bystanders','onlookers',
+                  'figures in the background','people in the doorway','group of people'];
+  if(!none && !extraBits(c).length){
+    if(n===1){ body.push('single person, one character only'); no.push('crowd','other people'); }
+    // 인원수를 안 적으면 모델이 뒤쪽을 알아서 사람으로 채운다 — 그래서 둘일 때도 못 박는다
+    else if(n>1){
+      body.push('exactly '+CNT[n]+' people in the entire frame, no one else, the background empty of people');
+      EXTRA_NO.forEach(x=>no.push(x));
+    }
   }
   return {body,no:dedupe(no)};
 }
@@ -5883,16 +6001,24 @@ const POS={
   '위 · 아래':        ['above,','below,','beside,']
 };
 const ORD=['the first','the second','the third','the fourth'];
+const CNT=['zero','one','two','three','four','five','six','seven','eight'];
 /* 두 사람을 한 덩어리로 묶어 대비시킨다 —
    「two people — on the left, A; on the right, B」
    모델은 이 형태를 가장 잘 알아듣는다. */
-function castBlock(c,locks){
-  if(locks.length<2) return locks[0]||'';
+function castBlock(c,chs){
+  const locks=chs.map(ch=>charLock(ch));
+  const dsp=chs.map(ch=>dispOf(ch));
+  if(locks.length<2)
+    return [locks[0]||'', dsp[0]?dsp[0].en:''].filter(Boolean).join(', ');
   const p=POS[c&&c.pos||''];
+  const rw=relOf(c,chs), rl=rw&&rw.rel.roles?rw.rel.roles:null;
   const n=locks.length===2?'two people':locks.length===3?'three people':locks.length+' people';
   const parts=locks.map((l,i)=>{
-    const tag=p?(p[i]||p[p.length-1]):(ORD[i]||('person '+(i+1)))+' is';
-    return tag+' '+l;
+    const role=rl?(rl[i]||''):'';
+    // 관계로 이미 누가 누구인지 갈렸으면 「the first is」 같은 번호는 군더더기다
+    const tag=p?(p[i]||p[p.length-1]):(role?'':(ORD[i]||('person '+(i+1)))+' is');
+    const body=[l,role,dsp[i]?dsp[i].en:''].filter(Boolean).join(', ');
+    return (tag?tag+' ':'')+body;
   });
   return n+' — '+parts.join('; ');
 }
@@ -5902,9 +6028,12 @@ function charBits(c){
   // 화면에 사람이 없는 우회(직후 · 사물 인서트 · 그림자)에서는 인물 블록이 방해만 된다
   const sm=c&&c.soft?SOFTEN[c.soft]:null;
   if(sm && sm.people && sm.people!=='yes') return out;
-  const locks=cutChars(c).map(ch=>charLock(ch)).filter(Boolean);
-  const blk=castBlock(c,locks);
+  const chs=cutChars(c).filter(ch=>charLock(ch));
+  const blk=castBlock(c,chs);
   if(blk) out.push(blk);
+  // 둘 사이가 어떤 사이인지 — 이걸 안 적으면 AI 는 늘 착한 쪽으로 읽는다
+  const rw=chs.length>1?relOf(c,chs):null;
+  if(rw){ out.push(rw.rel.en); if(rw.rel.cold) out.push(COLD_BIT); }
   const ex=extraBits(c);
   if(ex.length) out.push('others in frame wear '+ex.join('; '));
   chgBits(c).look.forEach(x=>out.push(x));
@@ -5993,6 +6122,11 @@ function buildVEO(s,c){
     const pd=(pv.descEn||pv.desc||'').trim();
     if(pd) L.push('Context: this shot follows — '+pd.slice(0,110)+'.');
   }
+  const rw0=chs.length>1?relOf(c,chs):null;
+  if(rw0) L.push('Relationship: '+cap(rw0.rel.en)+(rw0.rel.cold?'. '+cap(COLD_BIT):'')+'.');
+  const dl=chs.map((ch,i)=>{ const d=dispOf(ch); if(!d) return '';
+      return (chs.length>1?'Character '+String.fromCharCode(65+i)+' is ':'')+d.en; }).filter(Boolean);
+  if(dl.length) L.push('Bearing: '+cap(dl.join('; '))+'.');
   const it0=intentOf(c);
   if(it0) L.push('Intent: '+cap(it0.en)+'.');
   softBits(c).forEach(x=>L.push('Restraint: '+cap(x)+'.'));
@@ -6317,6 +6451,12 @@ function readbackKO(s,c,kind){
   if(chg.length) R.push(rbRow('이 컷만',chg.map(x=>x[0]+' — '+esc(x[1])).join('<br>')));
   if(EMO[c.emo]) R.push(rbRow('표정',b(c.emo),EMO[c.emo]));
 
+  const rbc=cutChars(c).filter(ch=>charLock(ch));
+  if(rbc.length>1){
+    const rw=relOf(c,rbc);
+    if(rw) R.push(rbRow('관계'+(rw.auto?' (자동)':''),b(rw.key),rw.rel.en));
+  }
+  rbc.forEach(ch=>{ const d=dispOf(ch); if(d) R.push(rbRow('태도 — '+(ch.name||'인물'),b(ch.disp),d.en)); });
   if(c.intent) R.push(rbRow('의도 · 문맥',b(c.intent),(intentOf(c)||{}).en));
   if(c.soft){
     const ph=matPhrase(c);

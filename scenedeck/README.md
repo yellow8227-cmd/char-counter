@@ -309,6 +309,71 @@ worn thin, rope-marked wrists
 정체성 → 출생 → 이름 → 본문 순으로 좁은 것부터 봅니다.
 이름으로도 짐작합니다: `시라후지` → 일본, `백동훈` → 한국.
 
+### 관계 — 누가 누구를 쥐고 있나
+
+**둘 사이가 어떤 사이인지 안 적으면 AI 는 언제나 가장 착한 쪽으로 읽습니다.**
+손수건으로 입가를 닦아주는 손은 「돌봐주는 손」이 되고, 무릎을 굽힌 자세는 「간청」이 됩니다.
+고문하러 온 순사가 자애로운 청년으로 나옵니다.
+
+컷의 **「더 세밀하게」 → 관계** 에서 고릅니다.
+
+| 관계 | 프롬프트에 붙는 말 |
+|---|---|
+| 가해 ↔ 당하는 사람 | a scene of power, not of care — one man holds the other and both of them know it |
+| 심문 ↔ 끌려온 사람 | an interrogation — one man asks, the other cannot leave |
+| 회유 ↔ 버티는 사람 | a false kindness offered by the man who holds the power and refused — the gesture is ownership, not mercy |
+| 감시 ↔ 갇힌 사람 | one man is kept, the other keeps him |
+| 명령 ↔ 따르는 사람 | rank between them — one speaks, the other complies |
+| 배신 ↔ 믿었던 사람 | the trust between them is already broken and only one of them knows how far |
+| 대등 · 보호 · 돌봄 | (따뜻한 쪽도 필요하니 남겨둡니다) |
+
+차가운 관계에는 **따뜻한 쪽으로 새지 않게** 배제가 같이 붙습니다 —
+`--no comforting, caregiving, rescue, first aid, tender moment, warm golden light, heartwarming …`
+
+그리고 두 사람이 **한 덩어리로 묶여** 누가 누구인지 갈립니다.
+
+```
+two people —
+  a Korean man in his forties, a pressed dark Japanese police uniform, brass buttons,
+    the one offering, wearing a kindness he does not mean,
+    sly and self-serving, a small cruelty sitting behind a polite face;
+  a Korean elderly man, a jeogori gone grey, baji torn at the knees, bare feet,
+    the one refusing it, upright and unbending, meeting the eye
+```
+
+**비워두면 지문에서 짐작합니다.** 69개 씬 × 컷마다 손으로 고를 수는 없으니까요.
+`때리다 · 짓밟다 · 멱살` → 가해, `취조 · 자백 · 추궁` → 심문,
+`철창 · 결박 · 수갑` → 감시, `명령 · 경례` → 명령.
+짐작이 틀렸으면 골라서 덮으면 되고, 아예 안 쓰려면 **「없음」** 을 고릅니다.
+한글 되짚기에 **「관계 (자동)」** 이라고 표시되니 무엇으로 짐작했는지 보입니다.
+
+`닦아준다 · 손수건 · 달래다` 는 **힘을 쥔 쪽이 있을 때만** 회유로 봅니다.
+순사·헌병·간수 같은 역할이 컷에 없으면 어머니가 아이 입가를 닦는 장면이므로 건드리지 않습니다.
+
+### 태도 — 어떤 사람으로 보일까
+
+「기획 → 캐릭터」의 **외형** 아래에 있습니다. 인물마다 한 번만 골라두면 모든 컷에 따라다닙니다.
+
+야비한 · 냉혹한 · 위압적인 · 비굴한 · 광기 어린 · 강직한 · 지친 · 순박한 · 겁먹은 · 자존심 센
+
+**야비한** 을 고르면 `sly and self-serving, a small cruelty sitting behind a polite face`
+가 그 인물에게만 붙고, `--no kindly expression, gentle expression, warm smile` 로
+친절한 표정 쪽으로 새는 것을 막습니다.
+두 인물이 같이 나오는 컷에서 **서로 헷갈리지 않게** 하는 것도 이 값입니다.
+
+### 인원수 못 박기 — 두 명인데 넷이 나올 때
+
+예전에는 **혼자일 때만** 인원수를 못 박았습니다. 둘 이상이면 아무 제한이 없어서
+모델이 뒤쪽 문간을 알아서 사람으로 채웠습니다.
+
+```
+exactly two people in the entire frame, no one else, the background empty of people
+--no crowd, other people, background people, bystanders, onlookers,
+     figures in the background, people in the doorway, group of people
+```
+
+지문에 이름 없는 단역이 있는 컷(「others in frame wear …」)에서는 서로 부딪치므로 붙이지 않습니다.
+
 ### 시대 잠금 — 1940년대에 데님 재킷이 나오지 않게
 
 시대를 골라도 AI 는 금방 현대로 샙니다. 데님 재킷, 지퍼, 가슴 플랩 포켓, 찢어진 청바지.
