@@ -85,7 +85,8 @@ def _fit_into(cell, img_size):
     return cx + (cw - w) // 2, cy + (ch - h) // 2, w, h
 
 
-def add_cover(prs, art_dir: Path, deck_cuts: int, total_cuts: int) -> int:
+def add_cover(prs, art_dir: Path, deck_cuts: int, total_cuts: int,
+              version: int = 0) -> int:
     """표지 · 키 아트 두 장을 맨 앞에 붙이고, 붙인 장수를 돌려준다."""
     from PIL import Image
 
@@ -104,7 +105,8 @@ def add_cover(prs, art_dir: Path, deck_cuts: int, total_cuts: int) -> int:
             slide, Inches(0.75), Inches(6.52), Inches(7.0), Inches(0.8),
             [
                 ("S T O R Y B O A R D", 15, BONE, True, 3.2),
-                (f"컷 {deck_cuts}장 수록 · 전체 {total_cuts}컷", 9.5, ASH, False, 0.6),
+                (("v%02d  ·  " % version if version else "")
+                 + f"컷 {deck_cuts}장 수록 · 전체 {total_cuts}컷", 9.5, ASH, False, 0.6),
             ],
         )
         _text(

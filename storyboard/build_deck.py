@@ -30,6 +30,22 @@ from cover import add_cover
 
 HERE = Path(__file__).parent
 
+# 만들 때마다 새 이름으로 남긴다. 덮어쓰면 어제 넘긴 판본이 사라진다.
+DECK_NAME = "각혈 스토리보드"
+SHOOT_NAME = "각혈 촬영컷목록"
+
+
+def next_version(out_dir: Path, stem: str) -> int:
+    """out 폴더에 이미 있는 판본 중 제일 큰 번호 + 1."""
+    import re
+
+    found = [
+        int(m.group(1))
+        for f in out_dir.glob(f"{stem} v*.pptx")
+        if (m := re.fullmatch(rf"{re.escape(stem)} v(\d+)", f.stem))
+    ]
+    return max(found, default=0) + 1
+
 # 패널 1개당 자리표시자 7개가 연속으로 붙어 있다. 패널 6개 × 7 = 42, 시작 idx 10.
 PANELS_PER_SLIDE = 6
 PH_PER_PANEL = 7
@@ -177,10 +193,10 @@ def fill_text(ph, value: str, field: str) -> bool:
     for para in tf.paragraphs:
         para.line_spacing = Pt(pt * LINE_RATIO)
         para.font.size = size
-        para.font.color.rgb = theme.BONE
+        para.font.color.rgb = theme.c("body")
         for run in para.runs:
             run.font.size = size
-            run.font.color.rgb = theme.BONE
+            run.font.color.rgb = theme.c("body")
     return overflow
 
 
@@ -259,7 +275,8 @@ def write_shoot_list(cuts: list[dict], path: Path) -> None:
 
 
 def build(cuts: list[dict], template: Path, images_dir: Path, out: Path,
-          art_dir: Path | None = None, total_cuts: int = 0) -> tuple[int, int]:
+          art_dir: Path | None = None, total_cuts: int = 0,
+          version: int = 0) -> tuple[int, int]:
     prs = Presentation(str(template))
     layout = prs.slide_layouts[0]
 
@@ -295,7 +312,11 @@ def build(cuts: list[dict], template: Path, images_dir: Path, out: Path,
         print(f"  · 8pt로도 칸을 넘치는 글 {len(tight)}곳: {', '.join(tight[:8])}"
               + (" …" if len(tight) > 8 else ""), file=sys.stderr)
 
-    front = add_cover(prs, art_dir, len(cuts), total_cuts) if art_dir else 0
+    front = add_cover(prs, art_dir, len(cuts), total_cuts, version) if art_dir else 0
+
+    core = prs.core_properties
+    core.title = DECK_NAME + (f" v{version:02d}" if version else "")
+    core.subject = "赫血 · KAKKETSU"
 
     out.parent.mkdir(parents=True, exist_ok=True)
     prs.save(str(out))
@@ -308,25 +329,41 @@ def main() -> None:
     ap.add_argument("--template", default=str(HERE / "template.pptx"))
     ap.add_argument("--images", default=str(HERE / "images"))
     ap.add_argument("--art", default=str(HERE / "keyart"))
-    ap.add_argument("--out", default=str(HERE / "out" / "storyboard.pptx"))
+    ap.add_argument("--theme", default="paper", choices=sorted(theme.PALETTES),
+                    help="paper = 밝은 종이(기본) · ink = 어두운 판")
+    ap.add_argument("--out-dir", default=str(HERE / "out"))
+    ap.add_argument("--out", default=None,
+                    help="이름을 직접 정하고 싶을 때. 비우면 각혈 스토리보드 v01.pptx 처럼 번호가 붙는다")
     args = ap.parse_args()
+    theme.use(args.theme)
 
     data = json.loads(Path(args.cuts).read_text(encoding="utf-8"))
     cuts = data["cuts"] if isinstance(data, dict) else data
 
-    out = Path(args.out)
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    if args.out:
+        out = Path(args.out)
+        version = 0
+    else:
+        version = next_version(out_dir, DECK_NAME)
+        out = out_dir / f"{DECK_NAME} v{version:02d}.pptx"
+
     on_deck, shoot_only = split_cuts(cuts, Path(args.images))
-    write_shoot_list(shoot_only, out.parent / "촬영컷목록.md")
+    shoot_path = out_dir / (f"{SHOOT_NAME} v{version:02d}.md" if version else "촬영컷목록.md")
+    write_shoot_list(shoot_only, shoot_path)
 
     blanks = sum(1 for c in on_deck if not resolve_image(Path(args.images), c.get("image") or ""))
     n, front = build(
         on_deck, Path(args.template), Path(args.images), out,
-        art_dir=Path(args.art), total_cuts=len(cuts),
+        art_dir=Path(args.art), total_cuts=len(cuts), version=version,
     )
     print(
         f"전체 {len(cuts)}컷 · 덱 {len(on_deck)}컷(시안 필요 빈칸 {blanks}) · "
-        f"촬영 목록 {len(shoot_only)}컷 → 앞장 {front} + 컷 {n} = 슬라이드 {n + front}장 → {out}"
+        f"촬영 목록 {len(shoot_only)}컷 → 앞장 {front} + 컷 {n} = 슬라이드 {n + front}장"
     )
+    print(f"  {out.name}")
+    print(f"  {shoot_path.name}")
 
 
 if __name__ == "__main__":
