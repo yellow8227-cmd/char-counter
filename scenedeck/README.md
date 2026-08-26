@@ -350,6 +350,27 @@ two people —
 `닦아준다 · 손수건 · 달래다` 는 **힘을 쥔 쪽이 있을 때만** 회유로 봅니다.
 순사·헌병·간수 같은 역할이 컷에 없으면 어머니가 아이 입가를 닦는 장면이므로 건드리지 않습니다.
 
+### 「분위기 낱말」과 「분위기 묘사」는 다릅니다
+
+앞에서 분위기는 안 걸린다고 했는데, 한 가지 단서가 붙습니다 —
+**폭력을 가리키는 이름은 그 자체로 걸립니다.**
+`menace` `malice` `threatening` `cruelty` 는 분위기 낱말처럼 보이지만
+미드저니에게는 폭력 어휘입니다. 반면 같은 온도를 **묘사로** 쓰면 지나갑니다.
+
+| 걸릴 수 있음 | 대신 |
+|---|---|
+| an atmosphere of quiet **menace** | the room colder than it looks, everyone in it very still |
+| quiet **malice** under a polite surface | a polite surface with nothing kind under it |
+| courteous on the surface and **threatening** underneath | formal and correct, and not kindness at all |
+| a small **cruelty** behind a polite face | a polite face with nothing kind behind it |
+
+바꾼 쪽이 **더 잘 나옵니다.** 이름은 모델에게 판정만 시키고,
+묘사는 화면에 그릴 것을 줍니다.
+
+이제 앱이 프롬프트에 싣는 **긍정 묘사 88개 전부**(공기 · 관계 · 태도 · 의도 · 시대 · 장소)에
+폭력 어휘가 하나도 없습니다. `--no` 에 넣는 낱말 **133개**도 마찬가지입니다 —
+`--no` 도 검사 대상이라 거기 적은 낱말은 프롬프트에 적은 것과 같습니다.
+
 ### 짧게 쓰기 — 프롬프트가 난잡해서 안 나올 때
 
 미드저니는 **앞쪽 낱말에 힘을 싣고, 길어질수록 전부 평균으로 뭉갭니다.**
