@@ -1563,7 +1563,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v38 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v39 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -3221,6 +3221,40 @@ function statLine(){
   return `씬 ${S.scenes.length} · 컷 ${allCuts().length} · 예상 ${Math.floor(t/60)}분 ${t%60}초`;
 }
 /* 걸리는 장소면 대체안을 그 자리에 띄운다 — 누르면 바로 바뀐다 */
+/* 대본에서 읽어온 값은 그대로 남는다 — 창 없는 지하실인데 씬 시간이 「정오」,
+   차가운 장면인데 컷 무드가 「평온」. 앱이 멋대로 지우면 안 되지만,
+   말없이 프롬프트에 실어 보내는 것도 안 된다. 그래서 보여주고 지울 수 있게 한다. */
+const WARM_MOOD={'평온':1,'따뜻함':1,'희망':1,'유머':1};
+const DAY_TIME={'정오':1,'아침':1,'오후':1};
+const INSIDE_RE=/지하|실내|방$|방\s|취조|고문|감방|유치|복도|창고|굴\b|\b(cell|basement|corridor|windowless|interior)\b/i;
+function staleWarn(s,c){
+  const out=[];
+  if(!s||!c) return out;
+  const hay=[s.loc,s.locEn,s.heading].filter(Boolean).join(' ');
+  if((locAlt(s)||INSIDE_RE.test(hay)) && DAY_TIME[s.time])
+    out.push({k:'time',ko:'씬 시간 「'+s.time+'」',why:'빛이 안 드는 곳인데 한낮 햇빛이 함께 붙습니다'});
+  let cold=false;
+  const chs=cutChars(c);
+  if(chs.length>1){ const r=relOf(c,chs); cold=!!(r&&r.rel.cold); }
+  if(WARM_MOOD[c.mood] && (cold||toneOf(c)||c.soft))
+    out.push({k:'mood',ko:'컷 무드 「'+c.mood+'」',why:'차가운 장면에 따뜻한 분위기가 같이 실립니다'});
+  if(/\b(torture|interrogation room|execution|gallows)\b/i.test(s.locEn||''))
+    out.push({k:'loc',ko:'영문 장소에 막히는 낱말',why:'위쪽 「장소 대체」로 바꿔주세요'});
+  return out;
+}
+function staleWarnHTML(s,c){
+  const w=staleWarn(s,c);
+  if(!w.length) return '';
+  const keys=w.filter(x=>x.k!=='loc').map(x=>x.k).join(',');
+  return `<div class="locwarn" style="margin:-6px 0 14px">
+    <b>대본에서 읽어온 값이 그대로 남아 있습니다</b>
+    <ul style="margin:6px 0 0;padding-left:18px">${
+      w.map(x=>`<li>${esc(x.ko)} — ${esc(x.why)}</li>`).join('')}</ul>
+    ${keys?`<div class="row" style="margin-top:8px">
+      <button class="btn sm pri" data-kclear="${s.id}|${c.id}|${keys}">이 값 비우기</button>
+      <span class="mini" style="margin:0">지운 자리는 「공기」로 채우면 됩니다</span></div>`:''}
+  </div>`;
+}
 function locWarnHTML(s){
   const g=locAlt(s); if(!g) return '';
   return `<div class="locwarn">
@@ -3347,6 +3381,7 @@ function cutBodyHTML(s,c){
           <span class="usehint" data-kuse="${c.id}">${esc(useHint(c.use))}</span>
         </label>
       </div>
+      ${staleWarnHTML(s,c)}
       <div class="grid g3">
         <label class="f"><span>샷 사이즈</span><select data-kf="shot">${opts(SHOT,c.shot)}</select></label>
         <label class="f"><span>앵글</span><select data-kf="angle">${opts(ANGLE,c.angle)}</select></label>
@@ -3525,6 +3560,15 @@ $('scenelist').addEventListener('click',async e=>{
     const i=s.cuts.findIndex(x=>x.id===kid), j=i+ +d;
     if(i<0||j<0||j>=s.cuts.length) return;
     [s.cuts[i],s.cuts[j]]=[s.cuts[j],s.cuts[i]]; save(); renderScenes();
+  }
+  if(t.dataset.kclear){
+    const [sid,kid,keys]=t.dataset.kclear.split('|');
+    const s=S.scenes.find(x=>x.id===sid), c=s&&s.cuts.find(x=>x.id===kid);
+    if(!c) return;
+    const ks=keys.split(',');
+    if(ks.includes('time')) s.time='';
+    if(ks.includes('mood')) c.mood='';
+    save(); renderScenes(); toast('비웠어요 — 「공기」로 채워보세요 ✓');
   }
   if(t.dataset.ksplit){
     const [sid,kid]=t.dataset.ksplit.split('|');
