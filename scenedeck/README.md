@@ -350,6 +350,22 @@ two people —
 `닦아준다 · 손수건 · 달래다` 는 **힘을 쥔 쪽이 있을 때만** 회유로 봅니다.
 순사·헌병·간수 같은 역할이 컷에 없으면 어머니가 아이 입가를 닦는 장면이므로 건드리지 않습니다.
 
+### 장소를 이름으로만 적었을 때
+
+`Dong-Hoon Baek's House` — 미드저니는 이 사람을 모릅니다. 그냥 **아무 집이나** 나옵니다.
+장소는 **이름이 아니라 생김새**로 적어야 합니다 — 지붕 · 벽 · 마당 · 문.
+
+컷 경고에 세 가지가 더 붙습니다.
+
+- **장소 영문 칸이 비어 있습니다**
+- **사람 이름으로만 적혀 있습니다** — `Baek's house`, `Donghoon's room`
+- **생김새가 하나도 없습니다** — `The Police Department of the Government-General of Korea`
+  처럼 기관 이름만 있고 눈에 보이는 것이 없는 경우
+
+`bare stone room with water-stained walls and one caged bulb` 이나
+`a small thatched-roof Korean farmhouse, low mud walls, a bare dirt yard` 처럼
+**보이는 것**이 하나라도 있으면 통과합니다.
+
 ### 대본에서 읽어온 값이 그대로 남아 있을 때
 
 `at midday, natural daylight` 와 `calm, serene mood` 가 고문실 컷에까지 붙는 일이 있습니다.

@@ -1563,7 +1563,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v39 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v40 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -3227,6 +3227,17 @@ function statLine(){
 const WARM_MOOD={'평온':1,'따뜻함':1,'희망':1,'유머':1};
 const DAY_TIME={'정오':1,'아침':1,'오후':1};
 const INSIDE_RE=/지하|실내|방$|방\s|취조|고문|감방|유치|복도|창고|굴\b|\b(cell|basement|corridor|windowless|interior)\b/i;
+/* 「백동훈의 집」은 사람 이름이다. 미드저니는 그 이름을 모르므로 아무 집이나 그린다.
+   장소는 이름이 아니라 생김새로 적어야 한다 — 지붕 · 벽 · 마당 · 문. */
+const LOC_NAMEY=/(^|\s)[A-Z][a-z]+(-[A-Z][a-z]+)?('s|s')\s|(^|\s)[A-Z][a-z]+(-[A-Z][a-z]+)?\s+(house|home|room|place)\b/;
+const LOC_SHAPE=/\b(roof|wall|walls|floor|yard|gate|door|doors|window|windows|chimney|street|road|field|corridor|stair|ceiling|bulb|lamp|jar|table|chair|drain|beam|fence|path|courtyard|hall|village|town|farmhouse|house|cottage|hut|shed|cell|alley|market|bridge|riverbank|shore|forest|hillside|temple|church|station|platform|classroom|kitchen)\b/i;
+function locVague(s){
+  const en=String((s&&s.locEn)||'').trim();
+  if(!en) return '장소 영문 칸이 비어 있습니다';
+  if(LOC_NAMEY.test(en)) return '사람 이름으로만 적혀 있습니다';
+  if(!LOC_SHAPE.test(en)) return '생김새가 하나도 없습니다';
+  return '';
+}
 function staleWarn(s,c){
   const out=[];
   if(!s||!c) return out;
@@ -3240,6 +3251,9 @@ function staleWarn(s,c){
     out.push({k:'mood',ko:'컷 무드 「'+c.mood+'」',why:'차가운 장면에 따뜻한 분위기가 같이 실립니다'});
   if(/\b(torture|interrogation room|execution|gallows)\b/i.test(s.locEn||''))
     out.push({k:'loc',ko:'영문 장소에 막히는 낱말',why:'위쪽 「장소 대체」로 바꿔주세요'});
+  const lv=locVague(s);
+  if(lv) out.push({k:'locv',ko:'장소 — '+lv,
+    why:'지붕 · 벽 · 마당 · 문처럼 눈에 보이는 것으로 적어야 그 장소가 나옵니다'});
   return out;
 }
 function staleWarnHTML(s,c){
