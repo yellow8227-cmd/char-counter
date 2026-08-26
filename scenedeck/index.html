@@ -1231,7 +1231,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
         <div class="row" id="softmatrow" style="display:none">
           <span class="mini" style="margin:0">화면에 담을 재료</span>
           <select id="soft-mat" style="max-width:230px"></select>
-          <span class="mini" style="margin:0">「피」 자리에 이 재료가 들어갑니다</span>
+          <span class="mini" id="soft-matwhy" style="margin:0">「피」 자리에 이 재료가 들어갑니다</span>
         </div>
         <div class="grid g2" id="softin" style="display:none">
           <label class="f"><span>화면에 담을 것 — 비워두면 기본 문구를 씁니다</span>
@@ -1522,7 +1522,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v22 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v23 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -5033,29 +5033,38 @@ const SOFT_KO=[
    먹물이 번지는 돌바닥은 피보다 덜 잔인하면서 더 세다. */
 /* n 은 반드시 「명사」여야 한다. 분사구를 넣으면
    「Drops of spilled black ink pooling falling to the floor」처럼 문장이 깨진다.
-   분위기는 x 로 따로 빼서 별도의 절로 붙인다. */
+   분위기는 x 로 따로 빼서 별도의 절로 붙인다.
+
+   tone 은 실제로 써 보고 알아낸 것이다.
+   필터는 낱말만 보지 않는다 — 「붉은 방울이 바닥에 떨어진다」는 구성 자체를
+   피로 읽는다. red ink 는 막혔고 dark liquid 는 통과했다.
+   그래서 색이 없는 것을 위에 두고, 붉은 계열에는 표시를 단다. */
 const MAT={
-  '':                  null,
-  '먹물':               {n:'black ink',            a:'ink-stained',
-                        x:'ink spreading slowly through the grain of the stone'},
-  '붉은 먹':             {n:'red ink',              a:'red-ink-stained',
-                        x:'red ink blooming across the surface'},
-  '옻칠':               {n:'red lacquer',          a:'lacquer-stained',
-                        x:'glossy red lacquer catching the light'},
-  '붉은 실':             {n:'red thread',           a:'wound in red thread',
-                        x:'red thread trailing across the floor'},
-  '붉은 천':             {n:'red silk',             a:'draped in red silk',
-                        x:'a length of red silk pooling on the floor'},
-  '녹물':               {n:'rust-coloured water',  a:'rust-stained',
-                        x:'rust seeping between the stones'},
-  '물에 번지는 붉은빛':    {n:'red pigment',          a:'tinted deep red',
-                        x:'red pigment blooming through clear water'},
-  '붉은 꽃잎':           {n:'red petals',           a:'covered in red petals',
-                        x:'red petals scattered across the floor'},
-  '촛농':               {n:'red candle wax',       a:'wax-spattered',
-                        x:'red wax pooling and hardening'},
-  '젖은 어둠':           {n:'dark wetness',         a:'darkly soaked',
-                        x:'a dark wet patch spreading outward'}
+  '':                       null,
+  '어두운 액체 (검증됨)':      {n:'dark liquid',        a:'dark-stained', tone:'safe',
+                             x:'a dark wet patch spreading across the floor'},
+  '먹물':                    {n:'black ink',          a:'ink-stained', tone:'safe',
+                             x:'ink spreading slowly through the grain of the stone'},
+  '젖은 어둠':                {n:'dark wetness',       a:'darkly soaked', tone:'safe',
+                             x:'a dark wet patch spreading outward'},
+  '검은 기름':                {n:'black oil',          a:'oil-stained', tone:'safe',
+                             x:'oil creeping between the floorboards'},
+  '흙탕물':                   {n:'muddy water',        a:'mud-spattered', tone:'safe',
+                             x:'muddy water pooling in the hollows of the stone'},
+  '녹물':                    {n:'rust-coloured water',a:'rust-stained', tone:'warm',
+                             x:'rust seeping between the stones'},
+  '촛농':                    {n:'candle wax',         a:'wax-spattered', tone:'warm',
+                             x:'wax pooling and hardening'},
+  '붉은 실 (붉은색)':          {n:'red thread',         a:'wound in red thread', tone:'red',
+                             x:'red thread trailing across the floor'},
+  '붉은 천 (붉은색)':          {n:'red silk',           a:'draped in red silk', tone:'red',
+                             x:'a length of red silk pooling on the floor'},
+  '붉은 꽃잎 (붉은색)':        {n:'red petals',         a:'covered in red petals', tone:'red',
+                             x:'red petals scattered across the floor'},
+  '옻칠 (붉은색)':            {n:'red lacquer',        a:'lacquer-stained', tone:'red',
+                             x:'glossy red lacquer catching the light'},
+  '물에 번지는 붉은빛 (붉은색)': {n:'red pigment',        a:'tinted deep red', tone:'red',
+                             x:'red pigment blooming through clear water'}
 };
 const SOFTEN={
   '말만 바꾸기':{
@@ -5065,7 +5074,7 @@ const SOFTEN={
     set:{},
     ph:''},
   '재료 바꾸기':{
-    tip:'화면에 담을 재료를 바꾼다 — 먹물이 번지는 돌바닥은 덜 잔인하면서 더 세다',
+    tip:'화면에 담을 재료를 바꾼다 — 먹물이 번지는 돌바닥은 덜 잔인하면서 더 세다. 색이 없는 쪽이 확실하다',
     people:'yes', bits:[], set:{}, mat:true, ph:''},
   '무대 티내기':{
     tip:'촬영 현장을 그대로 보여준다 — 특수분장과 조명 장비가 보이면 실제가 아니게 된다',
@@ -5594,6 +5603,15 @@ function paintSoft(){
     const sel=$('soft-mat');
     if(!sel.options.length) sel.innerHTML=opts(MAT,c.mat||'');
     sel.value=c.mat||'';
+    const mt=MAT[c.mat||''];
+    const why=$('soft-matwhy');
+    if(mt&&mt.tone==='red'){
+      why.innerHTML='<b style="color:var(--sig)">붉은 계열입니다</b> — 「떨어지는 붉은 방울」은 색만으로도 피로 읽혀 막힐 수 있어요. 막히면 위쪽 색 없는 재료로 바꿔보세요.';
+    }else if(mt&&mt.tone==='warm'){
+      why.textContent='붉은 기가 조금 있습니다 — 막히면 위쪽 색 없는 재료로 바꿔보세요';
+    }else{
+      why.textContent='「피」 자리에 이 재료가 들어갑니다 — 색이 없는 쪽이 확실합니다';
+    }
   }else mr.style.display='none';
   const box2=$('softin');
   if(m && m.subj){
