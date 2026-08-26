@@ -18,7 +18,7 @@ const pwMod = await import(existsSync(PW) ? 'file://' + PW : 'playwright');
 const chromium = (pwMod.chromium || (pwMod.default && pwMod.default.chromium));
 import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
@@ -37,7 +37,8 @@ const POSE_LOOP = (draw) => `(()=>{ if(window.__poseRAF) cancelAnimationFrame(wi
 
 // ── 장면 — 게임을 이 상태로 만들고 찍는다 ──
 // setup 은 게임 페이지 안에서 도는 코드다(게임의 함수를 그대로 부른다).
-const SCENES = [
+// 인스타 카드(make-insta.mjs)도 같은 장면을 쓴다 — 두 벌로 갈라지지 않게 여기서 내보낸다
+export const SCENES = [
   { id: '1-play', cap: ['톡 터트리면 콤보!', '딱 3분, 한 판이면 충분해요'], tint: '#ffe3f0',
     setup: `(()=>{
       saveNick('까미'); coins=1240; soundOn=false; bgmOn=false;
@@ -275,4 +276,6 @@ const run = async () => {
   await browser.close();
   console.log('\n총 ' + (made.length + 2) + '장 → press/shots/');
 };
-run().catch(e => { console.error('실패:', e.message); process.exit(1); });
+// 다른 파일이 SCENES 만 가져다 쓸 때는 찍지 않는다 (직접 실행할 때만 돈다)
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
+  run().catch(e => { console.error('실패:', e.message); process.exit(1); });

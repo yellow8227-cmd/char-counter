@@ -384,6 +384,20 @@
   #toast.low{top:auto;bottom:19%;}
   #toast.low.show{transform:translateX(-50%) translateY(6px);}
 
+  /* 앱 안의 브라우저(카톡·인스타 등)로 들어왔을 때만 뜨는 안내 띠.
+     거기서는 저장이 날아가거나 '홈 화면에 추가'가 없어서 밖에서 열기를 권한다. */
+  #extBar{position:fixed;left:10px;right:10px;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:60;
+    background:rgba(60,30,50,0.94);color:#fff;border-radius:18px;padding:13px 42px 13px 16px;
+    box-shadow:0 12px 30px rgba(0,0,0,0.28);max-width:460px;margin:0 auto;text-align:left;}
+  #extBar .et{font-size:14px;font-weight:700;line-height:1.5;}
+  #extBar .et span{opacity:.82;font-weight:600;}
+  #extBar .eb{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  #extBar .eb .btn{padding:9px 16px;font-size:14px;}
+  /* 어두운 띠 위라 '유령 단추'의 기본 분홍 글씨가 잘 안 읽힌다 — 흰 글씨로 바꾼다 */
+  #extBar .eb .btn.ghost{background:rgba(255,255,255,0.16);color:#fff;border-color:rgba(255,255,255,0.28);box-shadow:none;}
+  #extBar .ex{position:absolute;right:8px;top:8px;width:28px;height:28px;border:0;border-radius:50%;
+    background:rgba(255,255,255,0.16);color:#fff;font-size:14px;font-weight:800;cursor:pointer;line-height:28px;padding:0;}
+
   /* "누가 탈락했다"는 판 위에 띄우지 않는다. 판 위에 얹었더니 (ㄱ) 같은 소식이 여러 번
      와서 넉 줄로 쌓였고 (ㄴ) 젤리·효과 배지와 겹쳐 플레이를 방해했다.
      대신 판 밖(위쪽 띠)의 상대 칩을 💀 로 바꿔 판이 끝날 때까지 붙여 둔다 — 칩은
@@ -838,6 +852,17 @@
       <div id="spdBar"></div>
       <div id="throwBar"></div>
     </div>
+  </div>
+  <!-- 카톡·인스타 안의 브라우저로 열면 저장이 날아가거나 홈 화면 추가가 안 된다.
+       그 안에서 들어왔을 때만 보이고, 한 번 닫으면 이 방문 동안 다시 뜨지 않는다. -->
+  <div id="extBar" class="hide">
+    <div class="et"><b id="extWho">앱 안의 브라우저로 열렸어요.</b><br>
+      <span>기록·코인이 사라질 수 있어요. 밖에서 열면 안전해요.</span></div>
+    <div class="eb">
+      <button class="btn" id="extOpenBtn">🌐 브라우저로 열기</button>
+      <button class="btn ghost" id="extCopyBtn">🔗 주소 복사</button>
+    </div>
+    <button class="ex" id="extCloseBtn" title="닫기">✕</button>
   </div>
   <div id="toast"></div>
 
@@ -6984,6 +7009,53 @@ $('cloudOutBtn').onclick=cloudOutAsk;
 $('cloudUpBtn').onclick=()=>cloudSignUp(($('cloudMail').value||'').trim(),$('cloudPw').value||'');
 $('cloudPwSetBtn').onclick=()=>cloudSetPw($('cloudPw').value||'');
 $('cloudPwInBtn').onclick=()=>cloudPwIn(($('cloudMail').value||'').trim(),$('cloudPw').value||'');
+
+// ---- 앱 안의 브라우저(카톡·인스타 등)에서 들어왔을 때 ----
+// 왜: 인스타·카톡에서 링크를 누르면 그 앱이 품고 있는 작은 브라우저가 열린다.
+//   거기서는 (ㄱ) 저장한 코인·기록이 앱을 닫으면 날아갈 수 있고, (ㄴ) '홈 화면에 추가'가 없고,
+//   (ㄷ) 소리가 막히는 기종이 있다. 그래서 그 안에서 들어왔을 때만 밖에서 열기를 권한다.
+//   (평소 브라우저에서는 아무것도 뜨지 않는다)
+const UA=navigator.userAgent||'';
+const isAndroid=/Android/i.test(UA);
+function inAppName(){
+  if(/KAKAOTALK/i.test(UA)) return '카카오톡';
+  if(/Instagram/i.test(UA)) return '인스타그램';
+  if(/FBAN|FBAV|FB_IAB/i.test(UA)) return '페이스북';
+  if(/Line\//i.test(UA)) return '라인';
+  if(/NAVER\(inapp/i.test(UA)) return '네이버 앱';
+  if(/DaumApps|DaumDevice/i.test(UA)) return '다음 앱';
+  if(/everytimeApp/i.test(UA)) return '에브리타임';
+  if(/MicroMessenger|Snapchat|TikTok|Twitter/i.test(UA)) return '다른 앱';
+  return '';
+}
+function extOpen(){
+  const url=location.href;
+  // 카톡은 '밖에서 열기'를 대신 해 주는 길을 열어 뒀다 (아이폰·안드로이드 둘 다)
+  if(/KAKAOTALK/i.test(UA)){ location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(url); return; }
+  // 안드로이드는 크롬을 지정해 넘길 수 있다
+  if(isAndroid){ location.href='intent://'+url.replace(/^https?:\/\//,'')
+    +'#Intent;scheme=https;package=com.android.chrome;end'; return; }
+  // 아이폰은 밖으로 여는 길이 막혀 있다 — 주소를 복사해 주고 방법을 알려 준다
+  copyText(url,'🔗 주소를 복사했어요! 오른쪽 아래 ⋯ → "Safari로 열기"를 눌러 주세요');
+}
+(function(){
+  const who=inAppName(); if(!who) return;
+  let off=false; try{ off=sessionStorage.getItem('jelly_extbar')==='off'; }catch(e){}
+  if(off) return;
+  // '카카오톡으로 / 라인으로' — 앞 글자 받침에 따라 '으로/로'가 갈린다
+  const last=who.charCodeAt(who.length-1)-0xAC00, jong=(last>=0&&last<11172)?last%28:0;
+  $('extWho').textContent=who+((jong===0||jong===8)?'로':'으로')+' 열렸어요.';
+  $('extBar').classList.remove('hide');
+  // 밖으로 넘겨 줄 길이 있는 경우(카톡·안드로이드)만 '열기'로 쓰고,
+  // 아이폰의 다른 앱에서는 주소 복사가 유일한 길이라 단추를 하나로 줄인다.
+  const canJump=/KAKAOTALK/i.test(UA)||isAndroid;
+  $('extOpenBtn').textContent=canJump?'🌐 브라우저로 열기':'🔗 주소 복사하기';
+  $('extOpenBtn').onclick=extOpen;
+  $('extCopyBtn').classList.toggle('hide',!canJump);
+  $('extCopyBtn').onclick=()=>copyText(location.href,'🔗 주소를 복사했어요!');
+  $('extCloseBtn').onclick=()=>{ $('extBar').classList.add('hide');
+    try{ sessionStorage.setItem('jelly_extbar','off'); }catch(e){} };
+})();
 
 // boot
 openStart();
