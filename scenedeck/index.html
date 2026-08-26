@@ -241,6 +241,17 @@ main{max-width:1180px;margin:0 auto;padding:42px 30px 96px}
 .lockrow input{margin-top:3px;flex:none}
 .lockrow b{color:var(--tx)}
 .lockrow code{font-size:11px}
+.bgnote{display:flex;gap:9px;align-items:baseline;flex-wrap:wrap;margin:14px 0 0;padding:11px 14px;
+  border:1px solid var(--line2);background:var(--s1);font-size:11.5px;line-height:1.65;color:var(--tx2)}
+.bgnote b{font-family:var(--disp);font-size:12px;color:var(--tx);letter-spacing:.02em;
+  border:1px solid var(--line2);padding:1px 7px;flex:none}
+.chgblk{border:1px solid var(--line2);background:var(--s1);padding:14px 16px 4px;margin:0 0 14px}
+.chgblk .camhd{margin-bottom:10px}
+.reffld>span{line-height:1.55}
+.reffld>span b{color:var(--sig);font-family:var(--mono);font-size:11px}
+.reffld input{font-family:var(--mono);font-size:12px}
+.cutbar .bgtag{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--onacc);
+  background:var(--acc);padding:1px 6px;flex:none}
 @media(max-width:860px){.g2,.g3,.g4{grid-template-columns:1fr}}
 
 label.f{display:block;margin-bottom:16px}
@@ -1021,16 +1032,24 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <h3>컷까지 한 번에 <span class="tagx">프롬프트 바로 쓰기</span></h3>
       <div class="row">
         <button class="btn pri" id="sc-allcuts">모든 씬을 컷으로 만들기</button>
-        <select id="sc-mode2" style="max-width:230px">
+        <select id="sc-mode2" style="max-width:250px">
+          <option value="beat">문장마다 한 컷 — 가장 잘게</option>
           <option value="split">문단 · 대사마다 한 컷</option>
           <option value="whole">씬 하나당 한 컷 (전문 통째로)</option>
         </select>
         <label class="chip on" id="sc-autochip"><input type="checkbox" id="sc-autoshot" checked style="width:auto;margin-right:5px">샷 · 조명 자동 배분</label>
+        <label class="chip on" id="sc-bgchip"><input type="checkbox" id="sc-bgfirst" checked style="width:auto;margin-right:5px">배경 컷 먼저</label>
+        <label class="chip on" id="sc-castchip"><input type="checkbox" id="sc-castfirst" checked style="width:auto;margin-right:5px">인물 컷 먼저</label>
+        <button class="btn" id="sc-bgall">이미 만든 씬에도 넣기</button>
         <button class="btn" id="sc-tomt">영문 칸 채우기</button>
         <button class="btn" data-go="prompt">프롬프트 뽑으러 가기</button>
         <div class="hsp"></div>
         <span class="mini" id="sc-allstat" style="margin:0"></span>
       </div>
+      <p class="mini"><b>배경 컷 먼저 · 인물 컷 먼저</b> — 각 씬의 맨 앞에
+      <b>인물이 없는 빈 공간</b> 컷 하나와, 그 씬에 나오는 <b>인물마다 단독 판</b>을 세웁니다.
+      배경과 인물을 먼저 확정해 두고 그 이미지를 뒤 컷들의 참조(<code>--sref</code> · <code>--oref</code>)로 물리면,
+      같은 씬 안에서 공간이나 얼굴이 매 컷 달라지는 사고를 막을 수 있어요.</p>
       <p class="mini"><b>문단 · 대사마다 한 컷</b>은 지문 문단 하나 = 컷 하나, 대사 한 줄 = 컷 하나로 잘게 나눕니다.
       <b>씬 하나당 한 컷</b>은 씬 전문을 합쳐 <b>프롬프트 한 개</b>로 만듭니다 — 한 장면을 한 장으로 뽑을 때 쓰세요.
       <b>샷 · 조명 자동 배분</b>을 켜두면 첫 컷은 장소를 보여주는 롱샷, 대사 컷은 인물 클로즈업, 조명은 씬의 시간대에 맞춰 채워져서
@@ -1184,6 +1203,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <div class="row" style="margin-bottom:11px">
         <select id="p-scene" style="max-width:360px"></select>
         <span class="mini" id="p-modelbl" style="margin:0 2px 0 6px;display:none">이 씬 나누기</span>
+        <label class="chip" id="p-mbeat" data-cmode="beat" style="display:none">문장마다 한 컷</label>
         <label class="chip" id="p-msplit" data-cmode="split" style="display:none">문단마다 한 컷</label>
         <label class="chip" id="p-mwhole" data-cmode="whole" style="display:none">씬 전문 한 컷</label>
         <span class="mini" id="p-scenehint" style="margin:0"></span>
@@ -1466,7 +1486,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v16 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v17 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -1954,7 +1974,8 @@ function blank(){
     style:{look:'실사 시네마틱',ar:'16:9 (가로)',palette:'',extra:'',mj:'--ar 16:9 --style raw',
            medium:'영화 스틸',cam:'',era:'',comp:'',lock:true,tool:'',
            neg:'text, watermark, extra fingers, deformed hands, blurry, lowres'},
-    chars:[],scenes:[],sel:{scene:'',cut:''}};
+    chars:[],scenes:[],sel:{scene:'',cut:''},
+    refs:{place:{},char:{}}};
 }
 let S=blank();
 
@@ -2233,7 +2254,12 @@ function autoTargets(){
   });
   S.scenes.forEach(s=>{
     add(s,'loc','locEn',`[data-sid="${s.id}"] [data-sf="locEn"]`);
-    s.cuts.forEach(c=>add(c,'desc','descEn',`[data-kid="${c.id}"] [data-kf="descEn"]`));
+    s.cuts.forEach(c=>{
+      add(c,'desc','descEn',    `[data-kid="${c.id}"] [data-kf="descEn"]`);
+      add(c,'face','faceEn',    `[data-kid="${c.id}"] [data-kf="faceEn"]`);
+      add(c,'outfit','outfitEn',`[data-kid="${c.id}"] [data-kf="outfitEn"]`);
+      add(c,'act','actEn',      `[data-kid="${c.id}"] [data-kf="actEn"]`);
+    });
   });
   if(S.quick){ add(S.quick,'desc','descEn','#q-descEn'); add(S.quick,'loc','locEn','#q-locEn'); }
   return T;
@@ -2533,6 +2559,13 @@ function renderChars(){
       </div>
       <p class="mini" style="margin:9px 0 0">캐릭터 시트는 <b>정면 마네킹 · 후면 · 얼굴 클로즈업</b> 세 장으로 따로 뽑습니다.
       전면·측면·후면·표정을 한 장에 몰아넣으면 AI가 <b>여러 명</b>으로 읽어서, 컷마다 얼굴이 딴 사람이 됩니다.</p>
+      <div class="grid g3" style="margin-top:12px">
+        <label class="f reffld" style="grid-column:span 2"><span>인물 참조 <b>--oref</b> — 인물 판을 뽑고 나온 이미지 주소를 넣으세요.
+          <b>이 인물이 나오는 모든 컷</b>에 자동으로 붙습니다</span>
+          <input type="text" data-coref="${c.id}" value="${esc((refsOf().char[c.id]||{}).oref||'')}" placeholder="https://…/character.png"></label>
+        <label class="f reffld"><span>닮음 정도 <b>--ow</b> <span class="k">1–1000 · 기본 100</span></span>
+          <input type="text" data-cow="${c.id}" value="${esc((refsOf().char[c.id]||{}).ow||'')}" placeholder="100"></label>
+      </div>
       <label class="f enfield" data-clockwrap="${c.id}" style="display:${c.lockManual?'block':'none'};margin-top:12px">
         <span>직접 작성 (비우면 자동 생성으로 돌아갑니다)</span>
         <textarea data-cf="lockManual" placeholder="영문으로 직접 쓰고 싶다면 여기에">${esc(c.lockManual)}</textarea>
@@ -2556,7 +2589,15 @@ function renderChars(){
 }
 $('addchar').addEventListener('click',()=>{ S.chars.push(newChar()); save(); renderChars(); });
 function onCharEdit(e){
-  const f=e.target.dataset.cf; if(!f) return;
+  const t=e.target;
+  if(t.dataset.coref!==undefined||t.dataset.cow!==undefined){
+    const id=t.dataset.coref||t.dataset.cow, R=refsOf();
+    R.char[id]=R.char[id]||{};
+    if(t.dataset.coref!==undefined) R.char[id].oref=t.value.trim();
+    else R.char[id].ow=t.value.trim();
+    save(); livePrompt(); return;
+  }
+  const f=t.dataset.cf; if(!f) return;
   const card=e.target.closest('[data-cid]'); if(!card) return;
   const c=S.chars.find(x=>x.id===card.dataset.cid); if(!c) return;
   c[f]=e.target.value;
@@ -2613,7 +2654,8 @@ $('charlist').addEventListener('click',e=>{
 function newScene(){ return {id:nid('s'),heading:'',loc:'',locEn:'',time:'',summary:'',script:'',cuts:[]}; }
 function newCut(){
   return {id:nid('k'),desc:'',descEn:'',shot:'',angle:'',move:'',lens:'',light:'',mood:'',
-    speed:'',fx:'',trig:'',emo:'',keep:'',endp:'',use:'',
+    speed:'',fx:'',trig:'',emo:'',keep:'',endp:'',use:'',bg:false,cast:'',
+    face:'',faceEn:'',outfit:'',outfitEn:'',act:'',actEn:'',
     dur:4,chars:[],dialogue:'',audio:'',note:'',hasImg:false,open:true};
 }
 function allCuts(){ const r=[]; S.scenes.forEach(s=>s.cuts.forEach(c=>r.push({s,c}))); return r; }
@@ -2646,6 +2688,10 @@ function renderScenes(){
         <label class="f"><span>시간대</span><select data-sf="time">${opts(TIME,s.time)}</select></label>
       </div>
       <div class="row" style="margin:-6px 0 12px"><button class="btn sm" data-strans="${s.id}">장소 한글 → 영문</button></div>
+      <label class="f reffld"><span>이 장소 참조 <b>--sref</b> — 배경 판을 뽑고 나온 코드나 이미지 주소를 넣으세요.
+        <b>같은 장소의 모든 컷</b>에 자동으로 붙습니다</span>
+        <input type="text" data-splace="${esc(placeKey(s))}" value="${esc((refsOf().place[placeKey(s)]||{}).sref||'')}"
+               placeholder="1234567890  또는  https://…/plate.png"></label>
       <label class="f"><span>씬 요약</span><textarea data-sf="summary" placeholder="이 씬에서 무슨 일이 일어나는가"></textarea></label>
 
       <div class="rule">컷 ${s.cuts.length}개</div>
@@ -2668,7 +2714,7 @@ function renderScenes(){
   paintProg();
 }
 function fillCutFields(cc,c){
-  ['desc','descEn','dialogue','audio','note'].forEach(k=>{
+  ['desc','descEn','dialogue','audio','note','face','faceEn','outfit','outfitEn','act','actEn'].forEach(k=>{
     const el=cc.querySelector(`[data-kf="${k}"]`); if(el) el.value=c[k]||'';
   });
 }
@@ -2681,6 +2727,7 @@ function cutHTML(s,c,si,ci){
       <span class="caret">▶</span>
       <div class="slate cut">${si+1}-${ci+1}</div>
       ${c.hasImg?`<img class="tn" data-imgof="${c.id}" alt="">`:''}
+      ${c.bg?'<span class="bgtag">배경</span>':c.cast?'<span class="bgtag">인물</span>':''}
       <div class="sum">${esc((c.desc||c.descEn||'').slice(0,68))||'<i>내용 없음</i>'}</div>
       <div class="meta">${esc(meta||'—')} · ${c.dur||0}s</div>
     </div>
@@ -2693,6 +2740,10 @@ function cutBodyHTML(s,c){
   const ci=s.cuts.indexOf(c);
   const chips=S.chars.map(ch=>`<span class="chip${c.chars.includes(ch.id)?' on':''}" data-kchar="${c.id}|${ch.id}">${esc(ch.name||'이름없음')}</span>`).join('');
   return `
+      ${c.bg?`<div class="bgnote"><b>배경 판</b>이 컷을 먼저 뽑고, 나온 이미지를 뒤 컷들의 참조로 물리세요.
+        인물 고정 블록은 들어가지 않고 <code>no people</code>이 자동으로 붙습니다.</div>`
+        :c.cast?`<div class="bgnote"><b>인물 판</b>이 인물을 먼저 확정하고, 나온 이미지를 뒤 컷들의 인물 참조(<code>--oref</code>)로 물리세요.
+        이 씬의 의상·조명을 여기서 미리 맞춰 봅니다.</div>`:''}
       <div class="grid g2" style="margin-top:14px">
         <label class="f"><span>컷 내용 (한글 지문)</span><textarea data-kf="desc" placeholder="지훈이 우산 없이 골목을 걸어 나온다. 뒤를 한 번 돌아본다."></textarea></label>
         <label class="f enfield"><span>컷 내용</span><textarea data-kf="descEn" placeholder="a man walks out of the alley without an umbrella, glancing back once"></textarea></label>
@@ -2725,6 +2776,21 @@ function cutBodyHTML(s,c){
           <label class="f"><span>④ 종료 지점 <b style="color:var(--sig)">영상</b></span><select data-kf="endp">${opts(ENDP,c.endp)}</select></label>
         </div>
         <p class="camwhy" data-kwhy="${c.id}">${esc(MOVE_WHY[c.move]||'')}</p>
+      </div>
+      <div class="chgblk">
+        <div class="camhd"><b>이 컷에서만 바뀌는 것</b><span>적는 즉시 프롬프트가 다시 조립됩니다 · 캐릭터 원본은 건드리지 않아요</span></div>
+        <div class="grid g2">
+          <label class="f"><span>얼굴 · 표정 변화</span><input type="text" data-kf="face" placeholder="눈물 자국, 뺨에 튄 피"></label>
+          <label class="f enfield"><span>얼굴 · 표정 변화</span><input type="text" data-kf="faceEn" placeholder="tear streaks, blood spattered on the cheek"></label>
+        </div>
+        <div class="grid g2">
+          <label class="f"><span>의상 변화</span><input type="text" data-kf="outfit" placeholder="젖은 순사 제복, 찢어진 소매"></label>
+          <label class="f enfield"><span>의상 변화</span><input type="text" data-kf="outfitEn" placeholder="soaked police uniform, torn sleeve"></label>
+        </div>
+        <div class="grid g2">
+          <label class="f"><span>행동 변화</span><input type="text" data-kf="act" placeholder="칼을 천천히 들어 올린다"></label>
+          <label class="f enfield"><span>행동 변화</span><input type="text" data-kf="actEn" placeholder="slowly raises the blade"></label>
+        </div>
       </div>
       <div class="grid g3">
         <label class="f"><span>렌즈</span><select data-kf="lens">${opts(LENS,c.lens)}</select></label>
@@ -2764,6 +2830,11 @@ $('expandall').addEventListener('click',()=>{
   allCuts().forEach(x=>x.c.open=anyClosed); save(); renderScenes();
 });
 function onSceneEdit(e){
+  if(e.target.dataset.splace!==undefined){
+    const R=refsOf(), k=e.target.dataset.splace;
+    R.place[k]=R.place[k]||{}; R.place[k].sref=e.target.value.trim();
+    save(); livePrompt(); return;
+  }
   const card=e.target.closest('[data-sid]'); if(!card) return;
   const s=S.scenes.find(x=>x.id===card.dataset.sid); if(!s) return;
   if(e.target.dataset.sf){ s[e.target.dataset.sf]=e.target.value; save(); return; }
@@ -2778,7 +2849,11 @@ function onSceneEdit(e){
       const hi=cc.querySelector(`[data-kuse="${c.id}"]`); if(hi) hi.textContent=useHint(c.use);
     }
     if(f==='move'){ const wy=cc.querySelector(`[data-kwhy="${c.id}"]`); if(wy) wy.textContent=MOVE_WHY[c.move]||''; }
+    if(/^(face|outfit|act)$/.test(f)) autoMTKick();          // 한글을 쳤으면 영문 칸을 채워 둔다
+    if(/^(face|outfit|act)En$/.test(f)) delete c[f+'Auto'];   // 손으로 고친 영문은 이제 안 건드린다
     save();
+    // 지금 고르고 있는 컷이면 프롬프트를 그 자리에서 다시 조립한다
+    if(S.sel.cut===c.id) livePrompt();
     const bar=cc.querySelector('.cutbar');
     if(bar){
       bar.querySelector('.sum').innerHTML=esc((c.desc||c.descEn||'').slice(0,68))||'<i>내용 없음</i>';
@@ -3604,7 +3679,8 @@ function parseLoose(text,mode){
    kind:'marked' — S#1 · 씬 1 · INT. 처럼 표시가 붙은 것
    kind:'bare'   — 그냥 「1.」 「12)」 */
 function headOf(raw){
-  const line=headNorm(raw);
+  // 「S#2. 타이틀 시퀀스 ⇥ ■ 나레이션은…」 — 탭 뒤 메모는 제목이 아니다
+  const line=firstCol(headNorm(raw)).trim();
   const ie=line.match(INTEXT_RE);
   if(ie){ const {loc,time}=splitHeading(ie[2]||''); return {kind:'marked',heading:line,loc,time}; }
   const m=line.match(HEAD_RE);
@@ -4161,17 +4237,118 @@ $('sc-prev').addEventListener('click',()=>scStep(-1));
 $('sc-next').addEventListener('click',()=>scStep(1));
 
 /* 본문을 컷으로 쪼개기 — 대사 한 줄 = 컷 하나, 지문 문단 = 컷 하나 */
-function cutBlocks(script){
-  const blocks=[]; let buf=[];
-  scriptLines(script||'').forEach(l=>{
-    if(l.type==='dlg'){
-      if(buf.length){ blocks.push({desc:buf.join(' ').trim(),dialogue:''}); buf=[]; }
-      blocks.push({desc:'',dialogue:l.who+': '+l.text,who:l.who});
-    }else if(!l.text){
-      if(buf.length){ blocks.push({desc:buf.join(' ').trim(),dialogue:''}); buf=[]; }
-    }else buf.push(l.text);
+/* 지문 한 문단 안에는 보통 여러 개의 「샷」이 들어 있다.
+
+     무거운 군화 소리가 들려온다. 또각— 또각—
+     한 남자가 뒷짐을 진 채 계단을 오른다.
+     복도 양옆 철문 틈마다 억눌린 신음이 새어 나온다. 남자가 걸음을 멈춘다.
+
+   이건 컷 하나가 아니라 넷이다. 문단으로만 쪼개면 통째로 한 컷이 되어
+   프롬프트를 쓸 수 없다. 그래서 문장 단위로 한 번 더 쪼갠다. */
+function sentences(t){
+  const out=[]; const str=String(t||''); let buf='';
+  for(let i=0;i<str.length;i++){
+    buf+=str[i];
+    if(/[.!?…]/.test(str[i])){
+      while(i+1<str.length && /[.!?…]/.test(str[i+1])) buf+=str[++i];   // 「……」 는 한 덩어리
+      while(i+1<str.length && /["'”’)\]』」]/.test(str[i+1])) buf+=str[++i]; // 닫는 따옴표까지
+      if(buf.trim()) out.push(buf.trim());
+      buf='';
+    }
+  }
+  if(buf.trim()) out.push(buf.trim());
+  return out;
+}
+/* 「또각— 또각—」 「끼이익—」 「쿵」 같은 소리·효과 조각은 앞 문장에 붙인다.
+   따로 떼면 그릴 것이 없는 컷이 된다. 단, 「뚝.」처럼 혼자 한 문단을 차지하면
+   그건 작가가 일부러 세워둔 인서트이므로 그대로 둔다. */
+function beatsOf(text){
+  const parts=sentences(text);
+  if(parts.length<2) return parts.length?parts:[];
+  const out=[];
+  parts.forEach(p=>{
+    const bare=p.replace(/[\s.,—–…!?~ㆍ·"'”’()\[\]]/g,'');
+    const soundy = bare.length<=6 && !/(다|요|까|죠|네|군|는다|은다|자|라|마)$/.test(bare);
+    if(soundy && out.length) out[out.length-1]+=' '+p;
+    else out.push(p);
   });
-  if(buf.length) blocks.push({desc:buf.join(' ').trim(),dialogue:''});
+  return out;
+}
+/* 대본 끝에 붙는 역주·해설을 컷으로 만들지 않는다.
+     ▶ 생간(센가리) — 한국에서는 소를 도축한 날 … 식문화가 있습니다.
+   화면에 그릴 것이 없는 글이라 컷이 되면 프롬프트가 통째로 망가진다.
+   구분은 문체다 — 지문은 한다체(오른다·멈춘다), 역주는 합쇼체(있습니다·합니다).
+   다만 존댓말 대사도 합쇼체라, 「▶ ※ ■」 같은 표시가 먼저 나온 뒤에만 적용한다.
+   (표시가 붙어도 「▶ CUT TO - 수술실 안」처럼 짧고 한다체면 컷으로 남긴다) */
+const NOTE_MARK=/^[▶※■☞✱◆*]+\s*/;
+/* 합쇼체 전체 — 입니다·습니다·합니다뿐 아니라 받아들여집니다·불립니다까지.
+   지문(한다체)과 해설(합쇼체)을 가르는 잣대라서 넓게 잡아야 한다.
+   존댓말 대사도 여기 걸리지만, 이 잣대는 「▶ 표시가 먼저 나온 뒤」에만 쓴다. */
+const POLITE=/니다[.!?…]*$/;
+/* 같은 「▶」로 시작해도 둘은 완전히 다르다.
+     ▶ CUT TO - 수감실     → 화면이 바뀌는 지점. 컷이다.
+     ▶ 순사(巡査)          → 용어 해설의 머리말. 컷이 아니다.
+   전환 낱말이 붙어 있는지로 가른다. */
+const TRANS_LINE=/^[▶※■☞✱◆*]*\s*(CUT\s*TO\s*BACK|CUT\s*BACK\s*TO|MATCH\s*CUT\s*TO|SMASH\s*CUT\s*TO|JUMP\s*CUT\s*TO|INTER\s?CUT|FLASH\s?BACK|DISSOLVE\s*TO|CUT\s*TO|FADE\s*IN|FADE\s*OUT)\b(.*)$/i;
+function transLine(t){
+  const m=TRANS_LINE.exec(String(t||'').trim());
+  if(!m) return null;
+  const tail=(m[2]||'').replace(/^[\s\-–—:.]+/,'').replace(/[.\s]+$/,'').trim();
+  if(/^BLACK$/i.test(tail)) return {desc:'암전 — 화면이 검게 꺼진다'};
+  if(!tail || /^(END|끝)$/i.test(tail)) return {desc:''};   // 표시만 있고 그릴 것이 없다
+  return {desc:tail};
+}
+/* 「▶」가 붙었는데 전환도 아니고, 본인이나 이어지는 몇 줄이 합쇼체면 용어 해설이다.
+   해설의 첫 줄이 쉼표로 끊기는 경우가 있어 한 줄만 봐서는 놓친다. */
+function isNote(t,next){
+  const v=String(t||'').trim();
+  if(!NOTE_MARK.test(v)) return false;
+  if(transLine(v)) return false;
+  const body=v.replace(NOTE_MARK,'').trim();
+  if(POLITE.test(body) || body.length>60) return true;
+  return (next||[]).some(x=>POLITE.test(String(x||'').trim()));
+}
+/* fine=true 면 문단을 문장(비트)까지 쪼갠다 */
+function cutBlocks(script,fine){
+  const blocks=[]; let buf=[]; let seenNote=false;
+  const flush=()=>{
+    if(!buf.length) return;
+    const lines=buf.slice(); buf=[];
+    if(fine){
+      // 대본에서 줄바꿈은 뜻이 있다. 줄을 먼저 지키고, 그 안에서 문장으로 쪼갠다.
+      // 그래야 「…들려온다. 또각— 또각—」 처럼 소리가 앞 문장에 붙는다.
+      lines.forEach(ln=>beatsOf(ln).forEach(d=>{ if(d) blocks.push({desc:d,dialogue:''}); }));
+    }else{
+      const para=lines.join(' ').trim();
+      if(para) blocks.push({desc:para,dialogue:''});
+    }
+  };
+  const rows=scriptLines(script||'');
+  const nextTexts=(i,n)=>{ const o=[]; for(let j=i+1;j<rows.length&&o.length<n;j++) if(rows[j].text) o.push(rows[j].text); return o; };
+  rows.forEach((l,i)=>{
+    if(l.type==='dlg'){
+      flush();
+      blocks.push({desc:'',dialogue:l.who+': '+l.text,who:l.who});
+      return;
+    }
+    if(!l.text){ flush(); return; }
+    if(isNote(l.text,nextTexts(i,3))){ flush(); seenNote=true; return; }
+    if(seenNote){
+      // 역주가 시작되면 지문이 다시 나올 때까지 건너뛴다.
+      // 해설 문장은 합쇼체이거나 쉼표로 이어지고, 지문은 한다체로 끝난다.
+      const tt=l.text.trim();
+      if(!(/다[.!?…]*$/.test(tt) && !POLITE.test(tt))){ flush(); return; }
+      seenNote=false;
+    }
+    const tr=transLine(l.text);
+    if(tr){                       // 「▶ CUT TO - 수감실」 → 「수감실」
+      flush(); seenNote=false;
+      if(tr.desc) blocks.push({desc:tr.desc,dialogue:''});
+      return;
+    }
+    buf.push(l.text);
+  });
+  flush();
   return blocks.filter(b=>b.desc||b.dialogue);
 }
 
@@ -4181,12 +4358,38 @@ function josa(w){
   if(!(c>=0xac00&&c<=0xd7a3)) return '';
   return (c-0xac00)%28 ? '이' : '가';
 }
+/* 대본은 등장인물 목록엔 「백동훈」으로 적고 지문에선 「동훈」으로 쓴다.
+   성을 뗀 형태도 같은 사람으로 본다. */
+const SURNAME=/^[김이박최정강조윤장임한오서신권황안송전홍고문양손배백허유남심노하곽성차주우구나민진지엄채원천방공]$/;
+function nameKeys(ch){
+  const n=String(ch&&ch.name||'').trim();
+  if(!n) return [];
+  const k=[n];
+  if(/^[가-힣]{3}$/.test(n) && SURNAME.test(n[0])) k.push(n.slice(1));
+  return k;
+}
+function charsIn(text){
+  const hay=String(text||'');
+  return S.chars.filter(ch=>nameKeys(ch).some(k=>k&&hay.indexOf(k)>=0));
+}
+/* 지문에 사람이 나오는가 — 컷의 용도와 샷을 정하는 데 쓴다.
+   등록된 캐릭터가 가장 확실하고, 그다음이 따옴표로 감싼 이름, 그다음이 일반 명사다. */
+const PERSON_NOUN=/(남자|여자|사내|소년|소녀|아이|노인|사람|인물|누군가|그녀|형사|순사|의사|간호사|경관|병사|군인|투사|아버지|어머니|아들|딸|할아버지|할머니|손자|손녀)/;
+const QUOTED_NAME=/[‘'"“]\s*[가-힣]{2,5}\s*[’'"”]/;
+function whoLevel(text){
+  const t=String(text||'');
+  if(charsIn(t).length) return 2;
+  if(QUOTED_NAME.test(t)) return 2;
+  if(PERSON_NOUN.test(t)) return 2;
+  // 「동훈은 …」 「남자가 …」 — 문장 첫머리의 주어. 사물일 수도 있어 약한 신호로 둔다.
+  if(/^[가-힣]{2,4}(은|는|이|가)\s/.test(t)) return 1;
+  return 0;
+}
 /* 대사만 있는 컷은 「무엇을 그릴지」가 비어 프롬프트가 장소·카메라만 남는다.
    말하는 사람을 지문으로 세워주고, 이름이 캐릭터와 맞으면 외형 고정 블록까지 연결한다. */
 function fleshOut(c,who){
   if(!c.desc && who) c.desc = who+josa(who)+' 말하는 모습';
-  const hay=(c.desc||'')+' '+(c.dialogue||'');
-  const ids=S.chars.filter(ch=>ch.name&&hay.indexOf(ch.name)>=0).map(ch=>ch.id);
+  const ids=charsIn((c.desc||'')+' '+(c.dialogue||'')).map(ch=>ch.id);
   if(ids.length) c.chars=[...new Set(c.chars.concat(ids))];
 }
 
@@ -4211,18 +4414,29 @@ function autoDirect(scene,cuts,mode){
     c.dur=Math.max(4,Math.min(20,Math.round((c.desc||'').length/12)||6));
     return;
   }
+  // 컷의 「용도」를 먼저 정하고 거기에서 샷·렌즈·길이가 따라 나온다 (가이드북 12:38)
   cuts.forEach((c,i)=>{
-    const last=(i===cuts.length-1), dlg=!!c.dialogue;
+    const last=(i===cuts.length-1), dlg=!!c.dialogue, d=(c.desc||'').trim();
+    const lv=whoLevel(d), hasWho=lv>=2;
     if(dlg){
-      c.shot='미디엄 클로즈업'; c.lens='85mm 인물'; c.move='고정';
+      c.use='감정선 · 대사'; c.shot='미디엄 클로즈업'; c.lens='85mm 인물'; c.move='고정';
       const n=c.dialogue.replace(/^[^:]*:\s*/,'').length;
-      c.dur=Math.max(2,Math.min(8,Math.round(n/6)||3));
+      c.dur=Math.max(3,Math.min(10,Math.round(n/6)||4));
     }else if(i===0){
-      c.shot='롱샷 (풀샷)'; c.lens='24mm 광각'; c.move='고정'; c.dur=5;
-    }else if(last){
-      c.shot='클로즈업'; c.lens='85mm 인물'; c.move='푸시 인'; c.dur=4;
+      c.use='설정샷 (장소 소개)'; c.shot='설정샷 (장소 소개)'; c.lens='24mm 광각'; c.move='고정'; c.dur=6;
+    }else if(last && hasWho){
+      c.use='감정선 · 대사'; c.shot='클로즈업'; c.lens='85mm 인물'; c.move='푸시 인'; c.dur=7;
+    }else if(hasWho){
+      // 인물이 나오는 문장은 아무리 짧아도 인서트가 아니다 — 「남자가 걸음을 멈춘다.」
+      c.use='인물 이동 · 액션'; c.shot='미디엄샷'; c.lens='35mm'; c.move='고정'; c.dur=5;
+    }else if(d.length<=24){
+      // 「뚝.」 「바닥으로 떨어지는 핏방울.」 — 사물·소리 인서트
+      c.use='인서트 · 사물 클로즈업'; c.shot='인서트'; c.lens='마크로'; c.move='고정'; c.dur=3;
+    }else if(lv===1){
+      c.use='인물 이동 · 액션'; c.shot='미디엄샷'; c.lens='35mm'; c.move='고정'; c.dur=5;
     }else{
-      c.shot='미디엄샷'; c.lens='35mm'; c.move='고정'; c.dur=4;
+      // 인물 없이 긴 문장 — 공간·분위기를 보여주는 자리
+      c.use='설정샷 (장소 소개)'; c.shot='미디엄 롱샷'; c.lens='24mm 광각'; c.move='팬'; c.dur=5;
     }
     c.angle='아이레벨';
     c.light=lm.light;
@@ -4230,11 +4444,104 @@ function autoDirect(scene,cuts,mode){
   });
 }
 
+/* =========================================================
+   일관성 — 한 번 만든 배경·인물을 이어지는 씬들이 물려받는다.
+
+   같은 장소가 여러 씬에 걸쳐 나온다(백동성의 집 — 외관 · 현관 · 부엌 · 거실).
+   씬마다 배경을 새로 뽑으면 같은 집이 매번 다른 집이 된다.
+   그래서 ① 같은 장소의 배경 판은 한 번만 만들고
+        ② 거기서 나온 참조 코드를 그 장소의 모든 컷에 자동으로 붙인다.
+   인물도 같다 — 인물 판에서 나온 이미지를 --oref 로 물린다.
+   ========================================================= */
+function refsOf(){
+  if(!S.refs) S.refs={place:{},char:{}};
+  if(!S.refs.place) S.refs.place={};
+  if(!S.refs.char)  S.refs.char={};
+  return S.refs;
+}
+function placeKey(s){
+  return String((s&&(s.loc||s.heading))||'').trim().replace(/\s+/g,' ').toLowerCase();
+}
+/* 같은 장소의 배경 판이 이미 어느 씬엔가 있으면 다시 만들지 않는다 */
+function bgDone(s){
+  const k=placeKey(s); if(!k) return false;
+  return S.scenes.some(x=>x.cuts.some(c=>c.bg) && placeKey(x)===k);
+}
+/* 파라미터 한 개를 갈아끼운다 — 전역 값이 있어도 이 컷의 참조가 이긴다 */
+function withParam(p,flag,val){
+  let out=String(p||'').replace(new RegExp('\\s*'+flag+'\\s+[^\\s-][^\\s]*','g'),'');
+  return (val? out+' '+flag+' '+val : out).replace(/\s+/g,' ').trim();
+}
+function refParams(s,c,base){
+  const R=refsOf(); let p=base;
+  const pl=R.place[placeKey(s)]||{};
+  if(pl.sref) p=withParam(p,'--sref',pl.sref);
+  if(!c.bg){
+    const ids=cutChars(c);
+    if(ids.length===1){
+      const o=R.char[ids[0].id]||{};
+      if(o.oref){ p=withParam(p,'--oref',o.oref); if(o.ow) p=withParam(p,'--ow',o.ow); }
+    }
+  }
+  return p;
+}
+/* 미드저니가 아닌 도구에는 코드가 없으니 말로 적어 준다 */
+function refNote(s,c){
+  const R=refsOf(), out=[];
+  if((R.place[placeKey(s)]||{}).sref) out.push('the established background plate for this location');
+  if(!c.bg){
+    const ids=cutChars(c);
+    ids.forEach(ch=>{ if((R.char[ch.id]||{}).oref) out.push('the established character plate for '+(ch.name||'the character')); });
+  }
+  return out.length? 'Match '+out.join(' and ')+'.' : '';
+}
+/* 「배경 먼저」 — 씬의 맨 앞에 인물이 없는 빈 공간 컷을 하나 세운다.
+   AI로 만들 때는 배경을 먼저 확정하고 그 이미지를 참조로 물려야
+   같은 씬 안에서 공간이 매 컷 달라지는 사고를 막을 수 있다.
+   이 컷은 인물 고정 블록을 넣지 않고, 사람이 나오지 않게 배제 목록을 붙인다. */
+function bgCut(s){
+  const c=newCut();
+  const where=(s.loc||'').trim() || (s.heading||'').replace(/^\S+\s*[-–—]\s*/,'').trim() || '이 장소';
+  c.bg=true;
+  c.desc = where+' — 인물이 없는 빈 공간, 배경만';
+  const whereEn=(s.locEn||'').trim();
+  if(whereEn) c.descEn='empty '+whereEn+', no people, the location itself';
+  c.use='설정샷 (장소 소개)';
+  c.shot='설정샷 (장소 소개)'; c.angle='아이레벨'; c.lens='24mm 광각'; c.move='고정';
+  c.dur=6; c.open=false; c.chars=[];
+  const lm=lightFor(s.time);
+  c.light=lm.light; if(lm.mood) c.mood=lm.mood;
+  c.note='배경 판 — 이 컷을 먼저 뽑고, 그 이미지를 뒤 컷들의 참조(--sref · 이미지 프롬프트)로 쓰세요';
+  return c;
+}
+/* 「인물 먼저」 — 그 씬에 나오는 인물마다 단독 판을 하나씩 세운다.
+   배경과 같은 이치다. 인물을 먼저 확정해 두고 그 이미지를 참조(--oref)로 물려야
+   컷마다 얼굴이 달라지지 않는다. 이 컷에서 이 씬의 의상·조명을 미리 맞춰 본다. */
+function castCut(s,ch){
+  const c=newCut();
+  c.cast=ch.id; c.chars=[ch.id];
+  c.desc=(ch.name||'인물')+' — 단독 인물 판. 전신, 배경은 단순하게.';
+  c.descEn='standing alone, full body, plain neutral background';
+  c.shot='풀샷'; c.angle='아이레벨'; c.lens='50mm 표준'; c.move='고정';
+  c.dur=4; c.open=false;
+  const lm=lightFor(s.time);
+  c.light=lm.light; if(lm.mood) c.mood=lm.mood;
+  c.note='인물 판 — 먼저 뽑아 두고, 그 이미지를 뒤 컷들의 인물 참조(--oref · 이미지 프롬프트)로 쓰세요';
+  return c;
+}
+function castCutsFor(s,cuts){
+  const seen=[], out=[];
+  (cuts||[]).forEach(c=>(c.chars||[]).forEach(id=>{ if(seen.indexOf(id)<0) seen.push(id); }));
+  seen.forEach(id=>{ const ch=S.chars.find(x=>x.id===id); if(ch) out.push(castCut(s,ch)); });
+  return out;
+}
 /* 씬 하나를 컷으로 채운다. 이미 컷이 있으면 건드리지 않는다(force로 무시).
-   mode='split' 문단·대사마다 한 컷 / mode='whole' 씬 전체를 한 컷으로. */
+   mode='beat'  문장마다 한 컷 (가장 잘게)
+   mode='split' 문단·대사마다 한 컷
+   mode='whole' 씬 전체를 한 컷으로. */
 function fillCuts(s,auto,force,mode){
   if(!force && s.cuts.length) return 0;
-  const made=cutBlocks(s.script);
+  const made=cutBlocks(s.script, mode==='beat');
   let cuts;
   if(mode==='whole'){
     const desc=made.map(b=>b.desc).filter(Boolean).join(' ') || (s.summary||'').trim();
@@ -4252,9 +4559,15 @@ function fillCuts(s,auto,force,mode){
     });
   }
   if(auto) autoDirect(s,cuts,mode);
+  const pre=[];
+  if(bgFirst()   && !s.cuts.some(c=>c.bg) && !bgDone(s)) pre.push(bgCut(s));
+  if(castFirst() && !s.cuts.some(c=>c.cast)) castCutsFor(s,cuts).forEach(x=>pre.push(x));
+  cuts=pre.concat(cuts);
   s.cuts=s.cuts.concat(cuts);
   return cuts.length;
 }
+function bgFirst(){   const el=$('sc-bgfirst');   return !el || el.checked; }
+function castFirst(){ const el=$('sc-castfirst'); return !el || el.checked; }
 
 $('sc-tocuts').addEventListener('click',()=>{
   const s=S.scenes.find(x=>x.id===scCur);
@@ -4287,6 +4600,27 @@ $('sc-allcuts').addEventListener('click',()=>{
   paintOneshot();
   toast(`씬 ${done}개에서 컷 ${cuts}개를 만들었어요 ✓`,
     {label:'되돌리기',fn:()=>{ S.scenes=before; save(); renderAll(); paintOneshot(); toast('되돌렸어요 ✓'); }});
+});
+$('sc-bgall').addEventListener('click',()=>{
+  const before=JSON.parse(JSON.stringify(S.scenes));
+  let nb=0,nc=0;
+  S.scenes.forEach(s=>{
+    if(!s.cuts.length) return;
+    const pre=[];
+    if(castFirst() && !s.cuts.some(c=>c.cast)){ const cc=castCutsFor(s,s.cuts); cc.forEach(x=>pre.push(x)); nc+=cc.length; }
+    if(bgFirst()   && !s.cuts.some(c=>c.bg)){ pre.unshift(bgCut(s)); nb++; }
+    if(pre.length) s.cuts=pre.concat(s.cuts);
+  });
+  if(!nb&&!nc){ toast(S.scenes.length?'이미 다 들어가 있어요':'먼저 씬을 만들어주세요'); return; }
+  save(); renderAll(); paintOneshot();
+  toast(`배경 컷 ${nb}개 · 인물 컷 ${nc}개를 맨 앞에 넣었어요 ✓`,
+    {label:'되돌리기',fn:()=>{ S.scenes=before; save(); renderAll(); paintOneshot(); toast('되돌렸어요 ✓'); }});
+});
+$('sc-bgfirst').addEventListener('change',()=>{
+  $('sc-bgchip').classList.toggle('on',$('sc-bgfirst').checked);
+});
+$('sc-castfirst').addEventListener('change',()=>{
+  $('sc-castchip').classList.toggle('on',$('sc-castfirst').checked);
 });
 $('sc-tomt').addEventListener('click',()=>$('openmt').click());
 $('sc-autoshot').addEventListener('change',()=>{
@@ -4449,7 +4783,7 @@ function renderCutNav(){
   // 씬 고르개 — 컷이 없어도 씬은 여기서 고를 수 있어야 한다
   if(!S.scenes.length){
     sel.innerHTML='<option>씬이 없습니다</option>'; sel.disabled=true;
-    ['p-modelbl','p-msplit','p-mwhole'].forEach(id=>$(id).style.display='none');
+    ['p-modelbl','p-mbeat','p-msplit','p-mwhole'].forEach(id=>$(id).style.display='none');
     hint.textContent='';
     nav.innerHTML='<span class="mini" style="margin:0 8px 0 0">아직 씬도 컷도 없어요 —</span>'
       +'<button class="btn sm pri" data-pmset="quick">빠른 입력으로 바로 뽑기</button>'
@@ -4467,12 +4801,14 @@ function renderCutNav(){
   // 두 방식을 언제든 오갈 수 있게 — 눌러보고 마음에 안 들면 바로 되돌아온다
   const show=hasText?'':'none';
   $('p-modelbl').style.display=show;
+  $('p-mbeat').style.display=show;
   $('p-msplit').style.display=show; $('p-mwhole').style.display=show;
-  const mode=(cur&&cur.cutMode)|| (bare?'':'split');
+  const mode=(cur&&cur.cutMode)|| (bare?'':'beat');
+  $('p-mbeat').classList.toggle('on',mode==='beat');
   $('p-msplit').classList.toggle('on',mode==='split');
   $('p-mwhole').classList.toggle('on',mode==='whole');
   hint.textContent = bare
-    ? (hasText ? '아직 컷이 없어요 — 위에서 나누는 방식을 고르세요'
+    ? (hasText ? '아직 컷이 없어요 — 위에서 나누는 방식을 고르세요 (문장마다가 제일 잘게 나뉩니다)'
                : '이 씬엔 본문이 없어요. 「대본 · 컷」에서 원고를 넣어주세요')
     : (hasText ? '두 방식을 눌러가며 비교해도 됩니다 — 고친 내용은 각각 기억해 둡니다' : '');
 
@@ -4517,7 +4853,7 @@ $('p-scene').addEventListener('change',()=>{
 const cutMemo=new Map();
 function setSceneMode(mode){
   const s=S.scenes.find(x=>x.id===$('p-scene').value); if(!s) return;
-  const now=s.cutMode||'split';
+  const now=s.cutMode||'beat';
   if(s.cuts.length && now===mode){ toast('이미 그 방식이에요'); return; }
   if(s.cuts.length) cutMemo.set(s.id+'|'+now, JSON.parse(JSON.stringify(s.cuts)));
 
@@ -4532,9 +4868,9 @@ function setSceneMode(mode){
   s.cutMode=mode;
   S.sel={scene:s.id,cut:s.cuts[0].id};
   save(); renderAll(); renderPrompt();
-  toast(mode==='whole'
-    ? `씬 전문을 컷 하나로 — 다시 「문단마다 한 컷」을 누르면 돌아옵니다`
-    : `문단마다 한 컷 — 컷 ${s.cuts.length}개`);
+  toast(mode==='whole' ? '씬 전문을 컷 하나로 — 다른 방식을 누르면 돌아옵니다'
+      : mode==='beat'   ? `문장마다 한 컷 — 컷 ${s.cuts.length}개`
+      :                   `문단마다 한 컷 — 컷 ${s.cuts.length}개`);
 }
 document.addEventListener('click',e=>{
   const c=e.target.closest('[data-cmode]'); if(!c) return;
@@ -4599,6 +4935,10 @@ function camFour(c){
 /* 프롬프트 락 — 시트를 규격대로 만들어도 프롬프트가 열려 있으면
    모델은 인물을 하나 더 만들어 넣는다. 인원수 · 배경 · 배제를 함께 잠근다. */
 function lockBits(c){
+  // 배경 판은 락 설정과 무관하게 사람이 나오면 안 된다 — 그게 이 컷의 존재 이유다
+  if(c && c.bg)
+    return {body:['empty location, no people, no characters, the space itself'],
+            no:['person','people','crowd','figure','silhouette','human','text','watermark']};
   if(S.style.lock===false) return {body:[],no:[]};
   const n=cutChars(c).length;
   const no=['extra person','duplicate face','multiple views','collage','text','watermark'];
@@ -4607,11 +4947,27 @@ function lockBits(c){
   return {body,no};
 }
 /* ② 스토리 중 인물 — 외형 고정 블록 + 그 컷에서의 감정 */
+/* 이 컷에서만 바뀌는 것 — 캐릭터 원본은 그대로 두고 프롬프트에만 얹는다.
+   얼굴·의상은 고정 블록 바로 뒤에 붙어야 「그 인물의 지금 상태」로 읽힌다. */
+function chgBits(c){
+  if(!c) return {look:[],act:''};
+  const look=[];
+  const f=(c.faceEn||c.face||'').trim(); if(f) look.push(f);
+  const o=(c.outfitEn||c.outfit||'').trim(); if(o) look.push(o);
+  return {look, act:(c.actEn||c.act||'').trim()};
+}
 function charBits(c){
   const out=[];
+  if(c && c.bg) return out;          // 배경 판에는 인물 고정 블록을 넣지 않는다
   cutChars(c).forEach(ch=>{ const l=charLock(ch); if(l) out.push(l); });
+  chgBits(c).look.forEach(x=>out.push(x));
   if(out.length && EMO[c.emo]) out.push(EMO[c.emo]+' expression');
   return out;
+}
+/* 지문 + 이 컷의 행동 변화 */
+function descOf(c){
+  const base=(c.descEn||c.desc||'').trim(), act=chgBits(c).act;
+  return [base,act].filter(Boolean).join(', ');
 }
 /* 필기의 프롬프트 블록 6요소를 그 순서 그대로 조립한다.
    ① 목적 → ② 스토리(샷·앵글·구도 · 인물 · 행동 · 장소) → ③ 만드는 도구
@@ -4623,14 +4979,14 @@ function buildMJ(s,c){
   const lk=lockBits(c);
   lk.body.forEach(x=>p.push(x));
   charBits(c).forEach(x=>p.push(x));
-  p.push(c.descEn||c.desc||'');
+  p.push(descOf(c));
   if(s.locEn||s.loc) p.push(s.locEn||s.loc);
   toolBits(c).forEach(x=>p.push(x));
   [ERA[S.style.era],TIME[s.time],LIGHT[c.light],FX[c.fx]].forEach(x=>{ if(x) p.push(x); });
   if(MOOD[c.mood]) p.push(MOOD[c.mood]);
   styleBits().forEach(x=>p.push(x));
   if(m.tail) p.push(m.tail);
-  let out=(dedupe(p).join(', ')+' '+(S.style.mj||'')).trim();
+  let out=(dedupe(p).join(', ')+' '+refParams(s,c,S.style.mj||'')).trim();
   // 파라미터 칸에 --no 를 직접 써두었다면 그쪽을 존중한다
   if(lk.no.length && !/--no\b/.test(out)) out+=' --no '+lk.no.join(', ');
   return out;
@@ -4648,7 +5004,7 @@ function buildVEO(s,c){
     }).filter(Boolean).join('; ');
     if(who) L.push('Subject: '+who+'.');
   }
-  const subj=c.descEn||c.desc||'';
+  const subj=descOf(c);
   if(subj) L.push('Action: '+subj+'.');
   const setting=[s.locEn||s.loc,TIME[s.time]].filter(Boolean).join(' ');
   if(setting) L.push('Setting: '+setting+'.');
@@ -4665,6 +5021,8 @@ function buildVEO(s,c){
   if(c.dialogue) au.push('dialogue: "'+c.dialogue.replace(/"/g,"'")+'"');
   if(au.length) L.push('Audio: '+au.join('; ')+'.');
   if(c.dur) L.push('Duration: about '+c.dur+' seconds.');
+  const rn=refNote(s,c);
+  if(rn) L.push('Reference: '+rn);
   const lkv=lockBits(c);
   if(lkv.body.length) L.push('Constraint: '+lkv.body.join(', ')+'.');
   if(lkv.no.length)   L.push('Avoid: '+lkv.no.join(', ')+'.');
@@ -4673,7 +5031,7 @@ function buildVEO(s,c){
 function buildGEN(s,c){
   const m=medium(), p=[];
   if(m.head) p.push(m.head);
-  p.push(c.descEn||c.desc||'');
+  p.push(descOf(c));
   charBits(c).forEach(x=>p.push(x));
   if(s.locEn||s.loc) p.push(s.locEn||s.loc);
   if(ERA[S.style.era]) p.push(ERA[S.style.era]);
@@ -4695,7 +5053,7 @@ function buildGEN(s,c){
    「A cinematic pull back of a medieval warrior standing exhausted …」 (필기 Part 4) */
 function buildRW(s,c){
   const m=medium();
-  const subj=[charBits(c).join(', '), c.descEn||c.desc||''].filter(Boolean).join(', ');
+  const subj=[charBits(c).join(', '), descOf(c)].filter(Boolean).join(', ');
   let out='A cinematic '+(MOVE_RW[c.move]||'shot')+' of '+(subj||'the scene');
   const tail=[s.locEn||s.loc, TIME[s.time], SPEED[c.speed], LIGHT[c.light], FX[c.fx],
               ERA[S.style.era], MOOD[c.mood]].concat(styleBits()).filter(Boolean);
@@ -4707,6 +5065,7 @@ function buildRW(s,c){
   if(ENDP[c.endp]) out+=' The shot ends '+ENDP[c.endp]+'.';
   const lk=lockBits(c);
   if(lk.body.length) out+=' '+cap(lk.body.join(', '))+'.';
+  const rn=refNote(s,c); if(rn) out+=' '+rn;
   return out;
 }
 const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
@@ -4946,6 +5305,9 @@ $('mjtpaste').addEventListener('click',()=>{
   setTimeout(()=>{ const el=$('mtres'); if(el){ el.focus(); el.scrollIntoView({block:'center'}); } },80);
 });
 
+/* 타이핑 중에 매 글자마다 전체를 다시 그리면 커서가 튄다 — 한 박자 쉬고 한 번만. */
+let liveT=null;
+function livePrompt(){ clearTimeout(liveT); liveT=setTimeout(()=>renderPrompt(),140); }
 function renderPrompt(){
   fillStyle();
   $('qcard').style.display = pQuick?'block':'none';
