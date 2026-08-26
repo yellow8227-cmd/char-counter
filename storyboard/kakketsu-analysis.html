@@ -1,0 +1,564 @@
+<title>赫血 대본 해부</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=IBM+Plex+Sans+KR:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+/* ── 어둠이 기본. 이 영화는 어두운 데서 벌어진다 ─────────────────── */
+:root {
+  --ground:      #0C0A09;
+  --ground-2:    #141110;
+  --raise:       #1B1715;
+  --edge:        #2E2724;
+  --edge-soft:   #221D1B;
+  --body:        #D9D2CB;
+  --strong:      #F2ECE5;
+  --quiet:       #8C817A;
+  --faint:       #5E5550;
+  --blood:       #B00711;
+  --blood-lit:   #E0303B;
+  --blood-wash:  rgba(176, 7, 17, .13);
+  --gen-0: #8E6A3F;
+  --gen-1: #6E7F5E;
+  --gen-2: #5C7386;
+  --gen-3: #8A6076;
+  --gen-4: #B08A4A;
+  --shadow: 0 1px 0 rgba(255,255,255,.03), 0 18px 40px -28px rgba(0,0,0,.9);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --ground:     #E9E3DA;
+    --ground-2:   #E2DBD1;
+    --raise:      #F5F1EA;
+    --edge:       #CFC5B7;
+    --edge-soft:  #DCD4C8;
+    --body:       #2A2320;
+    --strong:     #14100E;
+    --quiet:      #6B605A;
+    --faint:      #948A82;
+    --blood:      #9A0510;
+    --blood-lit:  #7E040C;
+    --blood-wash: rgba(154, 5, 16, .09);
+    --gen-0: #7A5730;
+    --gen-1: #4F6140;
+    --gen-2: #3F5768;
+    --gen-3: #6E4257;
+    --gen-4: #8A6A2C;
+    --shadow: 0 1px 0 rgba(255,255,255,.7), 0 16px 34px -28px rgba(20,16,14,.5);
+  }
+}
+:root[data-theme="light"] {
+  --ground:     #E9E3DA;
+  --ground-2:   #E2DBD1;
+  --raise:      #F5F1EA;
+  --edge:       #CFC5B7;
+  --edge-soft:  #DCD4C8;
+  --body:       #2A2320;
+  --strong:     #14100E;
+  --quiet:      #6B605A;
+  --faint:      #948A82;
+  --blood:      #9A0510;
+  --blood-lit:  #7E040C;
+  --blood-wash: rgba(154, 5, 16, .09);
+  --gen-0: #7A5730;
+  --gen-1: #4F6140;
+  --gen-2: #3F5768;
+  --gen-3: #6E4257;
+  --gen-4: #8A6A2C;
+  --shadow: 0 1px 0 rgba(255,255,255,.7), 0 16px 34px -28px rgba(20,16,14,.5);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--body);
+  font-family: "IBM Plex Sans KR", system-ui, -apple-system, "Malgun Gothic", sans-serif;
+  font-weight: 300;
+  font-size: 15.5px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 clamp(18px, 4vw, 40px); }
+.col  { max-width: 62ch; }
+
+h1, h2, h3 { font-family: "Nanum Myeongjo", Georgia, serif; color: var(--strong); text-wrap: balance; margin: 0; }
+
+/* ── 표제 ─────────────────────────────────────────────────────────── */
+.title {
+  position: relative;
+  padding: clamp(56px, 11vw, 116px) 0 clamp(40px, 7vw, 76px);
+  border-bottom: 1px solid var(--edge);
+  overflow: hidden;
+}
+.title::before {          /* 종이에 번진 검붉은 얼룩 — 타이틀 시퀀스의 그 종이 */
+  content: "";
+  position: absolute; inset: -40% -20% auto -20%; height: 150%;
+  background:
+    radial-gradient(58% 42% at 22% 30%, var(--blood-wash), transparent 68%),
+    radial-gradient(40% 34% at 78% 12%, rgba(120,60,20,.10), transparent 70%);
+  pointer-events: none;
+}
+.title > * { position: relative; }
+
+.mark { display: flex; align-items: baseline; gap: clamp(14px, 3vw, 26px); flex-wrap: wrap; }
+.mark .han {
+  font-family: "Nanum Myeongjo", serif; font-weight: 800;
+  font-size: clamp(58px, 13vw, 132px); line-height: .84;
+  color: var(--blood); letter-spacing: .04em;
+}
+.mark .rom {
+  font-family: "IBM Plex Mono", monospace; font-size: clamp(11px, 1.5vw, 14px);
+  letter-spacing: .44em; color: var(--quiet); text-transform: uppercase;
+  padding-bottom: .5em;
+}
+.gloss {
+  margin-top: 20px; color: var(--quiet); font-size: 13.5px; letter-spacing: .01em;
+}
+.logline {
+  margin-top: clamp(30px, 5vw, 50px);
+  font-family: "Nanum Myeongjo", serif; font-weight: 400;
+  font-size: clamp(20px, 3.1vw, 30px); line-height: 1.55;
+  color: var(--strong); max-width: 24ch;
+}
+.logline b { font-weight: 800; color: var(--blood-lit); }
+
+.credits {
+  margin-top: clamp(30px, 5vw, 48px);
+  display: flex; flex-wrap: wrap; gap: 8px 30px;
+  font-family: "IBM Plex Mono", monospace; font-size: 11.5px;
+  letter-spacing: .1em; color: var(--faint);
+}
+.credits span { white-space: nowrap; }
+.credits b { color: var(--body); font-weight: 500; }
+
+/* ── 절 ───────────────────────────────────────────────────────────── */
+section { padding: clamp(48px, 8vw, 92px) 0; border-bottom: 1px solid var(--edge-soft); }
+section:last-of-type { border-bottom: 0; }
+
+.eyebrow {
+  display: flex; align-items: center; gap: 12px;
+  font-family: "IBM Plex Mono", monospace; font-size: 10.5px;
+  letter-spacing: .3em; text-transform: uppercase; color: var(--faint);
+  margin-bottom: 14px;
+}
+.eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--edge-soft); }
+
+h2 { font-size: clamp(24px, 3.6vw, 34px); font-weight: 700; line-height: 1.3; }
+.lede { margin-top: 14px; color: var(--quiet); }
+.lede strong { color: var(--body); font-weight: 500; }
+
+/* ── 핏줄 — 세로로 흐르는 계보 ──────────────────────────────────── */
+.blood { margin-top: 40px; position: relative; display: grid; gap: 2px; }
+.blood::before {
+  content: ""; position: absolute; left: 7px; top: 14px; bottom: 14px; width: 2px;
+  background: linear-gradient(var(--gen-0), var(--gen-1), var(--gen-2), var(--gen-3), var(--gen-4));
+  opacity: .75; border-radius: 2px;
+}
+.kin {
+  position: relative; padding: 16px 0 16px 42px;
+  display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 4px 20px; align-items: baseline;
+}
+.kin + .kin { border-top: 1px solid var(--edge-soft); }
+.kin::before {
+  content: ""; position: absolute; left: 0; top: 25px; width: 16px; height: 16px;
+  border-radius: 50%; background: var(--ground); border: 2px solid var(--dot);
+}
+.kin .who { font-family: "Nanum Myeongjo", serif; font-size: 19px; font-weight: 700; color: var(--strong); }
+.kin .jp  { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: var(--faint); letter-spacing: .06em; }
+.kin .job { grid-column: 1 / -1; color: var(--quiet); font-size: 13.5px; }
+.kin .job em { font-style: normal; color: var(--blood-lit); }
+.kin .era {
+  font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: .1em;
+  color: var(--dot); white-space: nowrap; font-variant-numeric: tabular-nums;
+}
+.kin.it { --dot: var(--blood); }
+.kin.it .who { color: var(--blood-lit); }
+
+/* ── 반전 — 믿는 것과 실제가 마주 본다 ───────────────────────────── */
+.flip { margin-top: 40px; display: grid; gap: 1px; background: var(--edge-soft); border: 1px solid var(--edge-soft); border-radius: 3px; overflow: hidden; }
+.flip .hd, .flip .rw { display: grid; grid-template-columns: 8.5rem 1fr 1fr; gap: 1px; background: var(--edge-soft); }
+.flip .hd > *, .flip .rw > * { background: var(--raise); padding: 13px 16px; }
+.flip .hd > * {
+  font-family: "IBM Plex Mono", monospace; font-size: 10.5px; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--faint); background: var(--ground-2);
+}
+.flip .hd .real { color: var(--blood-lit); }
+.flip .rw .k { color: var(--quiet); font-size: 13.5px; }
+.flip .rw .believed { color: var(--quiet); }
+.flip .rw .real { color: var(--body); }
+.flip .rw .real b { color: var(--strong); font-weight: 600; }
+@media (max-width: 720px) {
+  .flip .hd { display: none; }
+  .flip .rw { grid-template-columns: 1fr; }
+  .flip .rw .k { background: var(--ground-2); font-family: "IBM Plex Mono", monospace; letter-spacing: .1em; font-size: 11px; text-transform: uppercase; }
+  .flip .rw .believed::before, .flip .rw .real::before {
+    content: attr(data-l); display: block; font-family: "IBM Plex Mono", monospace;
+    font-size: 10px; letter-spacing: .16em; color: var(--faint); margin-bottom: 4px;
+  }
+}
+
+/* 부적 — 얼굴이 있어야 할 자리 */
+.talisman {
+  margin: 44px auto 0; width: 118px; padding: 22px 0 26px; text-align: center;
+  background: linear-gradient(170deg, var(--blood), #6C040B);
+  color: #F6E9E4; border-radius: 2px;
+  font-family: "Nanum Myeongjo", serif; font-weight: 800;
+  font-size: 30px; line-height: 1.15; letter-spacing: .1em;
+  transform: rotate(-2.5deg);
+  box-shadow: 0 22px 44px -26px rgba(0,0,0,.85);
+}
+.talisman span { display: block; }
+.talisman small {
+  display: block; margin-top: 12px; font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; letter-spacing: .24em; opacity: .72; font-weight: 400;
+}
+.talisman-cap { margin: 16px auto 0; text-align: center; color: var(--faint); font-size: 12.5px; max-width: 34ch; }
+
+/* ── 표 ──────────────────────────────────────────────────────────── */
+.scroll { overflow-x: auto; margin-top: 34px; border: 1px solid var(--edge-soft); border-radius: 3px; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; padding: 11px 15px; border-bottom: 1px solid var(--edge-soft); vertical-align: top; }
+thead th {
+  font-family: "IBM Plex Mono", monospace; font-weight: 400; font-size: 10.5px;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--faint);
+  background: var(--ground-2); border-bottom-color: var(--edge); white-space: nowrap;
+}
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:nth-child(odd) td { background: var(--raise); }
+td.scenes { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: var(--quiet); white-space: nowrap; font-variant-numeric: tabular-nums; }
+td.motif { color: var(--strong); font-weight: 500; white-space: nowrap; }
+
+/* ── 씬 목록 ─────────────────────────────────────────────────────── */
+.legend { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 8px 20px; font-family: "IBM Plex Mono", monospace; font-size: 10.5px; letter-spacing: .13em; color: var(--faint); }
+.legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; vertical-align: middle; background: var(--c); }
+
+.scenes-grid { margin-top: 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 1px; background: var(--edge-soft); border: 1px solid var(--edge-soft); border-radius: 3px; }
+.sc { background: var(--raise); padding: 11px 14px 12px; display: grid; grid-template-columns: 2.6rem 1fr auto; gap: 2px 11px; align-items: baseline; border-left: 2px solid var(--c); }
+.sc .n { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--c); font-variant-numeric: tabular-nums; font-weight: 500; }
+.sc .p { color: var(--strong); font-size: 13.5px; font-weight: 500; }
+.sc .cut { font-family: "IBM Plex Mono", monospace; font-size: 10.5px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.sc .d { grid-column: 2 / -1; color: var(--quiet); font-size: 12.5px; line-height: 1.55; }
+.sc .d b { color: var(--blood-lit); font-weight: 500; }
+.sc.done { background: color-mix(in srgb, var(--raise) 88%, var(--blood-wash)); }
+.sc.done .cut { color: var(--blood-lit); }
+
+/* ── 지켜야 할 것 ────────────────────────────────────────────────── */
+.rules { margin-top: 36px; display: grid; gap: 1px; background: var(--edge-soft); border: 1px solid var(--edge-soft); border-radius: 3px; }
+.rule { background: var(--raise); padding: 20px 22px; display: grid; grid-template-columns: 2.2rem 1fr; gap: 4px 16px; }
+.rule .i { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--blood-lit); font-weight: 500; padding-top: 2px; }
+.rule h3 { font-size: 16.5px; font-weight: 700; }
+.rule p { margin: 0; grid-column: 2; color: var(--quiet); font-size: 13.5px; }
+.rule code { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--body); background: var(--ground-2); padding: 1px 5px; border-radius: 2px; }
+
+.asks { margin-top: 34px; display: grid; gap: 14px; }
+.ask { display: grid; grid-template-columns: 9.5rem 1fr; gap: 4px 18px; padding-bottom: 14px; border-bottom: 1px solid var(--edge-soft); }
+.ask:last-child { border-bottom: 0; }
+.ask dt { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; letter-spacing: .07em; color: var(--blood-lit); padding-top: 3px; }
+.ask dd { margin: 0; color: var(--quiet); font-size: 13.5px; }
+@media (max-width: 620px) { .ask { grid-template-columns: 1fr; } }
+
+footer { padding: 44px 0 60px; color: var(--faint); font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: .1em; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .title .mark, .title .logline { animation: rise .9s cubic-bezier(.2,.7,.3,1) both; }
+  .title .logline { animation-delay: .16s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+}
+:focus-visible { outline: 2px solid var(--blood-lit); outline-offset: 3px; }
+</style>
+
+<header class="title">
+  <div class="wrap">
+    <div class="mark">
+      <span class="han">赫血</span>
+      <span class="rom">Kakketsu</span>
+    </div>
+    <p class="gloss">드러난 피 · 선혈 · 숨길 수 없이 노출된 혈통</p>
+
+    <p class="logline">사형집행인의 피가 400년을 건너 4대를 따라온다. 그런데 따라온 것은 <b>저주를 가둔 그릇</b>이었다.</p>
+
+    <div class="credits">
+      <span>각본 · 감독 <b>한동하</b></span>
+      <span>2026.08.22</span>
+      <span><b>117</b>p</span>
+      <span><b>72</b>씬 + 쿠키</span>
+      <span>한 · 일 이중언어</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">핏줄</p>
+    <h2>사람을 죽이는 자리가 대물림된다</h2>
+    <p class="lede col">직업이 바뀌어도 하는 일은 같다. 국가가 죽이라고 정한 사람을 대신 죽인다. <strong>망나니의 칼 → 순사의 고문 → 교도관의 버튼 → 의사의 겸자.</strong></p>
+
+    <div class="blood">
+      <div class="kin" style="--dot: var(--gen-0)">
+        <div><span class="who">망나니</span> <span class="jp">処刑人 / マンナニ · 39</span></div>
+        <div class="era">1587 조선</div>
+        <div class="job">회자수 — 죄인 중에서 뽑혀, 제 목숨값으로 남의 목을 친다</div>
+      </div>
+      <div class="kin" style="--dot: var(--gen-1)">
+        <div><span class="who">백동훈</span> <span class="jp">白藤 勲 / Shirafuji Isao · 46</span></div>
+        <div class="era">1944 경성</div>
+        <div class="job">조선총독부 순사 — 고문. 해방 뒤 이름을 지우고 <em>백동훈</em>으로 살아 돌아온다</div>
+      </div>
+      <div class="kin" style="--dot: var(--gen-2)">
+        <div><span class="who">백동성</span> <span class="jp">白藤 誠 / Shirafuji Makoto · 49</span></div>
+        <div class="era">1984 오사카</div>
+        <div class="job">오사카구치소 교도관 — 사형 집행 버튼. 아무도 맡지 않으려는 일을 맡는다</div>
+      </div>
+      <div class="kin" style="--dot: var(--gen-3)">
+        <div><span class="who">백동수 → 슈</span> <span class="jp">白藤 秀 / Shirafuji Shu · 9 → 38</span></div>
+        <div class="era">현재</div>
+        <div class="job">산부인과 의사 — 임신중절. 굿 대신 <em>과학과 의학</em>을 끌어들여 저항한다</div>
+      </div>
+      <div class="kin" style="--dot: var(--gen-4)">
+        <div><span class="who">하루마</span> <span class="jp">白藤 春真 / Shirafuji Haruma · 6</span></div>
+        <div class="era">현재</div>
+        <div class="job">아직 직업이 없다. 그런데 <em>보인다</em></div>
+      </div>
+      <div class="kin it">
+        <div><span class="who">‘그것’</span> <span class="jp">「ソレ」</span></div>
+        <div class="era">전 세대</div>
+        <div class="job">빛바랜 색동저고리 · 짚신 한 짝 · 뒤틀린 다리 · 얼굴 자리에 붙은 붉은 부적 「封神」</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">반전</p>
+    <h2>100분을 저주라고 믿게 만든 뒤, 씬 71에서 뒤집는다</h2>
+    <p class="lede col">이걸 모르고 그리면 그림이 전부 틀어집니다. <strong>‘그것’은 저주가 아니라 저주를 가둔 방파제</strong>이고, 마지막에 그것이 떠나자 갇혀 있던 원혼이 쏟아집니다.</p>
+
+    <div class="flip">
+      <div class="hd"><div></div><div>관객이 믿는 것 — 씬 1~70</div><div class="real">실제 — 씬 71~72</div></div>
+
+      <div class="rw">
+        <div class="k">정체</div>
+        <div class="believed" data-l="믿는 것">핏줄을 따라온 원귀</div>
+        <div class="real" data-l="실제"><b>망나니의 노모</b> — 아들이 손자를 살리려 시신에 건 봉신</div>
+      </div>
+      <div class="rw">
+        <div class="k">색동저고리</div>
+        <div class="believed" data-l="믿는 것">죽은 아이 귀신의 옷</div>
+        <div class="real" data-l="실제"><b>손자의 옷</b> — 「그 핏줄을 잊지 않도록」 무당이 시킨 것</div>
+      </div>
+      <div class="rw">
+        <div class="k">뒤틀린 다리</div>
+        <div class="believed" data-l="믿는 것">기괴한 형상</div>
+        <div class="real" data-l="실제">망나니가 <b>직접 뒤꿈치를 잘랐다</b> — 완전한 희생</div>
+      </div>
+      <div class="rw">
+        <div class="k">붉은 부적</div>
+        <div class="believed" data-l="믿는 것">얼굴을 가린 표식</div>
+        <div class="real" data-l="실제"><b>원혼 수백을 가둔 봉인</b> — 뜯으면 터진다</div>
+      </div>
+      <div class="rw">
+        <div class="k">거대함</div>
+        <div class="believed" data-l="믿는 것">점점 강해지는 저주</div>
+        <div class="real" data-l="실제"><b>매달린 원귀의 무게</b> — 떼어내면 작고 왜소한 노인</div>
+      </div>
+      <div class="rw">
+        <div class="k">목적</div>
+        <div class="believed" data-l="믿는 것">대를 끊으러 온다</div>
+        <div class="real" data-l="실제"><b>대를 지키러 온다</b> — 쿠키에서 확정된다</div>
+      </div>
+    </div>
+
+    <div class="talisman"><span>封</span><span>神</span><small>Bongsin</small></div>
+    <p class="talisman-cap">얼굴이 있어야 할 자리. 슈가 이걸 떼어내자 눈도 코도 입도 없는 어둠만 남는다.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">반복 모티프</p>
+    <h2>컷 카드의 「디테일」 칸에 그대로 옮겨 적을 것</h2>
+    <p class="lede col">대본 전문을 훑어 실제 등장 씬만 남긴 표입니다. 이 소품과 소리가 세대를 건너 같은 자리에서 반복돼야 마지막이 성립합니다.</p>
+
+    <div class="scroll">
+      <table>
+        <thead><tr><th>모티프</th><th>등장 씬</th><th>쓰임</th></tr></thead>
+        <tbody>
+          <tr><td class="motif">슥…… 쿵……</td><td class="scenes">1·8·21·30·33·35·54·55·67·71·72</td><td>‘그것’의 접근음. 발 끌림 + 한 박자 늦은 둔중한 충격. 최초 발생은 씬 72</td></tr>
+          <tr><td class="motif">쿵…… 쾅……</td><td class="scenes">1·8·21·35·54·55·57·67</td><td>발소리와 심장이 겹치는 리듬. 씬 57에서는 MRI 작동음이 같은 리듬을 낸다</td></tr>
+          <tr><td class="motif">「封神」 붉은 부적</td><td class="scenes">전편</td><td>얼굴 자리. 씬 61에서 지현이 건넨 부적과 같은 두 글자</td></tr>
+          <tr><td class="motif">このクソ女が……</td><td class="scenes">1·12·21·30·55·71</td><td>4대가 같은 말을 뱉는다. 동훈 → 동성 → 슈</td></tr>
+          <tr><td class="motif">적어도 순서는 지켜야지</td><td class="scenes">30·33·71</td><td>동성 → ‘그것’(동성 목소리) → 슈</td></tr>
+          <tr><td class="motif">거울 · 반사면</td><td class="scenes">5·8·11·14·15·30·48·56·59·66·69</td><td>실제와 반사가 다르다. 씬 69에서 동훈과 1587 망나니가 겹친다</td></tr>
+          <tr><td class="motif">짚신 한 짝</td><td class="scenes">1·8·12·20·21·47·54·55·68·70</td><td>항상 한 짝. 뒤틀린 다리 때문. 씬 72 무덤에서는 아직 두 짝</td></tr>
+          <tr><td class="motif">성에 · 입김</td><td class="scenes">7·12·20·23·28·33·55·71</td><td>‘그것’이 가까워지면 온도가 내려간다</td></tr>
+          <tr><td class="motif">까마귀</td><td class="scenes">9·16·24·26·27·52·72</td><td>구치소 상공 · 허수아비 · 서낭당 · 병원 위 · 사당</td></tr>
+          <tr><td class="motif">고양이</td><td class="scenes">8·32·35·40</td><td>씬 8에서 ‘그것’을 노려보고 씬 35에서 동수 손에 죽는다</td></tr>
+          <tr><td class="motif">뎅…… 종 · 풍경</td><td class="scenes">8·33·35·44·72</td><td>새벽 세 시 / 삼경</td></tr>
+          <tr><td class="motif">버튼을 누른 검지</td><td class="scenes">12·53·54</td><td>동성이 누른 버튼 → 슈가 검지만 피가 나도록 문지른다</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">씬 72개</p>
+    <h2>네 시대가 땋여 있다</h2>
+    <p class="lede col">시간순이 아닙니다. 왼쪽 색이 그 씬이 서 있는 세대이고, 색이 바뀌는 자리가 곧 시대 도약입니다. 붉게 깔린 씬은 <strong>컷 분해까지 끝난 것</strong>입니다.</p>
+
+    <div class="legend">
+      <span style="--c: var(--gen-0)"><i></i>0대 · 1587 조선</span>
+      <span style="--c: var(--gen-1)"><i></i>1대 · 1944~47</span>
+      <span style="--c: var(--gen-2)"><i></i>2대 · 1984 오사카</span>
+      <span style="--c: var(--gen-3)"><i></i>3대 · 1989~현재</span>
+      <span style="--c: var(--gen-4)"><i></i>4대 · 하루마</span>
+    </div>
+
+    <div class="scenes-grid" id="grid"></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">작업 원칙</p>
+    <h2>스토리보드에서 어기면 마지막이 무너지는 다섯 가지</h2>
+
+    <div class="rules">
+      <div class="rule">
+        <div class="i">01</div>
+        <h3>씬 1과 씬 54·55는 같은 장면이다</h3>
+        <p>대본에 <code>MATCH CUT TO — 병원 복도는 프롤로그와 동일한 씬입니다</code>라고 적혀 있습니다. 프롤로그에서 쓴 컷 번호를 씬 54에 그대로 재사용하고 전환효과 칸에 <code>MATCH CUT ← S1</code>을 남깁니다. 두 번 그리면 예산과 촬영이 두 배로 듭니다.</p>
+      </div>
+      <div class="rule">
+        <div class="i">02</div>
+        <h3>‘그것’은 크기가 두 개다</h3>
+        <p>실제 몸은 작고 왜소한 노인입니다. 거대하게 보이는 것은 그림자와 거울 속뿐입니다. 같은 컷 안에서 이 둘이 어긋나야 씬 71의 반전이 성립합니다. 디테일 칸에 매번 <code>실물=소 / 반사=대</code>로 적습니다.</p>
+      </div>
+      <div class="rule">
+        <div class="i">03</div>
+        <h3>세 번의 임종은 같은 앵글로 반복한다</h3>
+        <p>동훈(씬 28) · 동성(씬 33) · 슈(씬 71)의 마지막을 <code>하이앵글 → 얼굴 위로 포개짐 → 부적 BCU</code> 3컷 세트로 고정합니다. 대본 3쪽의 제사 「끝은 곧 시작이다」가 여기서 화면으로 성립합니다.</p>
+      </div>
+      <div class="rule">
+        <div class="i">04</div>
+        <h3>부적은 항상 정면이다</h3>
+        <p>「封神」 두 글자가 읽혀야 씬 61에서 지현이 건넨 부적과 씬 72의 봉신성립이 한 물건으로 연결됩니다.</p>
+      </div>
+      <div class="rule">
+        <div class="i">05</div>
+        <h3>3미터 안에 들어오면 온도를 내린다</h3>
+        <p>‘그것’이 가까워진 컷에는 입김이나 성에가 반드시 화면에 있어야 합니다. 씬 23 · 28 · 33 · 55 · 71이 그 자리입니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">확인 요청</p>
+    <h2>그리다 막히는 자리라 미리 적어둡니다</h2>
+    <dl class="asks">
+      <div class="ask"><dt>씬 35 헤딩</dt><dd><code>日本 - OO 중학교 - 의과대학 (D)</code> — 중학교와 의과대학이 한 줄에 섞여 있습니다. 내용은 중학교 교실입니다.</dd></div>
+      <div class="ask"><dt>씬 63 화자</dt><dd>나레이션 한 줄만 <code>동수 (NA)</code>입니다. 씬 36 이후는 <code>슈</code>로 통일한다고 명시돼 있습니다.</dd></div>
+      <div class="ask"><dt>씬 69 제복</dt><dd>동훈이 <b>경시청 제복</b>으로 나옵니다. 1944년의 동훈은 조선총독부 순사였습니다. 악몽 속 왜곡이면 그대로 두고 아니면 순사 제복으로.</dd></div>
+      <div class="ask"><dt>씬 72 무당 의상</dt><dd>대본은 「피 묻은 흰옷」인데 만들어진 이미지는 화려한 무복에 족두리입니다.</dd></div>
+      <div class="ask"><dt>씬 72 새</dt><dd>대본은 까마귀, 이미지는 부엉이입니다. 목격자로 새로 넣은 것이면 그대로 갑니다.</dd></div>
+      <div class="ask"><dt>등장인물 표</dt><dd>수진 · 유지현 · 사이토 겐지 · 눈먼 점쟁이가 빠져 있습니다. 지현은 사실상 여주인공입니다.</dd></div>
+    </dl>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">赫血 · KAKKETSU — 대본 해부 · 각본 감독 한동하 · 2026.08.22</div>
+</footer>
+
+<script>
+// 씬 목록 — [번호, 국가, 장소, D/N, 세대, 핵심, 예상 컷, 분해 완료]
+const S = [
+ [1,"日","○○병원 복도 → 수술실","N",3,"<b>프롤로그</b> · 슈와 ‘그것’의 첫 대면",16,1],
+ [2,"—","타이틀 시퀀스","",3,"罪 → 血 → 呪 → 記憶 → <b>赫血</b>",9,1],
+ [3,"日","백동성의 집 외관","N",2,"1984 이카이노 · 취한 동성",5,0],
+ [4,"日","현관","N",2,"젖은 발자국 + 끌린 자국",7,0],
+ [5,"日","부엌","N",2,"생간 · 거울 속 ‘그것’이 동수를 본다",12,0],
+ [6,"日","초등학교 교실","D",3,"「사형집행 시작합니다」 줄넘기",8,0],
+ [7,"日","상담실","D",2,"동수의 그림 노트",9,0],
+ [8,"日","백동성의 집","N",3,"<b>‘그것’ 전신 최초 공개</b> · 번개 3단",16,0],
+ [9,"日","오사카 구치소","D",2,"사형수 압송 · 그림자 셋",5,0],
+ [10,"日","오사카 구치소","D",2,"죄수들의 소문",7,0],
+ [11,"日","복도 · 화장실","N",2,"습격 반격 · 정당방위로 처리된다",11,0],
+ [12,"日","사형장","D",2,"<b>인터컷</b> 집행 ↔ 수진의 죽음",18,0],
+ [13,"日","거실","N",2,"「네 할아버지는 일제시대 순사셨다」",6,0],
+ [14,"韓","조선총독부 경찰국","D",1,"1944 · 고문 · 거울 아래로 흐르는 붉은 물",12,0],
+ [15,"韓","경성 총독부","D",1,"표창 · 지도 유리 속 ‘그것’",8,0],
+ [16,"韓","황폐한 마을","D",1,"식량과 생닭 · 허수아비의 까마귀",5,0],
+ [17,"韓","백동훈의 집","N",1,"「国 / くに」 받아쓰기",8,0],
+ [18,"韓","백동훈의 집","D",1,"히로시마 라디오 · 아내의 불안",7,0],
+ [19,"韓","읍내","D",1,"<b>1945.8.15</b> · 순사복을 벗다 · 개명",14,0],
+ [20,"韓","군산","D",1,"「우리는 세 식구뿐이다」",5,0],
+ [21,"韓","군산 골목 · 집","D",1,"붉은청년단 습격 → 반격 → 부엌의 어둠",24,0],
+ [22,"韓","집 외관","N",1,"굴뚝 연기가 사람 형상으로 뒤틀린다",5,0],
+ [23,"韓","부엌","N",1,"아내가 서류와 사진을 태운다",7,0],
+ [24,"韓","방안","N",1,"<b>가계의 기원 구술</b> + 칼춤 플래시",11,0],
+ [25,"韓","저주의 기원 — 환상","N",0,"저수지 · 목 없는 혼령",6,0],
+ [26,"韓","망나니의 집","N",0,"아들의 참도 · <b>그림자만 움직인다</b> · 굿판",14,0],
+ [27,"日","백동성의 집","N",2,"「의식은 실패한 거네요?」 + 무당의 변신",6,0],
+ [28,"韓","군산","N",1,"<b>동훈의 임종</b> — 그것이 얼굴을 포갠다",10,0],
+ [29,"日","백동성의 집","N",2,"「그 핏줄은 어디를 가든 따라왔어」",8,0],
+ [30,"日","골목길","N",2,"반사경 추격 · <b>동성이 눈을 가려준다</b>",12,0],
+ [31,"日","거실","D",2,"무당 셋이 온다 · 제사상",9,0],
+ [32,"日","근처 풍경","N",2,"일본의 밤에 한국의 굿소리가 섞인다",5,0],
+ [33,"日","집 실내","N",2,"<b>굿판 실패 · 동성의 죽음</b> · 무당 POV",20,0],
+ [34,"日","장례식장","D",3,"환한 조명 속에 ‘그것’이 서 있다",5,0],
+ [35,"日","중학교 교실","D",3,"1989 · 고양이 · <b>그것이 반걸음 물러선다</b>",15,0],
+ [36,"日","큐슈대 강당","D",3,"1996 · 히포크라테스 선서",7,0],
+ [37,"日","해부실습실","D",3,"「내가 궁금했던 건 죽음이 아니었다」",10,0],
+ [38,"日","임상외과 시술실","D",3,"「제가 하겠습니다」",14,0],
+ [39,"日","고급 레스토랑","D",3,"2006 · 아홉 번째 맞선 · 지현",13,0],
+ [40,"日","극장","N",3,"《주온》 · <b>옆자리에 ‘그것’</b>",9,0],
+ [41,"韓","강원도 산악도로","D",3,"낯익으면서 낯선 산과 호수",5,0],
+ [42,"韓","횡성 외곽","D",3,"점집 도착 · 관자놀이의 식은땀",7,0],
+ [43,"韓","들판","D",3,"<b>「놓치면 자네는 죽어」</b>",12,0],
+ [44,"韓","점집 마당","D",3,"전화 — 「19주. 수술 준비해 주세요」",8,0],
+ [45,"韓","점집 내부","D",3,"<b>무음</b> — 지현의 얼굴만 본다",7,0],
+ [46,"韓","들판","D",3,"「오빠는 여자를 찾는 게 아니래」",9,0],
+ [47,"韓","점집 내부","D",0,"<b>점쟁이 POV — 부적 없는 노모의 얼굴</b>",10,0],
+ [48,"日","신사 신부 준비실","D",3,"2007 · 거울틀에 끼워진 부적",9,0],
+ [49,"日","신사 본전","D",3,"<b>사진에는 ‘그것’이 찍히지 않는다</b>",12,0],
+ [50,"日","야쿠인 남자친구 집","N",3,"지현의 불륜",6,0],
+ [51,"日","히라오 슈의 집","N",4,"하루마 「엄마……」 · 천장까지 닿은 ‘그것’",11,0],
+ [52,"日","병원 외관 · 상담실","D",3,"여고생과 보호자 · 현금 봉투",11,0],
+ [53,"日","슈의 집무실 — 환상","",3,"<b>어린 슈가 처형 버튼 앞에 선다</b>",6,0],
+ [54,"日","소독실 → 복도","D",3,"검지를 문지른다 → <b>MATCH CUT</b>",14,1],
+ [55,"日","수술실","N",3,"시술 · 정전 · 뒤틀린 병원 · 「피는 기억한다」",26,0],
+ [56,"日","슈의 침실","N",3,"악몽에서 깬다",6,0],
+ [57,"日","종합검진센터","D",3,"검사 몽타주 · 「이상 없음」",11,0],
+ [58,"日","슈의 집","D",3,"지현의 칼질 · <b>임신 테스트기의 두 줄</b>",10,0],
+ [59,"日","도심 · 지하철","D",3,"노이즈캔슬링 → 이명 → 창에 비친 ‘그것’",12,0],
+ [60,"日","피트니스 · 유도장","N",3,"흥신소에서 전화가 온다",6,0],
+ [61,"日","○○레스토랑","N",3,"팔찌 · <b>입이 봉해진 점쟁이의 시신</b> · 「封神」",22,0],
+ [62,"日","병원 앞","D",3,"사이토의 화재 파일 · 뺨의 손톱자국",16,0],
+ [63,"日","슈의 연구실","N",3,"시체 사진 벽 · <b>팔찌를 발견한다</b>",11,0],
+ [64,"日","슈의 집","N",4,"하루마가 칼질을 그대로 따라 한다",12,0],
+ [65,"日","검진센터 판독실","D",3,"<b>고환암 말기</b> · 두 달 · 못 찌른 주사기",15,0],
+ [66,"日","하루마의 방","N",4,"「그냥 아줌마」 · <b>보이는구나</b> · 식칼",16,0],
+ [67,"日","낡은 복도","N",4,"집이 교도소로 변해간다",11,0],
+ [68,"日","낡은 교도소 복도 · 계단","N",4,"<b>동성이 밧줄을 들고 쫓아온다</b>",13,0],
+ [69,"日","복도 반대편","N",4,"<b>동훈이 거울 속 1587 망나니와 겹친다</b>",16,0],
+ [70,"日","계단 · 난간","N",4,"<b>하루마 추락</b> · 그것의 포효",15,0],
+ [71,"日","작은집 내부","N",3,"<b>대면 · 부적을 떼다 · 얼굴 없음 · 원혼 범람</b>",30,0],
+ [72,"韓","에필로그 — 1587","N",0,"<b>‘그것’의 탄생</b> · 봉신성립",66,1],
+ ["C","—","쿠키 3파트","N",4,"촛불을 끄는 동성 · 현장 · 앰뷸런스",14,0],
+];
+document.getElementById("grid").innerHTML = S.map(([n,c,p,dn,g,d,cut,done]) => `
+  <div class="sc${done ? " done" : ""}" style="--c: var(--gen-${g})">
+    <span class="n">${n}</span><span class="p">${c === "—" ? "" : c + " "}${p}</span>
+    <span class="cut">${dn ? dn + " · " : ""}${cut}컷</span>
+    <span class="d">${d}</span>
+  </div>`).join("");
+</script>

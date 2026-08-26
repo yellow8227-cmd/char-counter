@@ -6,6 +6,7 @@
 
 | 파일 | 무엇 |
 |---|---|
+| `kakketsu-analysis.html` | 대본 해부 — 아티팩트로 발행한 판. [열기](https://claude.ai/code/artifact/146f55b7-7898-4014-949b-58cef8df907c) |
 | `01-대본분석.md` | 대본 분석 — 시간선 · 반전 구조 · 반복 모티프 · 72씬 일람 · 대본 확인 필요 사항 |
 | `cuts.json` | **컷 목록.** 여기만 고치면 됩니다 |
 | `template.pptx` | 원본 PPT 템플릿 (샘플 스톡 사진은 빼둠 · 19KB) |
