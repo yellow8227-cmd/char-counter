@@ -245,6 +245,16 @@ main{max-width:1180px;margin:0 auto;padding:42px 30px 96px}
   border:1px solid var(--line2);background:var(--s1);font-size:11.5px;line-height:1.65;color:var(--tx2)}
 .bgnote b{font-family:var(--disp);font-size:12px;color:var(--tx);letter-spacing:.02em;
   border:1px solid var(--line2);padding:1px 7px;flex:none}
+/* 영문 프롬프트 밑의 한글 되짚기 — 어느 칸이 어떤 문구가 됐는지 그대로 보여준다 */
+.rback{display:none;margin:9px 0 0;border-left:2px solid var(--line2);padding:2px 0 2px 13px}
+.rback.on{display:block}
+.rback dl{display:grid;grid-template-columns:88px minmax(0,1fr);gap:3px 12px;margin:0;font-size:12px;line-height:1.7}
+.rback dt{color:var(--tx3);font-size:11px;letter-spacing:.02em;padding-top:1px}
+.rback dd{margin:0;color:var(--tx2);word-break:keep-all}
+.rback dd b{color:var(--tx);font-weight:600}
+.rback dd .en{font-family:var(--mono);font-size:10.5px;color:var(--tx3)}
+@media(max-width:600px){.rback dl{grid-template-columns:1fr;gap:0 0}
+  .rback dt{margin-top:6px}}
 .chgblk{border:1px solid var(--line2);background:var(--s1);padding:14px 16px 4px;margin:0 0 14px}
 .chgblk .camhd{margin-bottom:10px}
 .reffld>span{line-height:1.55}
@@ -1280,6 +1290,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <div class="outhd tgbar"><b>미드저니</b><span class="k">키워드 나열형 · 스틸</span></div>
       <div class="tgbody">
         <div class="out empty2" id="o-mj">컷을 선택하세요</div>
+        <div class="rback" id="k-mj"></div>
         <div class="warn" id="mjhangul" style="display:none;margin:12px 0 0">
           <div id="mjhtext">한글이 섞여 있어요 — 미드저니는 영어를 훨씬 잘 알아듣습니다.</div>
           <div class="row" style="margin-top:9px">
@@ -1374,6 +1385,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <div class="outhd tgbar"><b>런웨이 · 클링</b><span class="k">한 문장 · 카메라 동작이 맨 앞</span></div>
       <div class="tgbody">
         <div class="out empty2" id="o-rw">컷을 선택하세요</div>
+        <div class="rback" id="k-rw"></div>
         <div class="row" style="margin-top:13px">
           <button class="btn pri" data-copy="o-rw">복사만</button>
           <a class="btn" href="https://runwayml.com" target="_blank" rel="noopener" data-open="runway">복사하고 런웨이 열기</a>
@@ -1387,6 +1399,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <div class="outhd tgbar"><b>Veo / Flow</b><span class="k">서술형 · 움직임과 소리 포함</span></div>
       <div class="tgbody">
         <div class="out empty2" id="o-veo">컷을 선택하세요</div>
+        <div class="rback" id="k-veo"></div>
         <div class="row" style="margin-top:13px">
           <button class="btn pri" data-copy="o-veo">복사만</button>
           <a class="btn" href="https://labs.google/fx/tools/flow" target="_blank" rel="noopener" data-open="flow">복사하고 Flow 열기</a>
@@ -1399,6 +1412,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <div class="outhd tgbar"><b>그 외 이미지 AI</b><span class="k">Nano Banana · ImageFX · SD 계열</span></div>
       <div class="tgbody">
         <div class="out empty2" id="o-gen">컷을 선택하세요</div>
+        <div class="rback" id="k-gen"></div>
         <p class="mini">미드저니 구독이 없어도 <b>공짜로 바로 해볼 수 있는 곳</b>입니다. 위 프롬프트가 그대로 통해요.</p>
         <div class="row" style="margin-top:11px">
           <button class="btn pri" data-copy="o-gen">복사만</button>
@@ -1524,7 +1538,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v24 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v25 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -5063,7 +5077,7 @@ const MAT={
    재료만 바꾸면 초콜릿처럼 새까맣게 나오므로 색조를 따로 둔다. */
 const TINT={
   '(그대로)':          '',
-  '진한 포도주색':      'deep burgundy',
+  '진한 포도주색 (검증됨)': 'deep burgundy',
   '적갈색':            'dark maroon',
   '와인빛':            'wine-dark',
   '가넷':              'garnet',
@@ -5077,8 +5091,12 @@ function matPhrase(c){
   const col=t||m.col;
   const n=[col,m.base].filter(Boolean).join(' ');
   return {n, a:col+'-stained',
-    x:n+' spreading slowly across the stone, warm lamplight catching its surface'};
+    x:n+' spreading slowly across the stone, warm lamplight catching its surface, '+
+      'falling from somewhere above, the source out of frame'};
 }
+/* 「액체가 떨어진다」고만 하면 미드저니가 그걸 따르는 병·잔·손을 만들어 넣는다.
+   떨어지는 것과 누가 따르는 것은 완전히 다른 화면이다. */
+const MAT_NO=['bottle','glass','jar','pitcher','cup','pouring vessel','hand pouring'];
 const SOFTEN={
   '말만 바꾸기':{
     tip:'샷도 구도도 그대로 — 걸리는 낱말만 바꿉니다. 화면에 보이는 건 똑같아요',
@@ -5201,6 +5219,7 @@ function lockBits(c){
     return {body:['empty location, no people, no characters, the space itself'],
             no:['person','people','crowd','figure','silhouette','human','text','watermark'].concat(soft)};
   const none = !!(sm && sm.people==='none');
+  if(sm && sm.mat && matPhrase(c)) soft=soft.concat(MAT_NO);
   if(S.style.lock===false) return {body:[],no:dedupe(soft)};
   const n=cutChars(c).length;
   const no=['extra person','duplicate face','multiple views','collage','text','watermark'].concat(soft);
@@ -5591,6 +5610,91 @@ $('mjtpaste').addEventListener('click',()=>{
 /* 타이핑 중에 매 글자마다 전체를 다시 그리면 커서가 튄다 — 한 박자 쉬고 한 번만. */
 let liveT=null;
 function livePrompt(){ clearTimeout(liveT); liveT=setTimeout(()=>renderPrompt(),140); }
+/* =========================================================
+   한글 되짚기 — 영문 프롬프트 밑에 「어느 칸이 어떤 문구가 됐는지」를 적는다.
+   기계 번역이 아니다. 프롬프트를 우리가 조립했으니 재료를 그대로 되짚으면
+   번역보다 정확하고, 무엇을 고치면 무엇이 바뀌는지도 바로 보인다.
+   ========================================================= */
+function rbRow(k,v,en){
+  if(!v) return '';
+  return `<dt>${esc(k)}</dt><dd>${v}${en?` <span class="en">${esc(en)}</span>`:''}</dd>`;
+}
+function readbackKO(s,c,kind){
+  if(!s||!c) return '';
+  const R=[], m=medium(), vid=(kind==='vid');
+  const b=x=>'<b>'+esc(x)+'</b>';
+  if(c.bg)   R.push(rbRow('이 컷','<b>배경 판</b> — 인물 없이 공간만 뽑는 컷'));
+  if(c.cast) R.push(rbRow('이 컷','<b>인물 판</b> — 이 씬의 의상·조명으로 인물만'));
+
+  if(S.style.medium) R.push(rbRow('무엇으로',b(S.style.medium),m.head));
+  const shots=[c.shot&&['샷',c.shot,SHOT[c.shot]],c.angle&&['앵글',c.angle,ANGLE[c.angle]],
+               S.style.comp&&['구도',S.style.comp,COMP[S.style.comp]]].filter(Boolean);
+  if(shots.length) R.push(rbRow('화면',shots.map(x=>b(x[1])).join(' · '),shots.map(x=>x[2]).filter(Boolean).join(', ')));
+
+  const chs=cutChars(c);
+  if(!c.bg && chs.length){
+    R.push(rbRow('인물',chs.map(x=>b(x.name||'이름 없음')).join(' · '),
+      chs.map(x=>charLock(x)).filter(Boolean).join(' / ').slice(0,110)));
+  }
+  const chg=[c.face&&['얼굴',c.face],c.outfit&&['의상',c.outfit],c.act&&['행동',c.act]].filter(Boolean);
+  if(chg.length) R.push(rbRow('이 컷만',chg.map(x=>x[0]+' — '+esc(x[1])).join('<br>')));
+  if(EMO[c.emo]) R.push(rbRow('표정',b(c.emo),EMO[c.emo]));
+
+  if(c.soft){
+    const ph=matPhrase(c);
+    R.push(rbRow('순화',b(c.soft)+(ph?' · '+b(c.mat)+(c.tint&&c.tint!=='(그대로)'?' · '+b(c.tint):''):''),
+      ph?ph.n:(SOFTEN[c.soft]||{}).subj||''));
+    if(c.inframe) R.push(rbRow('화면에 담을 것',esc(c.inframe)));
+  }
+  // 실제로 프롬프트에 들어간 영문을 함께 보여준다 — 순화가 걸리면 원문과 달라진다
+  R.push(rbRow('내용',esc((c.desc||'').slice(0,120))||'<i>비어 있음</i>',descOf(c).slice(0,110)));
+  const loc=[s.loc&&b(s.loc),s.time&&b(s.time)].filter(Boolean).join(' · ');
+  if(loc) R.push(rbRow('장소 · 시간',loc,[s.locEn,TIME[s.time]].filter(Boolean).join(', ')));
+  if(S.style.era) R.push(rbRow('시대',b(S.style.era),ERA[S.style.era]));
+
+  const tool = m.kind==='photo'
+    ? [S.style.cam&&['카메라',S.style.cam,CAM[S.style.cam]],c.lens&&['렌즈',c.lens,LENS[c.lens]]].filter(Boolean)
+    : [S.style.tool&&['도구',S.style.tool,(TOOLS[m.kind]||{})[S.style.tool]]].filter(Boolean);
+  if(tool.length) R.push(rbRow('도구',tool.map(x=>b(x[1])).join(' · '),tool.map(x=>x[2]).filter(Boolean).join(', ')));
+
+  const lm=[c.light&&['빛',c.light,LIGHT[c.light]],c.fx&&['효과',c.fx,FX[c.fx]],c.mood&&['무드',c.mood,MOOD[c.mood]]].filter(Boolean);
+  if(lm.length) R.push(rbRow('빛 · 무드',lm.map(x=>b(x[1])).join(' · '),lm.map(x=>x[2]).filter(Boolean).join(', ')));
+
+  if(vid){
+    const four=[c.move&&['무브먼트',c.move],c.speed&&['속도',c.speed],
+                c.keep&&['프레이밍 유지',c.keep],c.endp&&['종료 지점',c.endp]].filter(Boolean);
+    if(four.length) R.push(rbRow('카메라 4단',four.map(x=>x[0]+' '+b(x[1])).join('<br>'),camFour(c).slice(0,90)));
+    if(c.trig) R.push(rbRow('사건',b(c.trig),TRIGGER[c.trig]));
+    if(c.dur)  R.push(rbRow('길이',b(c.dur+'초')+(c.use?' · '+esc(c.use):'')));
+    if(c.dialogue) R.push(rbRow('대사',esc(c.dialogue.slice(0,90))));
+    if(c.audio)    R.push(rbRow('사운드',esc(c.audio.slice(0,90))));
+  }else if(c.move) R.push(rbRow('카메라 무브',b(c.move),MOVE[c.move]));
+
+  const st=[S.style.palette,S.style.extra].filter(Boolean).join(', ');
+  if(st) R.push(rbRow('스타일',esc(st)));
+
+  const lk=lockBits(c);
+  const par=[];
+  par.push('화면비 '+b(S.style.ar||'16:9'));
+  const o=mjOpt();
+  if(o.ver==='niji') par.push('니지 6');
+  else par.push('v'+o.ver+(o.look==='raw'&&medium().raw!==false?' · 사진처럼':' · 그림처럼'));
+  if(o.sty==='low') par.push('스타일 약하게'); if(o.sty==='high') par.push('스타일 세게');
+  if(o.sref) par.push('화풍 고정 --sref');
+  if(o.oref) par.push('인물 고정 --oref '+(o.ow||'100'));
+  R.push(rbRow('설정',par.join(' · ')));
+  if(lk.no.length) R.push(rbRow('빼는 것','<span style="color:var(--tx3)">--no</span>',lk.no.join(', ')));
+  return R.filter(Boolean).length?'<dl>'+R.join('')+'</dl>':'';
+}
+function paintReadback(){
+  const pair=activePair(), s=pair&&pair.s, c=pair&&pair.c;
+  [['k-mj','img'],['k-gen','img'],['k-veo','vid'],['k-rw','vid']].forEach(([id,kind])=>{
+    const el=$(id); if(!el) return;
+    const html=(s&&c)?readbackKO(s,c,kind):'';
+    el.innerHTML=html; el.classList.toggle('on',!!html);
+  });
+}
+
 /* 위험한 낱말이 있으면 알려주고, 우회 다섯 가지를 그 자리에서 고르게 한다 */
 function paintSoft(){
   const box=$('softbox'); if(!box) return;
@@ -5745,6 +5849,7 @@ function paintAfter(){
     if(MT.state==='unknown') mtProbe().then(paintHangulWarn);
   }
   paintSoft();
+  paintReadback();
 }
 document.addEventListener('click',e=>{
   const id=e.target.dataset&&e.target.dataset.copy;

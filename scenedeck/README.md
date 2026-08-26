@@ -269,6 +269,31 @@ DALL·E · Firefly도 같은 방식이고, 필터가 넓게 잡혀서 정상적�
 > 이 다섯 가지는 그 그림을 애초에 그리지 않는 방법입니다.
 > 실제로 만들려는 장면이 규정이 금지하는 바로 그것이라면, 이 기능으로도 통과되지 않고 통과되어서도 안 됩니다.
 
+### 영문 프롬프트 밑의 한글 되짚기
+
+영어로만 나오면 **어느 칸이 어떤 문구가 됐는지** 알 수 없습니다.
+그래서 프롬프트 바로 밑에 한글 되짚기를 답니다.
+
+```
+무엇으로   영화 스틸           cinematic, film still
+화면       인서트 · 아이레벨     insert shot, tight detail, eye-level angle
+인물       동훈                a Korean man in his early twenties, Japanese police uniform
+이 컷만    얼굴 — 뺨에 튄 자국
+순화       재료 바꾸기 · 어두운 액체 · 진한 포도주색   deep burgundy liquid
+내용       바닥으로 떨어지는 핏방울.   Drops of dark liquid falling to the floor.
+장소·시간  조선총독부 경찰국 · 밤
+빛 · 무드  로우키 · 긴장        low-key lighting, tense, suspenseful atmosphere
+설정       화면비 16:9 · v7 · 사진처럼
+빼는 것    --no  extra person, duplicate face, …
+```
+
+**기계 번역이 아닙니다.** 프롬프트를 이 앱이 조립하므로 재료를 그대로 되짚습니다 —
+번역보다 정확하고, **무엇을 고치면 무엇이 바뀌는지**가 바로 보입니다.
+
+- 「내용」 줄에는 **실제로 프롬프트에 들어간 영문**이 붙습니다.
+  순화를 켜면 원문(`핏방울`)과 실제 문구(`dark liquid`)가 달라지는 것이 그대로 보입니다.
+- 영상 쪽(Veo · 런웨이)에는 **카메라 4단 · 사건 · 길이 · 대사 · 사운드**가 더 붙습니다.
+
 ### 이 컷에서만 바뀌는 것 — 얼굴 · 의상 · 행동
 
 캐릭터 원본은 그대로 두고 **이 컷에만** 얹는 칸입니다.
