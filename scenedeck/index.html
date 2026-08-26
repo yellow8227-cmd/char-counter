@@ -719,7 +719,7 @@ footer .logo small{color:var(--tx3)}
       </button>
       <button class="fcard" data-go="prompt">
         <span class="ic">Prompt</span><h4>프롬프트</h4>
-        <p>미드저니 · Veo(Flow) · 범용 이미지를 동시에. <b>복사하고 미드저니 열기</b> 버튼 하나로 바로 작업할 수 있어요.</p>
+        <p>미드저니 · Veo(Flow) · 범용 이미지를 동시에. <b>복사만</b> 버튼 하나로 바로 붙여넣어 쓸 수 있어요.</p>
         <span class="go">프롬프트 뽑기 →</span>
       </button>
       <button class="fcard" data-go="plan">
@@ -1132,7 +1132,8 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
   <section class="tab" id="t-prompt">
     <div class="pghd">
       <h2>프롬프트 빌더</h2>
-      <p>컷을 고르면 프롬프트가 자동으로 조립됩니다. <b>쓰실 곳을 하나 고르고 「복사하고 열기」를 누르면 끝</b>이에요.</p>
+      <p>컷을 고르면 프롬프트가 자동으로 조립됩니다. <b>「복사만」을 누르고 쓰시던 창에 붙여넣으면 끝</b>이에요.
+      처음이라 사이트를 열어야 하면 옆의 <b>「복사하고 ⋯ 열기」</b>를 쓰세요.</p>
     </div>
 
     <div class="row" id="pmode" style="margin-bottom:18px">
@@ -1280,8 +1281,8 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
           </div>
         </div>
         <div class="row" style="margin-top:13px">
-          <a class="btn pri" href="https://www.midjourney.com/imagine" target="_blank" rel="noopener" data-open="mj">복사하고 미드저니 열기</a>
-          <button class="btn" data-copy="o-mj">복사만</button>
+          <button class="btn pri" data-copy="o-mj">복사만</button>
+          <a class="btn" href="https://www.midjourney.com/imagine" target="_blank" rel="noopener" data-open="mj">복사하고 미드저니 열기</a>
           <button class="btn gh" id="mjside">옆에 띄워두고 작업</button>
         </div>
 
@@ -1367,9 +1368,9 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <div class="tgbody">
         <div class="out empty2" id="o-rw">컷을 선택하세요</div>
         <div class="row" style="margin-top:13px">
-          <a class="btn pri" href="https://runwayml.com" target="_blank" rel="noopener" data-open="runway">복사하고 런웨이 열기</a>
+          <button class="btn pri" data-copy="o-rw">복사만</button>
+          <a class="btn" href="https://runwayml.com" target="_blank" rel="noopener" data-open="runway">복사하고 런웨이 열기</a>
           <a class="btn" href="https://klingai.com" target="_blank" rel="noopener" data-open="kling">클링 열기 ↗</a>
-          <button class="btn" data-copy="o-rw">복사만</button>
         </div>
         <p class="mini">이미지를 시작 프레임으로 넣을 땐 <b>카메라 방향과 사건을 한 문장에</b> 담으세요 —
         「Move the camera to the left, a man is rowing a boat」처럼요.</p>
@@ -1380,8 +1381,8 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <div class="tgbody">
         <div class="out empty2" id="o-veo">컷을 선택하세요</div>
         <div class="row" style="margin-top:13px">
-          <a class="btn pri" href="https://labs.google/fx/tools/flow" target="_blank" rel="noopener" data-open="flow">복사하고 Flow 열기</a>
-          <button class="btn" data-copy="o-veo">복사만</button>
+          <button class="btn pri" data-copy="o-veo">복사만</button>
+          <a class="btn" href="https://labs.google/fx/tools/flow" target="_blank" rel="noopener" data-open="flow">복사하고 Flow 열기</a>
           <span class="mini" style="margin:0">Flow에선 캐릭터 이미지를 <b>Ingredients</b>로 함께 넣으세요</span>
         </div>
       </div>
@@ -1393,9 +1394,9 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
         <div class="out empty2" id="o-gen">컷을 선택하세요</div>
         <p class="mini">미드저니 구독이 없어도 <b>공짜로 바로 해볼 수 있는 곳</b>입니다. 위 프롬프트가 그대로 통해요.</p>
         <div class="row" style="margin-top:11px">
-          <a class="btn pri" href="https://labs.google/fx/tools/image-fx" target="_blank" rel="noopener" data-open="imagefx">복사하고 ImageFX 열기</a>
+          <button class="btn pri" data-copy="o-gen">복사만</button>
+          <a class="btn" href="https://labs.google/fx/tools/image-fx" target="_blank" rel="noopener" data-open="imagefx">복사하고 ImageFX 열기</a>
           <a class="btn" href="https://www.bing.com/images/create" target="_blank" rel="noopener" data-open="bing">복사하고 Bing 열기</a>
-          <button class="btn gh" data-copy="o-gen">복사만</button>
         </div>
         <p class="mini">둘 다 구글 · 마이크로소프트 계정만 있으면 무료입니다.
         <b>「--ar」 같은 값은 붙지 않으니</b> 화면비는 그 사이트에서 직접 고르세요.</p>
@@ -1516,7 +1517,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v18 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v19 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
