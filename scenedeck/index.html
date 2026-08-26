@@ -1517,7 +1517,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v20 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v21 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -4966,7 +4966,10 @@ function toolBits(c){
    다섯 가지 우회는 전부 실제 영화 문법이다.
      실루엣(역광) · 그림자(벽) · 프레임 밖(반응 샷) · 직후(빈 공간) · 사물 인서트
    ========================================================= */
-const RISK_RE=/피투성이|핏방울|유혈|피범벅|피가|피를|고문|시체|주검|시신|참수|목을\s*베|매달려|찔러|찌른|잘린|절단|내장|학대|폭행|구타|죽인|죽이는|살해|처형|사형|총살|blood|gore|corpse|torture|behead|decapitat|stab|mutilat|dismember|hanged|hanging|killing|murder|execution/i;
+/* 영문 쪽은 반드시 낱말 경계를 잡는다.
+   경계가 없으면 e-stab-lishing 의 「stab」이 걸려서
+   설정샷마다 「잔인함 경고」가 뜬다. */
+const RISK_RE=/피투성이|핏방울|유혈|피범벅|피가|피를|고문|시체|주검|시신|참수|목을\s*베|매달려|찔러|찌른|잘린|절단|내장|학대|폭행|구타|죽인|죽이는|살해|처형|사형|총살|\b(blood\w*|gore|gory|corpse\w*|tortur\w*|behead\w*|decapitat\w*|stab|stabs|stabbed|stabbing|mutilat\w*|dismember\w*|hanged|slaughter\w*|kill|kills|killed|killing|murder\w*|execution|executed)\b/i;
 /* 낱말을 바꿀 때는 품사를 지켜야 한다.
    「bloodied prisoner」를 「dark wet stain prisoner」로 바꾸면 문장이 깨진다.
    형용사는 형용사로, 명사는 명사로, 동사는 동사로. */
@@ -4998,6 +5001,8 @@ const SOFT_KO=[
   [/고문실|취조실/g,'낡은 돌방'],
   [/사형장|처형장/g,'의식의 마당'],
   [/교수대/g,'나무 단'],
+  [/사형수/g,'죄수'],[/사형 집행|사형선고|사형/g,'의식'],
+  [/독립투사/g,'묶인 사람'],[/고문자/g,'심문관'],
   [/피투성이|피범벅|유혈낭자/g,'검게 젖은'],
   [/핏방울|피가|피를/g,'검은 물기'],
   [/고문실/g,'취조실'],[/고문/g,'취조'],
@@ -5007,6 +5012,8 @@ const SOFT_KO=[
   [/찔러|찌른다|찌르는/g,'칼을 겨눈다'],
   [/죽인다|죽이는|살해한다|살해/g,'맞선다'],
   [/구타|폭행|학대/g,'실랑이의 흔적'],
+  [/잘린|절단된|절단/g,'끊긴'],[/죽인다|죽인|죽이는/g,'맞선'],
+  [/내장|창자/g,'속'],[/유혈/g,'검게 젖음'],[/시신|주검/g,'미동 없는 형상'],
   [/총살|처형|사형 집행/g,'의식']
 ];
 /* 우회는 낱말을 감추는 일이 아니라 「무엇을 화면에 담을지」를 바꾸는 일이다.
@@ -5014,6 +5021,12 @@ const SOFT_KO=[
    실루엣만 원래 행위를 유지하되 세부가 안 보이게 만든다.
    ph = 「화면에 담을 것」 칸의 예시 문구. */
 const SOFTEN={
+  '말만 바꾸기':{
+    tip:'샷도 구도도 그대로 — 걸리는 낱말만 바꿉니다. 화면에 보이는 건 똑같아요',
+    people:'yes',
+    bits:[],
+    set:{},
+    ph:''},
   '실루엣':{
     tip:'역광으로 인물을 통째 검게 — 몸의 세부가 안 보이면 잔혹함도 안 보인다',
     people:'yes',
