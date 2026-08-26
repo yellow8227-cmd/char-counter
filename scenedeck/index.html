@@ -1502,6 +1502,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
         <button class="btn" id="d-sched">촬영 스케줄표 CSV</button>
         <button class="btn" id="d-call">캐릭터 콜시트 CSV</button>
         <button class="btn" id="d-chars">캐릭터 프롬프트 CSV</button>
+        <button class="btn" id="d-final">확정 프롬프트 CSV</button>
         <button class="btn" id="d-script">대본 TXT</button>
         <button class="btn" id="d-txt">프롬프트 전량 TXT</button>
       </div>
@@ -1563,7 +1564,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v41 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v42 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -3251,7 +3252,7 @@ function newScene(){ return {id:nid('s'),heading:'',loc:'',locEn:'',time:'',summ
 function newCut(){
   return {id:nid('k'),desc:'',descEn:'',shot:'',angle:'',move:'',lens:'',light:'',mood:'',
     speed:'',fx:'',trig:'',emo:'',keep:'',endp:'',use:'',bg:false,cast:'',soft:'',intent:'',pos:'',
-    inframe:'',inframeEn:'',mat:'',tint:'',
+    inframe:'',inframeEn:'',mat:'',tint:'',final:'',
     face:'',faceEn:'',outfit:'',outfitEn:'',act:'',actEn:'',
     dur:4,chars:[],dialogue:'',audio:'',note:'',hasImg:false,open:true};
 }
@@ -3326,6 +3327,29 @@ function staleWarn(s,c){
   if(lv) out.push({k:'locv',ko:'장소 — '+lv,
     why:'지붕 · 벽 · 마당 · 문처럼 눈에 보이는 것으로 적어야 그 장소가 나옵니다'});
   return out;
+}
+/* 지문은 읽는 글이다. 두 사람이 나오고, 「~하며」로 이어지고, 길다.
+   그대로 프롬프트에 실으면 컷이 아니라 줄거리가 된다. */
+function proseWarn(c){
+  if(!c || c.bg) return '';
+  if((c.inframe||'').trim() || (c.inframeEn||'').trim()) return '';
+  const d=String(c.desc||c.descEn||'').trim();
+  if(!d) return '';
+  const why=[];
+  if(d.length>70) why.push('깁니다');
+  if(/(하며|하면서|다가|이내|잠시 후|그러나|그리고)/.test(d)) why.push('두 가지 일이 이어져 있습니다');
+  const names=S.chars.map(x=>String(x.name||'').trim()).filter(n=>n.length>=2);
+  const hit=names.filter(n=>d.indexOf(n)>=0 || (/^[가-힣]{3}$/.test(n)&&d.indexOf(n.slice(1))>=0));
+  if(hit.length>1) why.push('두 사람이 함께 나옵니다');
+  return why.length?why.join(' · '):'';
+}
+function proseWarnHTML(c){
+  const w=proseWarn(c);
+  if(!w) return '';
+  return `<p class="mini" style="margin:-8px 0 12px;color:var(--tx3)">
+    지문이 <b>${esc(w)}</b> — 지문은 읽는 글이지 촬영 지시가 아닙니다.
+    <b>화면에 보이는 것만 한 줄</b>로 위 칸에 적으면 그쪽이 프롬프트에 실립니다.
+    한 컷에 한 가지만 담고, 나머지는 <b>✂ 한 사람씩 쪼개기</b>로 나누세요.</p>`;
 }
 function staleWarnHTML(s,c){
   const w=staleWarn(s,c);
@@ -3452,6 +3476,13 @@ function cutBodyHTML(s,c){
         <label class="f"><span>컷 내용 (한글 지문)</span><textarea data-kf="desc" placeholder="지훈이 우산 없이 골목을 걸어 나온다. 뒤를 한 번 돌아본다."></textarea></label>
         <label class="f enfield"><span>컷 내용</span><textarea data-kf="descEn" placeholder="a man walks out of the alley without an umbrella, glancing back once"></textarea></label>
       </div>
+      <div class="grid g2">
+        <label class="f"><span>화면에 담을 것 — <b>보이는 것만 한 줄</b></span>
+          <input type="text" data-kf="inframe" value="${esc(c.inframe)}" placeholder="입에 문 채 멈춘 얼굴, 시선은 화면 밖"></label>
+        <label class="f enfield"><span>화면에 담을 것</span>
+          <input type="text" data-kf="inframeEn" value="${esc(c.inframeEn)}" placeholder="stops mid-chew, a mouthful held in one cheek, eyes lifted off-frame"></label>
+      </div>
+      ${proseWarnHTML(c)}
       <div class="row" style="margin:-6px 0 12px">
         <button class="btn sm" data-ktrans="${c.id}">한글 → 영문</button>
         <button class="btn sm gh" data-kimg="${c.id}">${c.hasImg?'이미지 교체':'이미지 넣기'}</button>
@@ -3467,6 +3498,15 @@ function cutBodyHTML(s,c){
         </label>
       </div>
       ${staleWarnHTML(s,c)}
+      <details class="faq" style="margin:0 0 14px"${c.final?' open':''}>
+        <summary>확정 프롬프트 ${c.final?'<span class="tagx">확정됨</span>':''}</summary>
+        <div class="fa" style="padding:0 18px 16px">
+          <p class="mini" style="margin:0 0 8px">손으로 다듬어 <b>실제로 통과한 프롬프트</b>를 여기 붙여넣으면,
+          이 컷의 미드저니 칸은 <b>앱이 더 이상 손대지 않고 이것을 그대로</b> 내보냅니다.
+          비우면 다시 앱이 조립합니다. 내보내기(CSV·TXT)에도 함께 실립니다.</p>
+          <textarea data-kf="final" placeholder="cinematic film still, close-up, eye level. … --ar 16:9 --style raw --v 7 --no …" style="min-height:96px">${esc(c.final)}</textarea>
+        </div>
+      </details>
       <div class="grid g3">
         <label class="f"><span>샷 사이즈</span><select data-kf="shot">${opts(SHOT,c.shot)}</select></label>
         <label class="f"><span>앵글</span><select data-kf="angle">${opts(ANGLE,c.angle)}</select></label>
@@ -6332,11 +6372,15 @@ function charBits(c){
 /* 지문 + 이 컷의 행동 변화 */
 function descOf(c){
   const m=c.soft?SOFTEN[c.soft]:null;
+  // 「화면에 담을 것」이 있으면 그것이 언제나 이긴다.
+  // 지문은 읽는 사람을 위한 산문이지 촬영 지시가 아니다 —
+  // 「삼키지도 못한 채 머뭇거린다」는 소설 문장이고,
+  // 컷은 「입에 문 채 멈춘 얼굴, 시선은 화면 밖」이다.
+  let own=(c.inframeEn||'').trim();
+  if(!own && (c.inframe||'').trim()) own=c.soft?softenTxt(c.inframe.trim(),true):c.inframe.trim();
+  if(own) return [own, chgBits(c).act].filter(Boolean).join(', ');
   if(m && m.subj){
-    // 화면에 담을 것을 직접 적었으면 그것이 이긴다
-    let own=(c.inframeEn||'').trim();
-    if(!own && (c.inframe||'').trim()) own=softenTxt(c.inframe.trim(),true);
-    return [own||m.subj, chgBits(c).act].filter(Boolean).join(', ');
+    return [m.subj, chgBits(c).act].filter(Boolean).join(', ');
   }
   let base=(c.descEn||'').trim();
   const ko=!base; if(ko) base=(c.desc||'').trim();
@@ -6347,6 +6391,8 @@ function descOf(c){
    ① 목적 → ② 스토리(샷·앵글·구도 · 인물 · 행동 · 장소) → ③ 만드는 도구
    → ④ 디테일(시대 · 시간 · 조명 · 효과) → ⑤ 컬러·무드 → ⑥ 파라미터 */
 function buildMJ(s,c){
+  // 손으로 확정한 것이 있으면 앱은 손대지 않는다
+  if(c && String(c.final||'').trim()) return String(c.final).trim();
   if(S.style.terse) return buildMJTerse(s,c);
   const m=medium(), p=[];
   if(m.head) p.push(m.head);
@@ -6406,6 +6452,7 @@ function terseNo(list){
   return out.slice(0,TERSE_NO_MAX);
 }
 function buildMJTerse(s,c){
+  if(c && String(c.final||'').trim()) return String(c.final).trim();
   const m=medium(), L=[];
   L.push([m.head,SHOT[c.shot],ANGLE[c.angle]].filter(Boolean).join(', '));
   const lk=lockBits(c);
@@ -6820,6 +6867,8 @@ function readbackKO(s,c,kind){
   if(chg.length) R.push(rbRow('이 컷만',chg.map(x=>x[0]+' — '+esc(x[1])).join('<br>')));
   if(EMO[c.emo]) R.push(rbRow('표정',b(c.emo),EMO[c.emo]));
 
+  if(String(c.final||'').trim())
+    R.push(rbRow('확정 프롬프트','앱이 손대지 않고 그대로 내보냅니다'));
   const rbc=cutChars(c).filter(ch=>charLock(ch));
   if(rbc.length>1){
     const rw=relOf(c,rbc);
@@ -7509,6 +7558,18 @@ $('d-call').addEventListener('click',()=>{
   });
   csvOut(fileName('callsheet','csv'),rows);
   toast('콜시트를 내보냈어요 ✓');
+});
+
+/* 확정 프롬프트만 모아서 — 통과한 것들을 한 파일로 */
+$('d-final') && $('d-final').addEventListener('click',()=>{
+  const rows=[['씬','컷','씬 제목','컷 내용','확정 프롬프트']];
+  S.scenes.forEach((s,si)=>s.cuts.forEach((c,ci)=>{
+    const f=String(c.final||'').trim(); if(!f) return;
+    rows.push(['S'+(si+1),'#'+(ci+1),s.heading||'',(c.desc||c.descEn||'').slice(0,120),f]);
+  }));
+  if(rows.length<2){ toast('아직 확정한 프롬프트가 없어요'); return; }
+  csvOut(fileName('final-prompts','csv'),rows);
+  toast((rows.length-1)+'개를 내보냈어요 ✓');
 });
 
 /* 캐릭터 프롬프트 CSV — 인물이 많을 때 고정 블록을 한 표로 */
