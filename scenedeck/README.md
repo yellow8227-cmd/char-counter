@@ -350,6 +350,33 @@ two people —
 `닦아준다 · 손수건 · 달래다` 는 **힘을 쥔 쪽이 있을 때만** 회유로 봅니다.
 순사·헌병·간수 같은 역할이 컷에 없으면 어머니가 아이 입가를 닦는 장면이므로 건드리지 않습니다.
 
+### 짧게 쓰기 — 프롬프트가 난잡해서 안 나올 때
+
+미드저니는 **앞쪽 낱말에 힘을 싣고, 길어질수록 전부 평균으로 뭉갭니다.**
+쉼표를 마흔 개 찍으면 어느 것도 세게 안 나옵니다.
+
+**프롬프트 탭 → 「짧게 쓰기」** 를 누르면 같은 정보를 순서대로 **문장으로 끊고**, 뒤쪽 장식은 버립니다.
+
+```
+매체·샷 → 인물 → 인원 → 관계 → 행동 → 장소 → 시대 → 빛 → 공기
+```
+
+```
+cinematic, film still, close-up shot, low angle looking up.
+A Korean man in his thirties in a jeogori in unbleached off-white cotton gone grey,
+baji torn at the knees. Upright and unbending. Single person, one character only.
+He opens his eyes slowly. Bare windowless basement room, a single bolted chair.
+Korea under Japanese colonial rule. Low-key lighting, deep shadows. Hyper-realistic.
+--ar 16:9 --style raw --v 7 --no crowd, other people, extra person, …
+```
+
+인물 정보를 갖춘 컷 기준으로 **111단어 → 60단어**, 두 사람 컷은 **184단어 → 80단어**.
+`--no` 도 열 개로 자릅니다 — **인원 통제를 맨 앞에 두고** 나머지를 채웁니다.
+
+**얼굴 참고 이미지(`--oref`)가 걸린 컷에서는 인물 묘사를 더 줄입니다.**
+얼굴은 참고 이미지가 잡는 것이지 프롬프트로 매번 다시 설명할 것이 아닙니다 —
+매번 쓰면 **참고 이미지와 싸웁니다.** 그 컷은 46단어까지 줄어듭니다.
+
 ### 공기 — 분위기는 금지에 안 걸립니다
 
 **막히는 것은 「분위기」가 아니라 「묘사」입니다.**
