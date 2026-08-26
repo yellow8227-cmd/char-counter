@@ -350,6 +350,23 @@ two people —
 `닦아준다 · 손수건 · 달래다` 는 **힘을 쥔 쪽이 있을 때만** 회유로 봅니다.
 순사·헌병·간수 같은 역할이 컷에 없으면 어머니가 아이 입가를 닦는 장면이므로 건드리지 않습니다.
 
+### 이름이 뜻으로 번역될 때
+
+「동성」이 **`same-sex`** 가 되고 「순사」가 **`chauffeur`** 가 됩니다.
+번역기는 영화·시대 용어를 모르고, **이름은 애초에 번역하면 안 되는 것**입니다.
+
+그래서 번역을 두 겹으로 감쌌습니다.
+
+- **이름 가리기** — 번역기에 넘기기 전에 등장인물 이름을 자리표시자로 바꿔두고,
+  번역이 끝난 뒤 **로마자로** 되돌립니다. `백동성` → `Baekdongseong`.
+  대본이 성을 떼고 「동성」이라고만 쓰는 경우도 함께 가립니다.
+  영문 프롬프트에 한글이 남지 않도록 국어의 로마자 표기법으로 옮깁니다.
+- **용어집** — 번역이 끝난 뒤 시대 용어를 바로잡습니다.
+  `chauffeur` → `patrolman`, `gendarme` → `military policeman`,
+  `straw shoes` → `straw sandals`, `paper door` → `paper-screened sliding door`,
+  `kerosene lamp` → `oil lamp`, `thatched house` → `thatched-roof house`,
+  `jar stand` → `onggi jar platform` 등.
+
 ### 장소를 이름으로만 적었을 때
 
 `Dong-Hoon Baek's House` — 미드저니는 이 사람을 모릅니다. 그냥 **아무 집이나** 나옵니다.
