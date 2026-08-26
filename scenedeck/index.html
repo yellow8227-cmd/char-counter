@@ -1228,6 +1228,11 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
         아래는 전부 실제 영화 문법이고, 대개 직접 보여주는 것보다 셉니다.</p>
         <div class="row" id="softchips"></div>
         <p class="camwhy" id="softtip"></p>
+        <div class="row" id="softmatrow" style="display:none">
+          <span class="mini" style="margin:0">화면에 담을 재료</span>
+          <select id="soft-mat" style="max-width:230px"></select>
+          <span class="mini" style="margin:0">「피」 자리에 이 재료가 들어갑니다</span>
+        </div>
         <div class="grid g2" id="softin" style="display:none">
           <label class="f"><span>화면에 담을 것 — 비워두면 기본 문구를 씁니다</span>
             <input type="text" id="soft-in" placeholder=""></label>
@@ -1517,7 +1522,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v21 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v22 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -2687,7 +2692,7 @@ function newScene(){ return {id:nid('s'),heading:'',loc:'',locEn:'',time:'',summ
 function newCut(){
   return {id:nid('k'),desc:'',descEn:'',shot:'',angle:'',move:'',lens:'',light:'',mood:'',
     speed:'',fx:'',trig:'',emo:'',keep:'',endp:'',use:'',bg:false,cast:'',soft:'',
-    inframe:'',inframeEn:'',
+    inframe:'',inframeEn:'',mat:'',
     face:'',faceEn:'',outfit:'',outfitEn:'',act:'',actEn:'',
     dur:4,chars:[],dialogue:'',audio:'',note:'',hasImg:false,open:true};
 }
@@ -5020,6 +5025,38 @@ const SOFT_KO=[
    그래서 네 가지는 지문 자체를 다른 화면으로 갈아끼운다(subj).
    실루엣만 원래 행위를 유지하되 세부가 안 보이게 만든다.
    ph = 「화면에 담을 것」 칸의 예시 문구. */
+/* 재료를 바꾼다.
+   「사실은 피인데 토마토 소스라고 부르기」가 아니다 — 그건 필터를 속이는 일이고
+   실용적으로도 안 먹힌다. 모델은 적은 대로 그리므로 토마토 소스라고 쓰면
+   토마토 소스가 나온다.
+   여기 있는 것들은 「실제로 화면에 담고 싶은 다른 재료」다.
+   먹물이 번지는 돌바닥은 피보다 덜 잔인하면서 더 세다. */
+/* n 은 반드시 「명사」여야 한다. 분사구를 넣으면
+   「Drops of spilled black ink pooling falling to the floor」처럼 문장이 깨진다.
+   분위기는 x 로 따로 빼서 별도의 절로 붙인다. */
+const MAT={
+  '':                  null,
+  '먹물':               {n:'black ink',            a:'ink-stained',
+                        x:'ink spreading slowly through the grain of the stone'},
+  '붉은 먹':             {n:'red ink',              a:'red-ink-stained',
+                        x:'red ink blooming across the surface'},
+  '옻칠':               {n:'red lacquer',          a:'lacquer-stained',
+                        x:'glossy red lacquer catching the light'},
+  '붉은 실':             {n:'red thread',           a:'wound in red thread',
+                        x:'red thread trailing across the floor'},
+  '붉은 천':             {n:'red silk',             a:'draped in red silk',
+                        x:'a length of red silk pooling on the floor'},
+  '녹물':               {n:'rust-coloured water',  a:'rust-stained',
+                        x:'rust seeping between the stones'},
+  '물에 번지는 붉은빛':    {n:'red pigment',          a:'tinted deep red',
+                        x:'red pigment blooming through clear water'},
+  '붉은 꽃잎':           {n:'red petals',           a:'covered in red petals',
+                        x:'red petals scattered across the floor'},
+  '촛농':               {n:'red candle wax',       a:'wax-spattered',
+                        x:'red wax pooling and hardening'},
+  '젖은 어둠':           {n:'dark wetness',         a:'darkly soaked',
+                        x:'a dark wet patch spreading outward'}
+};
 const SOFTEN={
   '말만 바꾸기':{
     tip:'샷도 구도도 그대로 — 걸리는 낱말만 바꿉니다. 화면에 보이는 건 똑같아요',
@@ -5027,6 +5064,15 @@ const SOFTEN={
     bits:[],
     set:{},
     ph:''},
+  '재료 바꾸기':{
+    tip:'화면에 담을 재료를 바꾼다 — 먹물이 번지는 돌바닥은 덜 잔인하면서 더 세다',
+    people:'yes', bits:[], set:{}, mat:true, ph:''},
+  '무대 티내기':{
+    tip:'촬영 현장을 그대로 보여준다 — 특수분장과 조명 장비가 보이면 실제가 아니게 된다',
+    people:'yes',
+    bits:['behind the scenes of a film set, practical stage effects and prosthetics',
+          'studio lighting rigs and crew visible at the edge of frame, clearly a staged production'],
+    set:{}, ph:''},
   '실루엣':{
     tip:'역광으로 인물을 통째 검게 — 몸의 세부가 안 보이면 잔혹함도 안 보인다',
     people:'yes',
@@ -5076,9 +5122,15 @@ function softenTxt(t,ko){
 /* 마지막 청소 — 장소 · 외형 고정 블록 · 스타일 태그 · 배제 목록 어디에서
    흘러들어왔든 조립이 끝난 프롬프트 전체를 한 번 더 훑는다.
    지문만 순화해서는 「colonial-era torture chamber」 같은 장소가 그대로 남는다. */
-function scrub(txt,on){
+function scrub(txt,on,mat){
   if(!on) return txt;
-  return softenTxt(softenTxt(String(txt||''),false),true);
+  let v=softenTxt(softenTxt(String(txt||''),false),true);
+  const m=MAT[mat||''];
+  if(m){
+    v=v.replace(/\bdark liquid\b/gi,m.n).replace(/\bdark-stained\b/gi,m.a)
+       .replace(/검은 물기/g,mat).replace(/검게 젖은/g,mat+' 묻은');
+  }
+  return v;
 }
 /* 조립이 끝난 프롬프트에 아직 걸릴 낱말이 남아 있는지 — 그대로 보여준다 */
 function riskInText(txt){
@@ -5095,7 +5147,14 @@ function riskHits(c){
   hay.split(/[\s,./·]+/).forEach(w=>{ if(w && RISK_RE.test(w) && out.indexOf(w)<0) out.push(w); });
   return out.slice(0,8);
 }
-function softBits(c){ const k=c&&c.soft, m=SOFTEN[k]; return m?m.bits.slice():[]; }
+function softBits(c){
+  const k=c&&c.soft, m=SOFTEN[k];
+  if(!m) return [];
+  const out=m.bits.slice();
+  const mt=m.mat?MAT[c.mat||'']:null;
+  if(mt&&mt.x) out.push(mt.x);
+  return out;
+}
 /* 카메라 프롬프트 4단 — 무브먼트 + 속도 + 프레이밍 유지 + 종료 지점.
    장면 묘사와 섞지 않고 따로 세워야 넷 다 살아남는다. (가이드북 04:07)
    컷당 무브먼트는 하나만 — 둘을 적으면 모델이 평균을 내서 아무것도 아닌 게 된다. (06:57) */
@@ -5186,7 +5245,7 @@ function buildMJ(s,c){
   let out=(dedupe(p).join(', ')+' '+refParams(s,c,S.style.mj||'')).trim();
   // 파라미터 칸에 --no 를 직접 써두었다면 그쪽을 존중한다
   if(lk.no.length && !/--no\b/.test(out)) out+=' --no '+lk.no.join(', ');
-  return scrub(out,!!(c&&c.soft));
+  return scrub(out,!!(c&&c.soft),c&&c.mat);
 }
 function buildVEO(s,c){
   const chs=cutChars(c), L=[];
@@ -5224,7 +5283,7 @@ function buildVEO(s,c){
   const lkv=lockBits(c);
   if(lkv.body.length) L.push('Constraint: '+lkv.body.join(', ')+'.');
   if(lkv.no.length)   L.push('Avoid: '+lkv.no.join(', ')+'.');
-  return scrub(L.join('\n'),!!(c&&c.soft));
+  return scrub(L.join('\n'),!!(c&&c.soft),c&&c.mat);
 }
 function buildGEN(s,c){
   const m=medium(), p=[];
@@ -5246,7 +5305,7 @@ function buildGEN(s,c){
   out+='\n\n[화면비] '+(AR[S.style.ar]||'16:9');
   const neg=dedupe([S.style.neg||''].concat(lk.no)).filter(Boolean).join(', ');
   if(neg) out+='\n[네거티브] '+neg;
-  return scrub(out,!!(c&&c.soft));
+  return scrub(out,!!(c&&c.soft),c&&c.mat);
 }
 /* 런웨이 · 클링 — 한 문장. 카메라 동작을 맨 앞에 두는 게 잘 먹힌다.
    「A cinematic pull back of a medieval warrior standing exhausted …」 (필기 Part 4) */
@@ -5266,7 +5325,7 @@ function buildRW(s,c){
   const lk=lockBits(c);
   if(lk.body.length) out+=' '+cap(lk.body.join(', '))+'.';
   const rn=refNote(s,c); if(rn) out+=' '+rn;
-  return scrub(out,!!(c&&c.soft));
+  return scrub(out,!!(c&&c.soft),c&&c.mat);
 }
 const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
 
@@ -5529,6 +5588,13 @@ function paintSoft(){
   const m=c.soft?SOFTEN[c.soft]:null;
   $('softtip').textContent = m?m.tip||'':'';
   $('soft-off').style.display = c.soft?'':'none';
+  const mr=$('softmatrow');
+  if(m && m.mat){
+    mr.style.display='';
+    const sel=$('soft-mat');
+    if(!sel.options.length) sel.innerHTML=opts(MAT,c.mat||'');
+    sel.value=c.mat||'';
+  }else mr.style.display='none';
   const box2=$('softin');
   if(m && m.subj){
     box2.style.display='';
@@ -5551,6 +5617,11 @@ document.addEventListener('click',e=>{
   save(); renderAll(); renderPrompt();
   toast(c.soft?`${k} — ${m.tip}`:'순화를 껐어요',
     {label:'되돌리기',fn:()=>{ Object.assign(c,before); save(); renderAll(); renderPrompt(); }});
+});
+$('soft-mat') && $('soft-mat').addEventListener('change',()=>{
+  const pair=activePair(); const c=pair&&pair.c; if(!c) return;
+  c.mat=$('soft-mat').value; save(); renderAll(); renderPrompt();
+  toast(c.mat?`「피」 자리에 ${c.mat} 를 씁니다`:'재료를 비웠어요');
 });
 ['soft-in','soft-inEn'].forEach(id=>{
   const el=$(id); if(!el) return;
