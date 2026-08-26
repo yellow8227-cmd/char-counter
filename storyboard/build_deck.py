@@ -71,6 +71,7 @@ FIELD_MIN_PT = 8.0
 # 배수로 두면 파워포인트가 글꼴 고유 행간(맑은 고딕은 약 1.33em)에 곱해서
 # 계산보다 훨씬 두꺼워지고, 아랫칸을 침범한다.
 LINE_RATIO = 1.15
+PANEL_MAX_PX = 1500   # 그림 칸 가로 4인치 · 300dpi 기준으로도 충분하다
 # 칸마다 크기가 제각각이면 지면이 지저분해진다. 세 단으로만 떨어뜨린다.
 SIZE_STEPS = [9.5, 8.5, 8.0]
 NUMBER_STEPS = [12.0, 11.0, 10.0]
@@ -126,10 +127,10 @@ def fit_to_panel(path: Path, cache: Path, panel_aspect: float) -> Path:
         im = im.convert("RGB")
         w, h = im.size
         aspect = w / h
-        if abs(aspect - panel_aspect) < 0.02:
-            return path
 
-        if aspect > panel_aspect:      # 더 넓다 -> 위아래에 여백
+        if abs(aspect - panel_aspect) < 0.02:
+            nw, nh = w, h
+        elif aspect > panel_aspect:    # 더 넓다 -> 위아래에 여백
             nw, nh = w, round(w / panel_aspect)
         else:                          # 더 좁다 -> 좌우에 여백
             nw, nh = round(h * panel_aspect), h
@@ -137,9 +138,17 @@ def fit_to_panel(path: Path, cache: Path, panel_aspect: float) -> Path:
         canvas = Image.new("RGB", (nw, nh), (0, 0, 0))
         canvas.paste(im, ((nw - w) // 2, (nh - h) // 2))
 
+        # 그림 칸은 4인치 안팎이다. 원본 해상도를 그대로 심으면
+        # 화면에서 달라지는 것 없이 파일만 무거워진다.
+        if canvas.width > PANEL_MAX_PX:
+            canvas = canvas.resize(
+                (PANEL_MAX_PX, round(PANEL_MAX_PX * canvas.height / canvas.width)),
+                Image.LANCZOS,
+            )
+
         cache.mkdir(parents=True, exist_ok=True)
         out = cache / f"{path.stem}_{panel_aspect:.3f}.jpg"
-        canvas.save(out, quality=92, optimize=True)
+        canvas.save(out, quality=86, optimize=True, progressive=True)
         return out
 
 
