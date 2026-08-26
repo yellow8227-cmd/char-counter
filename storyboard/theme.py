@@ -19,22 +19,22 @@ from pptx.util import Emu, Inches, Pt
 
 PALETTES = {
     "paper": dict(
-        bg_top=RGBColor(0xF3, 0xF1, 0xEF), bg_bottom=RGBColor(0xE7, 0xE3, 0xDF),
-        plate=RGBColor(0xFF, 0xFF, 0xFF),        # 글이 앉는 칸
-        label_cell=RGBColor(0xF4, 0xF1, 0xEE),   # 왼쪽 항목 칸
-        head_cell=RGBColor(0xE2, 0xDC, 0xD6),    # Scene / Shot 머리
+        bg_top=RGBColor(0xEA, 0xE6, 0xE1), bg_bottom=RGBColor(0xDF, 0xDA, 0xD4),
+        plate=RGBColor(0xFF, 0xFF, 0xFF),        # 카드 — 칸을 나누지 않는 흰 판
+        label_cell=RGBColor(0xFF, 0xFF, 0xFF),
+        head_cell=RGBColor(0xFF, 0xFF, 0xFF),
         well=RGBColor(0x0F, 0x0E, 0x0D),         # 그림이 앉는 창
-        empty_well=RGBColor(0xEA, 0xE6, 0xE2),   # 아직 그림이 없는 창
-        hairline=RGBColor(0xC9, 0xC1, 0xBA),
-        body=RGBColor(0x1C, 0x19, 0x17),         # 본문
-        label=RGBColor(0x6E, 0x66, 0x60),        # 항목 이름
-        dim=RGBColor(0x9A, 0x92, 0x8B),          # 비어 있는 창 안내
+        empty_well=RGBColor(0xEE, 0xEB, 0xE7),   # 아직 그림이 없는 창
+        hairline=RGBColor(0xE2, 0xDD, 0xD7),     # 글 줄 사이의 아주 옅은 선
+        body=RGBColor(0x1C, 0x19, 0x17),
+        label=RGBColor(0xA5, 0x9D, 0x96),        # 항목 이름 — 배경으로 물러난다
+        dim=RGBColor(0xAE, 0xA6, 0x9F),
     ),
     "ink": dict(
         bg_top=RGBColor(0x10, 0x0D, 0x0C), bg_bottom=RGBColor(0x05, 0x05, 0x05),
-        plate=RGBColor(0x15, 0x12, 0x10),
-        label_cell=RGBColor(0x1E, 0x1A, 0x17),
-        head_cell=RGBColor(0x26, 0x20, 0x1C),
+        plate=RGBColor(0x16, 0x13, 0x11),
+        label_cell=RGBColor(0x16, 0x13, 0x11),
+        head_cell=RGBColor(0x16, 0x13, 0x11),
         well=RGBColor(0x07, 0x07, 0x06),
         empty_well=RGBColor(0x0B, 0x0A, 0x09),
         hairline=RGBColor(0x3A, 0x32, 0x2D),
@@ -57,27 +57,35 @@ def c(key: str) -> RGBColor:
     return _P[key]
 
 
-# ── 칸 비율 ────────────────────────────────────────────────────────────
-# 원본 템플릿은 글 칸 네 줄이 모두 0.271in 이라 두 줄만 넘어가도 글자가
-# 5~7pt까지 줄어든다. 그림 칸에서 높이를 덜어 글 칸으로 넘긴다.
-# 덤으로 그림 칸이 2.08:1 이 되어 시네마스코프 소스가 덜 잘린다.
-ROW_H = {          # 인치. 합이 카드 높이 3.502 와 같아야 한다
-    "head":   0.250,
-    "pic":    1.820,
-    "camera": 0.330,   # 2줄 @9.5pt
-    "desc":   0.440,   # 3줄 @8.5pt · 2줄 @11pt
+# ── 판면 ───────────────────────────────────────────────────────────────
+# 2.39:1 컷은 그림 창의 **폭**에서 크기가 정해진다. 창을 세로로 늘려봐야
+# 검은 띠만 두꺼워질 뿐이다. 그래서 바깥 여백과 기둥 사이를 걷어내
+# 카드 자체를 넓혔다 — 3.788 → 4.158in, 그림이 그만큼 커진다.
+SLIDE_W, SLIDE_H = 13.3333, 7.5
+MARGIN_X, GUTTER_X = 0.190, 0.240
+MARGIN_Y, GUTTER_Y = 0.130, 0.130
+CARD_W = (SLIDE_W - MARGIN_X * 2 - GUTTER_X * 2) / 3   # 4.158
+CARD_H = (SLIDE_H - MARGIN_Y * 2 - GUTTER_Y) / 2       # 3.555
+
+ROW_H = {          # 인치. 합이 CARD_H 와 같아야 한다
+    "head":   0.220,
+    "pic":    1.944,   # 4.158 / 1.944 = 2.14:1
+    "camera": 0.300,   # 2줄 @8.5pt
+    "desc":   0.440,   # 3줄 @8.5pt · 2줄 @9.5pt
     "note":   0.440,
-    "trans":  0.222,   # 1줄 @9.5pt
+    "trans":  0.211,   # 1줄 @9.5pt
 }
 ROW_ORDER = ["head", "pic", "camera", "desc", "note", "trans"]
-LABEL_COL_W = 0.760   # 항목 이름이 들어가는 왼쪽 칸
-LABEL_PT = 8.0        # 항목 이름 — 한 줄로 유지되는 크기
-HEAD_LABEL_PT = 9.0   # Scene / Shot
+LABEL_COL_W = 0.660   # 항목 이름이 들어가는 왼쪽 칸
+LABEL_PT = 7.0        # 항목 이름 — 조용히 물러나 있어야 한다
+HEAD_LABEL_PT = 7.0   # Scene / Shot
 
 PICTURE_ROW = 1
 FIRST_PH_IDX = 10
 PH_PER_PANEL = 7
-CARD_W = 3.788
+
+# 표 선은 글 줄 사이에만 남긴다. 칸마다 테두리를 두르면 엑셀처럼 보인다.
+RULED_ROWS = {3, 4, 5}   # 장면묘사 · 디테일 · 전환효과의 윗선
 
 
 def _set_cell(cell, fill: RGBColor, text_color: RGBColor, size_pt=None) -> None:
@@ -94,18 +102,26 @@ def _set_cell(cell, fill: RGBColor, text_color: RGBColor, size_pt=None) -> None:
                 run.font.size = Pt(size_pt)
 
 
-def _set_borders(cell, color: RGBColor, width_pt: float = 0.5) -> None:
+def _set_borders(cell, sides: str = "", color: RGBColor | None = None,
+                 width_pt: float = 0.5) -> None:
+    """
+    sides 에 들어간 변만 그린다. 비우면 테두리를 전부 지운다.
+    칸마다 사방을 두르면 엑셀처럼 보인다 — 글 줄 사이 윗선 하나면 충분하다.
+    """
     tcPr = cell._tc.get_or_add_tcPr()
     for tag in ("a:lnL", "a:lnR", "a:lnT", "a:lnB"):
         for old in tcPr.findall(qn(tag)):
             tcPr.remove(old)
     # lnL·lnR·lnT·lnB 는 tcPr 안에서 이 순서로 와야 한다
-    for tag in ("a:lnL", "a:lnR", "a:lnT", "a:lnB"):
+    for key, tag in (("L", "a:lnL"), ("R", "a:lnR"), ("T", "a:lnT"), ("B", "a:lnB")):
         ln = etree.SubElement(tcPr, qn(tag))
         ln.set("w", str(Pt(width_pt)))
         ln.set("cap", "flat")
-        solid = etree.SubElement(ln, qn("a:solidFill"))
-        etree.SubElement(solid, qn("a:srgbClr")).set("val", f"{color}")
+        if key in sides and color is not None:
+            solid = etree.SubElement(ln, qn("a:solidFill"))
+            etree.SubElement(solid, qn("a:srgbClr")).set("val", f"{color}")
+        else:
+            etree.SubElement(ln, qn("a:noFill"))
 
 
 def _kill_style_banding(table) -> None:
@@ -153,6 +169,12 @@ def restyle_layout(layout) -> dict:
     for panel, shape in enumerate(tables):
         table = shape.table
         _kill_style_banding(table)
+
+        # 카드를 새 판면 자리로 옮기고 넓힌다 (3열 × 2행, 행 우선)
+        col_i, row_i = panel % 3, panel // 3
+        shape.left = Inches(MARGIN_X + col_i * (CARD_W + GUTTER_X))
+        shape.top = Inches(MARGIN_Y + row_i * (CARD_H + GUTTER_Y))
+        shape.width = Inches(CARD_W)
         for row in table.rows:
             if "디테일" in row.cells[0].text:
                 _rename_cell(row.cells[0], "디테일")
@@ -177,7 +199,7 @@ def restyle_layout(layout) -> dict:
                 else:
                     fill, text, size = c("plate"), c("body"), None
                 _set_cell(cell, fill, text, size)
-                _set_borders(cell, c("hairline"))
+                _set_borders(cell, "T" if r in RULED_ROWS else "", c("hairline"))
                 cell.margin_left = cell.margin_right = Pt(4)
                 cell.margin_top = cell.margin_bottom = Pt(1)
 
@@ -212,7 +234,7 @@ def restyle_layout(layout) -> dict:
                 run.font.color.rgb = c("body")
 
     return {"wells": wells, "boxes": boxes,
-            "pic_aspect": Inches(CARD_W) / Inches(ROW_H["pic"])}
+            "pic_aspect": CARD_W / ROW_H["pic"]}
 
 
 def paint_background(slide) -> None:

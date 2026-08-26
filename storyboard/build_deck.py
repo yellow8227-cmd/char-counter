@@ -57,12 +57,12 @@ FIELD_ORDER = ["scene", "shot", "camera", "desc", "note", "trans"]
 # 칸별 최대 글자 크기— 번호 칸은 크게, 설명 칸은 작게.
 # 실제 크기는 칸에 들어가는 만큼 아래에서 자동으로 줄인다.
 FIELD_MAX_PT = {
-    "scene": 15.0,
-    "shot": 15.0,
-    "camera": 11.0,
-    "desc": 11.0,
-    "note": 11.0,
-    "trans": 10.0,   # 전환효과는 짧다. 본문보다 앞서 보이면 안 된다
+    "scene": 12.0,
+    "shot": 12.0,
+    "camera": 9.5,
+    "desc": 9.5,
+    "note": 9.5,
+    "trans": 9.0,   # 전환효과는 짧다. 본문보다 앞서 보이면 안 된다
 }
 # 이보다 작아지면 읽기를 포기하게 된다. 여기 걸리면 글을 줄여야 한다.
 FIELD_MIN_PT = 8.0
@@ -72,8 +72,8 @@ FIELD_MIN_PT = 8.0
 # 계산보다 훨씬 두꺼워지고, 아랫칸을 침범한다.
 LINE_RATIO = 1.15
 # 칸마다 크기가 제각각이면 지면이 지저분해진다. 세 단으로만 떨어뜨린다.
-SIZE_STEPS = [11.0, 9.5, 8.5]
-NUMBER_STEPS = [15.0, 13.0, 11.0]
+SIZE_STEPS = [9.5, 8.5, 8.0]
+NUMBER_STEPS = [12.0, 11.0, 10.0]
 
 # 칸 실측 크기 (너비pt, 높이pt) — theme.restyle_layout 이 채워 넣는다
 BOXES: dict[str, tuple[float, float]] = {}
