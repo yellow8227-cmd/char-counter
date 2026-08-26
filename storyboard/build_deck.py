@@ -20,6 +20,7 @@ import json
 import sys
 from pathlib import Path
 
+from cover import add_cover
 from pptx import Presentation
 from pptx.enum.text import MSO_ANCHOR
 from pptx.util import Pt
@@ -230,7 +231,8 @@ def write_shoot_list(cuts: list[dict], path: Path) -> None:
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def build(cuts: list[dict], template: Path, images_dir: Path, out: Path) -> int:
+def build(cuts: list[dict], template: Path, images_dir: Path, out: Path,
+          art_dir: Path | None = None, total_cuts: int = 0) -> tuple[int, int]:
     prs = Presentation(str(template))
     layout = prs.slide_layouts[0]
 
@@ -252,9 +254,11 @@ def build(cuts: list[dict], template: Path, images_dir: Path, out: Path) -> int:
         if len(chunk) < PANELS_PER_SLIDE:
             drop_unused_placeholders(slide, len(chunk))
 
+    front = add_cover(prs, art_dir, len(cuts), total_cuts) if art_dir else 0
+
     out.parent.mkdir(parents=True, exist_ok=True)
     prs.save(str(out))
-    return total_slides
+    return total_slides, front
 
 
 def main() -> None:
@@ -262,6 +266,7 @@ def main() -> None:
     ap.add_argument("--cuts", default=str(HERE / "cuts.json"))
     ap.add_argument("--template", default=str(HERE / "template.pptx"))
     ap.add_argument("--images", default=str(HERE / "images"))
+    ap.add_argument("--art", default=str(HERE / "keyart"))
     ap.add_argument("--out", default=str(HERE / "out" / "storyboard.pptx"))
     args = ap.parse_args()
 
@@ -273,10 +278,13 @@ def main() -> None:
     write_shoot_list(shoot_only, out.parent / "촬영컷목록.md")
 
     blanks = sum(1 for c in on_deck if not resolve_image(Path(args.images), c.get("image") or ""))
-    n = build(on_deck, Path(args.template), Path(args.images), out)
+    n, front = build(
+        on_deck, Path(args.template), Path(args.images), out,
+        art_dir=Path(args.art), total_cuts=len(cuts),
+    )
     print(
         f"전체 {len(cuts)}컷 · 덱 {len(on_deck)}컷(시안 필요 빈칸 {blanks}) · "
-        f"촬영 목록 {len(shoot_only)}컷 → 슬라이드 {n}장 → {out}"
+        f"촬영 목록 {len(shoot_only)}컷 → 앞장 {front} + 컷 {n} = 슬라이드 {n + front}장 → {out}"
     )
 
 
