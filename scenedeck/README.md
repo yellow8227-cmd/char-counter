@@ -287,6 +287,69 @@ worn thin, rope-marked wrists
 왼쪽·오른쪽 / 앞·뒤 / 서 있는·앉은 / 위·아래.
 안 고르면 `the first is … ; the second is …` 로 묶습니다.
 
+### 인물 자료 읽어오기
+
+시나리오만으로는 나이도 인종도 알 수 없습니다. **배우·제작진용 캐릭터 프로필 문서**에는
+다 적혀 있고, 그걸 그대로 읽습니다. 「기획 → 캐릭터」의 **「인물 자료 읽어오기」**.
+
+| 문서의 라벨 | 채워지는 칸 |
+|---|---|
+| 한국 이름 · 일본 이름 · 본명 | 이름 (한국 이름 우선) |
+| 직업 · 신분 · 배역 | 역할 |
+| 나이 · 연령 (`1944년 기준 46세`) | 나이대 |
+| 정체성 · 출생 | 인종 |
+| 핵심 성격 | 성격 |
+| 언어 · 말투 · 목소리 | 말투 |
+| 핵심 욕망 · 공포 · 모순 · 한 줄 정의 | 캐릭터 아크 |
+
+같은 이름이 이미 있으면 **덮어쓰지 않고 빈 칸만** 채웁니다. 여러 개를 한 번에 올려도 됩니다.
+
+**인종은 「정체성」 칸이 가장 셉니다.** 본문 전체를 보면
+「감춰야 하는 조선계 혈통」 같은 서사 설명에 걸려 엉뚱한 답이 나옵니다 —
+정체성 → 출생 → 이름 → 본문 순으로 좁은 것부터 봅니다.
+이름으로도 짐작합니다: `시라후지` → 일본, `백동훈` → 한국.
+
+### 시대 잠금 — 1940년대에 데님 재킷이 나오지 않게
+
+시대를 골라도 AI 는 금방 현대로 샙니다. 데님 재킷, 지퍼, 가슴 플랩 포켓, 찢어진 청바지.
+그래서 시대마다 **이 시대의 옷감과 색**을 못 박고, 시대에 없던 것을 배제합니다.
+
+```
+Era: Korea under Japanese colonial rule, 1930s to 1940s.
+     period-accurate 1940s Korea under Japanese rule.
+     unbleached off-white cotton and hemp gone grey with wear,
+     indigo and persimmon-brown the only dyes.
+     hand-stitched seams, cloth ribbon ties instead of buttons on Korean dress.
+--no denim, jeans, zipper, snap buttons, chest flap pockets, cargo pockets,
+     hoodie, t-shirt, sneakers, wristwatch, printed fabric, synthetic fabric,
+     neon colour, bright yellow
+```
+
+**시대 목록에 역사 시대를 넣었습니다** — 조선 후기 · 대한제국 · 일제강점기 ·
+해방 직후 · 한국전쟁 · 1950년대 · 1960년대. 예전에는 1970년대가 가장 오래된 항목이라
+1940년대 조선을 고를 방법이 아예 없었습니다.
+
+#### 고증 — 1940년대 조선의 옷과 색
+
+- 서민의 옷은 **백의(白衣)**. 표백하지 않은 무명·삼베라 **희끄무레한 회백색**이고
+  입을수록 잿빛으로 죽습니다. **노란 옷이 아닙니다.**
+- 염료가 비싸 색은 **쪽빛(indigo)** 과 **감물빛(persimmon brown)** 정도였습니다.
+- 1940년 조선총독부 제20호로 백의 착용을 「악습」이라 금지했고,
+  1941년부터 여성에게 **몸뻬**를 강요했습니다. 남자는 1940년 칙령으로
+  **국방색 국민복**에 전투모와 각반.
+- **저고리는 단추가 없습니다.** 긴 **고름**으로 여미고 목에 흰 **동정**을 답니다.
+  바지는 통이 넓고 발목을 **대님**으로 묶습니다.
+
+그래서 영문 프롬프트에서 `jacket` `trousers` 같은 서양 옷 이름을 버리고
+**`jeogori` `baji` 와 생김새 설명**을 씁니다 — 이게 데님 재킷이 나오던 진짜 원인이었습니다.
+
+```
+a jeogori — a short Korean jacket ending at the waist, closed with a long cloth
+ribbon tie and no buttons, a narrow white collar band at the neck — in unbleached
+off-white cotton gone grey, sleeves worn sheer; baji — wide Korean trousers
+gathered and tied at the ankle, torn at the knees; bare feet
+```
+
 ### 역할만 적으면 알아서 채워집니다
 
 캐릭터의 **이름이나 역할**을 적으면 잠깐 뒤에 **의상 · 나이 · 성별**이 저절로 채워집니다.
