@@ -1550,7 +1550,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v30 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v31 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -2665,6 +2665,82 @@ function extraBits(c){
   }
   return out;
 }
+/* 역할에서 나이·성별을 짐작한다.
+   「할아버지」면 60대 남성, 「소녀」면 10대 여성. 확실한 것만 채우고,
+   순사·의사처럼 나이가 정해지지 않는 역할은 건드리지 않는다.
+   빈 채로 두면 고정 블록이 「a person」이 되어 매 컷 다른 사람이 나온다. */
+const PERSON_LEX=[
+  {re:/유아|아기|갓난|영아|infant|toddler|baby/,            age:'유아 (3~6세)'},
+  {re:/어린이|아동|초등|child|kid(s)?\b|schoolchild/,        age:'어린이 (7~12세)'},
+  {re:/소년|남자\s*아이|boy\b/,                             age:'어린이 (7~12세)', sex:'남성'},
+  {re:/소녀|여자\s*아이|girl\b/,                            age:'어린이 (7~12세)', sex:'여성'},
+  {re:/중학생|10대\s*초반/,                                 age:'10대 초반'},
+  {re:/고등학생|학생|student|teen/,                         age:'10대 후반'},
+  {re:/청년|대학생/,                                       age:'20대 초반'},
+  {re:/할아버지|조부|노인|old man|grandfather|elderly man/,  age:'70대 이상', sex:'남성'},
+  {re:/할머니|조모|old woman|grandmother|elderly woman/,     age:'70대 이상', sex:'여성'},
+  {re:/아버지|아빠|부친|가장|father|dad/,                    age:'40대', sex:'남성'},
+  {re:/어머니|엄마|모친|mother|mom/,                        age:'40대', sex:'여성'},
+  {re:/아들|손자|son\b|grandson/,                           sex:'남성'},
+  {re:/딸|손녀|daughter|granddaughter/,                     sex:'여성'},
+  {re:/아내|부인|wife/,                                     sex:'여성'},
+  {re:/남편|husband/,                                       sex:'남성'},
+  {re:/기생|무희|간호사|courtesan|gisaeng|nurse/,            sex:'여성'},
+  {re:/망나니|처형인|헌병|일본군|병사|군인|순사|경관|executioner|soldier|gendarme/, sex:'남성'},
+  {re:/양반|대감|사또|현감|스님|승려|nobleman|magistrate|monk/, sex:'남성'},
+  // 나이를 비워 두면 「a Korean man」으로만 나가 컷마다 나이가 달라진다.
+  // 성별은 함부로 정하지 않되(작가가 정할 몫), 나이는 무난한 값이라도 넣는다.
+  {re:/순사|경관|경찰|헌병|일본군|병사|군인|polic\w*|soldier|gendarme/, age:'30대'},
+  {re:/독립\s*운?동?가|독립\s*투사|투사|의병|partisan|resistance/,      age:'30대'},
+  {re:/죄수|수감|포로|사형수|prisoner|inmate|convict/,                 age:'30대'},
+  {re:/망나니|처형인|회자수|executioner|headsman/,                     age:'40대'},
+  {re:/간호사|nurse/,                                              age:'20대 후반'},
+  {re:/회사원|직장인|office worker|salaryman|clerk/,                  age:'30대'},
+  {re:/농민|백성|서민|하인|머슴|peasant|farmer|villager|servant/,       age:'40대'},
+  {re:/기생|무희|courtesan|gisaeng/,                                age:'20대 초반'},
+  {re:/무당|박수|shaman/,                                          age:'50대'},
+  {re:/스님|승려|monk/,                                            age:'50대'},
+  {re:/양반|대감|사또|현감|관리|nobleman|magistrate/,                  age:'50대'},
+  {re:/변호사|검사|판사|lawyer|prosecutor|judge/,                    age:'40대'},
+  {re:/선생|교사|teacher/,                                         age:'30대'},
+  {re:/노숙|거지|homeless|vagrant|beggar/,                          age:'50대'},
+  {re:/손자|손녀|grandson|granddaughter/,                           age:'10대 후반'},
+  {re:/아들|딸|son\b|daughter/,                                    age:'20대 초반'},
+  {re:/사장|회장|nobleman|chairman/,                        age:'50대'},
+  {re:/교수|professor/,                                    age:'50대'},
+  {re:/의사|주치의|외과|doctor|surgeon|physician/,           age:'40대'},
+  {re:/형사|수사관|detective/,                              age:'40대'}
+];
+function suggestPerson(c){
+  const hay=[(c&&c.role)||'',(c&&c.name)||''].join(' ');
+  const out={};
+  if(!hay.trim()) return out;
+  for(const e of PERSON_LEX){
+    if(!e.re.test(hay)) continue;
+    if(e.age && !out.age) out.age=e.age;
+    if(e.sex && !out.sex) out.sex=e.sex;
+    if(out.age && out.sex) break;
+  }
+  return out;
+}
+/* 역할을 적으면 비어 있는 칸을 알아서 채운다.
+   손으로 고친 값은 절대 덮지 않는다 — 자동으로 넣었던 값 그대로일 때만 갱신한다. */
+function autoFillChar(c){
+  if(!c) return 0;
+  const role=[(c.role||''),(c.name||'')].join(' ').trim();
+  if(!role) return 0;
+  let n=0;
+  const g=suggestOutfit(c);
+  const cur=((c.outfit||'')+(c.outfitEn||'')).trim();
+  const wasAuto = c.fitAuto && (c.outfit===c.fitAuto.ko || c.outfitEn===c.fitAuto.en);
+  if(!cur || wasAuto){
+    if(c.outfit!==g.ko || c.outfitEn!==g.en){ c.outfit=g.ko; c.outfitEn=g.en; delete c.outfitEnAuto; n++; }
+    c.fitAuto={ko:g.ko,en:g.en};
+  }
+  const pr=suggestPerson(c);
+  ['age','sex'].forEach(k=>{ if(!c[k] && pr[k]){ c[k]=pr[k]; n++; } });
+  return n;
+}
 function suggestOutfit(c){
   const role=[(c&&c.role)||'',(c&&c.name)||''].join(' ');
   const era=String(S.style.era||'');
@@ -2754,7 +2830,7 @@ function renderChars(){
         <label class="f enfield"><span>특징</span><input type="text" data-cf="markEn" value="${esc(c.markEn)}" placeholder="scar through left eyebrow"></label>
       </div>
       <div class="row" style="margin:-6px 0 4px">
-        <button class="btn sm" data-cfit="${c.id}">역할로 의상 채우기</button>
+        <button class="btn sm" data-cfit="${c.id}">역할로 다시 채우기</button>
         <button class="btn sm" data-ctrans="${c.id}">한글 → 영문 번역</button>
         <span class="mini" style="margin:0">빈 영문 칸을 채웁니다</span>
       </div>
@@ -2811,10 +2887,24 @@ function onCharEdit(e){
   const card=e.target.closest('[data-cid]'); if(!card) return;
   const c=S.chars.find(x=>x.id===card.dataset.cid); if(!c) return;
   c[f]=e.target.value;
+  // 역할·이름을 치면 비어 있는 칸을 알아서 채운다.
+  // 타이핑 도중마다 바꾸면 정신없으니 잠깐 멈췄을 때만.
+  if(f==='role'||f==='name'){
+    clearTimeout(AF.t);
+    AF.t=setTimeout(()=>{
+      const before=JSON.parse(JSON.stringify(c));
+      if(autoFillChar(c)){
+        save(); renderChars(); renderPrompt();
+        toast('역할을 보고 의상 · 나이 · 성별을 채웠어요 — 고쳐도 됩니다',
+          {label:'되돌리기',fn:()=>{ Object.assign(c,before); save(); renderChars(); renderPrompt(); toast('되돌렸어요 ✓'); }});
+      }
+    },900);
+  }
   const lk=card.querySelector('[data-clock]');
   if(lk) lk.innerHTML=esc(charLock(c))||'<i>위 항목을 채우면 여기에 자동으로 만들어집니다</i>';
   save();
 }
+const AF={t:null};
 $('charlist').addEventListener('input',onCharEdit);
 $('charlist').addEventListener('change',onCharEdit);
 $('charlist').addEventListener('click',e=>{
@@ -2844,11 +2934,14 @@ $('charlist').addEventListener('click',e=>{
   if(t.dataset.cfit){
     const c=S.chars.find(x=>x.id===t.dataset.cfit); if(!c) return;
     if(!(c.role||'').trim() && !(c.name||'').trim()){ toast('먼저 이름이나 역할을 적어주세요 — 그걸 보고 찾습니다'); return; }
-    const before={outfit:c.outfit,outfitEn:c.outfitEn};
+    const before=JSON.parse(JSON.stringify(c));
     const g=suggestOutfit(c);
     c.outfit=g.ko; c.outfitEn=g.en; delete c.outfitEnAuto;
+    c.fitAuto={ko:g.ko,en:g.en};
+    const pr=suggestPerson(c);
+    ['age','sex'].forEach(k=>{ if(!c[k] && pr[k]) c[k]=pr[k]; });
     save(); renderAll(); renderPrompt();
-    toast('의상을 채웠어요 ✓ — 맘에 안 들면 그 자리에서 고치세요',
+    toast('역할을 보고 채웠어요 ✓ — 맘에 안 들면 그 자리에서 고치세요',
       {label:'되돌리기',fn:()=>{ Object.assign(c,before); save(); renderAll(); renderPrompt(); toast('되돌렸어요 ✓'); }});
     return;
   }
