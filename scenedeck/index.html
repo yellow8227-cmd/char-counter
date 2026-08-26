@@ -972,7 +972,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <h3>씬 분해</h3>
       <textarea id="sc-raw" style="min-height:180px;font-family:var(--mono);font-size:12.5px" placeholder="S#1. 비 내리는 뒷골목 / 밤&#10;&#10;지훈이 우산 없이 걸어 나온다.&#10;&#10;지훈: 이제 그만하자.&#10;&#10;S#2. 기억 상점 / 심야"></textarea>
       <p class="mini" id="sc-hint">씬 머리글은 <b>S#1.</b> · <b>씬 1</b> · <b>제1화</b> · <b>1.</b> · <b>[1]</b> · <b>EP.1</b> · <b>INT./EXT.</b> 를 모두 알아봅니다.
-      번호가 아예 없는 <b>「골목 / 밤」 「기억 상점 (심야)」</b> 같은 줄도 씬 제목으로 잡아요.<br>
+      번호가 아예 없는 <b>「日本 - 백동성의 집 (N)」 「골목 / 밤」 「기억 상점 (심야)」 「프롤로그」 「타이틀 시퀀스」</b> 같은 줄도 씬 제목으로 잡아요.<br>
       표시가 하나도 없으면 원고 <b>생김새로 알아서 나눕니다</b> — 그래도 어긋나면 <b>「여기부터 — 줄 직접 고르기」</b>로 직접 눌러주세요.</p>
       <div class="row" style="margin-top:10px">
         <button class="btn pri" id="sc-parse">분해 미리보기</button>
@@ -1466,7 +1466,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v15 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v16 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -3461,21 +3461,68 @@ const INTEXT_RE=/^(INT\.?|EXT\.?|I\/E\.?|실내|실외)[\s.．,/-]+(.*)$/i;
    「순수한 시간 표현」일 때만 머리글로 본다. */
 const PURE_TIME=/^(이른|늦은|깊은|한|초)?\s*(새벽|아침|아침나절|정오|낮|한낮|오후|해질녘|해\s*질\s*녘|노을|저녁|밤|한밤|심야|자정)$|^(LATE\s+)?(NIGHT|DAY|DAWN|DUSK|EVENING|MORNING|AFTERNOON|CONTINUOUS|LATER|MOMENTS\s+LATER|SAME)$/i;
 const HEAD_SPLIT=/[\/|·•‧∙~\-–—(){}\[\],]/;
+/* 실제 대본은 「(N)」 「(D)」 「(D/N)」 로 시간을 적는 경우가 아주 많다.
+   이걸 머리글 신호로 안 쓰면 장편 대본 한 편이 통째로 씬 하나가 된다.
+   실제 시나리오 파일에서 이 형태의 머리글이 67개였다. */
+const TC_TAIL=/[(（]\s*(D\s*\/\s*N|N\s*\/\s*D|DN|N|D|M|E)\s*[)）]\s*$/i;
+/* 대본은 「인물⇥대사」처럼 탭으로 칸을 나눠 쓴다. 머리글 뒤에도 메모가 붙는다 —
+   「프롤로그 - 병원 복도 ⇥ ■ 표시는 일본어 대사입니다」. 그래서 첫 칸만 본다. */
+function firstCol(t){
+  if(t.indexOf('\t')<0) return t;
+  const cols=t.split('\t').map(x=>x.trim()).filter(Boolean);
+  return cols.length?cols[0]:'';
+}
+function sentenceish(t){
+  return /[.!?…]$/.test(t) || /(다|요|까|죠|네|군|은다|는다)$/.test(t) || DLG_RE.test(t);
+}
+/* DLG_TAB 은 아래쪽에서 선언된다 — 실행 시점엔 이미 있다 */
+/* 「프롤로그」 「타이틀 시퀀스」 「에필로그」 — 번호도 시간도 없지만 분명한 씬 머리글 */
+const LABEL_HEAD=/^(프롤로그|에필로그|오프닝|엔딩|타이틀\s*시퀀스|타이틀|몽타주|인서트|PROLOGUE|EPILOGUE|OPENING|ENDING|TITLE\s*SEQUENCE|MONTAGE)(\s|$|[-–—:·\/])/i;
+/* 「CUT TO - 수술실 안」 「FLASH BACK — 병원 진료실」 —
+   장소가 뒤따를 때만 씬으로 본다. 「CUT TO BLACK」은 씬이 아니다. */
+const TRANS_HEAD=/^(CUT TO|MATCH CUT TO|INTER\s?CUT|FLASH\s?BACK|DISSOLVE TO|SMASH CUT TO|JUMP CUT TO)\s*[-–—:]\s*(.+)$/i;
 function timeHead(raw){
-  const t=headNorm(raw).trim();
-  if(!t || t.length>50) return null;
-  if(/[.!?…]$/.test(t)) return null;                 // 문장은 머리글이 아니다
-  if(/(다|요|까|죠|네|군|은다|는다)$/.test(t)) return null; // 「밤이 깊었다」 같은 서술
-  if(DLG_RE.test(t)) return null;                     // 「지훈: 대사」
-  const parts=t.split(HEAD_SPLIT).map(x=>x.trim()).filter(Boolean);
-  if(parts.length<2) return null;
-  const ti=parts.findIndex(x=>PURE_TIME.test(x.replace(/\s+/g,' ').trim()));
-  if(ti<0) return null;
-  const rest=parts.filter((x,i)=>i!==ti && !LABELS.test(x));
+  const t=firstCol(headNorm(raw).trim()).trim();
+  if(!t || t.length>60) return null;
+  if(sentenceish(t)) return null;
+  const tc=TC_TAIL.exec(t);
+  let time='', core=t;
+  if(tc){ time=TIMECODE[tc[1].toUpperCase().replace(/[\s\/]/g,'')]||''; core=t.slice(0,tc.index).trim(); }
+  const parts=core.split(HEAD_SPLIT).map(x=>x.trim()).filter(Boolean);
+  if(!tc){
+    const ti=parts.findIndex(x=>PURE_TIME.test(x.replace(/\s+/g,' ').trim()));
+    if(ti<0) return null;
+    time=grabTime(parts[ti])||'';
+    parts.splice(ti,1);
+    if(!parts.length) return null;
+  }else if(parts.length<2 && core.length<5){
+    return null;   // 「동수 (E)」 같은 인물 이름을 머리글로 세면 안 된다
+  }
+  const rest=parts.filter(x=>!LABELS.test(x));
   if(!rest.length) return null;
   const loc=rest.reduce((a,b)=>b.length>a.length?b:a);
   if(!loc || loc.length>34) return null;
-  return {heading:t, loc:loc, time:grabTime(parts[ti])||''};
+  return {heading:t, loc:loc, time:time};
+}
+function labelHead(raw){
+  const t=firstCol(headNorm(raw).trim()).trim();
+  if(!t || t.length>60 || sentenceish(t)) return null;
+  if(!LABEL_HEAD.test(t)) return null;
+  // 「타이틀 시퀀스」처럼 라벨뿐이면 장소가 없는 것이다 — 라벨을 장소로 쓰지 않는다
+  const rest=t.replace(LABEL_HEAD,'').replace(/^[\s\-–—:·\/]+/,'').trim();
+  if(!rest) return {heading:t, loc:'', time:''};
+  const sp=splitHeading(rest);
+  return {heading:t, loc:sp.loc||'', time:sp.time||''};
+}
+function transHead(raw){
+  const t=firstCol(headNorm(raw).trim()).trim();
+  if(!t || t.length>60 || sentenceish(t)) return null;
+  const m=TRANS_HEAD.exec(t);
+  if(!m) return null;
+  const tail=(m[2]||'').trim();
+  if(!tail || /^(END|끝)$/i.test(tail)) return null;
+  const sp=splitHeading(tail);
+  return {heading:t, loc:sp.loc||'', time:sp.time||''};
 }
 const TIMEWORDS=[['새벽','새벽'],['아침','아침'],['정오','정오'],['오후','오후'],['해질녘','해질녘'],['해 질 녘','해질녘'],
   ['노을','해질녘'],['저녁','해질녘'],['심야','심야'],['한밤','심야'],['밤','밤'],['낮','정오'],
@@ -3517,10 +3564,16 @@ function splitHeading(tail){
 }
 /* 원고 맨 앞의 「1. 망나니 / 2. 할아버지」 같은 목록은 씬이 아니라 등장인물이다.
    씬으로 세지 않는 데서 그치지 않고, 캐릭터로 옮겨 담을 수 있게 이름을 뽑아 준다. */
+/* 「등장인물 : 登場人物」 같은 소제목을 사람 이름으로 세지 않는다 */
+const NOT_NAME=/^(등장인물|인물|배역|배우|캐스트|각본|극본|감독|연출|제작|원작|기획|각색|촬영|음악|미술|제목|가제|장르|로그라인|시놉시스|줄거리|배경|시대|내용|주제|기획의도|참고|비고|메모|출연|나레이션|자막)$/;
 function frontChars(front){
   const out=[];
   String(front||'').split('\n').forEach(l=>{
-    const m=headNorm(l).match(/^(\d{1,2})\s*[.)\]、]\s*(.{1,24})$/);
+    const t=headNorm(l);
+    // 「백동훈: 白藤 勲（シラフジ・イサオ）」처럼 이름 뒤에 콜론이 오는 대본도 많다
+    const cm=t.match(/^([가-힣]{2,6})\s*[:：]\s*\S/);
+    if(cm && !grabTime(cm[1]) && !NOT_NAME.test(cm[1])){ out.push(cm[1]); return; }
+    const m=t.match(/^(\d{1,2})\s*[.)\]、]\s*(.{1,24})$/);
     if(!m) return;
     let name=m[2].trim();
     const paren=/[(（]([^)）]{1,12})[)）]/.exec(name);   // "아들(동수)" 면 괄호 안이 진짜 이름
@@ -3560,8 +3613,10 @@ function headOf(raw){
     if(m[1]||m[2]||m[3]||m[4]){ const {loc,time}=splitHeading(tail); return {kind:'marked',heading:line,loc,time}; }
     if((m[5]||m[6]) && tail.length<=40){ const {loc,time}=splitHeading(tail); return {kind:'bare',heading:line,loc,time}; }
   }
-  const th=timeHead(raw);
+  const th=timeHead(raw) || labelHead(raw);
   if(th) return {kind:'time',heading:th.heading,loc:th.loc,time:th.time};
+  const tr=transHead(raw);
+  if(tr) return {kind:'trans',heading:tr.heading,loc:tr.loc,time:tr.time};
   return null;
 }
 /* 표시된 줄들로 씬을 만든다 — 자동 구조 분해와 「줄 직접 고르기」가 함께 쓴다 */
@@ -3635,7 +3690,8 @@ function parseScript(text){
   // 표시가 붙은 머리글이 있으면 그것만, 없으면 「1.」 같은 맨숫자, 그것도 없으면
   // 「골목 / 밤」 같은 시간대 머리글. 섞으면 본문 한 줄이 씬으로 잘려 나간다.
   const rank = heads.some(x=>x&&x.kind==='marked') ? 'marked'
-             : heads.some(x=>x&&x.kind==='bare')   ? 'bare' : 'time';
+             : heads.some(x=>x&&x.kind==='bare')   ? 'bare'
+             : heads.some(x=>x&&x.kind==='time')   ? 'time' : 'trans';
   const scenes=[];
   let cur=null;
   const push=()=>{ if(cur){ cur.script=cur.buf.join('\n').replace(/\n{3,}/g,'\n\n').trim(); delete cur.buf; scenes.push(cur); } };
@@ -3668,10 +3724,13 @@ function parseScript(text){
   return scenes;
 }
 /* 본문에서 대사 줄만 뽑는다 — "이름: 대사" */
-const DLG_RE=/^\s*([가-힣A-Za-z][가-힣A-Za-z0-9 ()]{0,14})\s*[:：]\s*(.+)$/;
+const DLG_RE=/^\s*([가-힣A-Za-z][가-힣A-Za-z0-9 ()·]{0,14})\s*[:：]\s*(.+)$/;
+/* 실제 대본은 콜론 대신 탭으로 칸을 나눠 쓰는 경우가 더 많다 — 「동성⇥이런 씨벌……」.
+   이걸 못 보면 대사가 0줄로 잡혀서 컷 자동 생성이 지문만 남는다. */
+const DLG_TAB=/^\s*([가-힣A-Za-z][가-힣A-Za-z0-9 ()·]{0,14})\t+\s*(.+)$/;
 function scriptLines(txt){
   return String(txt||'').split('\n').map(l=>{
-    const m=l.match(DLG_RE);
+    const m=l.match(DLG_RE)||l.match(DLG_TAB);
     return m?{type:'dlg',who:m[1].trim(),text:m[2].trim(),raw:l}:{type:'dir',text:l.trim(),raw:l};
   });
 }
@@ -3938,7 +3997,8 @@ function pkMatches(sig,i){
 function pkAutoMarks(){
   const heads=pkLines.map(headOf);
   const rank = heads.some(x=>x&&x.kind==='marked') ? 'marked'
-             : heads.some(x=>x&&x.kind==='bare')   ? 'bare' : 'time';
+             : heads.some(x=>x&&x.kind==='bare')   ? 'bare'
+             : heads.some(x=>x&&x.kind==='time')   ? 'time' : 'trans';
   const out=new Set();
   heads.forEach((h,i)=>{ if(h && h.kind===rank) out.add(i); });
   if(out.size<2){ const au=autoStructure(pkLines); if(au) au.marks.forEach(i=>out.add(i)); }
