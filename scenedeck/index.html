@@ -250,6 +250,12 @@ main{max-width:1180px;margin:0 auto;padding:42px 30px 96px}
 .reffld>span{line-height:1.55}
 .reffld>span b{color:var(--sig);font-family:var(--mono);font-size:11px}
 .reffld input{font-family:var(--mono);font-size:12px}
+#softbox{border:1px solid var(--line2);background:var(--s1);padding:14px 16px 12px;margin:12px 0 0}
+.softhd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 8px}
+.softhd b{font-family:var(--disp);font-size:13px;letter-spacing:.02em}
+.softhd span{font-family:var(--mono);font-size:11px;color:var(--sig)}
+.cutbar .softtag{font-family:var(--mono);font-size:10px;letter-spacing:.06em;
+  color:var(--tx);border:1px solid var(--line2);padding:1px 6px;flex:none}
 .cutbar .bgtag{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--onacc);
   background:var(--acc);padding:1px 6px;flex:none}
 @media(max-width:860px){.g2,.g3,.g4{grid-template-columns:1fr}}
@@ -1210,6 +1216,30 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       </div>
       <div class="cutnav" id="cutnav"></div>
       <p class="mini" id="shotnote" style="margin:2px 0 0"></p>
+
+      <div id="softbox" style="display:none">
+        <div class="softhd">
+          <b>잔인해서 안 만들어질 때</b>
+          <span id="softwhy"></span>
+        </div>
+        <p class="mini" style="margin:0 0 9px">이미지 도구가 막는 것은 <b>잘린 신체 · 피 · 훼손된 몸을 그린 그림</b>입니다.
+        그러니 통과시키는 길은 표현을 감추는 게 아니라 <b>그 장면을 화면에 담지 않는 것</b>이에요.
+        아래는 전부 실제 영화 문법이고, 대개 직접 보여주는 것보다 셉니다.</p>
+        <div class="row" id="softchips"></div>
+        <p class="camwhy" id="softtip"></p>
+        <div class="grid g2" id="softin" style="display:none">
+          <label class="f"><span>화면에 담을 것 — 비워두면 기본 문구를 씁니다</span>
+            <input type="text" id="soft-in" placeholder=""></label>
+          <label class="f enfield"><span>화면에 담을 것</span>
+            <input type="text" id="soft-inEn" placeholder="한글을 쓰면 여기가 저절로 채워집니다"></label>
+        </div>
+        <div class="row">
+          <button class="btn sm gh" id="soft-scene">이 씬의 위험한 컷에 모두 적용</button>
+          <button class="btn sm gh" id="soft-off">순화 끄기</button>
+          <span class="mini" style="margin:0">매체를 통째로 바꾸는 길도 있어요 —
+          위 <b>「스토리보드용으로 보기」</b>를 누르면 연필 콘티가 되어 사실적 잔혹함이 사라집니다.</span>
+        </div>
+      </div>
       <div class="row">
         <button class="btn" id="p-prev">← 이전</button>
         <button class="btn" id="p-next">다음 →</button>
@@ -1486,7 +1516,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v17 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v18 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -2259,6 +2289,7 @@ function autoTargets(){
       add(c,'face','faceEn',    `[data-kid="${c.id}"] [data-kf="faceEn"]`);
       add(c,'outfit','outfitEn',`[data-kid="${c.id}"] [data-kf="outfitEn"]`);
       add(c,'act','actEn',      `[data-kid="${c.id}"] [data-kf="actEn"]`);
+      if(S.sel.cut===c.id) add(c,'inframe','inframeEn','#soft-inEn');
     });
   });
   if(S.quick){ add(S.quick,'desc','descEn','#q-descEn'); add(S.quick,'loc','locEn','#q-locEn'); }
@@ -2654,7 +2685,8 @@ $('charlist').addEventListener('click',e=>{
 function newScene(){ return {id:nid('s'),heading:'',loc:'',locEn:'',time:'',summary:'',script:'',cuts:[]}; }
 function newCut(){
   return {id:nid('k'),desc:'',descEn:'',shot:'',angle:'',move:'',lens:'',light:'',mood:'',
-    speed:'',fx:'',trig:'',emo:'',keep:'',endp:'',use:'',bg:false,cast:'',
+    speed:'',fx:'',trig:'',emo:'',keep:'',endp:'',use:'',bg:false,cast:'',soft:'',
+    inframe:'',inframeEn:'',
     face:'',faceEn:'',outfit:'',outfitEn:'',act:'',actEn:'',
     dur:4,chars:[],dialogue:'',audio:'',note:'',hasImg:false,open:true};
 }
@@ -2728,6 +2760,7 @@ function cutHTML(s,c,si,ci){
       <div class="slate cut">${si+1}-${ci+1}</div>
       ${c.hasImg?`<img class="tn" data-imgof="${c.id}" alt="">`:''}
       ${c.bg?'<span class="bgtag">배경</span>':c.cast?'<span class="bgtag">인물</span>':''}
+      ${c.soft?`<span class="softtag">순화 · ${esc(c.soft)}</span>`:''}
       <div class="sum">${esc((c.desc||c.descEn||'').slice(0,68))||'<i>내용 없음</i>'}</div>
       <div class="meta">${esc(meta||'—')} · ${c.dur||0}s</div>
     </div>
@@ -4921,6 +4954,108 @@ function toolBits(c){
   if(m.kind==='photo') return [CAM[S.style.cam]||'', (c&&LENS[c.lens])||''].filter(Boolean);
   return [ (TOOLS[m.kind]||{})[S.style.tool] || '' ].filter(Boolean);
 }
+/* =========================================================
+   순화 — 잔인해서 이미지가 안 만들어질 때.
+
+   미드저니가 막는 것은 「잘린 신체·피·변형된 몸」 같은 시각적 묘사다.
+   그러니 통과시키는 방법은 표현을 숨기는 것이 아니라, 그 장면을
+   애초에 화면에 담지 않는 것이다. 그리고 그게 연출로도 더 세다 —
+   관객의 머리가 채워 넣는 것이 어떤 묘사보다 무섭기 때문이다.
+
+   다섯 가지 우회는 전부 실제 영화 문법이다.
+     실루엣(역광) · 그림자(벽) · 프레임 밖(반응 샷) · 직후(빈 공간) · 사물 인서트
+   ========================================================= */
+const RISK_RE=/피투성이|핏방울|유혈|피범벅|피가|피를|고문|시체|주검|시신|참수|목을\s*베|매달려|찔러|찌른|잘린|절단|내장|학대|폭행|구타|죽인|죽이는|살해|처형|사형|총살|blood|gore|corpse|torture|behead|decapitat|stab|mutilat|dismember|hanged|hanging|killing|murder|execution/i;
+/* 낱말을 바꿀 때는 품사를 지켜야 한다.
+   「bloodied prisoner」를 「dark wet stain prisoner」로 바꾸면 문장이 깨진다.
+   형용사는 형용사로, 명사는 명사로, 동사는 동사로. */
+const SOFT_EN=[
+  [/\b(blood-?soaked|bloodied|bloody)\b/gi,'dark-stained'],
+  [/\bblood\b/gi,'dark liquid'],
+  [/\b(corpse|dead body|cadaver)\b/gi,'motionless figure'],
+  [/\b(tortur\w*)\b/gi,'interrogation'],
+  [/\b(behead\w*|decapitat\w*)\b/gi,'raise the blade'],
+  [/\bsevered\s+(\w+)/gi,'fallen $1'],
+  [/\bhangs?\s+upside\s+down\b/gi,'is suspended'],
+  [/\b(hanging|suspended)\s+upside\s+down\b/gi,'suspended'],
+  [/\bhanged\b/gi,'suspended'],
+  [/\bstabs?\b/gi,'raises the blade toward'],
+  [/\b(stabbed|stabbing)\b/gi,'confronted'],
+  [/\b(wounded|injured|bruised)\b/gi,'weathered'],
+  [/\b(wounds?|injur(y|ies)|bruises?)\b/gi,'marks'],
+  [/\b(gore|gory|mutilat\w*|dismember\w*|entrails)\b/gi,'dark and weathered'],
+  [/\b(kills?|murders?|slaughters?)\b/gi,'confronts'],
+  [/\b(killed|murdered|slaughtered|killing|murdering)\b/gi,'confronted'],
+  [/\b(beaten|beating|assaulted|assaulting|assault)\b/gi,'worn from a struggle'],
+  [/\b(execution|executed)\b/gi,'the ceremony']
+];
+const SOFT_KO=[
+  [/피투성이|피범벅|유혈낭자/g,'검게 젖은'],
+  [/핏방울|피가|피를/g,'검은 물기'],
+  [/고문실/g,'취조실'],[/고문/g,'취조'],
+  [/시체|주검|시신/g,'미동 없는 형상'],
+  [/목을\s*베[는다던]?|참수/g,'칼을 들어 올린다'],
+  [/거꾸로\s*매달려|매달려/g,'그림자로 드리워져'],
+  [/찔러|찌른다|찌르는/g,'칼을 겨눈다'],
+  [/죽인다|죽이는|살해한다|살해/g,'맞선다'],
+  [/구타|폭행|학대/g,'실랑이의 흔적'],
+  [/총살|처형|사형 집행/g,'의식']
+];
+/* 우회는 낱말을 감추는 일이 아니라 「무엇을 화면에 담을지」를 바꾸는 일이다.
+   그래서 네 가지는 지문 자체를 다른 화면으로 갈아끼운다(subj).
+   실루엣만 원래 행위를 유지하되 세부가 안 보이게 만든다.
+   ph = 「화면에 담을 것」 칸의 예시 문구. */
+const SOFTEN={
+  '실루엣':{
+    tip:'역광으로 인물을 통째 검게 — 몸의 세부가 안 보이면 잔혹함도 안 보인다',
+    people:'yes',
+    bits:['strong backlight from behind, the figures reduced to pure black silhouettes',
+          'no visible detail on the bodies, only shapes against the light'],
+    set:{shot:'미디엄 롱샷',light:'역광 (백라이트)'},
+    ph:'비워두면 원래 지문을 실루엣으로 씁니다'},
+  '그림자':{
+    tip:'벽에 비친 그림자만 — 행위는 그림자가 하고 화면엔 벽만 있다',
+    people:'shadow',
+    subj:'two shadows cast on a bare wall, one figure leaning toward the other',
+    bits:['the bare wall fills the frame, the figures themselves are outside the shot'],
+    set:{shot:'미디엄 롱샷',light:'하드라이트'},
+    ph:'벽에 드리운 두 그림자, 하나가 다른 하나 쪽으로 기운다'},
+  '프레임 밖':{
+    tip:'행위는 화면 밖에서 — 카메라는 지켜보는 사람의 얼굴만 잡는다',
+    people:'yes',
+    subj:'a face in close-up, watching something just outside the frame, jaw tight, eyes fixed',
+    bits:['the event itself happens entirely off-screen'],
+    set:{shot:'클로즈업',lens:'85mm 인물'},
+    ph:'문틈으로 지켜보는 아이의 얼굴'},
+  '직후':{
+    tip:'사건이 끝난 뒤의 빈 공간 — 넘어진 의자, 흐트러진 바닥',
+    people:'none',
+    subj:'the empty room after it is over, an overturned chair, a disturbed floor',
+    bits:['stillness, nobody present, the air still settling'],
+    set:{shot:'미디엄 롱샷',move:'고정'},
+    ph:'넘어진 의자와 흐트러진 바닥만 남은 빈 취조실'},
+  '사물 인서트':{
+    tip:'사물 하나로 — 떨어진 신발, 젖은 바닥, 놓인 도구',
+    people:'none',
+    subj:'a single object left behind on the floor, tight detail',
+    bits:['the object alone tells the story, nobody in frame'],
+    set:{shot:'인서트',lens:'마크로'},
+    ph:'바닥에 떨어진 짚신 한 짝, 젖은 마룻바닥'}
+};
+const SOFT_NO=['gore','blood','wound','injury','graphic violence','corpse','disturbing imagery'];
+function softenTxt(t,ko){
+  let v=String(t||'');
+  (ko?SOFT_KO:SOFT_EN).forEach(([re,to])=>{ v=v.replace(re,to); });
+  return v;
+}
+function riskHits(c){
+  if(!c) return [];
+  const hay=[c.desc,c.descEn,c.face,c.faceEn,c.outfit,c.outfitEn,c.act,c.actEn].filter(Boolean).join(' ');
+  const out=[];
+  hay.split(/[\s,./·]+/).forEach(w=>{ if(w && RISK_RE.test(w) && out.indexOf(w)<0) out.push(w); });
+  return out.slice(0,8);
+}
+function softBits(c){ const k=c&&c.soft, m=SOFTEN[k]; return m?m.bits.slice():[]; }
 /* 카메라 프롬프트 4단 — 무브먼트 + 속도 + 프레이밍 유지 + 종료 지점.
    장면 묘사와 섞지 않고 따로 세워야 넷 다 살아남는다. (가이드북 04:07)
    컷당 무브먼트는 하나만 — 둘을 적으면 모델이 평균을 내서 아무것도 아닌 게 된다. (06:57) */
@@ -4935,30 +5070,42 @@ function camFour(c){
 /* 프롬프트 락 — 시트를 규격대로 만들어도 프롬프트가 열려 있으면
    모델은 인물을 하나 더 만들어 넣는다. 인원수 · 배경 · 배제를 함께 잠근다. */
 function lockBits(c){
+  let soft = c && c.soft ? SOFT_NO.slice() : [];
+  const sm=c&&c.soft?SOFTEN[c.soft]:null;
+  if(sm && sm.people==='none') soft=soft.concat(['person','people','figure','crowd']);
   // 배경 판은 락 설정과 무관하게 사람이 나오면 안 된다 — 그게 이 컷의 존재 이유다
   if(c && c.bg)
     return {body:['empty location, no people, no characters, the space itself'],
-            no:['person','people','crowd','figure','silhouette','human','text','watermark']};
-  if(S.style.lock===false) return {body:[],no:[]};
+            no:['person','people','crowd','figure','silhouette','human','text','watermark'].concat(soft)};
+  const none = !!(sm && sm.people==='none');
+  if(S.style.lock===false) return {body:[],no:dedupe(soft)};
   const n=cutChars(c).length;
-  const no=['extra person','duplicate face','multiple views','collage','text','watermark'];
+  const no=['extra person','duplicate face','multiple views','collage','text','watermark'].concat(soft);
   const body=[];
-  if(n===1){ body.push('single person, one character only'); no.push('crowd','other people'); }
-  return {body,no};
+  // 아무도 화면에 없는 우회에서 「single person」을 같이 적으면 --no person 과 부딪친다
+  if(n===1 && !none){ body.push('single person, one character only'); no.push('crowd','other people'); }
+  return {body,no:dedupe(no)};
 }
 /* ② 스토리 중 인물 — 외형 고정 블록 + 그 컷에서의 감정 */
 /* 이 컷에서만 바뀌는 것 — 캐릭터 원본은 그대로 두고 프롬프트에만 얹는다.
    얼굴·의상은 고정 블록 바로 뒤에 붙어야 「그 인물의 지금 상태」로 읽힌다. */
 function chgBits(c){
   if(!c) return {look:[],act:''};
+  const sf=!!c.soft, sof=(v,ko)=>sf?softenTxt(v,ko):v;
   const look=[];
-  const f=(c.faceEn||c.face||'').trim(); if(f) look.push(f);
-  const o=(c.outfitEn||c.outfit||'').trim(); if(o) look.push(o);
-  return {look, act:(c.actEn||c.act||'').trim()};
+  const f=(c.faceEn||'').trim()?sof(c.faceEn,false):sof((c.face||'').trim(),true);
+  if(f) look.push(f);
+  const o=(c.outfitEn||'').trim()?sof(c.outfitEn,false):sof((c.outfit||'').trim(),true);
+  if(o) look.push(o);
+  const a=(c.actEn||'').trim()?sof(c.actEn,false):sof((c.act||'').trim(),true);
+  return {look, act:a};
 }
 function charBits(c){
   const out=[];
   if(c && c.bg) return out;          // 배경 판에는 인물 고정 블록을 넣지 않는다
+  // 화면에 사람이 없는 우회(직후 · 사물 인서트 · 그림자)에서는 인물 블록이 방해만 된다
+  const sm=c&&c.soft?SOFTEN[c.soft]:null;
+  if(sm && sm.people && sm.people!=='yes') return out;
   cutChars(c).forEach(ch=>{ const l=charLock(ch); if(l) out.push(l); });
   chgBits(c).look.forEach(x=>out.push(x));
   if(out.length && EMO[c.emo]) out.push(EMO[c.emo]+' expression');
@@ -4966,8 +5113,17 @@ function charBits(c){
 }
 /* 지문 + 이 컷의 행동 변화 */
 function descOf(c){
-  const base=(c.descEn||c.desc||'').trim(), act=chgBits(c).act;
-  return [base,act].filter(Boolean).join(', ');
+  const m=c.soft?SOFTEN[c.soft]:null;
+  if(m && m.subj){
+    // 화면에 담을 것을 직접 적었으면 그것이 이긴다
+    let own=(c.inframeEn||'').trim();
+    if(!own && (c.inframe||'').trim()) own=softenTxt(c.inframe.trim(),true);
+    return [own||m.subj, chgBits(c).act].filter(Boolean).join(', ');
+  }
+  let base=(c.descEn||'').trim();
+  const ko=!base; if(ko) base=(c.desc||'').trim();
+  if(c.soft) base=softenTxt(base,ko);
+  return [base,chgBits(c).act].filter(Boolean).join(', ');
 }
 /* 필기의 프롬프트 블록 6요소를 그 순서 그대로 조립한다.
    ① 목적 → ② 스토리(샷·앵글·구도 · 인물 · 행동 · 장소) → ③ 만드는 도구
@@ -4980,6 +5136,7 @@ function buildMJ(s,c){
   lk.body.forEach(x=>p.push(x));
   charBits(c).forEach(x=>p.push(x));
   p.push(descOf(c));
+  softBits(c).forEach(x=>p.push(x));
   if(s.locEn||s.loc) p.push(s.locEn||s.loc);
   toolBits(c).forEach(x=>p.push(x));
   [ERA[S.style.era],TIME[s.time],LIGHT[c.light],FX[c.fx]].forEach(x=>{ if(x) p.push(x); });
@@ -5021,6 +5178,7 @@ function buildVEO(s,c){
   if(c.dialogue) au.push('dialogue: "'+c.dialogue.replace(/"/g,"'")+'"');
   if(au.length) L.push('Audio: '+au.join('; ')+'.');
   if(c.dur) L.push('Duration: about '+c.dur+' seconds.');
+  softBits(c).forEach(x=>L.push('Restraint: '+cap(x)+'.'));
   const rn=refNote(s,c);
   if(rn) L.push('Reference: '+rn);
   const lkv=lockBits(c);
@@ -5032,6 +5190,7 @@ function buildGEN(s,c){
   const m=medium(), p=[];
   if(m.head) p.push(m.head);
   p.push(descOf(c));
+  softBits(c).forEach(x=>p.push(x));
   charBits(c).forEach(x=>p.push(x));
   if(s.locEn||s.loc) p.push(s.locEn||s.loc);
   if(ERA[S.style.era]) p.push(ERA[S.style.era]);
@@ -5058,6 +5217,7 @@ function buildRW(s,c){
   const tail=[s.locEn||s.loc, TIME[s.time], SPEED[c.speed], LIGHT[c.light], FX[c.fx],
               ERA[S.style.era], MOOD[c.mood]].concat(styleBits()).filter(Boolean);
   if(m.kind!=='photo'&&m.head) tail.push('in the style of '+m.head);
+  softBits(c).forEach(x=>tail.push(x));
   if(KEEP[c.keep]) tail.push(KEEP[c.keep]);
   if(tail.length) out+=', '+dedupe(tail).join(', ');
   out+= TRIGGER[c.trig] ? '. Then the subject '+TRIGGER[c.trig]+'.' : '.';
@@ -5308,6 +5468,71 @@ $('mjtpaste').addEventListener('click',()=>{
 /* 타이핑 중에 매 글자마다 전체를 다시 그리면 커서가 튄다 — 한 박자 쉬고 한 번만. */
 let liveT=null;
 function livePrompt(){ clearTimeout(liveT); liveT=setTimeout(()=>renderPrompt(),140); }
+/* 위험한 낱말이 있으면 알려주고, 우회 다섯 가지를 그 자리에서 고르게 한다 */
+function paintSoft(){
+  const box=$('softbox'); if(!box) return;
+  const pair=activePair(); const c=pair&&pair.c;
+  if(!c){ box.style.display='none'; return; }
+  const hits=riskHits(c);
+  if(!hits.length && !c.soft){ box.style.display='none'; return; }
+  box.style.display='';
+  $('softwhy').textContent = hits.length ? '걸릴 만한 낱말: '+hits.join(' · ') : '';
+  const w=$('softchips');
+  w.innerHTML=Object.keys(SOFTEN).map(k=>
+    `<label class="chip${c.soft===k?' on':''}" data-soft="${esc(k)}">${esc(k)}</label>`).join('');
+  const m=c.soft?SOFTEN[c.soft]:null;
+  $('softtip').textContent = m?m.tip||'':'';
+  $('soft-off').style.display = c.soft?'':'none';
+  const box2=$('softin');
+  if(m && m.subj){
+    box2.style.display='';
+    $('soft-in').placeholder=m.ph||'';
+    if(document.activeElement!==$('soft-in'))   $('soft-in').value=c.inframe||'';
+    if(document.activeElement!==$('soft-inEn')) $('soft-inEn').value=c.inframeEn||'';
+  }else box2.style.display='none';
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-soft]'); if(!b) return;
+  const pair=activePair(); const c=pair&&pair.c; if(!c) return;
+  const k=b.dataset.soft, m=SOFTEN[k]; if(!m) return;
+  const before=JSON.parse(JSON.stringify(c));
+  if(c.soft===k){ c.soft=''; }
+  else{
+    c.soft=k;
+    // 우회에는 그에 맞는 샷이 따라온다 — 숨기지 않고 컷에 그대로 써 둔다
+    Object.keys(m.set||{}).forEach(f=>c[f]=m.set[f]);
+  }
+  save(); renderAll(); renderPrompt();
+  toast(c.soft?`${k} — ${m.tip}`:'순화를 껐어요',
+    {label:'되돌리기',fn:()=>{ Object.assign(c,before); save(); renderAll(); renderPrompt(); }});
+});
+['soft-in','soft-inEn'].forEach(id=>{
+  const el=$(id); if(!el) return;
+  const h=()=>{
+    const pair=activePair(); const c=pair&&pair.c; if(!c) return;
+    if(id==='soft-in'){ c.inframe=el.value; autoMTKick(); }
+    else { c.inframeEn=el.value; delete c.inframeEnAuto; }
+    save(); livePrompt();
+  };
+  el.addEventListener('input',h);
+});
+$('soft-off') && $('soft-off').addEventListener('click',()=>{
+  const pair=activePair(); const c=pair&&pair.c; if(!c||!c.soft) return;
+  c.soft=''; save(); renderAll(); renderPrompt(); toast('순화를 껐어요');
+});
+$('soft-scene') && $('soft-scene').addEventListener('click',()=>{
+  const pair=activePair(); const c=pair&&pair.c;
+  const key=(c&&c.soft)||'프레임 밖', m=SOFTEN[key];
+  const sc=S.scenes.find(x=>x.id===S.sel.scene);
+  if(!sc){ toast('먼저 씬을 고르세요'); return; }
+  const before=JSON.parse(JSON.stringify(sc.cuts));
+  let n=0;
+  sc.cuts.forEach(x=>{ if(!x.soft && riskHits(x).length){ x.soft=key; Object.keys(m.set||{}).forEach(f=>x[f]=m.set[f]); n++; } });
+  if(!n){ toast('이 씬에 더 적용할 컷이 없어요'); return; }
+  save(); renderAll(); renderPrompt();
+  toast(`컷 ${n}개를 「${key}」로 순화했어요 ✓`,
+    {label:'되돌리기',fn:()=>{ sc.cuts=before; save(); renderAll(); renderPrompt(); toast('되돌렸어요 ✓'); }});
+});
 function renderPrompt(){
   fillStyle();
   $('qcard').style.display = pQuick?'block':'none';
@@ -5365,6 +5590,7 @@ function paintAfter(){
     paintHangulWarn();
     if(MT.state==='unknown') mtProbe().then(paintHangulWarn);
   }
+  paintSoft();
 }
 document.addEventListener('click',e=>{
   const id=e.target.dataset&&e.target.dataset.copy;
