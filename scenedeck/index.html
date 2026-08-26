@@ -219,6 +219,23 @@ main{max-width:1180px;margin:0 auto;padding:42px 30px 96px}
 .camwhy{margin:8px 0 0;font-size:11.5px;line-height:1.6;color:var(--tx2);min-height:1.2em}
 .camwhy:not(:empty)::before{content:"↳ ";color:var(--sig)}
 .usehint{color:var(--sig);font-size:11px}
+/* 줄 직접 고르기 — 자동 인식이 어긋날 때 사용자가 씬 시작을 찍는다 */
+.pkhd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 4px}
+.pkhd b{font-family:var(--disp);font-size:14px}
+.pkhd span{font-size:11.5px;color:var(--tx3)}
+.picklist{max-height:360px;overflow:auto;border:1px solid var(--line2);background:var(--bg);margin-top:10px}
+.pkrow{display:grid;grid-template-columns:40px 62px minmax(0,1fr);gap:10px;align-items:baseline;
+  padding:5px 12px;cursor:pointer;font-size:12.5px;line-height:1.65;border-bottom:1px solid var(--s2)}
+.pkrow:last-child{border-bottom:0}
+.pkrow:hover{background:var(--s1)}
+.pkrow .ln{font-family:var(--mono);font-size:10.5px;color:var(--tx3);text-align:right}
+.pkrow .mk{font-family:var(--mono);font-size:10.5px;color:var(--tx3);white-space:nowrap}
+.pkrow .tx{color:var(--tx2);white-space:pre-wrap;word-break:break-word}
+.pkrow.on{background:var(--s2)}
+.pkrow.on .tx{color:var(--tx);font-weight:700}
+.pkrow.on .mk{color:var(--onacc);background:var(--acc);padding:1px 6px;font-weight:600}
+.pkrow.pre .mk{color:var(--tx3);border:1px dashed var(--line2);padding:0 5px}
+.pkgap{height:9px;border-bottom:1px solid var(--s2);background:var(--s1)}
 .lockrow{display:flex;gap:10px;align-items:flex-start;margin:12px 0 0;padding:12px 14px;
   border:1px solid var(--line);background:var(--s1);font-size:12px;line-height:1.65;color:var(--tx2);cursor:pointer}
 .lockrow input{margin-top:3px;flex:none}
@@ -954,7 +971,8 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
     <div class="card key" id="sc-raw-wrap" style="display:none">
       <h3>씬 분해</h3>
       <textarea id="sc-raw" style="min-height:180px;font-family:var(--mono);font-size:12.5px" placeholder="S#1. 비 내리는 뒷골목 / 밤&#10;&#10;지훈이 우산 없이 걸어 나온다.&#10;&#10;지훈: 이제 그만하자.&#10;&#10;S#2. 기억 상점 / 심야"></textarea>
-      <p class="mini" id="sc-hint">씬 머리글은 <b>S#1.</b> · <b>씬 1</b> · <b>1.</b> · <b>INT./EXT.</b> 형태를 모두 알아봅니다. 시간대(낮·밤·새벽…)도 자동으로 잡아요.</p>
+      <p class="mini" id="sc-hint">씬 머리글은 <b>S#1.</b> · <b>씬 1</b> · <b>1.</b> · <b>INT./EXT.</b> 형태를 모두 알아봅니다. 시간대(낮·밤·새벽…)도 자동으로 잡아요.<br>
+      표시가 전혀 없는 원고라도 괜찮아요 — <b>「여기부터 — 줄 직접 고르기」</b>로 씬이 시작하는 줄을 직접 눌러주시면 그대로 나눕니다.</p>
       <div class="row" style="margin-top:10px">
         <button class="btn pri" id="sc-parse">분해 미리보기</button>
         <select id="sc-mode" style="max-width:230px">
@@ -970,9 +988,30 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
         <button class="btn gh" id="sc-frontsee">앞부분 보기</button>
       </div>
       <div class="row" id="sc-fallback" style="display:none;margin-top:10px">
-        <span class="mini" style="margin:0">머리글이 없어도 넣을 수 있어요 —</span>
-        <button class="btn" id="sc-byblank">빈 줄로 나누기</button>
-        <button class="btn" id="sc-asone">통째로 한 씬으로</button>
+        <span class="mini" style="margin:0">인식이 어긋났나요 —</span>
+        <button class="btn" id="sc-bypick">여기부터 — 줄 직접 고르기</button>
+        <button class="btn gh" id="sc-byblank">빈 줄로 나누기</button>
+        <button class="btn gh" id="sc-asone">통째로 한 씬으로</button>
+      </div>
+
+      <div id="sc-pickwrap" style="display:none;margin-top:14px">
+        <div class="pkhd">
+          <b>씬이 시작하는 줄을 눌러주세요</b>
+          <span>누른 줄이 씬 제목이 되고, 다음 표시 전까지가 그 씬의 본문이 됩니다.</span>
+        </div>
+        <p class="mini" style="margin:0 0 10px"><b>첫 표시보다 위에 있는 내용은 씬으로 만들지 않습니다</b> —
+        작품 제목 · 등장인물 목록 · 기획의도를 여기서 잘라낼 수 있어요.</p>
+        <div class="row">
+          <button class="btn sm gh" id="sc-pk-auto">자동 인식대로</button>
+          <button class="btn sm gh" id="sc-pk-like" disabled>비슷한 줄 모두 고르기</button>
+          <button class="btn sm gh" id="sc-pk-blank">빈 줄 다음 줄 모두</button>
+          <button class="btn sm gh" id="sc-pk-none">모두 해제</button>
+          <div class="hsp"></div>
+          <span class="mini" id="sc-pk-count" style="margin:0"></span>
+          <button class="btn pri sm" id="sc-pk-go">이대로 나누기</button>
+          <button class="btn sm gh" id="sc-pk-close">닫기</button>
+        </div>
+        <div class="picklist" id="sc-picklist"></div>
       </div>
       <div class="out empty2" id="sc-preview" style="margin-top:12px;max-height:260px;overflow:auto">원고를 넣고 「분해 미리보기」를 누르세요</div>
     </div>
@@ -1426,7 +1465,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v13 · 2026-08-25</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v14 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -3435,7 +3474,7 @@ function splitHeading(tail){
     const tc=/\(\s*(DN|N|D|M|E)\s*\)\s*$/i.exec(t.trim());
     if(tc) time=TIMECODE[tc[1].toUpperCase()]||'';
   }
-  const parts=t.split(/[\/\-–—(){}\[\]]|,\s/).map(x=>x.trim()).filter(Boolean);
+  const parts=t.split(/[\/|·•‧∙~\-–—(){}\[\]]|,\s/).map(x=>x.trim()).filter(Boolean);
   let loc=t;
   if(parts.length>1){
     // 시간·이름표 조각을 걷어내고, 남은 것 중 가장 구체적인(가장 긴) 것을 장소로 본다.
@@ -3446,6 +3485,7 @@ function splitHeading(tail){
   }
   loc=loc.replace(/[(){}\[\]]/g,'').trim();
   if(time) loc=loc.replace(new RegExp(time,'g'),'').trim();
+  loc=loc.replace(/^[\s·•|/,\-–—]+/,'').replace(/[\s·•|/,\-–—]+$/,'').trim();  // 남은 구분자 털기
   if(loc.length>30) loc=loc.slice(0,30).trim();   // 문장이 통째로 장소가 되는 것을 막는다
   return {loc:loc||t.trim().slice(0,30), time};
 }
@@ -3654,7 +3694,7 @@ function showParsed(how){
     pv.textContent='씬 머리글을 찾지 못했습니다.\n'
       +'「S#1.」 「S1」 「씬 1」 「제1씬」 「SC 1」 「#7」 「1.」 「INT.」 같은 줄을 찾습니다.\n\n'
       +'원고 첫 줄들: '+(head||'(비어 있음)')+'\n\n'
-      +'그래도 넣고 싶으면 아래 「빈 줄로 나누기」나 「통째로 한 씬으로」를 쓰세요.';
+      +'아래 「여기부터 — 줄 직접 고르기」로 씬이 시작하는 줄을 직접 눌러주시면 그대로 나눠드립니다.';
     pv.classList.add('empty2'); pv.classList.remove('list');
     $('sc-apply').disabled=true; $('sc-count').textContent='';
     $('sc-fallback').style.display='';
@@ -3683,8 +3723,8 @@ function showParsed(how){
   const front=scParsed.front
     ? '※ 맨 앞부분은 씬으로 세지 않았습니다 (위 「앞부분 보기」에서 확인할 수 있어요).' : '';
   pv.innerHTML=(doubts.length?`<div class="pwarn">${doubts.join('<br>')}<br>
-    <span class="mini" style="margin:6px 0 0;display:block">아래에서 <b>「✕ 씬 아님」</b>으로 빼거나,
-    <b>「빈 줄로 나누기」 · 「통째로 한 씬으로」</b>를 쓰세요.</span></div>`:'')
+    <span class="mini" style="margin:6px 0 0;display:block">아래에서 <b>「✕ 씬 아님」</b>으로 하나씩 빼거나,
+    <b>「여기부터 — 줄 직접 고르기」</b>로 씬이 시작하는 줄을 직접 눌러주세요.</span></div>`:'')
     +(how?`<p class="mini" style="margin:0 0 8px">${esc(how)}</p>`:'')
     +(front?`<p class="mini" style="margin:0 0 8px">${front}</p>`:'')
     +body;
@@ -3735,6 +3775,155 @@ $('sc-addchars').addEventListener('click',()=>{
   toast(`캐릭터 ${n}명을 만들었어요 ✓ 「기획 → 캐릭터」에서 외형을 채워주세요`,
     {label:'되돌리기',fn:()=>{ S.chars=before; save(); renderAll(); toast('되돌렸어요 ✓'); }});
 });
+/* =========================================================
+   여기부터 — 줄 직접 고르기.
+   원고 포맷은 사람마다 다르고, 자동 인식은 반드시 어긋나는 날이 온다.
+   그럴 때 「어디부터가 씬인가」를 사용자가 직접 찍을 수 있어야 한다.
+   찍은 줄이 씬 제목이 되고, 첫 표시보다 위는 씬으로 세지 않는다
+   (작품 제목 · 등장인물 목록 · 기획의도를 잘라내는 자리이기도 하다).
+   ========================================================= */
+let pkLines=[], pkMark=new Set(), pkLast=-1;
+
+/* 찍은 줄에서 「형태」를 뽑는다 — 접두어 + 숫자 / INT.EXT / 전부 대문자.
+   이걸로 「비슷한 줄 모두 고르기」가 원고 전체에서 같은 형태를 찾아낸다. */
+function pkIsland(i){
+  const t=(pkLines[i]||'').trim();
+  if(!t || t.length>50) return false;
+  const prevBlank = i===0 || !(pkLines[i-1]||'').trim();
+  const nextBlank = i+1>=pkLines.length || !(pkLines[i+1]||'').trim();
+  return prevBlank && nextBlank;
+}
+/* 표시가 하나도 없는 원고에서 「비슷하다」를 판정하는 잣대.
+   빈 줄 사이에 홀로 있다는 것만으로는 부족하다 — 본문 한 문장도 그럴 수 있다.
+   구분자(·, /, -) 유무 · 시간대 단어 유무 · 문장부호로 끝나는지가 제목과 본문을 가른다. */
+function pkShape(t){
+  return { sep:/[·•‧∙|\/\-–—]/.test(t), time:!!grabTime(t), end:/[.!?…]$/.test(t) };
+}
+const NUM_RE=/^([^\s\d]{0,8}?)\s*\d+\s*(?:화|장면|씬|장|회)?\s*(?:[.)\-—:·]|\s|$)/;
+function pkSig(i){
+  const t=headNorm(pkLines[i]||'').trim();
+  if(!t) return null;
+  if(INTEXT_RE.test(t)) return {k:'intext'};
+  const m=t.match(NUM_RE);
+  if(m) return {k:'num',pre:(m[1]||'').trim()};
+  if(/^[A-Z0-9 .,'\-]{4,}$/.test(t)) return {k:'caps'};
+  // 빈 줄 사이에 짧은 줄 하나가 홀로 서 있으면 그게 씬 제목인 경우가 가장 많다
+  if(pkIsland(i)) return Object.assign({k:'island',len:t.length},pkShape(t));
+  return null;
+}
+function pkMatches(sig,i){
+  if(!sig) return false;
+  const t=headNorm(pkLines[i]||'').trim();
+  if(!t) return false;
+  if(sig.k==='island'){
+    if(!pkIsland(i)) return false;
+    const sh=pkShape(t);
+    if(sh.sep!==sig.sep||sh.time!==sig.time||sh.end!==sig.end) return false;
+    return t.length <= Math.max(sig.len*2.5,30);
+  }
+  if(sig.k==='intext') return INTEXT_RE.test(t);
+  if(sig.k==='caps')   return /^[A-Z0-9 .,'\-]{4,}$/.test(t);
+  const m=t.match(NUM_RE);
+  return !!m && (m[1]||'').trim()===sig.pre;
+}
+function pkAutoMarks(){
+  const out=new Set();
+  const heads=pkLines.map(headOf);
+  const hasMarked=heads.some(x=>x&&x.kind==='marked');
+  heads.forEach((h,i)=>{ if(h && (!hasMarked || h.kind==='marked')) out.add(i); });
+  return out;
+}
+function renderPicker(){
+  const w=$('sc-picklist');
+  const marks=[...pkMark].sort((a,b)=>a-b);
+  const no=i=>marks.indexOf(i)+1;
+  const sig=pkLast>=0?pkSig(pkLast):null;
+  let html='', gap=false;
+  pkLines.forEach((raw,i)=>{
+    if(!raw.trim()){ if(!gap){ html+='<div class="pkgap"></div>'; gap=true; } return; }
+    gap=false;
+    const on=pkMark.has(i);
+    const pre=!on&&sig&&pkMatches(sig,i);
+    html+=`<div class="pkrow${on?' on':pre?' pre':''}" data-pk="${i}">`
+      +`<span class="ln">${i+1}</span>`
+      +`<span class="mk">${on?'S#'+no(i):pre?'비슷':''}</span>`
+      +`<span class="tx">${esc(raw.length>160?raw.slice(0,160)+'…':raw)}</span></div>`;
+  });
+  w.innerHTML=html||'<div class="pkgap"></div>';
+  $('sc-pk-count').textContent = marks.length? `씬 ${marks.length}개로 나뉩니다` : '아직 고른 줄이 없어요';
+  $('sc-pk-go').disabled=!marks.length;
+  $('sc-pk-like').disabled=!sig;
+  $('sc-pk-like').textContent = sig
+    ? (sig.k==='intext'?'INT./EXT. 줄 모두 고르기'
+      :sig.k==='caps'?'대문자 줄 모두 고르기'
+      :sig.k==='island'?'빈 줄 사이 짧은 줄 모두 고르기'
+      :`「${sig.pre||'숫자'}」 형태 모두 고르기`)
+    : '비슷한 줄 모두 고르기';
+}
+function openPicker(){
+  const txt=$('sc-raw').value;
+  if(!txt.trim()){ toast('먼저 원고를 넣어주세요'); return; }
+  pkLines=String(txt).replace(/\r\n?/g,'\n').split('\n');
+  pkMark=pkAutoMarks(); pkLast=-1;
+  $('sc-pickwrap').style.display='';
+  renderPicker();
+  $('sc-pickwrap').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+$('sc-bypick').addEventListener('click',openPicker);
+$('sc-picklist').addEventListener('click',e=>{
+  const r=e.target.closest('[data-pk]'); if(!r) return;
+  const i=+r.dataset.pk;
+  if(pkMark.has(i)){ pkMark.delete(i); if(pkLast===i) pkLast=-1; }
+  else { pkMark.add(i); pkLast=i; }
+  renderPicker();
+});
+$('sc-pk-auto').addEventListener('click',()=>{
+  pkMark=pkAutoMarks(); pkLast=-1; renderPicker();
+  toast(pkMark.size?`자동으로 ${pkMark.size}줄을 골랐어요`:'자동으로 찾은 줄이 없어요 — 직접 눌러주세요');
+});
+$('sc-pk-none').addEventListener('click',()=>{ pkMark=new Set(); pkLast=-1; renderPicker(); });
+$('sc-pk-like').addEventListener('click',()=>{
+  const sig=pkLast>=0?pkSig(pkLast):null;
+  if(!sig){ toast('먼저 기준이 될 줄을 하나 눌러주세요'); return; }
+  let n=0;
+  pkLines.forEach((raw,i)=>{ if(pkMatches(sig,i)&&!pkMark.has(i)){ pkMark.add(i); n++; } });
+  renderPicker();
+  toast(n?`같은 형태 ${n}줄을 더 골랐어요`:'더 찾은 줄이 없어요');
+});
+$('sc-pk-blank').addEventListener('click',()=>{
+  let n=0;
+  pkLines.forEach((raw,i)=>{
+    if(!raw.trim()) return;
+    const prev=i>0?pkLines[i-1]:'';
+    if(i===0||!prev.trim()){ if(!pkMark.has(i)){ pkMark.add(i); n++; } }
+  });
+  pkLast=-1; renderPicker();
+  toast(n?`빈 줄 다음 ${n}줄을 골랐어요 — 필요 없는 건 다시 눌러 빼세요`:'더 고를 줄이 없어요');
+});
+$('sc-pk-close').addEventListener('click',()=>{ $('sc-pickwrap').style.display='none'; });
+$('sc-pk-go').addEventListener('click',()=>{
+  const marks=[...pkMark].sort((a,b)=>a-b);
+  if(!marks.length){ toast('씬이 시작하는 줄을 눌러주세요'); return; }
+  const out=[];
+  marks.forEach((start,k)=>{
+    const end = k+1<marks.length ? marks[k+1] : pkLines.length;
+    const raw = pkLines[start];
+    const hd  = headOf(raw);
+    const line= headNorm(raw).trim();
+    const sp  = hd ? {loc:hd.loc,time:hd.time} : splitHeading(line);
+    out.push({
+      heading: hd ? hd.heading : (line || `S#${k+1}`),
+      loc: sp.loc||'', time: sp.time||'',
+      script: pkLines.slice(start+1,end).join('\n').replace(/\n{3,}/g,'\n\n').trim()
+    });
+  });
+  out.front = pkLines.slice(0,marks[0]).join('\n').trim();
+  scParsed=out; parseSnap=null;
+  $('sc-pickwrap').style.display='none';
+  showParsed('※ 직접 고른 줄을 기준으로 나눴습니다.');
+  toast(`씬 ${out.length}개로 나눴어요 ✓ 아래에서 확인하고 「적용」을 누르세요`);
+});
+
 $('sc-byblank').addEventListener('click',()=>{
   scParsed=parseLoose($('sc-raw').value,'blank');
   if(!scParsed.length){ toast('나눌 내용이 없어요'); return; }
