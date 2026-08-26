@@ -1563,7 +1563,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v37 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v38 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -3184,6 +3184,36 @@ function newCut(){
     face:'',faceEn:'',outfit:'',outfitEn:'',act:'',actEn:'',
     dur:4,chars:[],dialogue:'',audio:'',note:'',hasImg:false,open:true};
 }
+/* 한 사람씩 쪼개기.
+
+   취조·대치 장면은 원래 두 얼굴을 한 프레임에 담지 않는다. 한 얼굴을 보여주고,
+   잘라서, 반대쪽을 보여준다 — 숏/리버스 숏. 긴장은 둘이 같이 보일 때가 아니라
+   보이지 않는 쪽을 관객이 상상할 때 생긴다.
+
+   그리고 이렇게 하면 인물이 섞이지 않고, 배경에 사람이 들어차지 않고,
+   얼굴 하나뿐인 프레임은 「돌봐주는 장면」으로 읽힐 수가 없다 —
+   베풀 상대가 화면에 없기 때문이다. */
+const SPLIT_ANG=['로우앵글','하이앵글','아이레벨','아이레벨'];
+function splitSolo(s,c){
+  if(!c || c.bg) return null;
+  const ids=cutChars(c);
+  if(ids.length<2) return null;
+  // 첫 사람은 행위자(동작은 그대로, 상대만 프레임 밖), 나머지는 반응 샷.
+  // 이게 숏/리버스 숏이다 — 둘 다 같은 문구로 뽑으면 쪼갠 의미가 없다.
+  const SPLIT_SOFT=['상대 빼기 (검증됨)','프레임 밖','프레임 밖','프레임 밖'];
+  const out=ids.map((ch,i)=>Object.assign({},c,{id:nid('k'),hasImg:false,chars:[ch.id],
+      shot:'클로즈업', angle:SPLIT_ANG[i]||'아이레벨',
+      pos:'', rel:'',                      // 인물이 하나면 관계는 쓸 자리가 없다
+      soft:SPLIT_SOFT[i]||'프레임 밖',
+      note:(c.note?c.note+' / ':'')+'쪼갠 컷 '+(i+1)+' — '+(ch.name||'인물')+
+           (i===0?' (행위)':' (반응)')}));
+  // 마지막에 사물 인서트 하나 — 얼굴이 없는 컷이 사이에 들어가면 잘라 붙이기가 쉬워진다
+  out.push(Object.assign({},c,{id:nid('k'),hasImg:false,chars:[],
+    shot:'인서트',lens:'마크로',angle:'아이레벨',pos:'',rel:'',
+    soft:'사물 인서트',dur:Math.max(2,Math.round((+c.dur||4)/2)),
+    note:(c.note?c.note+' / ':'')+'쪼갠 컷 — 인서트'}));
+  return out;
+}
 function allCuts(){ const r=[]; S.scenes.forEach(s=>s.cuts.forEach(c=>r.push({s,c}))); return r; }
 function statLine(){
   if(!S.scenes.length) return '';
@@ -3381,6 +3411,7 @@ function cutBodyHTML(s,c){
       <label class="f"><span>메모</span><input type="text" data-kf="note" placeholder="Flow에서 3번 시도 / 재생성 필요"></label>
       <div class="row">
         <button class="btn sm" data-kgo="${s.id}|${c.id}">이 컷 프롬프트 보기</button>
+        <button class="btn sm gh" data-ksplit="${s.id}|${c.id}" title="두 사람이 한 화면에 있으면 판정도 붙고 인물도 섞입니다">✂ 한 사람씩 쪼개기</button>
         <button class="btn sm gh" data-kdup="${s.id}|${c.id}">⧉ 복제</button>
         <button class="btn sm dgr" data-kdel="${s.id}|${c.id}">컷 삭제</button>
       </div>
@@ -3494,6 +3525,15 @@ $('scenelist').addEventListener('click',async e=>{
     const i=s.cuts.findIndex(x=>x.id===kid), j=i+ +d;
     if(i<0||j<0||j>=s.cuts.length) return;
     [s.cuts[i],s.cuts[j]]=[s.cuts[j],s.cuts[i]]; save(); renderScenes();
+  }
+  if(t.dataset.ksplit){
+    const [sid,kid]=t.dataset.ksplit.split('|');
+    const s=S.scenes.find(x=>x.id===sid);
+    const i=s.cuts.findIndex(x=>x.id===kid), c=s.cuts[i];
+    const made=splitSolo(s,c);
+    if(!made){ toast('이 컷에 등장 캐릭터를 두 명 이상 골라주세요'); return; }
+    s.cuts.splice(i,1,...made); save(); renderScenes();
+    toast(made.length+'컷으로 쪼갰어요 — 얼굴 하나씩 ✓');
   }
   if(t.dataset.kdup){
     const [sid,kid]=t.dataset.kdup.split('|');
