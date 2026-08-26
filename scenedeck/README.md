@@ -269,6 +269,36 @@ DALL·E · Firefly도 같은 방식이고, 필터가 넓게 잡혀서 정상적�
 > 이 다섯 가지는 그 그림을 애초에 그리지 않는 방법입니다.
 > 실제로 만들려는 장면이 규정이 금지하는 바로 그것이라면, 이 기능으로도 통과되지 않고 통과되어서도 안 됩니다.
 
+### 같은 동작, 반대의 뜻 — 「의도」 칸
+
+`동훈이 무릎을 꿇는다` — 이건 굴복일 수도, **상대를 올려다보며 압박하는 위협**일 수도 있습니다.
+동작만 주면 모델은 늘 굴복 쪽으로 그립니다. 그게 흔한 그림이니까요.
+
+컷 카드의 **「이 동작의 의도 — 문맥」** 칸이 그걸 뒤집습니다.
+
+| 의도 | 프롬프트에 붙는 것 | 배제되는 것 |
+|---|---|---|
+| 위협 — 겁주려는 것 | `a deliberate act of intimidation, controlled and unafraid, in command of the moment` | `anguish, crying, distressed expression, pleading, fear` |
+| 우위 — 여유 | `calm and unhurried, in command of the room` | `anguish, panic` |
+| 조롱 — 비웃음 | `faintly amused, contemptuous, a mocking half-smile` | `anguish, crying, fear` |
+| 복종 — 굴복 | `submissive, head lowered, yielding` | `defiant, smiling` |
+
+경계 · 숨김 · 결심 · 무심 · 애원 · 체념 · 두려움 · 슬픔도 있습니다.
+
+**배제가 핵심입니다.** 긍정 문구만으로는 모델이 흔한 쪽으로 새기 때문에,
+반대 감정을 `--no` 로 함께 막아야 의도대로 나옵니다.
+
+### 앞 컷 문맥 — 영상 프롬프트
+
+영상(Veo · 런웨이)에는 **앞 컷이 무엇이었는지**가 함께 나갑니다.
+
+```
+Context: this shot follows — he looks down at the seated man without blinking.
+Intent:  A deliberate act of intimidation, controlled and unafraid.
+```
+
+앞 컷이 「노려본다」였다면 이어지는 무릎 꿇기를 굴복으로 읽지 않습니다.
+
 ### 장소가 막을 때 — 방 이름 대신 방 안에 뭐가 있는지
 
 `고문실` `torture chamber` 는 **장소 칸**에 들어가므로, 걸리면 **그 씬의 컷이 전부** 막힙니다.

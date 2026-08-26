@@ -1543,7 +1543,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v26 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v27 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -2712,7 +2712,7 @@ $('charlist').addEventListener('click',e=>{
 function newScene(){ return {id:nid('s'),heading:'',loc:'',locEn:'',time:'',summary:'',script:'',cuts:[]}; }
 function newCut(){
   return {id:nid('k'),desc:'',descEn:'',shot:'',angle:'',move:'',lens:'',light:'',mood:'',
-    speed:'',fx:'',trig:'',emo:'',keep:'',endp:'',use:'',bg:false,cast:'',soft:'',
+    speed:'',fx:'',trig:'',emo:'',keep:'',endp:'',use:'',bg:false,cast:'',soft:'',intent:'',
     inframe:'',inframeEn:'',mat:'',tint:'',
     face:'',faceEn:'',outfit:'',outfitEn:'',act:'',actEn:'',
     dur:4,chars:[],dialogue:'',audio:'',note:'',hasImg:false,open:true};
@@ -2872,6 +2872,7 @@ function cutBodyHTML(s,c){
         <summary>더 세밀하게 — 인물 감정 · 빛 효과 · 사건</summary>
         <div class="fa" style="padding:0 18px 16px">
           <div class="grid g3">
+            <label class="f"><span>이 동작의 <b>의도</b> — 문맥</span><select data-kf="intent">${opts(INTENT,c.intent)}</select></label>
             <label class="f"><span>인물 감정 <b style="color:var(--sig)">이미지</b></span><select data-kf="emo">${opts(EMO,c.emo)}</select></label>
             <label class="f"><span>빛 · 질감 효과 <b style="color:var(--sig)">이미지</b></span><select data-kf="fx">${opts(FX,c.fx)}</select></label>
             <label class="f"><span>사건 (트리거) <b style="color:var(--sig)">영상</b></span><select data-kf="trig">${opts(TRIGGER,c.trig)}</select></label>
@@ -5004,6 +5005,39 @@ function toolBits(c){
   if(m.kind==='photo') return [CAM[S.style.cam]||'', (c&&LENS[c.lens])||''].filter(Boolean);
   return [ (TOOLS[m.kind]||{})[S.style.tool] || '' ].filter(Boolean);
 }
+/* 같은 동작도 의도에 따라 정반대다.
+   「무릎을 꿇는다」는 굴복일 수도, 상대를 올려다보며 압박하는 위협일 수도 있다.
+   동작만 주면 모델은 늘 굴복 쪽으로 그린다 — 그게 흔한 그림이니까.
+   그래서 의도를 따로 받고, 반대쪽으로 새지 않게 배제까지 붙인다. */
+const INTENT={
+  '':      null,
+  '위협 — 겁주려는 것': {en:'a deliberate act of intimidation, controlled and unafraid, in command of the moment',
+            no:['anguish','crying','distressed expression','pleading','fear']},
+  '우위 — 여유':        {en:'calm and unhurried, in command of the room',
+            no:['anguish','distressed expression','panic']},
+  '조롱 — 비웃음':      {en:'faintly amused, contemptuous, a mocking half-smile',
+            no:['anguish','crying','fear']},
+  '경계 — 살핌':        {en:'wary and alert, weight shifted, ready to move',
+            no:['relaxed','smiling']},
+  '숨김 — 속을 감춤':    {en:'outwardly calm, holding something back behind the eyes',
+            no:['exaggerated expression','crying']},
+  '결심 — 마음을 정함':  {en:'resolved and steady, jaw set',
+            no:['hesitant','crying']},
+  '무심 — 아무렇지 않음':{en:'indifferent, unbothered, blank',
+            no:['anguish','crying','dramatic expression']},
+  '애원 — 매달림':      {en:'pleading, desperate, reaching',
+            no:['calm','smiling']},
+  '체념 — 포기':        {en:'resigned, emptied out, shoulders down',
+            no:['smiling','energetic']},
+  '복종 — 굴복':        {en:'submissive, head lowered, yielding',
+            no:['defiant','smiling']},
+  '두려움 — 겁먹음':     {en:'afraid, bracing, breath held',
+            no:['calm','smiling']},
+  '슬픔 — 무너짐':      {en:'grieving, quiet, undone',
+            no:['smiling','angry']}
+};
+function intentOf(c){ return (c&&INTENT[c.intent])||null; }
+
 /* =========================================================
    순화 — 잔인해서 이미지가 안 만들어질 때.
 
@@ -5018,7 +5052,10 @@ function toolBits(c){
 /* 영문 쪽은 반드시 낱말 경계를 잡는다.
    경계가 없으면 e-stab-lishing 의 「stab」이 걸려서
    설정샷마다 「잔인함 경고」가 뜬다. */
-const RISK_RE=/피투성이|핏방울|유혈|피범벅|피가|피를|고문|시체|주검|시신|참수|목을\s*베|매달려|찔러|찌른|잘린|절단|내장|학대|폭행|구타|죽인|죽이는|살해|처형|사형|총살|\b(blood\w*|gore|gory|corpse\w*|tortur\w*|behead\w*|decapitat\w*|stab|stabs|stabbed|stabbing|mutilat\w*|dismember\w*|hanged|slaughter\w*|kill|kills|killed|killing|murder\w*|execution|executed)\b/i;
+/* 한국어는 낱말 경계가 없어서 짧은 낱말을 넣으면 오탐이 쏟아진다.
+   「멍」은 멍하니·멍청에, 「밟」은 밟고 지나가다에 걸린다.
+   그래서 한국어 쪽은 반드시 두 낱말 이상으로 묶어서 잡는다. */
+const RISK_RE=/피투성이|핏방울|유혈|피범벅|피가|피를|고문|시체|주검|시신|참수|목을\s*베|매달려|찔러|찌른|잘린|절단|내장|학대|폭행|구타|죽인|죽이는|살해|처형|사형|총살|손톱을?\s*(뽑|뜯)|목을\s*(조[르른라]|졸|매)|채찍|작두|효수|학살|도륙|백골|해골|올가미|족쇄|전기\s*고문|시퍼런\s*멍|으스러|짓밟|생체\s*실험|\b(blood\w*|gore|gory|corpse\w*|tortur\w*|behead\w*|decapitat\w*|stab|stabs|stabbed|stabbing|mutilat\w*|dismember\w*|hanged|slaughter\w*|kill|kills|killed|killing|murder\w*|execution|executed|fingernail\w*|strangl\w*|chok(e|ed|ing)|whip(?!ped\s+cream)|whips|whipped(?!\s+cream)|whipping|noose|guillotine|massacre\w*|skull|skeleton|amputat\w*|sever(ed)?|maim\w*|lynch\w*)\b/i;
 /* 낱말을 바꿀 때는 품사를 지켜야 한다.
    「bloodied prisoner」를 「dark wet stain prisoner」로 바꾸면 문장이 깨진다.
    형용사는 형용사로, 명사는 명사로, 동사는 동사로. */
@@ -5044,7 +5081,21 @@ const SOFT_EN=[
   [/\b(kills?|murders?|slaughters?)\b/gi,'confronts'],
   [/\b(killed|murdered|slaughtered|killing|murdering)\b/gi,'confronted'],
   [/\b(beaten|beating|assaulted|assaulting|assault)\b/gi,'worn from a struggle'],
-  [/\b(execution|executed)\b/gi,'the ceremony']
+  [/\b(execution|executed)\b/gi,'the ceremony'],
+  // 실제 대본에서 나온 것들
+  [/\bfingernails?\b/gi,'fingertips'],
+  [/\b(strangl\w*|chok(e|ed|ing))\b/gi,'gripped by the collar'],
+  [/\b(whip|whips|whipped|whipping)\b(?!\s+cream)/gi,'a long cord'],
+  [/\bnoose\b/gi,'a looped cord'],
+  [/\b(guillotine|fodder chopper)\b/gi,'a heavy blade'],
+  [/\bmassacre\w*\b/gi,'the disaster'],
+  [/\b(skull|skeleton)\b/gi,'pale form'],
+  [/\b(amputat\w*|maim\w*|lynch\w*)\b/gi,'worn'],
+  [/\belectric\s+shock\b/gi,'a cold metal contact'],
+  [/\bhuman experiment\w*\b/gi,'a recorded procedure'],
+  [/\bbroken\s+(bones?|limbs?)\b/gi,'a bent frame'],
+  [/\bburn(ed|t|ing)?\s+(flesh|skin)\b/gi,'scorched surface'],
+  [/\bshackles?\b/gi,'iron rings']
 ];
 const SOFT_KO=[
   [/고문실|취조실/g,'낡은 돌방'],
@@ -5054,6 +5105,7 @@ const SOFT_KO=[
   [/독립투사/g,'묶인 사람'],[/고문자/g,'심문관'],
   [/피투성이|피범벅|유혈낭자/g,'검게 젖은'],
   [/핏방울|피가|피를/g,'검은 물기'],
+  [/전기\s*고문/g,'차가운 금속'],[/물\s*고문/g,'차가운 물'],
   [/고문실/g,'취조실'],[/고문/g,'취조'],
   [/시체|주검|시신/g,'미동 없는 형상'],
   [/목을\s*베[는다던]?|참수/g,'칼을 들어 올린다'],
@@ -5061,6 +5113,17 @@ const SOFT_KO=[
   [/찔러|찌른다|찌르는/g,'칼을 겨눈다'],
   [/죽인다|죽이는|살해한다|살해/g,'맞선다'],
   [/구타|폭행|학대/g,'실랑이의 흔적'],
+  // 실제 대본에서 나온 것들 — 품사를 지켜 바꾼다
+  [/손톱을?\s*(뽑는다|뽑아|뽑|뜯는다|뜯어|뜯)\w*/g,'손끝을 붙든다'],
+  [/목을\s*(조른다|조르는|조르|졸라|졸린)\w*/g,'멱살을 잡는다'],
+  [/목을\s*매[는다던]?|목매달\w*/g,'고개를 떨군다'],
+  [/채찍질|채찍/g,'긴 줄'],[/작두/g,'무거운 날'],[/효수/g,'내걸림'],
+  [/생체\s*실험/g,'기록된 절차'],
+  [/학살|도륙/g,'참사'],[/살인/g,'사건'],
+  [/백골|해골/g,'창백한 형상'],[/올가미/g,'고리 지은 줄'],[/족쇄/g,'쇠고리'],
+  [/시퍼런\s*멍이\s*든|멍이\s*든|멍든|시퍼런\s*멍/g,'그늘 진'],
+  [/찢긴|찢어진/g,'해진'],[/으스러진|으스러/g,'눌린'],[/부러진/g,'휜'],
+  [/화상|데인/g,'그을린'],[/흉기/g,'연장'],[/짓밟\S*/g,'세게 디딘다'],
   [/잘린|절단된|절단/g,'끊긴'],[/죽인다|죽인|죽이는/g,'맞선'],
   [/내장|창자/g,'속'],[/유혈/g,'검게 젖음'],[/시신|주검/g,'미동 없는 형상'],
   [/총살|처형|사형 집행/g,'의식']
@@ -5240,19 +5303,24 @@ function scrub(txt,on,c){
   return v;
 }
 /* 조립이 끝난 프롬프트에 아직 걸릴 낱말이 남아 있는지 — 그대로 보여준다 */
-function riskInText(txt){
-  const out=[];
-  String(txt||'').split(/[\s,./·()\[\]]+/).forEach(w=>{
-    if(w && RISK_RE.test(w) && out.indexOf(w)<0) out.push(w);
-  });
-  return out.slice(0,10);
+/* 낱말 단위로 쪼개면 「손톱을 뽑는다」 「목을 조른다」처럼 두 낱말짜리는
+   영영 잡히지 않는다. 문장 전체를 훑어 실제로 걸린 조각을 그대로 돌려준다. */
+function riskScan(txt){
+  const re=new RegExp(RISK_RE.source,'gi'), out=[];
+  let m; const v=String(txt||'');
+  while((m=re.exec(v))){
+    const w=m[0].trim();
+    if(w && out.indexOf(w)<0) out.push(w);
+    if(out.length>=10) break;
+    if(m.index===re.lastIndex) re.lastIndex++;
+  }
+  return out;
 }
+function riskInText(txt){ return riskScan(txt); }
 function riskHits(c){
   if(!c) return [];
-  const hay=[c.desc,c.descEn,c.face,c.faceEn,c.outfit,c.outfitEn,c.act,c.actEn].filter(Boolean).join(' ');
-  const out=[];
-  hay.split(/[\s,./·]+/).forEach(w=>{ if(w && RISK_RE.test(w) && out.indexOf(w)<0) out.push(w); });
-  return out.slice(0,8);
+  return riskScan([c.desc,c.descEn,c.face,c.faceEn,c.outfit,c.outfitEn,c.act,c.actEn]
+    .filter(Boolean).join(' ')).slice(0,8);
 }
 function softBits(c){
   const k=c&&c.soft, m=SOFTEN[k];
@@ -5283,6 +5351,8 @@ function lockBits(c){
   if(c && c.bg)
     return {body:['empty location, no people, no characters, the space itself'],
             no:['person','people','crowd','figure','silhouette','human','text','watermark'].concat(soft)};
+  const it=intentOf(c);
+  if(it && it.no) soft=soft.concat(it.no);
   const none = !!(sm && sm.people==='none');
   if(sm && sm.mat && matPhrase(c)) soft=soft.concat(MAT_NO);
   if(S.style.lock===false) return {body:[],no:dedupe(soft)};
@@ -5316,6 +5386,8 @@ function charBits(c){
   cutChars(c).forEach(ch=>{ const l=charLock(ch); if(l) out.push(l); });
   chgBits(c).look.forEach(x=>out.push(x));
   if(out.length && EMO[c.emo]) out.push(EMO[c.emo]+' expression');
+  const it=intentOf(c);
+  if(it) out.push(it.en);
   return out;
 }
 /* 지문 + 이 컷의 행동 변화 */
@@ -5385,6 +5457,16 @@ function buildVEO(s,c){
   if(c.dialogue) au.push('dialogue: "'+c.dialogue.replace(/"/g,"'")+'"');
   if(au.length) L.push('Audio: '+au.join('; ')+'.');
   if(c.dur) L.push('Duration: about '+c.dur+' seconds.');
+  // 앞 컷이 뭐였는지 알려주면 영상 모델이 흐름을 이어 붙인다.
+  // 「무릎을 꿇는다」도 앞 컷이 「상대를 노려본다」면 굴복으로 읽지 않는다.
+  const pi=s.cuts?s.cuts.indexOf(c):-1;
+  if(pi>0){
+    const pv=s.cuts[pi-1];
+    const pd=(pv.descEn||pv.desc||'').trim();
+    if(pd) L.push('Context: this shot follows — '+pd.slice(0,110)+'.');
+  }
+  const it0=intentOf(c);
+  if(it0) L.push('Intent: '+cap(it0.en)+'.');
   softBits(c).forEach(x=>L.push('Restraint: '+cap(x)+'.'));
   const rn=refNote(s,c);
   if(rn) L.push('Reference: '+rn);
@@ -5705,6 +5787,7 @@ function readbackKO(s,c,kind){
   if(chg.length) R.push(rbRow('이 컷만',chg.map(x=>x[0]+' — '+esc(x[1])).join('<br>')));
   if(EMO[c.emo]) R.push(rbRow('표정',b(c.emo),EMO[c.emo]));
 
+  if(c.intent) R.push(rbRow('의도 · 문맥',b(c.intent),(intentOf(c)||{}).en));
   if(c.soft){
     const ph=matPhrase(c);
     R.push(rbRow('순화',b(c.soft)+(ph?' · '+b(c.mat)+(c.tint&&c.tint!=='(그대로)'?' · '+b(c.tint):''):''),
