@@ -1546,7 +1546,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <button data-go="home">홈으로</button>
     </div>
   </div>
-  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v28 · 2026-08-26</span></div>
+  <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.<span class="ver">화면 v29 · 2026-08-26</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -2542,6 +2542,114 @@ function newChar(){
   return {id:nid('c'),name:'',role:'',eth:'',age:'',sex:'',hairL:'',hairC:'',eye:'',build:'',
     outfit:'',outfitEn:'',mark:'',markEn:'',lockManual:'',personality:'',speech:'',arc:''};
 }
+/* =========================================================
+   의상 자동 채우기.
+   밖으로 아무것도 보내지 않는 앱이라 AI 를 부를 수 없다. 대신 역할과 시대로
+   찾는다 — 대본의 배역은 생각보다 정해져 있고, 중요한 건 화려한 문장이 아니라
+   두 인물이 갈리는 것이기 때문이다.
+   그래서 각 항목에 「정돈된 쪽(crisp)」과 「남루한 쪽(worn)」을 구분해 두고,
+   소품을 하나씩 박아 둔다. 놋쇠 단추 · 밧줄 자국 같은 것이 실제로 갈라준다.
+   ========================================================= */
+const OUTFIT_LEX=[
+  {re:/순사|경관|경찰/, era:/일제|1910|1920|1930|1940|조선/, wear:'crisp',
+   ko:'빳빳하게 다린 검은 순사 제복, 놋쇠 단추, 챙 모자, 광낸 장화',
+   en:'a pressed dark police uniform, brass buttons, a peaked cap, polished boots'},
+  {re:/헌병/, wear:'crisp',
+   ko:'헌병 제복, 완장, 가죽 허리띠',
+   en:'a military police uniform, an armband, a wide leather belt'},
+  {re:/일본군|병사|군인/, wear:'crisp',
+   ko:'누런 군복, 각반, 전투모',
+   en:'a mustard-brown military uniform, cloth leg wraps, a field cap'},
+  {re:/독립\s*운?동?가|독립\s*투사|투사|의병/, wear:'worn',
+   ko:'해져서 얇아진 무명 저고리, 손목에 밧줄 자국, 맨발',
+   en:'torn filthy hemp clothes worn thin, rope-marked wrists, bare feet'},
+  {re:/죄수|수감|포로|사형수/, wear:'worn',
+   ko:'번호가 찍힌 낡은 수의, 헝클어진 머리',
+   en:'a faded numbered prison smock, matted hair, dirt-streaked skin'},
+  {re:/망나니|처형인|회자수/, wear:'worn',
+   ko:'붉은 머리띠, 소매 걷은 삼베 조끼, 드러난 팔',
+   en:'a red headband, a sleeveless hemp vest, bare muscular arms'},
+  {re:/양반|대감|사또|관리|현감/, wear:'crisp',
+   ko:'옥색 도포, 갓, 세조대',
+   en:'a pale blue scholar robe, a wide-brimmed horsehair hat, a silk sash'},
+  {re:/농민|백성|서민|하인|머슴/, wear:'worn',
+   ko:'물들이지 않은 거친 삼베 저고리와 바지, 짚신, 흙 묻은 손',
+   en:'undyed hemp jacket and trousers, straw shoes, soil-stained hands'},
+  {re:/기생|무희/, wear:'crisp',
+   ko:'짧은 저고리와 넓은 치마, 노리개, 쪽 찐 머리',
+   en:'a short jacket over a wide bell-shaped skirt, a hanging ornament, hair coiled low'},
+  {re:/무당|박수/, wear:'crisp',
+   ko:'오색 두루마기, 방울, 붉은 띠',
+   en:'a five-coloured ritual robe, hand bells, a red sash'},
+  {re:/스님|승려/, wear:'worn',
+   ko:'잿빛 승복, 염주',
+   en:'a grey monastic robe, wooden prayer beads'},
+  {re:/의사|주치의|외과/, wear:'crisp',
+   ko:'흰 가운, 목에 건 청진기, 안쪽에 셔츠와 넥타이',
+   en:'a white coat, a stethoscope around the neck, shirt and tie underneath'},
+  {re:/간호사/, wear:'crisp',
+   ko:'연한 색 근무복, 머리에 쓴 캡',
+   en:'pale scrubs, a nurse cap'},
+  {re:/형사|수사관/, wear:'worn',
+   ko:'구겨진 재킷, 느슨한 넥타이, 낡은 구두',
+   en:'a rumpled jacket, a loosened tie, scuffed shoes'},
+  {re:/변호사|검사|판사/, wear:'crisp',
+   ko:'짙은 정장, 흰 셔츠',
+   en:'a dark tailored suit, a crisp white shirt'},
+  {re:/학생|고등학생|중학생/, wear:'crisp',
+   ko:'교복, 이름표, 멘 가방',
+   en:'a school uniform, a name tag, a satchel'},
+  {re:/선생|교사|교수/, wear:'crisp',
+   ko:'단정한 니트와 슬랙스, 손에 든 서류',
+   en:'a neat knit sweater and slacks, papers in hand'},
+  {re:/사장|회장|간부/, wear:'crisp',
+   ko:'맞춤 정장, 손목시계',
+   en:'a tailored suit, a wristwatch'},
+  {re:/회사원|직장인/, wear:'crisp',
+   ko:'기성복 정장, 사원증',
+   en:'an off-the-rack suit, an ID badge on a lanyard'},
+  {re:/노숙|거지/, wear:'worn',
+   ko:'겹쳐 입은 낡은 옷, 때 묻은 손',
+   en:'layers of worn mismatched clothes, grimed hands'},
+  {re:/할아버지|노인|조부/, wear:'worn',
+   ko:'헐렁한 회색 카디건, 낡은 바지, 굽은 등',
+   en:'a loose grey cardigan, worn trousers, a stooped back'},
+  {re:/할머니|조모/, wear:'worn',
+   ko:'수수한 꽃무늬 블라우스, 몸뻬 바지',
+   en:'a plain floral blouse, baggy work trousers'},
+  {re:/아이|어린|소년|소녀|아들|딸|손자|손녀/, wear:'worn',
+   ko:'조금 큰 옷, 무릎이 헤진 바지',
+   en:'clothes a size too big, knees worn through'},
+  {re:/어머니|엄마|아내/, wear:'worn',
+   ko:'앞치마를 두른 수수한 옷',
+   en:'plain clothes under an apron'},
+  {re:/아버지|아빠|가장/, wear:'worn',
+   ko:'낡은 점퍼, 늘어난 셔츠',
+   en:'a worn jacket over a stretched-out shirt'}
+];
+/* 역할이 비어 있을 때의 마지막 수단 — 시대만이라도 맞춘다 */
+const OUTFIT_ERA=[
+  {re:/조선|사극|고려|삼국/, ko:'무명 저고리와 바지', en:'plain hemp jacket and trousers'},
+  {re:/일제|1910|1920|1930|1940/, ko:'낡은 무명 두루마기', en:'a worn cotton overcoat of the period'},
+  {re:/50년대|60년대|70년대/, ko:'빛바랜 셔츠와 통 넓은 바지', en:'a faded shirt and wide-legged trousers'},
+  {re:/80년대|90년대/, ko:'헐렁한 재킷과 청바지', en:'a loose jacket and jeans'}
+];
+function suggestOutfit(c){
+  const role=[(c&&c.role)||'',(c&&c.name)||''].join(' ');
+  const era=String(S.style.era||'');
+  let hit=null;
+  for(const e of OUTFIT_LEX){
+    if(!e.re.test(role)) continue;
+    if(e.era && era && !e.era.test(era)) { if(!hit) hit=e; continue; }
+    hit=e; break;
+  }
+  if(hit) return {ko:hit.ko,en:hit.en,wear:hit.wear};
+  for(const e of OUTFIT_ERA) if(era && e.re.test(era)) return {ko:e.ko,en:e.en,wear:''};
+  // 그마저도 없으면 나이·성별로 무난하게
+  const young=/10대|20대/.test(String(c&&c.age||''));
+  return young ? {ko:'단순한 셔츠와 바지',en:'a simple shirt and trousers',wear:''}
+               : {ko:'수수한 겉옷과 바지',en:'a plain overcoat and trousers',wear:''};
+}
 /* 「a man in his forties」 → 「a Korean man in his forties」.
    관사 바로 뒤가 인종이 들어갈 자리다. 관사가 없으면 앞에 그냥 붙인다. */
 function withEth(who,eth){
@@ -2606,6 +2714,7 @@ function renderChars(){
         <label class="f enfield"><span>특징</span><input type="text" data-cf="markEn" value="${esc(c.markEn)}" placeholder="scar through left eyebrow"></label>
       </div>
       <div class="row" style="margin:-6px 0 4px">
+        <button class="btn sm" data-cfit="${c.id}">역할로 의상 채우기</button>
         <button class="btn sm" data-ctrans="${c.id}">한글 → 영문 번역</button>
         <span class="mini" style="margin:0">빈 영문 칸을 채웁니다</span>
       </div>
@@ -2692,6 +2801,17 @@ $('charlist').addEventListener('click',e=>{
     if(wrap) wrap.style.display=wrap.style.display==='none'?'block':'none';
   }
   if(t.dataset.csheet) copy(charSheet3(S.chars.find(x=>x.id===t.dataset.csheet)),'3패널 시트 프롬프트 복사 ✓ — 세 장을 따로 뽑으세요');
+  if(t.dataset.cfit){
+    const c=S.chars.find(x=>x.id===t.dataset.cfit); if(!c) return;
+    if(!(c.role||'').trim() && !(c.name||'').trim()){ toast('먼저 이름이나 역할을 적어주세요 — 그걸 보고 찾습니다'); return; }
+    const before={outfit:c.outfit,outfitEn:c.outfitEn};
+    const g=suggestOutfit(c);
+    c.outfit=g.ko; c.outfitEn=g.en; delete c.outfitEnAuto;
+    save(); renderAll(); renderPrompt();
+    toast('의상을 채웠어요 ✓ — 맘에 안 들면 그 자리에서 고치세요',
+      {label:'되돌리기',fn:()=>{ Object.assign(c,before); save(); renderAll(); renderPrompt(); toast('되돌렸어요 ✓'); }});
+    return;
+  }
   if(t.dataset.cask) copy(askChar(S.chars.find(x=>x.id===t.dataset.cask)),'캐릭터 질문지 복사 ✓');
   if(t.dataset.ctrans){
     const c=S.chars.find(x=>x.id===t.dataset.ctrans);
@@ -2821,7 +2941,8 @@ function castHintHTML(s,c){
       <select data-kf="pos" style="max-width:190px">${opts(POS,c.pos)}</select>
       <span class="mini" style="margin:0">고르면 <code>on the left, … ; on the right, …</code> 로 묶입니다</span>
     </div>
-    ${bare.length?`<p class="mini" style="margin:8px 0 0"><b>${esc(bare.join(' · '))}</b> 의 <b>의상</b>이 비어 있어요 —
+    ${bare.length?`<div class="row" style="margin:9px 0 0"><button class="btn sm" data-fitall="${c.id}">비어 있는 의상 자동으로 채우기</button></div>
+    <p class="mini" style="margin:8px 0 0"><b>${esc(bare.join(' · '))}</b> 의 <b>의상</b>이 비어 있어요 —
       의상이 없으면 두 인물이 섞입니다. 「기획 → 캐릭터」에서 채워주세요.
       <br>독립투사라면 <code>torn, filthy hemp clothes, worn thin</code> 처럼 <b>낡음의 정도까지</b> 적어야 순사 제복과 갈립니다.</p>`:''}
   </div>`;
@@ -2958,6 +3079,20 @@ $('scenelist').addEventListener('input',onSceneEdit);
 $('scenelist').addEventListener('change',onSceneEdit);
 $('scenelist').addEventListener('click',async e=>{
   const t=e.target;
+  if(t.dataset.fitall){
+    const hit=allCuts().find(x=>x.c.id===t.dataset.fitall); if(!hit) return;
+    const before=JSON.parse(JSON.stringify(S.chars));
+    let n=0;
+    cutChars(hit.c).forEach(ch=>{
+      if((ch.outfitEn||ch.outfit||'').trim()) return;
+      const g=suggestOutfit(ch); ch.outfit=g.ko; ch.outfitEn=g.en; delete ch.outfitEnAuto; n++;
+    });
+    if(!n){ toast('채울 의상이 없어요'); return; }
+    save(); renderAll(); renderPrompt();
+    toast(`인물 ${n}명의 의상을 채웠어요 ✓ — 「기획 → 캐릭터」에서 고칠 수 있어요`,
+      {label:'되돌리기',fn:()=>{ S.chars=before; save(); renderAll(); renderPrompt(); toast('되돌렸어요 ✓'); }});
+    return;
+  }
   if(t.dataset.locfix){
     const [sid,i]=t.dataset.locfix.split('|');
     const sc=S.scenes.find(x=>x.id===sid); if(!sc) return;
