@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://yellow8227-cmd.github.io/char-counter/sitemap.xml

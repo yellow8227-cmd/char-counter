@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<!-- ══════════════════════════════════════════════════════════════════
+     주소를 바꿀 곳은 여기 네 군데뿐입니다. 아래로 내려가며 찾으세요.
+       ① SITE       — 이 페이지 주소            (og:url · canonical · sitemap)
+       ② NOTION     — 포트폴리오 노션 주소       («노션 포폴» 카드 · 맨 위 버튼)
+       ③ GAME       — 젤리슈팅 주소             («젤리슈팅» 카드)
+       ④ CHANNEL    — 블로그 «밥풀» · 인스타그램  («채널» 카드 두 장 · 맨 아래 연락처)
+     찾기 쉽도록 고칠 자리마다 ①②③④ 번호를 단 주석을 붙여 두었습니다.
+     ══════════════════════════════════════════════════════════════════ -->
+
+<title>YELLOW LAB · 정주원 — 될 이야기를 알아보는 사람</title>
+<meta name="description" content="콘텐츠 기획자 정주원의 작업실. 시나리오를 컷과 AI 프롬프트로 바꾸는 씬덱, 촬영 배치도를 그리는 샷플래너, 링크만 누르면 시작하는 젤리슈팅. 설치 없이 브라우저에서 바로 씁니다.">
+<meta name="author" content="정주원">
+<meta name="keywords" content="정주원, 콘텐츠 기획, 영화 기획, 웹툰 IP, 방송작가, 씬덱, 샷플래너, 젤리슈팅, AI 영상 프롬프트, 스토리보드">
+<link rel="canonical" href="https://yellow8227-cmd.github.io/char-counter/"><!-- ①SITE -->
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="YELLOW LAB">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="YELLOW LAB · 정주원 — 될 이야기를 알아보는 사람">
+<meta property="og:description" content="기획만 하지 않고, 필요한 도구를 직접 만듭니다. 씬덱 · 샷플래너 · 젤리슈팅 — 설치 없이 링크만 누르면 열립니다.">
+<meta property="og:url" content="https://yellow8227-cmd.github.io/char-counter/"><!-- ①SITE -->
+<meta property="og:image" content="https://yellow8227-cmd.github.io/char-counter/og.png"><!-- ①SITE -->
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="노란 바탕에 YELLOW LAB 로고와 씬덱·샷플래너·젤리슈팅 세 갈래를 적은 카드">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="YELLOW LAB · 정주원 — 될 이야기를 알아보는 사람">
+<meta name="twitter:description" content="기획만 하지 않고, 필요한 도구를 직접 만듭니다. 씬덱 · 샷플래너 · 젤리슈팅.">
+<meta name="twitter:image" content="https://yellow8227-cmd.github.io/char-counter/og.png"><!-- ①SITE -->
+
+<meta name="theme-color" content="#14110f">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="shot-planner/apple-touch-icon.png">
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "정주원",
+  "alternateName": "CHUNG JOOWON",
+  "jobTitle": "콘텐츠 기획자",
+  "description": "이야기를 발굴해 사람들이 찾는 콘텐츠로 만드는 기획자. 영화 기획 · 웹툰 IP · 콘텐츠 소싱.",
+  "url": "https://yellow8227-cmd.github.io/char-counter/",
+  "email": "yellow8227@naver.com",
+  "alumniOf": "숭실대학교",
+  "sameAs": ["https://www.instagram.com/travelcat_kami/", "https://blog.naver.com/bap-pul"],
+  "worksFor": { "@type": "Organization", "name": "YELLOW LAB" }
+}
+</script>
+
+<style>
+:root{
+  --ink:#14110f;
+  --ink-2:#4a433d;
+  --ink-3:#8a817a;
+  --line:#e5e0d8;
+  --paper:#ffffff;
+  --paper-2:#faf8f4;
+  --yellow:#ffc400;
+  --yellow-deep:#c98a00;
+  --maxw:1180px;
+  --font:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--font);
+  font-size:16px;line-height:1.75;letter-spacing:-.01em;
+  word-break:keep-all;overflow-wrap:anywhere;
+}
+img{max-width:100%;display:block}
+a{color:inherit}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+.skip{position:absolute;left:-9999px;top:0;background:var(--ink);color:#fff;padding:12px 18px;z-index:100}
+.skip:focus{left:8px;top:8px}
+:focus-visible{outline:3px solid var(--yellow-deep);outline-offset:3px;border-radius:4px}
+
+/* ── 머리말 ───────────────────────────────────────── */
+.top{
+  position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);
+  backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line);
+}
+.top .wrap{display:flex;align-items:center;gap:20px;height:64px}
+.logo{display:flex;align-items:baseline;gap:9px;padding:9px 0;text-decoration:none;font-weight:800;letter-spacing:.14em;font-size:15px;white-space:nowrap}
+.logo .dot{width:9px;height:9px;border-radius:50%;background:var(--yellow);flex:none;transform:translateY(-1px)}
+.top nav{margin-left:auto;display:flex;gap:22px;align-items:center}
+.top nav a{text-decoration:none;font-size:14px;font-weight:600;color:var(--ink-2);padding:10px 2px}
+.top nav a:hover{color:var(--ink)}
+.btn-top{
+  background:var(--ink);color:#fff!important;padding:9px 17px;border-radius:999px;
+  font-size:13.5px;font-weight:700;text-decoration:none;white-space:nowrap;
+}
+.btn-top:hover{background:#2e2822}
+@media(max-width:820px){ .top nav a.hide-sm{display:none} .top .wrap{height:58px} }
+
+/* ── 표제 ─────────────────────────────────────────── */
+.hero{border-bottom:1px solid var(--line);padding:76px 0 62px}
+.kicker{
+  display:inline-flex;align-items:center;gap:9px;font-size:12px;font-weight:700;
+  letter-spacing:.16em;color:var(--ink-3);text-transform:uppercase;margin:0 0 26px
+}
+.kicker::before{content:"";width:26px;height:2px;background:var(--yellow)}
+.hero h1{
+  margin:0 0 22px;font-size:clamp(38px,6.6vw,74px);line-height:1.14;
+  font-weight:800;letter-spacing:-.035em;
+}
+.hero h1 em{
+  font-style:normal;background:linear-gradient(transparent 62%,var(--yellow) 62%);
+  padding:0 .04em;
+}
+.hero .lede{margin:0;max-width:56ch;font-size:clamp(16.5px,2.1vw,19.5px);color:var(--ink-2);line-height:1.72}
+.hero .lede strong{color:var(--ink);font-weight:700}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:700;font-size:15px;
+  padding:14px 24px;border-radius:999px;border:1.5px solid var(--ink);transition:.15s;
+}
+.btn-fill{background:var(--ink);color:#fff}
+.btn-fill:hover{background:#2e2822;border-color:#2e2822}
+.btn-line:hover{background:var(--paper-2)}
+.btn .arw{transition:transform .15s}
+.btn:hover .arw{transform:translateX(3px)}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:52px}
+.stats div{background:var(--paper);padding:22px 20px}
+.stats b{display:block;font-size:clamp(24px,3.6vw,34px);font-weight:800;letter-spacing:-.03em;line-height:1.15}
+.stats span{display:block;font-size:13px;color:var(--ink-3);margin-top:6px;font-weight:600}
+@media(max-width:640px){ .stats{grid-template-columns:1fr} .hero{padding:52px 0 44px} }
+
+/* ── 갈래 고르기 ──────────────────────────────────── */
+.filters{position:sticky;top:64px;z-index:40;background:var(--paper);border-bottom:1px solid var(--line)}
+.filters .wrap{display:flex;gap:8px;overflow-x:auto;padding-top:14px;padding-bottom:14px;scrollbar-width:none}
+.filters .wrap::-webkit-scrollbar{display:none}
+.chip{
+  flex:none;border:1.5px solid var(--line);background:var(--paper);color:var(--ink-2);
+  font-family:inherit;font-size:14px;font-weight:700;padding:12px 18px;border-radius:999px;
+  cursor:pointer;transition:.15s;white-space:nowrap;
+}
+.chip:hover{border-color:var(--ink-3);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+@media(max-width:820px){ .filters{top:58px} }
+
+/* ── 기사 카드 ────────────────────────────────────── */
+.grid{
+  display:grid;grid-template-columns:repeat(2,1fr);margin:56px 0 0;
+  border-top:1px solid var(--line);border-left:1px solid var(--line);
+}
+.card,.card-live,.card-fill{
+  background:var(--paper);
+  border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+}
+.card{
+  padding:36px 34px 32px;display:flex;flex-direction:column;
+  text-decoration:none;position:relative;transition:background .15s;min-height:270px;
+}
+.card:hover{background:var(--paper-2)}
+.card[hidden]{display:none}
+.tag{
+  font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--yellow-deep);margin-bottom:16px;display:flex;align-items:center;gap:9px
+}
+.tag .sq{width:7px;height:7px;background:var(--yellow);flex:none}
+.card h3,.card-live h3{margin:0 0 6px;font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1.28}
+.card .en,.card-live .en{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--ink-3);margin:0 0 14px}
+.card p,.card-live>p{margin:0;color:var(--ink-2);font-size:15.5px;line-height:1.7}
+.card .go{
+  margin-top:auto;padding-top:22px;font-size:14px;font-weight:700;
+  display:inline-flex;align-items:center;gap:7px;color:var(--ink)
+}
+.card .go .arw{transition:transform .15s}
+.card:hover .go .arw{transform:translateX(4px)}
+.card .meta{margin-top:14px;font-size:13px;color:var(--ink-3);font-weight:600}
+@media(max-width:860px){
+  .grid{grid-template-columns:1fr}
+  .card{padding:30px 24px 26px;min-height:0}
+  .card h3,.card-live h3{font-size:22px}
+  .card-fill{display:none!important}
+}
+
+/* 글자수 세기 — 카드 안에서 바로 굴러가는 것 */
+.card-live{padding:36px 34px 32px;display:flex;flex-direction:column}
+.card-live[hidden]{display:none}
+.card-live textarea{
+  width:100%;min-height:104px;resize:vertical;margin-top:6px;padding:13px 15px;
+  border:1.5px solid var(--line);border-radius:10px;font-family:inherit;font-size:15px;
+  line-height:1.7;color:var(--ink);background:var(--paper-2);
+}
+.card-live textarea:focus{border-color:var(--ink-3);background:var(--paper);outline:none}
+.counts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.counts span{
+  font-size:13px;font-weight:700;color:var(--ink-2);background:var(--paper-2);
+  border:1px solid var(--line);border-radius:999px;padding:6px 13px;font-variant-numeric:tabular-nums
+}
+.counts span b{color:var(--ink)}
+@media(max-width:860px){ .card-live{padding:30px 24px 26px} }
+
+/* ── 소개 ─────────────────────────────────────────── */
+.about{padding:88px 0;border-top:1px solid var(--line);background:var(--paper-2);margin-top:-1px}
+.about-in{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:56px;align-items:start}
+.about h2{margin:0;font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-.035em;line-height:1.22}
+.about h2 em{font-style:normal;background:linear-gradient(transparent 62%,var(--yellow) 62%)}
+.about .sub{margin:16px 0 0;color:var(--ink-2);font-size:16px;line-height:1.75}
+.tl{margin:0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.tl li{display:grid;grid-template-columns:118px minmax(0,1fr);gap:20px;padding:17px 0;border-bottom:1px solid var(--line)}
+.tl .yr{font-size:13px;font-weight:700;color:var(--ink-3);font-variant-numeric:tabular-nums;padding-top:3px}
+.tl .ttl{font-weight:700;font-size:16px;margin:0 0 3px;letter-spacing:-.02em}
+.tl .dsc{margin:0;font-size:14.5px;color:var(--ink-2);line-height:1.65}
+@media(max-width:860px){ .about{padding:60px 0} .about-in{grid-template-columns:1fr;gap:34px} .tl li{grid-template-columns:1fr;gap:4px} }
+
+/* ── 연락 ─────────────────────────────────────────── */
+.contact{padding:88px 0;border-top:1px solid var(--line)}
+.contact h2{margin:0 0 14px;font-size:clamp(28px,4.4vw,46px);font-weight:800;letter-spacing:-.035em;line-height:1.2}
+.contact p{margin:0 0 32px;color:var(--ink-2);font-size:17px;max-width:48ch}
+.links{display:flex;flex-wrap:wrap;gap:10px}
+.links a{
+  display:inline-flex;align-items:center;gap:9px;text-decoration:none;font-weight:700;font-size:15px;
+  border:1.5px solid var(--line);border-radius:999px;padding:12px 21px;transition:.15s
+}
+.links a:hover{border-color:var(--ink);background:var(--paper-2)}
+@media(max-width:640px){ .contact{padding:60px 0} }
+
+footer{border-top:1px solid var(--line);padding:34px 0 46px;background:var(--paper-2)}
+footer .wrap{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+footer p{margin:0;font-size:13px;color:var(--ink-3);font-weight:600}
+</style>
+</head>
+<body>
+
+<a class="skip" href="#work">본문으로 건너뛰기</a>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#top"><span class="dot"></span>YELLOW LAB</a>
+    <nav>
+      <a class="hide-sm" href="#work">작업</a>
+      <a class="hide-sm" href="#about">소개</a>
+      <!-- ②노션 : 포트폴리오 노션 주소 -->
+      <a class="btn-top" href="https://www.notion.so/3a1512c1cf3681109947c2ef72100f93" target="_blank" rel="noopener">포트폴리오</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="wrap">
+      <p class="kicker">Content Planner · Seoul</p>
+      <h1>될 이야기를<br><em>알아보는 사람</em></h1>
+      <p class="lede">
+        이야기를 발굴해 <strong>사람들이 찾는 콘텐츠</strong>로 만듭니다.
+        기획에서 멈추지 않고, 만들다가 필요해진 도구는 직접 만들어 씁니다 —
+        여기 있는 것들은 <strong>전부 링크만 누르면 바로 열립니다.</strong>
+        내려받을 것도, 가입할 것도 없습니다.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-fill" href="#work">작업 보러 가기 <span class="arw">→</span></a>
+        <!-- ②노션 : 포트폴리오 노션 주소 -->
+        <a class="btn btn-line" href="https://www.notion.so/3a1512c1cf3681109947c2ef72100f93" target="_blank" rel="noopener">포트폴리오 <span class="arw">↗</span></a>
+      </div>
+      <div class="stats">
+        <div><b>3편</b><span>완고한 드라마 · 영화 시나리오</span></div>
+        <div><b>+43%</b><span>〈금쪽같은 내새끼〉 수도권 2049 시청률</span></div>
+        <div><b>20만 뷰</b><span>직접 키운 두 채널의 한 달 조회수</span></div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="filters" aria-label="갈래 고르기">
+    <div class="wrap" role="group">
+      <button class="chip" data-cat="all" aria-pressed="true">전체</button>
+      <button class="chip" data-cat="tool" aria-pressed="false">영상 만들기</button>
+      <button class="chip" data-cat="game" aria-pressed="false">게임</button>
+      <button class="chip" data-cat="plan" aria-pressed="false">기획 · 포트폴리오</button>
+      <button class="chip" data-cat="channel" aria-pressed="false">채널</button>
+      <button class="chip" data-cat="mini" aria-pressed="false">작은 도구</button>
+    </div>
+  </nav>
+
+  <section id="work" aria-label="작업">
+    <div class="wrap">
+      <div class="grid">
+
+        <a class="card" data-cat="tool" href="scenedeck/">
+          <p class="tag"><span class="sq"></span>영상 만들기</p>
+          <h3>씬덱</h3>
+          <p class="en">SCENEDECK</p>
+          <p>대본 한 편을 끌어다 놓으면 씬으로 갈리고, 컷으로 쪼개지고, 샷·앵글·렌즈·조명까지 채워집니다. 마지막엔 AI에 그대로 넣을 프롬프트가 나옵니다.</p>
+          <p class="meta">설치 없음 · 브라우저에서 바로</p>
+          <span class="go">열어 보기 <span class="arw">→</span></span>
+        </a>
+
+        <a class="card" data-cat="tool" href="shot-planner/">
+          <p class="tag"><span class="sq"></span>영상 만들기</p>
+          <h3>촬영 배치도</h3>
+          <p class="en">SHOT PLANNER</p>
+          <p>내일 찍을 것을 오늘 밤에. 소파를 놓고 카메라를 세우면 몇 미터인지, 35mm에 두 사람이 다 들어오는지 재서 알려 줍니다.</p>
+          <p class="meta">평면도 · 렌즈 화각 계산 · 인쇄</p>
+          <span class="go">열어 보기 <span class="arw">→</span></span>
+        </a>
+
+        <!-- ③게임 : 젤리슈팅 주소 -->
+        <a class="card" data-cat="game" href="https://zingy-cupcake-98444a.netlify.app/" target="_blank" rel="noopener">
+          <p class="tag"><span class="sq"></span>게임</p>
+          <h3>젤리슈팅</h3>
+          <p class="en">JELLY SHOOTING</p>
+          <p>터질 때마다 도파민이 팡팡. 혼자 하기, 던지기 대전, 최대 네 명이 함께 도는 실시간 던전까지. 링크를 보내면 상대는 그냥 누르기만 하면 됩니다.</p>
+          <p class="meta">폰 · 피시 모두 · 최대 4인 실시간</p>
+          <span class="go">지금 하기 <span class="arw">↗</span></span>
+        </a>
+
+        <!-- ②노션 : 포트폴리오 노션 주소 -->
+        <a class="card" data-cat="plan" href="https://www.notion.so/3a1512c1cf3681109947c2ef72100f93" target="_blank" rel="noopener">
+          <p class="tag"><span class="sq"></span>기획 · 포트폴리오</p>
+          <h3>정주원 포트폴리오</h3>
+          <p class="en">PORTFOLIO</p>
+          <p>〈라디오스타〉 자료조사, 〈금쪽같은 내새끼〉 아이템 발굴과 취재, 모바일 게임 〈해피플라이트〉 메인 스토리, 영화사 〈왈라프로젝트〉 기획까지. 여덟 개 프로젝트를 하나씩 풀어 두었습니다.</p>
+          <p class="meta">방송 · 영화 · 게임 · 브랜드 협업</p>
+          <span class="go">전부 보기 <span class="arw">↗</span></span>
+        </a>
+
+        <!-- ④채널 : 네이버 블로그 «밥풀» -->
+        <a class="card" data-cat="channel" href="https://blog.naver.com/bap-pul" target="_blank" rel="noopener">
+          <p class="tag"><span class="sq"></span>채널</p>
+          <h3>블로그 «밥풀»</h3>
+          <p class="en">NAVER BLOG · BAP-PUL</p>
+          <p>검색량이 몰리기 전에 먼저 다녀옵니다. 새로 생긴 핫플, 이제 막 시작된 트렌드, 여행지와 먹거리 — 감으로 쓰지 않고 검색 알고리즘부터 뜯어보고 씁니다.</p>
+          <p class="meta">이웃 1,257명 · 네이버 «20대 인기글» 상위 5회 이상</p>
+          <span class="go">보러 가기 <span class="arw">↗</span></span>
+        </a>
+
+        <!-- ④채널 : 인스타그램 -->
+        <a class="card" data-cat="channel" href="https://www.instagram.com/travelcat_kami/" target="_blank" rel="noopener">
+          <p class="tag"><span class="sq"></span>채널</p>
+          <h3>인스타그램 @travelcat_kami</h3>
+          <p class="en">INSTAGRAM · REELS</p>
+          <p>릴스는 기획·촬영·편집을 혼자 합니다. 성과는 첫 3초에서 갈린다고 보고, 후킹 문구와 첫 컷을 확정한 뒤에야 카메라를 듭니다.</p>
+          <p class="meta">최고 릴스 10만 조회 · 조회의 97%가 비팔로워</p>
+          <span class="go">보러 가기 <span class="arw">↗</span></span>
+        </a>
+
+        <div class="card-live" data-cat="mini">
+          <p class="tag"><span class="sq"></span>작은 도구</p>
+          <h3>글자수 세기</h3>
+          <p class="en">CHAR COUNTER</p>
+          <p>자소서도 보도자료도 결국 글자수에서 걸립니다. 여기에 붙여 넣으면 바로 셉니다.</p>
+          <label class="skip" for="cc">셀 글을 붙여 넣으세요</label>
+          <textarea id="cc" placeholder="여기에 붙여 넣어 보세요."></textarea>
+          <div class="counts" aria-live="polite">
+            <span>공백 포함 <b id="c1">0</b></span>
+            <span>공백 제외 <b id="c2">0</b></span>
+            <span>단어 <b id="c3">0</b></span>
+            <span>줄 <b id="c4">0</b></span>
+          </div>
+        </div>
+
+        <div class="card-fill" id="fill" aria-hidden="true"></div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="about" id="about">
+    <div class="wrap about-in">
+      <div>
+        <h2>기획만 하지 않고,<br><em>만들어 봅니다</em></h2>
+        <p class="sub">
+          정주원 · CHUNG&nbsp;JOOWON<br>
+          숭실대학교 문예창작학과 · 언론홍보학과 복수전공<br>
+          영화 기획 / 웹툰·IP PD / 콘텐츠 소싱
+        </p>
+        <p class="sub">
+          문예창작으로 극작의 기본기를 익히고, 방송 현장에서 아이템을 발굴해 전파까지 태워 봤습니다.
+          잘 되는 이야기는 내가 좋아하는 이야기가 아니라 사람들이 기꺼이 시간을 쓰는 이야기라는 것 —
+          그것 하나는 확실히 배웠습니다.
+        </p>
+      </div>
+      <ul class="tl">
+        <li><span class="yr">2021 — 2022</span><div><p class="ttl">모바일 게임 〈해피플라이트〉</p><p class="dsc">메인 스토리 작가 · 기획. 세계관과 캐릭터를 설계하고 베타 출시까지.</p></div></li>
+        <li><span class="yr">2024</span><div><p class="ttl">MBC 〈라디오스타〉</p><p class="dsc">자료조사원. 출연자별 맞춤 자료 제작, 종료 후 재작업 제의.</p></div></li>
+        <li><span class="yr">2024 — 2025</span><div><p class="ttl">채널A 〈요즘 육아 금쪽같은 내새끼〉</p><p class="dsc">방송작가. 뉴스에서 오남매 가족을 발굴해 취재·섭외·보도자료까지 — 2부작 편성.</p></div></li>
+        <li><span class="yr">2025 —</span><div><p class="ttl">개인 채널 · 브랜드 협업</p><p class="dsc">인스타그램과 블로그 운영. 딘토 재협업 제안, 「다시 만나고 싶은 인플루언서」.</p></div></li>
+        <li><span class="yr">2026 —</span><div><p class="ttl">영화사 〈왈라프로젝트〉</p><p class="dsc">한일합작 영화 프리프로덕션 기획 실무.</p></div></li>
+        <li><span class="yr">2026</span><div><p class="ttl">크릭앤리버 방송·영상 콘텐츠 기획개발 CREW 3기</p><p class="dsc">AI를 활용한 방송영상 콘텐츠 기획 (4인 1팀 · 8주).</p></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="contact">
+    <div class="wrap">
+      <h2>같이 만들 이야기가 있다면</h2>
+      <p>기획이든 대본이든, 아니면 여기 있는 도구를 쓰다 막힌 것이든 편하게 적어 주세요.</p>
+      <div class="links">
+        <a href="mailto:yellow8227@naver.com">✉ yellow8227@naver.com</a>
+        <a href="https://www.instagram.com/travelcat_kami/" target="_blank" rel="noopener">Instagram @travelcat_kami ↗</a>
+        <!-- ④채널 -->
+        <a href="https://blog.naver.com/bap-pul" target="_blank" rel="noopener">블로그 밥풀 ↗</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="logo" href="#top"><span class="dot"></span>YELLOW LAB</a>
+    <p>© 2026 정주원 · CHUNG JOOWON</p>
+  </div>
+</footer>
+
+<script>
+// ── 갈래 고르기 ────────────────────────────────────
+// 카드에 data-cat 을 달아 두었다. 「전체」면 다 보이고, 아니면 그것만 보인다.
+(function(){
+  var chips = document.querySelectorAll('.chip');
+  var cards = document.querySelectorAll('[data-cat]:not(.chip)');
+  chips.forEach(function(chip){
+    chip.addEventListener('click', function(){
+      var want = chip.dataset.cat;
+      chips.forEach(function(c){ c.setAttribute('aria-pressed', String(c === chip)); });
+      var shown = 0;
+      cards.forEach(function(card){
+        card.hidden = !(want === 'all' || card.dataset.cat === want);
+        if(!card.hidden) shown++;
+      });
+      // 두 칸짜리 격자라 홀수로 남으면 오른쪽 아래가 뜯긴 것처럼 보인다. 빈 칸으로 메운다.
+      var fill = document.getElementById('fill');
+      if(fill) fill.hidden = (shown % 2 === 0);
+    });
+  });
+  var fill0 = document.getElementById('fill');
+  if(fill0) fill0.hidden = (cards.length % 2 === 0);
+})();
+
+// ── 글자수 세기 ────────────────────────────────────
+// counter.py 와 같은 셈법: 공백 포함 / 제외 / 단어 / 줄.
+(function(){
+  var ta = document.getElementById('cc');
+  if(!ta) return;
+  var out = { c1:document.getElementById('c1'), c2:document.getElementById('c2'),
+              c3:document.getElementById('c3'), c4:document.getElementById('c4') };
+  var fmt = function(n){ return n.toLocaleString('ko-KR'); };
+  var tick = function(){
+    var t = ta.value;
+    out.c1.textContent = fmt(Array.from(t).length);
+    out.c2.textContent = fmt(Array.from(t.replace(/\s/g,'')).length);
+    out.c3.textContent = fmt(t.trim() ? t.trim().split(/\s+/).length : 0);
+    out.c4.textContent = fmt(t ? t.split(/\r\n|\r|\n/).length : 0);
+  };
+  ta.addEventListener('input', tick);
+  tick();
+})();
+</script>
+</body>
+</html>
