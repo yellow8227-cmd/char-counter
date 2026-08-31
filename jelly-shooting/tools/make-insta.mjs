@@ -103,6 +103,9 @@ const CH = {
   dog:   await cutout({ k: 'dog',   c: '#a3d5ff', a: 'cap',     ac: '#4fa8ff' }, 'happy', 7),
   bear:  await cutout({ k: 'bear',  c: '#c9a27a', a: 'crown',   ac: '#ffce3d' }, 'proud'),
   bunny: await cutout({ k: 'bunny', c: '#fff0a8', a: 'flower',  ac: '#ff8ab5' }, 'wink', 5),
+  panda: await cutout({ k: 'panda', c: '#f2e7dc', a: 'halo',    ac: '#ffe36e' }, 'happy', 4),
+  fox:   await cutout({ k: 'fox',   c: '#ffb37a', a: 'star',    ac: '#ffce3d' }, 'wink', 6),
+  ham:   await cutout({ k: 'hamster', c: '#ffd59e', a: 'party', ac: '#ff5c8a' }, 'happy', 8),
   wail:  await cutout({ k: 'girl',  c: '#ff9db2', a: 'bow',     ac: '#ff5c8a', h: 'braid' }, 'wail'),
   mad:   await cutout({ k: 'bear',  c: '#c9a27a', a: 'crown',   ac: '#ffce3d' }, 'mad'),
 };
@@ -345,10 +348,11 @@ const POSTS = [
     <div class="in flat">
       <div class="eyebrow">모은 코인으로</div>
       <h1>내 캐릭터로<br>들어가요</h1>
-      <div class="band">여섯 종 · 머리 · 색깔 · 악세서리</div>
+      <div class="band">아홉 종 · 머리 · 색깔 · 악세서리</div>
       <div class="strip" style="margin-top:${Math.round(1080 * 0.06)}px">
         <img src="${dataURI(join(SHOTS, 'dress-row.png'))}"></div>
     </div>
+    <img class="cut cutR" src="${CH.panda}">
     ${corner}` },
 
   { id: '7-초대', bg: 'linear-gradient(158deg,#a8ecab 0%,#4fc879 52%,#26a862 100%)', body:

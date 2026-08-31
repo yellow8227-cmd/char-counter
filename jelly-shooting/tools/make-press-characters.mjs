@@ -4,7 +4,7 @@
 //     쉬어 가는 자리를 만든다. 게임의 drawAvatar 를 그대로 쓰므로 게임 그림과 늘 같다.
 //
 // 만들어지는 것 (배경이 투명한 PNG — 페이지 어느 색 위에도 얹힌다)
-//   press/shots/chars-row.png   캐릭터 여섯 종 (이름 있음)
+//   press/shots/chars-row.png   캐릭터 아홉 종 (이름 있음)
 //   press/shots/faces-row.png   표정 여섯 가지 (이름 있음)
 //   press/shots/dress-row.png   꾸미기 조합 여덟 개 (이름 없음)
 //
@@ -55,15 +55,18 @@ const save = (name, b64) => {
   console.log('🎨 ' + name + '  ' + Math.round(buf.length / 1024) + 'KB');
 };
 
-// ① 캐릭터 여섯 종
+// ① 캐릭터 아홉 종 — 아홉이면 한 줄이 길어져 페이지에서 작아진다. 칸을 조금 줄인다.
 save('chars-row.png', await strip([
   [{k:'cat',   c:'#ffb3c9', a:'bow',     ac:'#ff5c8a'}, 'happy', '고양이'],
   [{k:'dog',   c:'#a3d5ff', a:'cap',     ac:'#4fa8ff'}, 'happy', '강아지'],   // 코·혀가 가장 예쁘게 나오는 표정
   [{k:'bunny', c:'#fff0a8', a:'flower',  ac:'#ff8ab5'}, 'calm',  '토끼'],
   [{k:'bear',  c:'#c9a27a', a:'crown',   ac:'#ffce3d'}, 'happy', '곰'],
+  [{k:'panda', c:'#f2e7dc', a:'none'},                  'happy', '판다'],
+  [{k:'fox',   c:'#ffb37a', a:'star',    ac:'#ffce3d'}, 'wink',  '여우'],
+  [{k:'hamster',c:'#ffd59e',a:'none'},                  'happy', '햄스터'],
   [{k:'human', c:'#ffe36e', a:'glasses', ac:'#5a5566', h:'crop'},  'wink', '남자아이'],
   [{k:'girl',  c:'#ff9db2', a:'bow',     ac:'#ff5c8a', h:'braid'}, 'proud','여자아이'],
-], { cell: 110, r: 42, labels: true }));
+], { cell: 96, r: 37, labels: true }));
 
 // ② 표정 여섯 가지 (같은 캐릭터로 — 표정만 다른 게 보이게)
 const F = {k:'girl', c:'#ff9db2', a:'bow', ac:'#ff5c8a', h:'braid'};
@@ -74,14 +77,16 @@ save('faces-row.png', await strip([
 
 // ③ 꾸미기 조합 여덟 개 (머리·색·악세서리)
 save('dress-row.png', await strip([
-  [{k:'girl', c:'#ffb3c9', a:'crown',  ac:'#ffce3d', h:'braid'}, 'happy'],
-  [{k:'girl', c:'#b9e6ff', a:'bow',    ac:'#4fa8ff', h:'perm'},  'wink'],
-  [{k:'human',c:'#ffe36e', a:'shades', ac:'#5a5566', h:'buzz'},  'proud'],
-  [{k:'human',c:'#d8c4ff', a:'hat',    ac:'#8a5cff', h:'bob'},   'happy'],
-  [{k:'cat',  c:'#fff0a8', a:'flower', ac:'#ff8ab5'}, 'wow'],
-  [{k:'dog',  c:'#ffc9a3', a:'muffs',  ac:'#ff5c8a'}, 'happy'],
-  [{k:'bunny',c:'#e8ffd6', a:'scarf',  ac:'#4fc65f'}, 'calm'],
-  [{k:'bear', c:'#a3d5ff', a:'buds',   ac:'#8a5cff'}, 'wink'],
-], { cell: 96, r: 38, labels: false }));
+  [{k:'girl', c:'#ffb3c9', a:'crown',     ac:'#ffce3d', h:'braid'}, 'happy'],
+  [{k:'girl', c:'#b9e6ff', a:'heartband', ac:'#ff5c8a', h:'perm'},  'wink'],
+  [{k:'human',c:'#ffe36e', a:'shades',    ac:'#5a5566', h:'buzz'},  'proud'],
+  [{k:'human',c:'#d8c4ff', a:'party',     ac:'#8a5cff', h:'bob'},   'happy'],
+  [{k:'cat',  c:'#fff0a8', a:'flower',    ac:'#ff8ab5'}, 'wow'],
+  [{k:'panda',c:'#f2e7dc', a:'halo',      ac:'#ffe36e'}, 'happy'],
+  [{k:'fox',  c:'#ffb37a', a:'star',      ac:'#ffce3d'}, 'wink'],
+  [{k:'hamster',c:'#ffd59e',a:'bow',      ac:'#ff8ab5'}, 'happy'],
+  [{k:'bunny',c:'#e8ffd6', a:'scarf',     ac:'#4fc65f'}, 'calm'],
+  [{k:'bear', c:'#a3d5ff', a:'buds',      ac:'#8a5cff'}, 'wink'],
+], { cell: 90, r: 35, labels: false }));
 
 await browser.close();

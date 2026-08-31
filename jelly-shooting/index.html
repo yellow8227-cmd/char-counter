@@ -1871,10 +1871,10 @@ $('tSoundBtn').addEventListener('click',toggleSound);
 
 // ================= Character =================
 // 'human' 은 남자아이다. 이미 저장된 캐릭터가 'human'이라 id를 바꾸지 않는다(그러면 기존 사용자가 고양이로 초기화된다).
-const KINDS=[{id:'cat',label:'고양이 🐱'},{id:'dog',label:'강아지 🐶'},{id:'bunny',label:'토끼 🐰'},{id:'bear',label:'곰 🐻'},{id:'human',label:'남자아이 🧒'},{id:'girl',label:'여자아이 👧'}];
+const KINDS=[{id:'cat',label:'고양이 🐱'},{id:'dog',label:'강아지 🐶'},{id:'bunny',label:'토끼 🐰'},{id:'bear',label:'곰 🐻'},{id:'panda',label:'판다 🐼'},{id:'fox',label:'여우 🦊'},{id:'hamster',label:'햄스터 🐹'},{id:'human',label:'남자아이 🧒'},{id:'girl',label:'여자아이 👧'}];
 const COLORS=['#ffb3c9','#ff9db2','#ffd59e','#ffe36e','#f6f19a','#b6e3a0','#8fe0c8','#a3d5ff',
   '#9db8ff','#d9b8ff','#f0b8ff','#ffffff','#f2e7dc','#c9a27a','#8a6b5a','#8f9bb3','#5a5566','#3f3a4a'];
-const ACCS=[{id:'none',label:'없음'},{id:'bow',label:'리본 🎀'},{id:'hat',label:'모자 🎩'},{id:'glasses',label:'안경 👓'},{id:'shades',label:'선글라스 🕶️'},{id:'flower',label:'꽃 🌸'},{id:'crown',label:'왕관 👑'},{id:'horns',label:'뿔 😈'}];
+const ACCS=[{id:'none',label:'없음'},{id:'bow',label:'리본 🎀'},{id:'hat',label:'모자 🎩'},{id:'glasses',label:'안경 👓'},{id:'shades',label:'선글라스 🕶️'},{id:'flower',label:'꽃 🌸'},{id:'crown',label:'왕관 👑'},{id:'horns',label:'뿔 😈'},{id:'star',label:'별 핀 ⭐'},{id:'halo',label:'천사 고리 😇'},{id:'party',label:'고깔모자 🎉'},{id:'heartband',label:'하트 머리띠 💕'}];
 let character=loadChar()||{kind:'cat',color:'#ffb3c9',acc:'bow',accColor:'#ff5c8a',hair:'basic'};
 if(!character.hair) character.hair='basic';       // 예전에 저장된 캐릭터에는 머리 모양 칸이 없다
 function saveChar(){try{localStorage.setItem('jelly_char',JSON.stringify(character));}catch(e){} cloudTouch();
@@ -1959,6 +1959,9 @@ const KIND_FX={
   dog  :{sx:1.08,sy:0.94,eyeGap:0.33,eyeW:0.150,eyeH:0.190,blush:0.68},
   bunny:{sx:1.00,sy:0.99,eyeGap:0.33,eyeW:0.175,eyeH:0.235,blush:0.60},
   bear :{sx:1.13,sy:1.00,eyeGap:0.41,eyeW:0.120,eyeH:0.160,blush:0.74},
+  panda:{sx:1.10,sy:0.98,eyeGap:0.40,eyeW:0.125,eyeH:0.165,blush:0.78},
+  fox  :{sx:1.02,sy:0.94,eyeGap:0.34,eyeW:0.150,eyeH:0.200,blush:0.66},
+  hamster:{sx:1.12,sy:0.96,eyeGap:0.36,eyeW:0.140,eyeH:0.190,blush:0.80},
   human:{sx:0.96,sy:1.02,eyeGap:0.31,eyeW:0.145,eyeH:0.195,blush:0.58},
   girl :{sx:0.94,sy:1.02,eyeGap:0.30,eyeW:0.150,eyeH:0.205,blush:0.56},
 };
@@ -2244,7 +2247,8 @@ function drawAvatar(g,cx,cy,R,cfg,mood,t){ mood=mood||'idle';t=t||0; g.save(); g
   // 귀는 몸보다 먼저 그린다(그래야 밑동이 머리에 묻힌다). 그런데 몸은 젤리라서 반투명이다 —
   // 그대로 두면 머리 안에 가려져야 할 귀가 몸을 통해 배어 나온다("귀 비침").
   // 그래서 몸 타원 안쪽을 구멍으로 잘라 두고 귀를 그린다. 바깥에 나온 부분만 남는다.
-  if(cfg.kind==='cat'||cfg.kind==='bear'||cfg.kind==='bunny'||cfg.kind==='dog'){
+  if(cfg.kind==='cat'||cfg.kind==='bear'||cfg.kind==='bunny'||cfg.kind==='dog'
+     ||cfg.kind==='panda'||cfg.kind==='fox'||cfg.kind==='hamster'){
     g.save();
     g.beginPath();
     g.rect(-R*4,-R*4,R*8,R*8);                                  // 시계 방향
@@ -2254,6 +2258,14 @@ function drawAvatar(g,cx,cy,R,cfg,mood,t){ mood=mood||'idle';t=t||0; g.save(); g
     else if(cfg.kind==='bear'){ circEar(g,-R*0.7,-R*0.7,R*0.34,col); circEar(g,R*0.7,-R*0.7,R*0.34,col); }
     else if(cfg.kind==='bunny'){ // 얇고 곧으면 안테나처럼 보인다 — 통통하게, 바깥으로 벌려서
       longEar(g,-R*0.44,-R*0.98,R*0.34,R*0.76,col,'#ffb9d2',-0.24); longEar(g,R*0.44,-R*0.98,R*0.34,R*0.76,col,'#ffb9d2',0.24); }
+    else if(cfg.kind==='panda'){ // 🐼 검은 동귀 — 몸 색과 상관없이 늘 검다. 그게 판다다.
+      circEar(g,-R*0.74,-R*0.70,R*0.36,'#4a4450'); circEar(g,R*0.74,-R*0.70,R*0.36,'#4a4450'); }
+    else if(cfg.kind==='fox'){   // 🦊 크고 뾰족한 귀 — 고양이보다 크고 더 벌어져야 여우로 읽힌다.
+      // 안쪽을 흰색으로 두면 밝은 몸 색과 겹쳐 '테두리만 있는 귀'가 된다 → 짙은 귀끝을 준다.
+      const tip=mixHex(col,'#4a2f24',0.55);
+      triEar(g,-R*0.70,-R*0.92,R*0.66,col,dark,tip); triEar(g,R*0.70,-R*0.92,R*0.66,col,dark,tip); }
+    else if(cfg.kind==='hamster'){ // 🐹 작고 동그란 귀 — 작으면 머리에 묻히니 조금 크게, 조금 위로
+      circEar(g,-R*0.66,-R*0.80,R*0.30,col); circEar(g,R*0.66,-R*0.80,R*0.30,col); }
     else floppyEar(g,-R*0.86,-R*0.04,R*0.36,R*0.92,dark,-1), floppyEar(g,R*0.86,-R*0.04,R*0.36,R*0.92,dark,1);
     g.restore();
   }
@@ -2278,6 +2290,16 @@ function drawAvatar(g,cx,cy,R,cfg,mood,t){ mood=mood||'idle';t=t||0; g.save(); g
   else if(cfg.kind==='bunny'){ // 순백으로 두면 흰 앞니가 묻힌다 — 살짝 크림색으로 깔고 앞니를 순백으로
     g.fillStyle='rgba(255,246,250,0.72)';g.beginPath();g.ellipse(0,R*0.33,R*0.38,R*0.28,0,0,7);g.fill(); }
   else if(cfg.kind==='cat'){ g.fillStyle='rgba(255,255,255,0.40)';g.beginPath();g.ellipse(0,R*0.32,R*0.35,R*0.22,0,0,7);g.fill(); }
+  else if(cfg.kind==='panda'){ // 🐼 눈두덩(검은 반점) + 흰 주둥이. 반점은 눈보다 먼저 깔린다.
+    const ex=R*kfx('panda').eyeGap;
+    g.fillStyle='#4a4450';
+    [-1,1].forEach(sd=>{ g.save(); g.translate(sd*ex,-R*0.03); g.rotate(sd*0.30);
+      g.beginPath(); g.ellipse(0,0,R*0.27,R*0.34,0,0,7); g.fill(); g.restore(); });
+    g.fillStyle='rgba(255,255,255,0.88)';g.beginPath();g.ellipse(0,R*0.34,R*0.40,R*0.27,0,0,7);g.fill(); }
+  else if(cfg.kind==='fox'){   // 🦊 흰 주둥이가 넓게 — 이게 여우 인상의 절반이다
+    g.fillStyle='rgba(255,252,252,0.90)';g.beginPath();g.ellipse(0,R*0.36,R*0.44,R*0.30,0,0,7);g.fill(); }
+  else if(cfg.kind==='hamster'){ // 🐹 크림색 주둥이 — 앞니(순백)가 묻히지 않게 살짝 색을 준다
+    g.fillStyle='rgba(255,247,236,0.82)';g.beginPath();g.ellipse(0,R*0.33,R*0.36,R*0.26,0,0,7);g.fill(); }
   const eyeY=-R*0.05,ex=R*nf.eyeGap; g.fillStyle='#3a2b34';
   if(mood==='sad'){ g.strokeStyle='#3a2b34';g.lineWidth=R*0.09;g.lineCap='round';
     g.beginPath();g.moveTo(-ex-6,eyeY-4);g.lineTo(-ex+4,eyeY+3);g.moveTo(-ex+4,eyeY-4);g.lineTo(-ex-6,eyeY+3);g.stroke();
@@ -2312,6 +2334,14 @@ function drawAvatar(g,cx,cy,R,cfg,mood,t){ mood=mood||'idle';t=t||0; g.save(); g
   else if(cfg.kind==='dog'){ g.fillStyle='#3a2b34';g.beginPath();g.ellipse(0,R*0.20,R*0.14,R*0.105,0,0,7);g.fill();
     g.fillStyle='rgba(255,255,255,0.5)';g.beginPath();g.ellipse(-R*0.045,R*0.17,R*0.048,R*0.03,-0.4,0,7);g.fill(); }
   else if(cfg.kind==='bear'){ g.fillStyle='#4a3a44';g.beginPath();g.ellipse(0,R*0.25,R*0.155,R*0.095,0,0,7);g.fill(); }
+  else if(cfg.kind==='panda'){ g.fillStyle='#2f2a35';g.beginPath();g.ellipse(0,R*0.24,R*0.145,R*0.10,0,0,7);g.fill();
+    g.fillStyle='rgba(255,255,255,0.45)';g.beginPath();g.ellipse(-R*0.045,R*0.215,R*0.05,R*0.03,-0.4,0,7);g.fill(); }
+  else if(cfg.kind==='fox'){   // 여우코는 작고 까맣고 아래로 뾰족하다
+    g.fillStyle='#3a2b34';g.beginPath();
+    g.moveTo(-R*0.10,R*0.22); g.quadraticCurveTo(0,R*0.16,R*0.10,R*0.22);
+    g.quadraticCurveTo(0,R*0.33,-R*0.10,R*0.22); g.fill();
+    g.fillStyle='rgba(255,255,255,0.42)';g.beginPath();g.ellipse(-R*0.035,R*0.215,R*0.038,R*0.022,-0.4,0,7);g.fill(); }
+  else if(cfg.kind==='hamster'){ g.fillStyle='#ff8fb0';g.beginPath();g.ellipse(0,R*0.21,R*0.075,R*0.055,0,0,7);g.fill(); }
   else if(cfg.kind==='bunny'){ // 뾰족한 세모는 차갑다 — 모서리를 둥글린 작은 하트코
     g.fillStyle='#ff8fb0';g.beginPath();
     g.moveTo(0,R*0.265);
@@ -2329,6 +2359,12 @@ function drawAvatar(g,cx,cy,R,cfg,mood,t){ mood=mood||'idle';t=t||0; g.save(); g
     g.strokeStyle='#3a2b34';g.lineWidth=R*0.062;g.lineCap='round';g.lineJoin='round';
     g.beginPath(); g.moveTo(-R*0.17,R*0.34); g.lineTo(-R*0.06,R*0.28);
     g.lineTo(R*0.05,R*0.36); g.lineTo(R*0.17,R*0.29); g.stroke(); }
+  else if(cfg.kind==='hamster'){ // 🐹 인중 + 작은 ω 입. 앞니가 이 입 바로 밑에 붙는다.
+    const mr=R*0.100, my=R*0.285;
+    g.strokeStyle='#3a2b34';g.lineWidth=R*0.048;g.lineCap='round';
+    g.beginPath();g.moveTo(0,R*0.245);g.lineTo(0,my);g.stroke();               // 인중
+    g.beginPath();g.arc(-mr,my,mr,0,Math.PI);g.stroke();
+    g.beginPath();g.arc( mr,my,mr,0,Math.PI);g.stroke(); }
   else if(cfg.kind==='bunny'){ // 🐰 인중선 + 좌우로 벌어지는 ω 입 — 토끼로 읽히게 하는 핵심.
     // 캔버스는 y가 아래로 향하므로 θ=π/2 가 '아래'다. 아래로 볼록한 그릇은 θ:0→π 이고,
     // 두 그릇을 가운데서 맞붙이면 ω 모양이 된다(각도를 잘못 주면 비스듬한 선이 된다).
@@ -2366,6 +2402,38 @@ function kindExtras(g,R,cfg,mood){
     g.strokeStyle='rgba(90,60,80,0.42)';g.lineWidth=Math.max(1,R*0.032);g.lineCap='round';
     [-1,0,1].forEach(k=>{ [-1,1].forEach(s=>{
       g.beginPath();g.moveTo(s*R*0.40,R*0.24+k*R*0.085);g.lineTo(s*R*1.02,R*0.19+k*R*0.16);g.stroke(); }); });
+  }
+  else if(cfg.kind==='fox'){                              // 🦊 수염 두 쌍
+    // 뾰족한 볼 털도 넣어 봤는데 납작한 화살표처럼 보여서 뺐다.
+    // 짙은 귀끝 + 넓은 흰 주둥이 + 갸름한 얼굴이면 이미 여우로 읽힌다.
+    g.strokeStyle='rgba(90,60,80,0.35)';g.lineWidth=Math.max(1,R*0.028);g.lineCap='round';
+    [-1,1].forEach(s2=>{ [-1,1].forEach(k=>{
+      g.beginPath();g.moveTo(s2*R*0.42,R*0.30+k*R*0.07);g.lineTo(s2*R*0.98,R*0.26+k*R*0.13);g.stroke(); }); });
+  }
+  else if(cfg.kind==='panda'){                            // 🐼 목에 두른 대나무 잎
+    if(!hurt){ g.fillStyle='#7fc96b';
+      g.save(); g.translate(R*0.70,-R*0.62); g.rotate(-0.5);
+      g.beginPath(); g.ellipse(0,0,R*0.26,R*0.10,0,0,7); g.fill();
+      g.strokeStyle='rgba(60,110,50,0.5)'; g.lineWidth=Math.max(1,R*0.018);
+      g.beginPath(); g.moveTo(-R*0.24,0); g.lineTo(R*0.24,0); g.stroke(); g.restore(); }
+  }
+  else if(cfg.kind==='hamster'){                          // 🐹 앞니 + 볼 주머니 + 수염
+    // 입을 크게 벌린 표정에는 앞니를 안 그린다(입 안에 흰 네모가 떠 보인다).
+    // 네모난 흰 칸은 교정기처럼 보여서, 토끼와 같이 아래를 둥글린 앞니로 입 바로 밑에 붙인다.
+    const openM=(mood==='wow'||mood==='wail'||mood==='mad');
+    if(!hurt&&!openM){ g.save();
+      g.shadowColor='rgba(110,70,95,0.42)';g.shadowBlur=R*0.06;g.shadowOffsetY=R*0.018;
+      g.fillStyle='#ffffff';
+      [-1,1].forEach(s2=>{ g.beginPath();
+        g.roundRect(s2>0?R*0.008:-R*0.086,R*0.286,R*0.078,R*0.122,[R*0.013,R*0.013,R*0.039,R*0.039]);
+        g.fill(); });
+      g.restore(); }
+    // 볼 주머니 — 얼굴 옆이 불룩하게. 햄스터로 읽히게 하는 핵심.
+    g.fillStyle=hexA(mixHex(col,'#ffffff',0.22),0.55);
+    [-1,1].forEach(sd=>{ g.beginPath(); g.ellipse(sd*R*0.70,R*0.30,R*0.30,R*0.24,sd*0.25,0,7); g.fill(); });
+    g.strokeStyle='rgba(90,60,80,0.32)';g.lineWidth=Math.max(1,R*0.026);g.lineCap='round';
+    [-1,1].forEach(s2=>{ [-1,1].forEach(k=>{
+      g.beginPath();g.moveTo(s2*R*0.40,R*0.24+k*R*0.06);g.lineTo(s2*R*0.92,R*0.20+k*R*0.11);g.stroke(); }); });
   }
   else if(cfg.kind==='dog'){                              // 🐶 혀 + 파란 목걸이
     // 입을 크게 벌린 표정(놀람·울음)에는 늘어뜨린 혀를 그리지 않는다.
@@ -2574,7 +2642,10 @@ const WEAR={ crown:{w:0.42,sink:0.06,tilt:0},
              mouth:{w:0.34,tilt:0.22} };
 // 입 높이(입선 가운데) — 종류마다 다르다. 화소로 재서 맞춘 값이다:
 // 고양이·곰·사람·여자아이 입선 0.39~0.48R, 토끼 ω 입 0.23~0.43R, 강아지는 주둥이가 더 아래.
-function mouthY(kind){ return kind==='bunny'?0.36:(kind==='dog'?0.50:0.44); }
+// 입의 '아래끝'이 어디인지. 종류마다 입을 다르게 그리므로 여기도 같이 적어야 한다
+// (안 적으면 물고 있는 물건의 혀가 입에서 떨어져 턱에 붙는다 — 스모크가 잡는다).
+// 햄스터 ω 입은 토끼 것보다 0.034R 위에 있다 — 혀도 그만큼 올려야 입에 붙는다
+function mouthY(kind){ return kind==='hamster'?0.32:(kind==='bunny'?0.36:(kind==='dog'?0.50:0.44)); }
 // 물고 있으면 혀가 살짝 나온다. 강아지는 원래 나와 있어서 겹치지 않게 건너뛴다.
 // 혀는 입선 '아래'로 나와야 한다. 처음엔 0.29~0.46R 에 그려서 입선(0.39~0.48R)보다 위에
 // 있었고, 그래서 입과 떨어진 것처럼 보였다.
@@ -3124,7 +3195,65 @@ function drawBuiltinAcc(g,R,cfg,ac){
       g.lineTo(sd*Math.min(nf.sx*1.02,1.15)*R,ey-R*0.05);g.stroke(); });
   } else if(cfg.acc==='flower'){ const fx=R*0.72,fy=-R*0.62;g.fillStyle=ac;for(let i=0;i<5;i++){const a=i/5*Math.PI*2;g.beginPath();g.arc(fx+Math.cos(a)*R*0.16,fy+Math.sin(a)*R*0.16,R*0.12,0,7);g.fill();}g.fillStyle='#ffe27a';g.beginPath();g.arc(fx,fy,R*0.11,0,7);g.fill();
   } else if(cfg.acc==='crown'){ const cy=-R*0.92;g.fillStyle='#ffce3d';g.beginPath();g.moveTo(-R*0.5,cy);g.lineTo(-R*0.5,cy-R*0.32);g.lineTo(-R*0.25,cy-R*0.08);g.lineTo(0,cy-R*0.42);g.lineTo(R*0.25,cy-R*0.08);g.lineTo(R*0.5,cy-R*0.32);g.lineTo(R*0.5,cy);g.closePath();g.fill();g.fillStyle='#ff5c8a';[-0.3,0,0.3].forEach(dx=>{g.beginPath();g.arc(dx*R,cy-R*0.04,R*0.06,0,7);g.fill();});
-  } else if(cfg.acc==='horns'){ g.fillStyle=ac;hornAt(g,-R*0.62,-R*0.72,R,-1);hornAt(g,R*0.62,-R*0.72,R,1); } }
+  } else if(cfg.acc==='horns'){ g.fillStyle=ac;hornAt(g,-R*0.62,-R*0.72,R,-1);hornAt(g,R*0.62,-R*0.72,R,1); }
+  else if(cfg.acc==='star'){        // ⭐ 별 핀 — 머리 오른쪽에 하나, 작은 별 하나 더
+    const bx=R*0.56, by=-R*0.70;
+    g.fillStyle='rgba(70,34,56,0.18)';
+    twinkle(g,bx,by+R*0.03,R*0.26);
+    const sg=g.createLinearGradient(bx-R*0.22,by-R*0.22,bx+R*0.22,by+R*0.22);
+    sg.addColorStop(0,mixHex(ac,'#ffffff',0.55)); sg.addColorStop(1,shade(ac,-18));
+    g.fillStyle=sg; twinkle(g,bx,by,R*0.25);
+    g.fillStyle='rgba(255,255,255,0.85)'; twinkle(g,bx-R*0.05,by-R*0.06,R*0.09);
+    g.fillStyle=hexA(mixHex(ac,'#ffffff',0.45),0.95); twinkle(g,bx+R*0.26,by+R*0.20,R*0.11); }
+  else if(cfg.acc==='halo'){        // 😇 천사 고리 — 머리 위에 살짝 기울어 떠 있다
+    const hy=-R*1.06;
+    g.save(); g.translate(0,hy); g.rotate(-0.09);
+    g.strokeStyle=hexA(mixHex(ac,'#ffffff',0.30),0.35); g.lineWidth=R*0.13;
+    g.beginPath(); g.ellipse(0,0,R*0.40,R*0.13,0,0,7); g.stroke();       // 번지는 빛
+    const rg=g.createLinearGradient(-R*0.4,0,R*0.4,0);
+    rg.addColorStop(0,mixHex(ac,'#ffffff',0.65)); rg.addColorStop(0.5,ac);
+    rg.addColorStop(1,mixHex(ac,'#ffffff',0.65));
+    g.strokeStyle=rg; g.lineWidth=R*0.062;
+    g.beginPath(); g.ellipse(0,0,R*0.38,R*0.12,0,0,7); g.stroke();
+    g.strokeStyle='rgba(255,255,255,0.8)'; g.lineWidth=R*0.018;
+    g.beginPath(); g.ellipse(0,-R*0.012,R*0.30,R*0.075,0,Math.PI*1.15,Math.PI*1.85); g.stroke();
+    g.restore(); }
+  else if(cfg.acc==='party'){       // 🎉 고깔모자 — 정수리에 얹고 방울 하나
+    // 높이 예산: 머리 밖으로 나가는 것은 -1.35R 안에서 끝낸다(왕관이 그 값이다).
+    // 넘기면 미리보기 캔버스와 판 아래에서 꼭지가 잘린다.
+    const ty=-R*0.84, tw=R*0.38, th=R*0.50;
+    g.fillStyle='rgba(70,34,56,0.16)';
+    g.beginPath(); g.ellipse(0,ty+R*0.03,tw*1.02,R*0.075,0,0,7); g.fill();
+    const cg=g.createLinearGradient(-tw,ty,tw,ty-th);
+    cg.addColorStop(0,shade(ac,-16)); cg.addColorStop(0.5,mixHex(ac,'#ffffff',0.30)); cg.addColorStop(1,ac);
+    g.fillStyle=cg;
+    g.beginPath(); g.moveTo(-tw,ty); g.quadraticCurveTo(0,ty+R*0.07,tw,ty);
+    g.lineTo(R*0.05,ty-th); g.closePath(); g.fill();
+    // 비스듬한 줄무늬 — 고깔모자로 읽히게 하는 것
+    g.save(); g.beginPath(); g.moveTo(-tw,ty); g.quadraticCurveTo(0,ty+R*0.07,tw,ty);
+    g.lineTo(R*0.05,ty-th); g.closePath(); g.clip();
+    g.strokeStyle='rgba(255,255,255,0.55)'; g.lineWidth=R*0.055;
+    for(let i=-2;i<=3;i++){ g.beginPath(); g.moveTo(-tw+i*R*0.19,ty+R*0.05);
+      g.lineTo(-tw+i*R*0.19+R*0.24,ty-th); g.stroke(); }
+    g.restore();
+    g.fillStyle='#fff8d0'; g.beginPath(); g.arc(R*0.05,ty-th,R*0.085,0,7); g.fill();
+    g.fillStyle=hexA(mixHex(ac,'#ffffff',0.5),0.9); g.beginPath(); g.arc(R*0.05,ty-th,R*0.05,0,7); g.fill(); }
+  else if(cfg.acc==='heartband'){   // 💕 하트 머리띠 — 띠 하나에 하트 둘
+    const by=-R*0.80;
+    g.strokeStyle=hexA(shade(ac,-20),0.95); g.lineWidth=R*0.075; g.lineCap='round';
+    g.beginPath(); g.ellipse(0,by+R*0.30,R*0.80,R*0.42,0,Math.PI*1.12,Math.PI*1.88); g.stroke();
+    const heart=(hx,hy,ps,rot)=>{ g.save(); g.translate(hx,hy); g.rotate(rot);
+      const hg2=g.createLinearGradient(-ps,-ps,ps,ps);
+      hg2.addColorStop(0,mixHex(ac,'#ffffff',0.50)); hg2.addColorStop(1,shade(ac,-22));
+      g.fillStyle=hg2; g.beginPath();
+      g.moveTo(0,ps*0.92);
+      g.bezierCurveTo(-ps*1.30,-ps*0.10,-ps*0.58,-ps*1.02,0,-ps*0.34);
+      g.bezierCurveTo(ps*0.58,-ps*1.02,ps*1.30,-ps*0.10,0,ps*0.92);
+      g.closePath(); g.fill();
+      g.fillStyle='rgba(255,255,255,0.6)';
+      g.beginPath(); g.ellipse(-ps*0.34,-ps*0.26,ps*0.24,ps*0.15,-0.5,0,7); g.fill();
+      g.restore(); };
+    heart(-R*0.34,by-R*0.16,R*0.17,-0.35); heart(R*0.34,by-R*0.16,R*0.17,0.35); } }
 function hornAt(g,x,y,R,dir){g.beginPath();g.moveTo(x-dir*R*0.14,y+R*0.14);g.quadraticCurveTo(x+dir*R*0.02,y-R*0.1,x+dir*R*0.26,y-R*0.34);g.quadraticCurveTo(x+dir*R*0.05,y-R*0.05,x+dir*R*0.14,y+R*0.16);g.closePath();g.fill();}
 function triEar(g,x,y,s,col,dark,inner){g.fillStyle=hexA(mixHex(col,'#ffffff',0.30),0.96);g.beginPath();g.moveTo(x-s*0.5,y+s*0.7);g.lineTo(x,y-s*0.6);g.lineTo(x+s*0.5,y+s*0.7);g.closePath();g.fill();g.fillStyle=inner;g.beginPath();g.moveTo(x-s*0.22,y+s*0.4);g.lineTo(x,y-s*0.2);g.lineTo(x+s*0.22,y+s*0.4);g.closePath();g.fill();}
 function circEar(g,x,y,r,col){g.fillStyle=hexA(mixHex(col,'#ffffff',0.28),0.96);g.beginPath();g.arc(x,y,r,0,7);g.fill();g.fillStyle=shade(col,-18);g.beginPath();g.arc(x,y,r*0.5,0,7);g.fill();}
@@ -3195,7 +3324,8 @@ function allItemIds(){return BASE_ORDER.concat(customItems.map(c=>c.id));}
 function isAvailable(id){return ITEMS[id].craft===0||crafted.includes(id)||ITEMS[id].custom;}
 // 스킨(캐릭터) 잠금 가격 — 0이면 기본 제공
 // 남자아이를 이미 산 사람은 여자아이도 같이 열어 준다(아래에서 처리). 값은 같게.
-const KIND_PRICE={cat:0,dog:0,bunny:0,bear:80,human:120,girl:120};
+// 값은 '처음 셋은 공짜, 그 뒤는 조금씩' — 새로 넣은 셋은 곰(80)과 사람(120) 사이에 둔다
+const KIND_PRICE={cat:0,dog:0,bunny:0,bear:80,panda:100,fox:100,hamster:100,human:120,girl:120};
 // 예전에 별·병아리를 고르거나 사둔 사람은 고양이로 옮겨 준다(없는 종류를 그리면 얼굴이 깨진다)
 const GONE_KINDS=['chick','star'];
 ownedKinds=ownedKinds.filter(k=>GONE_KINDS.indexOf(k)<0);
@@ -6569,7 +6699,10 @@ function handV(g,x,y,R,col,rot){
 // 좌표와 같은 값을 쓴다. 혀를 여기에 걸어야 '입에서 나온 혀'로 보인다.
 function mouthBottomY(R,cfg,mood){
   if(mood==='wow'||mood==='wail') return R*(0.34+0.19*((mood==='wail')?1.35:1));
+  // ω 입을 쓰는 종류는 그 ω 의 아래끝을 그대로 적는다 (일반 웃는 입보다 훨씬 위에 있다).
+  // 여기를 빼먹으면 메롱 혀가 입에서 떨어져 턱에 붙는다 — 스모크가 잡는 자리다.
   if((cfg&&cfg.kind)==='bunny')   return R*(0.300+0.115);
+  if((cfg&&cfg.kind)==='hamster') return R*(0.285+0.100);
   if(mood==='happy'||mood==='calm'||mood==='proud'||mood==='wink') return R*0.52;
   return R*0.46;
 }
