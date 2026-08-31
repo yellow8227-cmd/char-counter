@@ -31,8 +31,12 @@ brand/mark.svg       원본. 크기 제한 없음
 brand/icon-32.png    파비콘
 brand/icon-180.png   아이폰 홈 화면
 brand/icon-512.png   안드로이드 · 스토어
+brand/shots/         홈에 걸리는 도구 화면 (브라우저·폰 목업 안에 들어감)
 og.png               카톡·슬랙에 붙였을 때 뜨는 카드
 ```
+
+도구를 고쳐서 화면이 바뀌면 `brand/shots/` 의 그림도 다시 찍어야 합니다.
+`node tools/capture-shots.mjs` 를 돌리면 세 도구를 열어 첫 화면을 그대로 찍습니다.
 
 마크를 고치면 `brand/mark.svg` 와 `index.html` 안의 `<symbol id="yg">` 를 **함께**
 바꾸고, 아이콘과 카드를 다시 뽑으세요 — `node tools/make-og.mjs`.
