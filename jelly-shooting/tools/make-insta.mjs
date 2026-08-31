@@ -1,14 +1,21 @@
-// 인스타그램에 올릴 그림 만들기 — 첫 9칸 게시물 + 스토리 3장 + 프로필 사진
+// 인스타그램에 올릴 그림 만들기 — 만화 포스터 판
 //
-// 왜 이렇게 만드나
-//  · 스토어 그림(make-store-shots.mjs)과 같은 장면을 쓴다. 장면 설명이 두 벌로 갈라지면
-//    게임을 고칠 때 한쪽만 낡는다. 그래서 SCENES 를 그 파일에서 가져다 쓴다.
-//  · 크기: 게시물 1080x1350 (인스타 프로필 칸이 세로 4:5 로 잘린다 — 이 비율이 안 잘린다)
-//          스토리·릴스 표지 1080x1920, 프로필 사진 320x320.
-//  · 글씨는 Jua(제목) + 나눔고딕(본문). 컨테이너에 깔아 둔 글씨체다.
+// 무엇을 파는가 (디자인이 이 두 가지를 못 보여 주면 실패다)
+//   ① 캐릭터가 귀엽다  → 캐릭터를 **크게**. 귀퉁이에 머리만 얹지 않는다.
+//   ② 젤리가 팡팡 터진다 → 젤리와 **터지는 순간(파열 별 + 튀는 물방울)** 을 그림으로 뿌린다.
+//
+// 그래서 글씨만 있는 판이 아니라 진짜 게임에서 오려 온 젤리·캐릭터가 판을 채운다.
+// 젤리는 게임의 drawJelly 를, 캐릭터는 drawAvatar 를 그대로 쓴다(withCtx 로 내 캔버스에 그린다).
+// 게임 그림을 고치면 이 그림도 따라온다.
+//
+// 크기
+//  · press/insta/*.png           1080x1350 (4:5) — 지금 인스타 프로필 격자가 이 비율로 보여 준다
+//  · press/insta/square/*.png    1080x1080 (1:1) — 정사각으로 맞추고 싶을 때
+//  · press/insta/story-*.png     1080x1920 — 스토리 · 릴스 표지
+//  · press/insta/highlight-*.png 500x500  — 하이라이트 동그라미 표지
+//  · press/insta/profile-320.png 320x320  — 프로필 사진
 //
 // 쓰기:  node jelly-shooting/tools/make-insta.mjs
-// 결과:  jelly-shooting/press/insta/*.png
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -21,88 +28,97 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
 const SHOTS = join(ROOT, 'press', 'shots');
 const OUT = join(ROOT, 'press', 'insta');
+const SQ = join(OUT, 'square');
 const GAME = 'file://' + join(ROOT, 'index.html');
 const CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 mkdirSync(OUT, { recursive: true });
+mkdirSync(SQ, { recursive: true });
 
-const SITE = 'dashing-quokka-c37a8b.netlify.app';   // 소개 페이지 (프로필 링크에 넣는 주소)
 const dataURI = (p) => 'data:image/png;base64,' + readFileSync(p).toString('base64');
 
-// ── 카드 한 장을 그리는 틀 ─────────────────────────────────────────────
-// 크기가 달라도 글씨·여백이 같이 커지도록 모든 값을 폭(W)의 비율로 적는다.
-const card = ({ w, h, tint, body }) => `<!doctype html><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<style>
-  html,body{margin:0;width:${w}px;height:${h}px;overflow:hidden;
-    font-family:'Jua','NanumGothic','Apple SD Gothic Neo',system-ui,sans-serif;}
-  .bg{position:absolute;inset:0;background:
-    radial-gradient(115% 85% at 18% 0%, #fff 0%, ${tint} 48%, ${tint} 100%);}
-  .dots{position:absolute;inset:0;opacity:.55;
-    background-image:radial-gradient(rgba(255,255,255,.95) 1.6px, transparent 1.7px);
-    background-size:${Math.round(w * 0.042)}px ${Math.round(w * 0.042)}px;}
-  .in{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
-    justify-content:center;text-align:center;padding:${Math.round(w * 0.075)}px;box-sizing:border-box;}
-  /* 제목 — Jua 는 굵기가 하나뿐이라 font-weight 를 올려도 두꺼워지지 않는다(400 고정) */
-  h1{margin:0;font-weight:400;font-size:${Math.round(w * 0.105)}px;line-height:1.18;color:#e6336b;
-    letter-spacing:-.5px;text-shadow:0 2px 0 #fff, 0 8px 20px rgba(230,60,120,.16);}
-  h1 em{font-style:normal;color:#8a5cff;}
-  p{margin:${Math.round(w * 0.028)}px 0 0;font-size:${Math.round(w * 0.045)}px;color:#7c5c8e;
-    line-height:1.5;font-family:'NanumGothic',sans-serif;font-weight:700;}
-  .eyebrow{font-size:${Math.round(w * 0.035)}px;color:rgba(120,80,110,.6);letter-spacing:1px;
-    margin-bottom:${Math.round(w * 0.022)}px;}
-  .foot{position:absolute;left:0;right:0;bottom:${Math.round(w * 0.05)}px;display:flex;
-    align-items:center;justify-content:center;gap:${Math.round(w * 0.018)}px;
-    font-size:${Math.round(w * 0.032)}px;color:rgba(120,80,110,.58);}
-  .foot img{width:${Math.round(w * 0.055)}px;height:${Math.round(w * 0.055)}px;
-    border-radius:${Math.round(w * 0.016)}px;}
-  .strip{width:100%;margin-top:${Math.round(w * 0.045)}px;}
-  .strip img{width:100%;display:block;}
-  .phone{border-radius:${Math.round(w * 0.055)}px;overflow:hidden;background:#fff;
-    box-shadow:0 ${Math.round(w * 0.018)}px ${Math.round(w * 0.05)}px rgba(150,70,110,.28),
-               0 0 0 ${Math.round(w * 0.006)}px rgba(255,255,255,.95);}
-  .phone img{display:block;width:100%;}
-  .chips{display:flex;flex-wrap:wrap;gap:${Math.round(w * 0.022)}px;justify-content:center;
-    margin-top:${Math.round(w * 0.05)}px;}
-  .chip{background:#fff;border-radius:999px;padding:${Math.round(w * 0.024)}px ${Math.round(w * 0.042)}px;
-    font-size:${Math.round(w * 0.042)}px;color:#7c5c8e;box-shadow:0 4px 14px rgba(150,70,110,.14);}
-  .chip b{color:#e6336b;font-weight:400;}
-  .big{font-size:${Math.round(w * 0.30)}px;line-height:1;color:#e6336b;
-    text-shadow:0 3px 0 #fff, 0 12px 28px rgba(230,60,120,.2);}
-  .code{display:inline-flex;gap:${Math.round(w * 0.016)}px;margin-top:${Math.round(w * 0.03)}px;}
-  .code span{width:${Math.round(w * 0.135)}px;height:${Math.round(w * 0.16)}px;background:#fff;
-    border-radius:${Math.round(w * 0.03)}px;display:flex;align-items:center;justify-content:center;
-    font-size:${Math.round(w * 0.085)}px;color:#8a5cff;box-shadow:0 6px 16px rgba(150,70,110,.16);}
-  .steps{margin-top:${Math.round(w * 0.05)}px;font-size:${Math.round(w * 0.042)}px;color:#7c5c8e;
-    font-family:'NanumGothic',sans-serif;font-weight:700;line-height:2;}
-  .icon{width:${Math.round(w * 0.30)}px;height:${Math.round(w * 0.30)}px;
-    border-radius:${Math.round(w * 0.072)}px;box-shadow:0 12px 30px rgba(150,70,110,.24);}
-  /* 게임 화면을 크게 보여 주는 카드 — 글은 위에, 폰은 아래로 흘려 잘리게 둔다.
-     화면 전체를 넣으면(세로 2.17:1) 카드 안에서 손톱만 해진다. */
-  .top{position:absolute;left:0;right:0;top:${Math.round(w * 0.075)}px;
-    padding:0 ${Math.round(w * 0.075)}px;box-sizing:border-box;}
-  .top h1{font-size:${Math.round(w * 0.095)}px;}
-  .bleed{position:absolute;left:50%;transform:translateX(-50%);width:66%;
-    top:${Math.round(h * (h / w > 1.5 ? 0.30 : 0.40))}px;   /* 세로가 긴 스토리는 더 위에서 시작 */
-    border-radius:${Math.round(w * 0.055)}px ${Math.round(w * 0.055)}px 0 0;overflow:hidden;background:#fff;
-    box-shadow:0 ${Math.round(w * 0.018)}px ${Math.round(w * 0.05)}px rgba(150,70,110,.28),
-               0 0 0 ${Math.round(w * 0.006)}px rgba(255,255,255,.95);}
-  .bleed img{display:block;width:100%;}
-  .link{margin-top:${Math.round(w * 0.05)}px;background:#fff;border-radius:999px;
-    padding:${Math.round(w * 0.028)}px ${Math.round(w * 0.055)}px;font-size:${Math.round(w * 0.04)}px;
-    color:#8a5cff;box-shadow:0 6px 18px rgba(150,70,110,.16);font-family:'NanumGothic',sans-serif;}
-</style>
-<div class="bg"></div><div class="dots"></div>
-<div class="in">${body}</div>`;
-
-const foot = `<div class="foot"><img src="${dataURI(join(SHOTS, 'icon-1024.png'))}">젤리슈팅 · 설치도 가입도 없이 링크 하나</div>`;
-
-// ── 게임 화면이 필요한 카드를 위해 장면을 다시 찍는다 ────────────────
-const NEED = ['1-play', '2-dungeon', '3-throw'];
 const browser = await chromium.launch({ executablePath: CHROME,
   args: ['--no-sandbox', '--allow-file-access-from-files'] });
+
+// ── ① 게임에서 그림 조각을 오려 온다 (배경 투명) ─────────────────────
 const gctx = await browser.newContext({ viewport: { width: 430, height: 932 },
   deviceScaleFactor: 2, isMobile: true, hasTouch: true });
 const gpage = await gctx.newPage();
+await gpage.goto(GAME);
+await gpage.waitForFunction("typeof drawAvatar==='function' && typeof withCtx==='function'",
+  null, { timeout: 20000 });
+
+// 캐릭터 — make-press-characters 와 같은 비율(셀 2.62R · 높이 1.34셀 · 중심 0.66셀).
+// 왕관·귀·턱이 잘리지 않는 값이다.
+const cutout = async (cfg, mood, t = 3) => 'data:image/png;base64,' + await gpage.evaluate(`(([c,m,t])=>{
+  const R=260, cell=R*2.62;
+  const cv=document.createElement('canvas');
+  cv.width=Math.round(cell); cv.height=Math.round(cell*1.34);
+  const g=cv.getContext('2d');
+  drawAvatar(g,cv.width/2,Math.round(cell*0.66),R,charSafe(c),m,t);
+  return cv.toDataURL('image/png').split(',')[1];
+})([${JSON.stringify(cfg)},${JSON.stringify(mood)},${t}])`);
+
+// 젤리 한 알 — 게임의 drawJelly 를 내 캔버스에 그린다(withCtx 가 ctx 를 잠깐 바꿔 준다)
+const jelly = async (color, shape = 'round', face = 'happy', gold = false) =>
+  'data:image/png;base64,' + await gpage.evaluate(`(([color,shape,face,gold])=>{
+  const R=120, S=340;
+  const cv=document.createElement('canvas'); cv.width=cv.height=S;
+  const g=cv.getContext('2d');
+  withCtx(g,()=>{ g.save(); g.translate(S/2,S/2);
+    drawJelly({x:0,y:0,r:R,color:color,face:face,shape:shape,wob:0.4,
+      bomb:false,gold:gold,ghost:false,foe:false,pts:20,dead:false});
+    g.restore(); });
+  return cv.toDataURL('image/png').split(',')[1];
+})([${JSON.stringify(color)},${JSON.stringify(shape)},${JSON.stringify(face)},${gold}])`);
+
+// 터지는 순간 — 만화의 파열 별 + 튀는 물방울. 게임의 burst() 가 뿌리는 알갱이를 그림으로 굳힌 것.
+const popFx = async (color) => 'data:image/png;base64,' + await gpage.evaluate(`((color)=>{
+  const S=460, c=S/2;
+  const cv=document.createElement('canvas'); cv.width=cv.height=S;
+  const g=cv.getContext('2d');
+  const spikes=12, R1=S*0.40, R2=S*0.24;
+  g.beginPath();
+  for(let i=0;i<spikes*2;i++){ const a=i/(spikes*2)*Math.PI*2-Math.PI/2;
+    const r=(i%2? R2:R1)*(i%4===0?1:0.93);
+    g[i?'lineTo':'moveTo'](c+Math.cos(a)*r, c+Math.sin(a)*r); }
+  g.closePath();
+  const vg=g.createRadialGradient(c,c*0.85,S*0.04,c,c,R1);
+  vg.addColorStop(0,'#ffffff');
+  vg.addColorStop(0.55,mixHex(color,'#ffffff',0.55));
+  vg.addColorStop(1,color);
+  g.fillStyle=vg; g.fill();
+  g.lineWidth=S*0.022; g.strokeStyle='#1b1220'; g.lineJoin='round'; g.stroke();
+  for(let i=0;i<14;i++){ const a=(i/14)*Math.PI*2+0.3, d=R1*(1.06+((i*37)%9)/22),
+      r=S*(0.018+((i*53)%7)/260);
+    g.beginPath(); g.arc(c+Math.cos(a)*d, c+Math.sin(a)*d, r, 0, 7);
+    g.fillStyle=(i%3===0)?'#ffffff':mixHex(color,'#ffffff',0.25); g.fill();
+    g.lineWidth=S*0.009; g.strokeStyle='#1b1220'; g.stroke(); }
+  return cv.toDataURL('image/png').split(',')[1];
+})(${JSON.stringify(color)})`);
+
+const CH = {
+  girl:  await cutout({ k: 'girl',  c: '#ff9db2', a: 'bow',     ac: '#ff5c8a', h: 'braid' }, 'happy'),
+  boy:   await cutout({ k: 'human', c: '#ffe36e', a: 'glasses', ac: '#5a5566', h: 'crop' }, 'wow', 9),
+  cat:   await cutout({ k: 'cat',   c: '#ffb3c9', a: 'bow',     ac: '#ff5c8a' }, 'happy'),
+  dog:   await cutout({ k: 'dog',   c: '#a3d5ff', a: 'cap',     ac: '#4fa8ff' }, 'happy', 7),
+  bear:  await cutout({ k: 'bear',  c: '#c9a27a', a: 'crown',   ac: '#ffce3d' }, 'proud'),
+  bunny: await cutout({ k: 'bunny', c: '#fff0a8', a: 'flower',  ac: '#ff8ab5' }, 'wink', 5),
+  wail:  await cutout({ k: 'girl',  c: '#ff9db2', a: 'bow',     ac: '#ff5c8a', h: 'braid' }, 'wail'),
+  mad:   await cutout({ k: 'bear',  c: '#c9a27a', a: 'crown',   ac: '#ffce3d' }, 'mad'),
+};
+const J = {
+  pink: await jelly('#ff5c8a'),                  blue: await jelly('#4fa8ff', 'bean'),
+  gold: await jelly('#ffce3d', 'round', 'star', true), green: await jelly('#8fd94f'),
+  grape: await jelly('#b96cff', 'bean', 'wink'), mint: await jelly('#40dfe6'),
+  orange: await jelly('#ff8a5c', 'bean'),        bearJ: await jelly('#ffb3c9', 'bear'),
+};
+const POP = { pink: await popFx('#ff5c8a'), gold: await popFx('#ffce3d'),
+  mint: await popFx('#40dfe6'), grape: await popFx('#b96cff') };
+console.log('· 오려낸 조각 — 캐릭터 ' + Object.keys(CH).length + ' · 젤리 ' + Object.keys(J).length
+  + ' · 터짐 ' + Object.keys(POP).length);
+
+// ── ② 게임 화면이 필요한 칸 ───────────────────────────────────────────
+const NEED = ['1-play', '2-dungeon', '3-throw'];
 const shot = {};
 for (const sc of SCENES.filter(s => NEED.includes(s.id))) {
   await gpage.goto(GAME);
@@ -117,106 +133,308 @@ for (const sc of SCENES.filter(s => NEED.includes(s.id))) {
 }
 await gctx.close();
 
-// ── 첫 9칸 (1080x1350) ───────────────────────────────────────────────
-// 순서가 곧 프로필 첫인상이다. 1·4·7 이 세로 한 줄로 보이므로 그 셋을 '무엇인지 설명하는' 칸으로 둔다.
-const P = { w: 1080, h: 1350 };
+// ── ③ 흩뿌리기 ───────────────────────────────────────────────────────
+// [가로%, 세로%, 폭%, 기울기°, 그림] — 판 위에 젤리·터짐을 놓는다.
+// 글씨(z-index 3) 뒤에 깔리므로 글자를 가리지 않는다.
+const fx = (list) => '<div class="fx">' + list.map(([x, y, w, rot, img]) =>
+  `<img style="left:${x}%;top:${y}%;width:${w}%;transform:translate(-50%,-50%) rotate(${rot}deg)" src="${img}">`
+).join('') + '</div>';
+
+// ── ④ 포스터 한 장을 그리는 틀 ────────────────────────────────────────
+// 값은 전부 폭(w) 비율이라 1:1 · 4:5 · 9:16 어디에 써도 글씨·여백이 같이 커진다.
+const card = ({ w, h, bg, ink = '#1b1220', body }) => `<!doctype html><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  html,body{margin:0;width:${w}px;height:${h}px;overflow:hidden;
+    font-family:'Jua','NanumGothic','Apple SD Gothic Neo',system-ui,sans-serif;}
+  .bg{position:absolute;inset:0;background:${bg};}
+  /* 집중선 — 시선을 가운데 글씨로 모은다 */
+  .rays{position:absolute;left:50%;top:40%;width:${w * 2.6}px;height:${w * 2.6}px;
+    transform:translate(-50%,-50%);opacity:.15;
+    background:repeating-conic-gradient(#fff 0deg 4deg, transparent 4deg 9deg);}
+  /* 가운데만 밝게 — 글씨가 놓이는 자리를 떠오르게 한다 */
+  .glow{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);
+    width:${w * 1.5}px;height:${w * 1.5}px;border-radius:50%;
+    background:radial-gradient(closest-side, rgba(255,255,255,.5), rgba(255,255,255,0));}
+  .polka{position:absolute;inset:0;opacity:.16;
+    background-image:radial-gradient(#fff 2px, transparent 2.2px);
+    background-size:${Math.round(w * 0.055)}px ${Math.round(w * 0.055)}px;}
+  /* 젤리·터짐이 깔리는 층 */
+  .fx{position:absolute;inset:0;z-index:1;}
+  .fx img{position:absolute;display:block;
+    filter:drop-shadow(0 ${Math.round(w * 0.01)}px ${Math.round(w * 0.016)}px rgba(90,40,70,.28));}
+  .in{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;text-align:center;box-sizing:border-box;
+    padding:${Math.round(w * 0.06)}px ${Math.round(w * 0.06)}px ${Math.round(w * 0.33)}px;}
+  /* 아래에 캐릭터를 세우지 않는 판 — 비워 둘 이유가 없으니 여백을 돌려준다 */
+  .in.flat{padding-bottom:${Math.round(w * 0.13)}px;}
+  /* 두꺼운 테두리 글씨 — paint-order 가 있어야 테두리가 글자를 갉아먹지 않는다 */
+  h1{margin:0;font-weight:400;line-height:1.04;font-size:${Math.round(w * 0.165)}px;
+    color:#fff;-webkit-text-stroke:${Math.round(w * 0.021)}px ${ink};paint-order:stroke fill;
+    text-shadow:0 ${Math.round(w * 0.015)}px 0 rgba(0,0,0,.24);letter-spacing:-1px;
+    transform:rotate(-1.6deg);}
+  h1 em{font-style:normal;color:#ffe14d;}
+  .band{display:inline-block;background:${ink};color:#fff;border-radius:999px;
+    padding:${Math.round(w * 0.024)}px ${Math.round(w * 0.05)}px;
+    font-size:${Math.round(w * 0.042)}px;margin-top:${Math.round(w * 0.035)}px;
+    box-shadow:0 ${Math.round(w * 0.008)}px 0 rgba(0,0,0,.25);}
+  .band em{font-style:normal;color:#ffe14d;}
+  .eyebrow{display:inline-block;background:#fff;color:${ink};border-radius:999px;
+    padding:${Math.round(w * 0.018)}px ${Math.round(w * 0.04)}px;font-size:${Math.round(w * 0.036)}px;
+    margin-bottom:${Math.round(w * 0.028)}px;box-shadow:0 ${Math.round(w * 0.006)}px 0 rgba(0,0,0,.2);}
+  /* 인스타 광고의 '게임하기' 자리와 같은 알약 단추 */
+  .cta{display:inline-flex;align-items:center;gap:${Math.round(w * 0.018)}px;background:${ink};
+    color:#fff;border-radius:999px;padding:${Math.round(w * 0.03)}px ${Math.round(w * 0.075)}px;
+    font-size:${Math.round(w * 0.055)}px;margin-top:${Math.round(w * 0.04)}px;
+    box-shadow:0 ${Math.round(w * 0.01)}px 0 rgba(0,0,0,.3);}
+  .cta.white{background:#fff;color:${ink};}
+  /* 캐릭터 — 이 게임의 첫 번째 무기다. 작게 쓰지 않는다 */
+  .cut{position:absolute;bottom:${Math.round(-w * 0.07)}px;z-index:2;pointer-events:none;
+    filter:drop-shadow(0 ${Math.round(w * 0.014)}px ${Math.round(w * 0.022)}px rgba(0,0,0,.26));}
+  .cutL{left:${Math.round(-w * 0.07)}px;width:${Math.round(w * 0.46)}px;transform:rotate(-6deg);}
+  .cutR{right:${Math.round(-w * 0.07)}px;width:${Math.round(w * 0.46)}px;transform:rotate(6deg);}
+  .cutC{left:50%;width:${Math.round(w * 0.50)}px;transform:translateX(-50%);}
+  .lock{position:absolute;z-index:4;left:${Math.round(w * 0.04)}px;bottom:${Math.round(w * 0.035)}px;
+    display:flex;align-items:center;gap:${Math.round(w * 0.014)}px;background:rgba(255,255,255,.94);
+    border-radius:999px;padding:${Math.round(w * 0.01)}px ${Math.round(w * 0.028)}px ${Math.round(w * 0.01)}px ${Math.round(w * 0.01)}px;
+    font-size:${Math.round(w * 0.03)}px;color:${ink};}
+  .lock img{width:${Math.round(w * 0.055)}px;height:${Math.round(w * 0.055)}px;border-radius:${Math.round(w * 0.016)}px;}
+  /* G123 은 여기에 '확률형 아이템 포함' 을 적는다. 우리는 적을 게 정반대라 그걸 적는다 */
+  .note{position:absolute;z-index:4;right:${Math.round(w * 0.035)}px;bottom:${Math.round(w * 0.04)}px;
+    font-size:${Math.round(w * 0.026)}px;color:#fff;background:rgba(27,18,32,.45);
+    border-radius:999px;padding:${Math.round(w * 0.012)}px ${Math.round(w * 0.028)}px;
+    font-family:'NanumGothic',sans-serif;font-weight:700;}
+  /* 게임 화면 액자 */
+  .bleed{position:absolute;z-index:2;left:50%;transform:translateX(-50%) rotate(-1.5deg);width:58%;
+    top:${Math.round(h * (h / w > 1.5 ? 0.34 : 0.43))}px;
+    border-radius:${Math.round(w * 0.05)}px ${Math.round(w * 0.05)}px 0 0;overflow:hidden;background:#fff;
+    border:${Math.round(w * 0.009)}px solid ${ink};border-bottom:0;
+    box-shadow:0 ${Math.round(w * 0.02)}px ${Math.round(w * 0.04)}px rgba(0,0,0,.22);}
+  .bleed img{display:block;width:100%;}
+  .top{position:absolute;z-index:3;left:0;right:0;top:${Math.round(w * 0.075)}px;
+    padding:0 ${Math.round(w * 0.055)}px;box-sizing:border-box;}
+  .top h1{font-size:${Math.round(w * 0.122)}px;}
+  .chips{display:flex;flex-wrap:wrap;gap:${Math.round(w * 0.02)}px;justify-content:center;
+    margin-top:${Math.round(w * 0.038)}px;}
+  .chip{background:#fff;border:${Math.round(w * 0.007)}px solid ${ink};border-radius:999px;
+    padding:${Math.round(w * 0.02)}px ${Math.round(w * 0.038)}px;font-size:${Math.round(w * 0.042)}px;
+    color:${ink};box-shadow:0 ${Math.round(w * 0.007)}px 0 rgba(0,0,0,.25);}
+  .chip b{color:#e6336b;font-weight:400;}
+  .code{display:inline-flex;gap:${Math.round(w * 0.018)}px;margin-top:${Math.round(w * 0.032)}px;}
+  .code span{width:${Math.round(w * 0.14)}px;height:${Math.round(w * 0.165)}px;background:#fff;
+    border:${Math.round(w * 0.008)}px solid ${ink};border-radius:${Math.round(w * 0.028)}px;
+    display:flex;align-items:center;justify-content:center;font-size:${Math.round(w * 0.095)}px;
+    color:${ink};box-shadow:0 ${Math.round(w * 0.009)}px 0 rgba(0,0,0,.25);}
+  /* 순서 안내 — 캐릭터 위로 지나가는 일이 있어서 어두운 판을 깔아 준다 */
+  .steps{display:inline-block;margin-top:${Math.round(w * 0.032)}px;font-size:${Math.round(w * 0.042)}px;
+    color:#fff;font-family:'NanumGothic',sans-serif;font-weight:800;line-height:1.85;
+    background:rgba(27,18,32,.88);border-radius:${Math.round(w * 0.045)}px;
+    padding:${Math.round(w * 0.026)}px ${Math.round(w * 0.05)}px;
+    box-shadow:0 ${Math.round(w * 0.008)}px 0 rgba(0,0,0,.25);}
+  .strip{width:100%;margin-top:${Math.round(w * 0.035)}px;}
+  .strip img{width:100%;display:block;
+    filter:drop-shadow(0 ${Math.round(w * 0.008)}px ${Math.round(w * 0.014)}px rgba(0,0,0,.22));}
+  .icon{width:${Math.round(w * 0.30)}px;height:${Math.round(w * 0.30)}px;
+    border-radius:${Math.round(w * 0.072)}px;border:${Math.round(w * 0.009)}px solid ${ink};
+    box-shadow:0 ${Math.round(w * 0.014)}px 0 rgba(0,0,0,.25);}
+</style>
+<div class="bg"></div><div class="rays"></div><div class="polka"></div><div class="glow"></div>
+${body}`;
+
+const lock = `<div class="lock"><img src="${dataURI(join(SHOTS, 'icon-1024.png'))}">젤리슈팅</div>`;
+const note = `<div class="note">광고 없음 · 결제 없음 · 전 연령</div>`;
+const corner = lock + note;
+
+// ── ⑤ 첫 9칸 ─────────────────────────────────────────────────────────
+// 격자에서 세로 한 줄(1·4·7)이 나란히 보인다 → 그 셋에
+// "무엇인지 / 안전한지 / 어떻게 같이 하는지" 를 놓는다.
 const POSTS = [
-  { id: '1-대표', tint: '#ffe3f0', body: `
-    <div class="eyebrow">🍡 젤리슈팅 · JELLY SHOOTING</div>
-    <h1>온 가족이, 연인끼리,<br>친구랑 <em>3분이면 한 판</em></h1>
-    <p>링크만 누르면 바로 시작<br>설치도 가입도 없어요</p>
-    <div class="strip"><img src="${dataURI(join(SHOTS, 'chars-row.png'))}"></div>${foot}` },
-
-  { id: '2-3분', tint: '#fff0e3', body: `
-    <div class="eyebrow">한 판에 걸리는 시간</div>
-    <div class="big">3분</div>
-    <h1 style="margin-top:.2em">배우는 데는 <em>30초</em></h1>
-    <p>떨어지는 젤리를 톡. 규칙은 그게 다예요.</p>${foot}` },
-
-  { id: '3-던전', tint: '#e9e2ff', body: `
-    <div class="top"><h1>같은 판에서 <em>실시간 대결</em></h1>
-      <p>내가 터트린 방해 젤리가<br>상대 화면으로 넘어가요</p></div>
-    <div class="bleed"><img src="${shot['2-dungeon']}"></div>` },
-
-  { id: '4-없어요', tint: '#e3f7ff', body: `
-    <div class="eyebrow">시작 전에 확인하는 것들</div>
-    <h1>없어요, 하나도</h1>
-    <div class="chips">
-      <div class="chip">설치 <b>0</b></div><div class="chip">가입 <b>0</b></div>
-      <div class="chip">광고 <b>0</b></div><div class="chip">결제 <b>0</b></div>
-      <div class="chip"><b>전 연령</b></div>
+  { id: '1-대표', bg: 'linear-gradient(160deg,#ff8fbe,#ff4f8e)', body:
+    fx([[10, 10, 16, -14, J.pink], [90, 12, 18, 12, J.gold], [15, 30, 12, 22, J.mint],
+        [88, 33, 13, -18, J.green], [50, 6, 20, 6, POP.gold], [6, 52, 13, -8, J.blue],
+        [95, 56, 12, 16, J.grape]]) + `
+    <div class="in">
+      <div class="eyebrow">🍡 젤리슈팅 · JELLY SHOOTING</div>
+      <h1>온 가족이<br>빠져드는<br><em>재미</em></h1>
+      <div class="band">3분이면 한 판 · 설치도 가입도 없이</div>
+      <div class="cta">지금 바로 시작 ▶</div>
     </div>
-    <p style="margin-top:${Math.round(P.w * 0.05)}px">아이 옆에서 켜도 마음이 편한 게임</p>${foot}` },
+    <img class="cut cutL" src="${CH.girl}"><img class="cut cutR" src="${CH.bear}">
+    ${corner}` },
 
-  { id: '5-던지기', tint: '#ffeede', body: `
-    <div class="top"><h1>한 명은 던지고,<br>한 명은 <em>터트려요</em></h1>
-      <p>역할을 바꿔 가며 — 누가 더 오래 버티나</p></div>
-    <div class="bleed"><img src="${shot['3-throw']}"></div>` },
+  { id: '2-팡팡', bg: 'linear-gradient(160deg,#ffd95c,#ffa32e)', body:
+    fx([[16, 14, 22, -10, POP.pink], [84, 18, 20, 14, POP.mint], [50, 7, 14, 6, J.grape],
+        [9, 36, 13, 18, J.blue], [92, 40, 14, -16, J.pink], [26, 52, 11, -22, J.green],
+        [76, 55, 12, 20, J.gold]]) + `
+    <div class="in">
+      <div class="eyebrow">이 게임의 손맛</div>
+      <h1>누르면<br><em>팡! 팡!</em></h1>
+      <div class="band">연달아 터트리면 콤보 — 점수가 튀어요</div>
+    </div>
+    <img class="cut cutC" src="${CH.boy}">
+    ${corner}` },
 
-  { id: '6-꾸미기', tint: '#ffe9f4', body: `
-    <h1>내 캐릭터로 들어가요</h1>
-    <p>머리 · 색깔 · 악세서리 — 모은 코인으로 만들어요</p>
-    <div class="strip"><img src="${dataURI(join(SHOTS, 'dress-row.png'))}"></div>${foot}` },
+  { id: '3-던전', bg: 'linear-gradient(160deg,#9b7cff,#6a45f5)', body:
+    fx([[9, 30, 14, -16, J.pink], [91, 34, 15, 14, J.mint], [12, 56, 12, 20, J.gold],
+        [89, 60, 13, -20, POP.grape]]) + `
+    <div class="top"><h1>같은 판에서<br><em>실시간 대결</em></h1>
+      <div class="band">터트린 방해 젤리가 상대 화면으로</div></div>
+    <div class="bleed"><img src="${shot['2-dungeon']}"></div>
+    ${corner}` },
 
-  { id: '7-초대', tint: '#f3e6ff', body: `
-    <div class="eyebrow">초대하는 방법</div>
-    <h1>네 글자만 보내면 끝</h1>
-    <div class="code"><span>A</span><span>7</span><span>K</span><span>2</span></div>
-    <div class="steps">① 방 만들기<br>② 단톡방에 코드 보내기<br>③ 다 같이 시작</div>${foot}` },
+  { id: '4-없어요', bg: 'linear-gradient(160deg,#6fd8ff,#2aa8f2)', body:
+    fx([[10, 11, 15, -14, J.gold], [90, 14, 16, 12, J.pink], [16, 30, 11, 20, J.green],
+        [86, 34, 12, -18, J.grape], [50, 6, 13, 8, J.mint]]) + `
+    <div class="in">
+      <div class="eyebrow">시작 전에 확인하는 것들</div>
+      <h1>없어요,<br>하나도</h1>
+      <div class="chips">
+        <div class="chip">설치 <b>0</b></div><div class="chip">가입 <b>0</b></div>
+        <div class="chip">광고 <b>0</b></div><div class="chip">결제 <b>0</b></div>
+        <div class="chip"><b>전 연령</b></div>
+      </div>
+      <div class="band">아이 옆에서 켜도 마음이 편한 게임</div>
+    </div>
+    <img class="cut cutL" src="${CH.bunny}"><img class="cut cutR" src="${CH.cat}">
+    ${corner}` },
 
-  { id: '8-표정', tint: '#fff6e3', body: `
-    <h1>이기면 춤추고,<br>지면 <em>분해해요</em> 😤</h1>
-    <p>표정이 다 달라서, 결과 화면이 제일 재밌어요</p>
-    <div class="strip"><img src="${dataURI(join(SHOTS, 'faces-row.png'))}"></div>${foot}` },
+  { id: '5-던지기', bg: 'linear-gradient(160deg,#ffa866,#ff7a3d)', body:
+    fx([[8, 32, 15, -18, J.bearJ], [92, 36, 14, 16, J.blue], [11, 58, 13, 22, POP.pink],
+        [90, 62, 12, -14, J.gold]]) + `
+    <div class="top"><h1>한 명은 던지고<br>한 명은 <em>터트려요</em></h1>
+      <div class="band">역할 바꿔 가며 — 누가 더 오래 버티나</div></div>
+    <div class="bleed"><img src="${shot['3-throw']}"></div>
+    ${corner}` },
 
-  { id: '9-플레이', tint: '#ffe3f0', body: `
-    <img class="icon" src="${dataURI(join(SHOTS, 'icon-1024.png'))}">
-    <h1 style="margin-top:${Math.round(P.w * 0.05)}px">지금 눌러서 바로</h1>
-    <p>프로필 링크 → 누르면 게임이 열려요</p>
-    <div class="link">🔗 ${SITE}</div>${foot}` },
+  { id: '6-꾸미기', bg: 'linear-gradient(160deg,#ff9ed6,#f45ab4)', body:
+    fx([[9, 12, 14, -12, J.gold], [91, 15, 15, 14, J.mint], [50, 6, 12, 6, J.green]]) + `
+    <div class="in flat">
+      <div class="eyebrow">모은 코인으로</div>
+      <h1>내 캐릭터로<br>들어가요</h1>
+      <div class="band">여섯 종 · 머리 · 색깔 · 악세서리</div>
+      <div class="strip" style="margin-top:${Math.round(1080 * 0.06)}px">
+        <img src="${dataURI(join(SHOTS, 'dress-row.png'))}"></div>
+    </div>
+    ${corner}` },
+
+  { id: '7-초대', bg: 'linear-gradient(160deg,#8be08b,#2fb463)', body:
+    fx([[10, 11, 15, -14, J.pink], [90, 14, 16, 12, J.gold], [15, 31, 11, 20, J.grape],
+        [87, 35, 12, -18, J.mint]]) + `
+    <div class="in">
+      <div class="eyebrow">초대하는 방법</div>
+      <h1>네 글자만<br>보내면 끝</h1>
+      <div class="code"><span>A</span><span>7</span><span>K</span><span>2</span></div>
+      <div class="steps">방 만들기 → 코드 보내기 → 같이 시작</div>
+    </div>
+    <img class="cut cutR" src="${CH.dog}">
+    ${corner}` },
+
+  { id: '8-표정', bg: 'linear-gradient(160deg,#ffc84d,#ff8a2b)', body:
+    fx([[50, 7, 18, 6, POP.gold], [10, 26, 13, -16, J.pink], [90, 30, 14, 14, J.mint]]) + `
+    <div class="in">
+      <div class="eyebrow">결과 화면이 제일 재밌어요</div>
+      <h1>이기면 춤추고<br>지면 <em>분해해요</em></h1>
+      <div class="band">표정도 자세도 판마다 달라요</div>
+    </div>
+    <img class="cut cutL" src="${CH.mad}"><img class="cut cutR" src="${CH.wail}">
+    ${corner}` },
+
+  { id: '9-플레이', bg: 'linear-gradient(160deg,#ff7aa8,#ff3d78)', body:
+    fx([[11, 13, 15, -14, J.gold], [89, 16, 16, 12, J.mint], [17, 33, 11, 20, J.green],
+        [85, 37, 12, -18, J.grape], [50, 6, 18, 8, POP.mint]]) + `
+    <div class="in flat">
+      <img class="icon" src="${dataURI(join(SHOTS, 'icon-1024.png'))}">
+      <h1 style="margin-top:.3em">지금 바로<br>플레이</h1>
+      <div class="band">프로필 링크를 누르면 바로 열려요</div>
+      <div class="cta white">🎮 게임하기</div>
+    </div>
+    ${corner}` },
 ];
 
-// ── 스토리 · 릴스 표지 (1080x1920) ───────────────────────────────────
+// ── ⑥ 스토리 · 릴스 표지 (1080x1920) ─────────────────────────────────
 const S = { w: 1080, h: 1920 };
 const STORIES = [
-  { id: 'story-1-플레이', tint: '#ffe3f0', body: `
-    <div class="top"><div class="eyebrow">🍡 젤리슈팅</div>
-      <h1>딱 한 판만<br>하려고 했는데</h1>
-      <p>👆 위로 밀어서 바로 시작</p></div>
-    <div class="bleed" style="width:58%"><img src="${shot['1-play']}"></div>` },
+  { id: 'story-1-광고', bg: 'linear-gradient(160deg,#ff8fbe,#ff4f8e)', body:
+    fx([[12, 9, 15, -14, J.pink], [88, 12, 16, 12, J.gold], [50, 5, 18, 6, POP.gold],
+        [8, 26, 12, 20, J.mint], [92, 30, 13, -16, J.green], [14, 44, 11, 14, J.blue],
+        [87, 47, 11, -12, J.grape]]) + `
+    <div class="in">
+      <h1>딱 한 판만<br>하려고<br><em>했는데</em></h1>
+      <div class="band">3분이면 한 판 · 설치도 가입도 없이</div>
+      <div class="cta white">🎮 게임하기</div>
+    </div>
+    <img class="cut cutL" src="${CH.girl}"><img class="cut cutR" src="${CH.boy}">
+    ${corner}` },
 
-  // G123 이 쓰는 안내와 같은 목적이다 — 인스타 안의 브라우저에서 열면 코인·기록이 날아갈 수 있다.
-  { id: 'story-2-외부브라우저', tint: '#e3f7ff', body: `
-    <img class="icon" src="${dataURI(join(SHOTS, 'icon-1024.png'))}">
-    <div class="eyebrow" style="margin-top:${Math.round(S.w * 0.04)}px">처음 오셨다면</div>
-    <h1>브라우저로<br>열어 주세요</h1>
-    <p>인스타 안에서 열면 코인·기록이<br>저장되지 않을 수 있어요</p>
-    <div class="steps">① 프로필 링크 누르기<br>② 오른쪽 위 <b>⋯</b> 누르기<br>③ <b>‘브라우저에서 열기’</b> 고르기</div>
-    <p style="margin-top:${Math.round(S.w * 0.045)}px">한 번만 해 두면 다음부터는 그대로예요</p>` },
+  { id: 'story-2-외부브라우저', bg: 'linear-gradient(160deg,#6fd8ff,#2f8ee8)', body:
+    fx([[10, 10, 13, -14, J.gold], [90, 13, 14, 12, J.pink]]) + `
+    <div class="in">
+      <div class="eyebrow">처음 오셨다면 꼭 읽어 주세요</div>
+      <h1>브라우저로<br>열어 주세요</h1>
+      <div class="band">인스타 안에서 열면 코인·기록이 안 남아요</div>
+      <div class="steps">① 프로필 링크 누르기<br>② 오른쪽 위 ⋯ 누르기<br>③ ‘브라우저에서 열기’ 고르기</div>
+      <div class="band">한 번만 해 두면 다음부터는 그대로</div>
+    </div>
+    <img class="cut cutR" src="${CH.dog}">
+    ${corner}` },
 
-  { id: 'story-3-초대', tint: '#f3e6ff', body: `
-    <h1>친구 부르는 데<br>10초</h1>
-    <div class="code"><span>A</span><span>7</span><span>K</span><span>2</span></div>
-    <div class="steps">방 만들고 · 코드 보내고 · 같이 시작</div>
-    <div class="strip" style="width:78%;margin-top:${Math.round(S.w * 0.06)}px">
-      <img src="${dataURI(join(SHOTS, 'chars-row.png'))}"></div>` },
+  { id: 'story-3-초대', bg: 'linear-gradient(160deg,#8be08b,#2fb463)', body:
+    fx([[11, 10, 14, -14, J.pink], [89, 13, 15, 12, J.gold], [50, 5, 16, 6, POP.mint],
+        [9, 30, 12, 18, J.grape], [91, 33, 12, -16, J.mint]]) + `
+    <div class="in">
+      <h1>친구 부르는 데<br><em>10초</em></h1>
+      <div class="code"><span>A</span><span>7</span><span>K</span><span>2</span></div>
+      <div class="steps">방 만들기 → 단톡방에 코드 → 같이 시작</div>
+      <div class="cta white">🎮 게임하기</div>
+    </div>
+    <img class="cut cutL" src="${CH.cat}"><img class="cut cutR" src="${CH.bear}">
+    ${corner}` },
+
+  { id: 'story-4-플레이화면', bg: 'linear-gradient(160deg,#9b7cff,#5f3ae8)', body:
+    fx([[9, 24, 13, -16, J.pink], [91, 27, 14, 14, J.gold], [8, 44, 12, 20, POP.pink]]) + `
+    <div class="top"><h1>지금 이 화면이<br><em>전부예요</em></h1>
+      <div class="band">떨어지는 젤리를 톡 — 30초면 배워요</div></div>
+    <div class="bleed" style="width:56%"><img src="${shot['1-play']}"></div>
+    ${corner}` },
 ];
 
-// ── 찍기 ──────────────────────────────────────────────────────────────
-const shoot = async (name, size, tint, body) => {
+// ── ⑦ 하이라이트 동그라미 표지 (500x500) ─────────────────────────────
+// 인스타가 가운데를 동그랗게 자른다 → 얼굴을 가운데 크게.
+// 바탕색과 캐릭터 색이 겹치면 얼굴이 묻힌다 — 서로 반대색으로 짝지었다.
+const HL = [
+  { id: 'highlight-1-먼저읽기', bg: '#2aa8f2', ch: CH.bear, label: '먼저 읽기' },
+  { id: 'highlight-2-게임방법', bg: '#ff5c96', ch: CH.boy,  label: '게임 방법' },
+  { id: 'highlight-3-같이하기', bg: '#37bf6a', ch: CH.girl, label: '같이 하기' },
+  { id: 'highlight-4-업데이트', bg: '#ffab2e', ch: CH.dog,  label: '업데이트' },
+];
+
+// ── ⑧ 찍기 ───────────────────────────────────────────────────────────
+const shoot = async (path, size, bg, body) => {
   const ctx = await browser.newContext({ viewport: { width: size.w, height: size.h }, deviceScaleFactor: 1 });
   const p = await ctx.newPage();
-  await p.setContent(card({ ...size, tint, body }));
+  await p.setContent(card({ ...size, bg, body }));
   await p.evaluate(`(async()=>{ await Promise.all([...document.images].map(i=>i.complete?0:i.decode().catch(()=>0)));
     if(document.fonts&&document.fonts.ready) await document.fonts.ready; })()`);
   await p.waitForTimeout(300);
-  writeFileSync(join(OUT, name + '.png'), await p.screenshot({ type: 'png' }));
-  console.log('📷 ' + name + '.png  (' + size.w + 'x' + size.h + ')');
+  writeFileSync(path, await p.screenshot({ type: 'png' }));
   await ctx.close();
 };
 
-for (const c of POSTS) await shoot(c.id, P, c.tint, c.body);
-for (const c of STORIES) await shoot(c.id, S, c.tint, c.body);
+for (const c of POSTS) {
+  await shoot(join(OUT, c.id + '.png'), { w: 1080, h: 1350 }, c.bg, c.body);
+  await shoot(join(SQ, c.id + '.png'), { w: 1080, h: 1080 }, c.bg, c.body);
+  console.log('📷 ' + c.id + '.png  (1080x1350 + square/1080x1080)');
+}
+for (const c of STORIES) {
+  await shoot(join(OUT, c.id + '.png'), S, c.bg, c.body);
+  console.log('📷 ' + c.id + '.png  (1080x1920)');
+}
+for (const h of HL) {
+  await shoot(join(OUT, h.id + '.png'), { w: 500, h: 500 }, h.bg,
+    `<img src="${h.ch}" style="position:absolute;z-index:2;left:50%;transform:translateX(-50%);
+      bottom:${Math.round(500 * 0.10)}px;width:${Math.round(500 * 0.62)}px;">`);
+  console.log('📷 ' + h.id + '.png  (500x500 · ' + h.label + ')');
+}
 
 // 프로필 사진 — 게임 아이콘을 320x320 으로 (인스타는 동그랗게 자른다)
 const ictx = await browser.newContext({ viewport: { width: 400, height: 400 }, deviceScaleFactor: 1 });
@@ -235,4 +453,5 @@ console.log('📷 profile-320.png  (320x320 · 프로필 사진)');
 await ictx.close();
 
 await browser.close();
-console.log('\n총 ' + (POSTS.length + STORIES.length + 1) + '장 → press/insta/');
+console.log('\n게시물 ' + POSTS.length + '장(4:5 + 1:1) · 스토리 ' + STORIES.length
+  + '장 · 하이라이트 ' + HL.length + '장 · 프로필 1장 → press/insta/');
