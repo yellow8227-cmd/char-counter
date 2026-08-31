@@ -34,6 +34,23 @@
   --warn:#8a6420; --warndim:#f7f0e2; --warnbd:#e2d3b4;
   --bad:#96382d; --baddim:#f7ecea; --badbd:#e3c6c1;
 }
+/* 어두운 화면 값은 한 벌만 쓰고 두 군데서 불러 쓴다.
+   ① 아무것도 고르지 않은 사람 — 기기 설정을 따라간다
+      (단, 「밝게」를 직접 고른 사람은 기기가 어두워도 밝게 둔다)
+   ② 「어둡게」를 직접 고른 사람 */
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#1b1a18;
+    --bg:#232220; --s1:#2b2a27; --s2:#33322e; --s3:#3d3b37;
+    --line:#35342f; --line2:#46443e;
+    --tx:#eceae4; --tx2:#b8b5ad; --tx3:#8d8a82;
+    --acc:#eceae4; --accdim:#33322e; --onacc:#232220;
+    --sig:#8fb3dc; --sigdim:#26313d; --sigbd:#3b4c60;
+    --ok:#8fc4a5; --okdim:#233029; --okbd:#3a5344;
+    --warn:#dcb977; --warndim:#332c1d; --warnbd:#574a2e;
+    --bad:#e0968a; --baddim:#352422; --badbd:#5c3c37;
+  }
+}
 :root[data-theme="dark"]{
   --ground:#1b1a18;
   --bg:#232220; --s1:#2b2a27; --s2:#33322e; --s3:#3d3b37;
@@ -461,6 +478,102 @@ footer .mini{max-width:640px; margin:0 auto}
   </div>
 </section>
 
+<!-- ══════════════ 홍보글 ══════════════ -->
+<section class="tab" id="t-promo">
+  <div class="ph">
+    <h2>홍보글 · 내 양식</h2>
+    <p>전시 · 행사 정보를 칸에 넣으면 <b>늘 쓰던 양식 그대로</b> 나옵니다.
+       인사말과 마무리, 한 줄 정리까지 내 것으로 고정해 두면 매번 다시 쓸 일이 없습니다.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="num">00</span> 내 프로필 <span class="badge b-dim">한 번만 정해두면 됩니다</span></h3>
+    <p class="lede">여기서 정한 것이 홍보글과 릴스 캡션에 그대로 들어갑니다.</p>
+    <div class="row row2">
+      <label class="f"><span>닉네임</span><input type="text" id="p-nick" placeholder="밥풀"></label>
+      <label class="f"><span>이모지</span><input type="text" id="p-emoji" placeholder="🌿"></label>
+      <label class="f"><span>마무리 이모지</span><input type="text" id="p-emoji2" placeholder="🍚"></label>
+    </div>
+    <label class="f"><span>인사말 <span class="mini">(글 맨 앞)</span></span>
+      <input type="text" id="p-hello" placeholder="밥 한 공기처럼 든든한 기록을 남기는 블로거, 밥풀입니다"></label>
+    <label class="f"><span>마무리 인사 <span class="mini">(글 맨 끝)</span></span>
+      <input type="text" id="p-bye" placeholder="오늘도 읽어주셔서 감사합니다!"></label>
+    <label class="f"><span>한 줄 정리 제목</span>
+      <input type="text" id="p-sumlabel" placeholder="밥풀의 한 줄 정리"></label>
+  </div>
+
+  <div class="card">
+    <h3><span class="num">01</span> 무엇을 알리는가</h3>
+    <div class="row">
+      <label class="f"><span>행사 · 전시명</span>
+        <input type="text" id="g-name" placeholder="제15회 서울국제조각페스타 2026"></label>
+      <label class="f"><span>메인 키워드 <span class="mini">(제목 · 본문에)</span></span>
+        <input type="text" id="g-kw" placeholder="서울국제조각페스타"></label>
+    </div>
+    <div class="row row2">
+      <label class="f"><span>뭐라고 부를까</span>
+        <select id="g-type">
+          <option>전시</option><option>행사</option><option>공연</option>
+          <option>축제</option><option>팝업</option><option>페어</option>
+        </select></label>
+      <label class="f"><span>제목 앞 이모지</span>
+        <input type="text" id="g-titleemoji" placeholder="🗿"></label>
+    </div>
+    <label class="f"><span>제목에 걸 후킹 <span class="mini">(한 줄)</span></span>
+      <input type="text" id="g-hook" placeholder="조각이 이렇게 다채로웠어?"></label>
+    <label class="f"><span>도입 공감 <span class="mini">(읽는 사람이 지금 하고 있을 생각)</span></span>
+      <textarea id="g-intro" placeholder="회화 전시는 자주 가봤는데&#10;‘조각’ 전시는 왠지 어렵게 느껴졌다면,&#10;이번 전시는 생각이 완전히 달라질 거예요."></textarea></label>
+    <div class="row">
+      <label class="f"><span>장소</span><input type="text" id="g-place" placeholder="코엑스 C홀"></label>
+      <label class="f"><span>주소</span><input type="text" id="g-addr" placeholder="서울 강남구 영동대로 513"></label>
+    </div>
+    <div class="row">
+      <label class="f"><span>기간</span><input type="text" id="g-period" placeholder="2026.01.14.(수) ~ 01.18.(일)"></label>
+      <label class="f"><span>개막식 <span class="mini">(없으면 비워 두세요)</span></span>
+        <input type="text" id="g-open" placeholder="2026년 1월 14일(수) 오후 4시"></label>
+    </div>
+    <label class="f"><span>관람 시간 <span class="mini">(줄바꿈으로 나눠서)</span></span>
+      <textarea id="g-hours" placeholder="01.14.(수) : 15:00 ~ 19:30&#10;01.15.(목) ~ 01.17.(토) : 11:00 ~ 19:30&#10;01.18.(일) : 11:00 ~ 18:00"></textarea></label>
+    <label class="f"><span>꼭 덧붙일 안내 <span class="mini">(입장 마감 등)</span></span>
+      <input type="text" id="g-notice" placeholder="입장 마감은 종료 30분 전"></label>
+  </div>
+
+  <div class="card">
+    <h3><span class="num">02</span> 무엇이 특별한가</h3>
+    <label class="f"><span>전시 · 행사 구성 <span class="mini">(줄바꿈으로)</span></span>
+      <textarea id="g-parts" placeholder="개인 부스 & 그룹전&#10;대형 조각 전시&#10;기업 협업전&#10;청년 작가 지원전&#10;해외 교류 특별전&#10;문화재단 후원 작가전"></textarea></label>
+    <label class="f"><span>규모 · 한 줄 설명 <span class="mini">(선택)</span></span>
+      <input type="text" id="g-scale" placeholder="300여 명의 작가가 참여"></label>
+    <label class="f"><span>왜 특별한지 <span class="mini">(한두 문장)</span></span>
+      <textarea id="g-why" placeholder="조각이 단순히 “보는 예술”이 아니라&#10;공간·재료·스케일로 경험하는 예술이라는 걸 몸으로 느끼게 되는 구성이라 기대돼요."></textarea></label>
+    <div class="row">
+      <label class="f"><span>입장료 <span class="mini">(줄바꿈으로)</span></span>
+        <textarea id="g-fee" placeholder="성인 : 20,000원&#10;청소년 : 15,000원&#10;어린이 : 10,000원"></textarea></label>
+      <label class="f"><span>무료 입장 대상 <span class="mini">(줄바꿈으로)</span></span>
+        <textarea id="g-free" placeholder="만 6세 미만 미취학 아동&#10;만 70세 이상&#10;장애인&#10;국가유공자"></textarea></label>
+    </div>
+    <label class="f"><span>이런 분께 추천 <span class="mini">(줄바꿈으로)</span></span>
+      <textarea id="g-for" placeholder="색다른 전시를 찾고 있는 분&#10;조각·입체 예술에 관심 있는 분&#10;작품 구매까지 가능한 아트페어가 궁금한 분&#10;연인·친구와 문화 데이트하고 싶은 분"></textarea></label>
+    <label class="f"><span>동선 · 주변 팁 <span class="mini">(선택)</span></span>
+      <input type="text" id="g-around" placeholder="코엑스라 전시 보고 → 식사 → 카페까지 동선도 너무 좋아요"></label>
+    <label class="f"><span>한 줄 정리</span>
+      <textarea id="g-sum" placeholder="“조각은 어렵다”는 편견을 제대로 깨줄 전시.&#10;전시장이 아니라 하나의 거대한 예술 공간에 들어가는 느낌이라&#10;문화생활 제대로 즐기고 싶은 분들께 추천해요."></textarea></label>
+    <div class="row">
+      <label class="f"><span>문의 <span class="mini">(선택)</span></span>
+        <input type="text" id="g-contact" placeholder="02-720-9101 | sculpturefesta@hanmail.net"></label>
+      <label class="f"><span>주최 · 주관 <span class="mini">(선택)</span></span>
+        <input type="text" id="g-host" placeholder="주최 (사)한국조각가협회 / 주관 국제조각페스타 운영위원회"></label>
+    </div>
+    <div class="btns">
+      <button class="btn pri" id="g-go">홍보글 뽑기</button>
+      <button class="btn" data-copy="g-out">복사</button>
+      <button class="btn" id="g-demo">예시 채우기</button>
+      <button class="btn" id="g-tocheck">이대로 점검 탭으로</button>
+    </div>
+    <div class="out" id="g-out"></div>
+  </div>
+</section>
+
 <!-- ══════════════ 점검 ══════════════ -->
 <section class="tab" id="t-check">
   <div class="ph">
@@ -500,13 +613,52 @@ footer .mini{max-width:640px; margin:0 auto}
 <!-- ══════════════ 릴스 ══════════════ -->
 <section class="tab" id="t-reels">
   <div class="ph">
-    <h2>릴스 대본</h2>
-    <p>쓴 글 하나를 릴스로 한 번 더 굴립니다.
-       <b>처음 3초</b>에 넘길지 말지가 갈리므로, 훅부터 잡고 시작합니다.</p>
+    <h2>릴스 캡션 · 대본</h2>
+    <p>캡션은 <b>늘 쓰던 흐름</b> 그대로 나옵니다 — 질문으로 열고, 통념을 세우고, 뒤집고,
+       마지막에 <b>블로그로 넘어오게</b> 만듭니다. 아래 대본은 찍을 때 쓰는 것입니다.</p>
   </div>
 
   <div class="card">
-    <h3><span class="num">01</span> 무엇을 찍는가</h3>
+    <h3><span class="num">01</span> 캡션 <span class="badge b-ok">내 양식</span></h3>
+    <p class="lede">칸을 다 채우지 않아도 됩니다. 비운 자리는 알아서 빠집니다.</p>
+    <label class="f"><span>첫 줄 — 질문으로 엽니다 <span class="mini">(제일 중요합니다)</span></span>
+      <input type="text" id="n-hook" placeholder="5성급 호텔 유지 조건, 다들 뭔지 아시나요?"></label>
+    <label class="f"><span>다들 이렇게 생각한다 <span class="mini">(통념 — 줄바꿈으로 짧게)</span></span>
+      <textarea id="n-myth" placeholder="수영장 크고&#10;스파 있고&#10;객실 넓으면"></textarea></label>
+    <div class="row">
+      <label class="f"><span>통념의 결론</span><input type="text" id="n-mythend" placeholder="→ 5성급."></label>
+      <label class="f"><span>내가 뒤집힌 계기</span>
+        <input type="text" id="n-turn" placeholder="소피텔 직원한테 직접 물어보고 생각이 완전 바뀌었어요"></label>
+    </div>
+    <label class="f"><span>진짜 핵심 <span class="mini">(한 문장으로 못 박기)</span></span>
+      <input type="text" id="n-core" placeholder="5성급을 유지하는 기준은 시설이 아니라 서비스였습니다"></label>
+    <label class="f"><span>근거 <span class="mini">(✔️ 로 붙습니다 · 줄바꿈으로 3개쯤)</span></span>
+      <textarea id="n-pts" placeholder="손님이 묻기 전에 먼저 움직이는지&#10;같은 상황에서도 응대의 ‘결’이 다른지&#10;이걸 하루 이틀이 아니라 매일 유지하는지"></textarea></label>
+    <label class="f"><span>못 하면 어떻게 되는지 <span class="mini">(선택)</span></span>
+      <textarea id="n-else" placeholder="이걸 못 하면&#10;아무리 좋아 보여도&#10;5성급은 못 지킨다고 합니다."></textarea></label>
+    <label class="f"><span>출처 · 활동 <span class="mini">(광고 아님을 밝히는 자리)</span></span>
+      <input type="text" id="n-src" placeholder="스타파인더 활동으로 진행한 실제 직원 인터뷰 내용이에요"></label>
+    <hr class="sep">
+    <label class="f"><span>블로그에만 있는 것 <span class="mini">(⚠️ 줄바꿈으로 2~3개 — 이게 있어야 넘어옵니다)</span></span>
+      <textarea id="n-only" placeholder="왜 서비스가 등급 유지의 핵심인지&#10;캔들 리추얼·운영 방식·직원 응대 기준까지"></textarea></label>
+    <label class="f"><span>안 보면 손해라는 한 줄 <span class="mini">(강요 말고 손해 프레임)</span></span>
+      <input type="text" id="n-loss" placeholder="호텔 예약 전에 보면 기준 자체가 달라집니다"></label>
+    <div class="row">
+      <label class="f"><span>댓글 유도 질문 <span class="mini">(선택)</span></span>
+        <input type="text" id="n-ask" placeholder="여러분이 생각하던 5성급 유지 조건은 뭐였나요?"></label>
+      <label class="f"><span>해시태그 <span class="mini">(쉼표나 띄어쓰기로)</span></span>
+        <input type="text" id="n-tags" placeholder="5성급기준, 호텔등급, 소피텔, 스타파인더, 호텔인터뷰, 호캉스정보"></label>
+    </div>
+    <div class="btns">
+      <button class="btn pri" id="n-go">캡션 뽑기</button>
+      <button class="btn" data-copy="n-out">복사</button>
+      <button class="btn" id="n-demo">예시 채우기</button>
+    </div>
+    <div class="out" id="n-out"></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="num">02</span> 찍을 때 쓰는 대본</h3>
     <div class="row">
       <label class="f"><span>주제 · 소재</span>
         <input type="text" id="r-topic" placeholder="동래역 돈까스 맛집 방문 후기"></label>
@@ -529,7 +681,7 @@ footer .mini{max-width:640px; margin:0 auto}
   </div>
 
   <div class="card">
-    <h3><span class="num">02</span> 영상 AI에게 시킬 말</h3>
+    <h3><span class="num">03</span> 영상 AI에게 시킬 말</h3>
     <p class="lede">찍어 둔 게 없을 때, 위 대본의 장면을 그대로 영상 프롬프트로 바꿉니다.</p>
     <div class="btns" style="margin:0 0 4px">
       <button class="btn pri" id="r-vprompt">영상 프롬프트 뽑기</button>
@@ -692,6 +844,7 @@ const TABS = [
   ['home',  '홈'],
   ['kw',    '키워드'],
   ['write', '글쓰기'],
+  ['promo', '홍보글'],
   ['check', '점검'],
   ['reels', '릴스'],
   ['card',  '카드뉴스'],
@@ -721,10 +874,11 @@ function go(id) {
 const HOMECARDS = [
   ['kw',    '01', '키워드 고르기',  '검색량은 높고 문서수는 낮은 말을 찾습니다. 후보를 늘어놓으면 비율과 판정이 자동으로 붙습니다.'],
   ['write', '02', '글 짜기',        '단락을 먼저 나누고, AI에게 시킬 말까지 한 번에 만듭니다. 빈 화면에서 시작하지 않습니다.'],
-  ['check', '03', '발행 전 점검',   '다 쓴 글을 붙여 넣으면 글자수 · 키워드 · 문단 · 해시태그를 훑고 고칠 자리를 짚어 줍니다.'],
-  ['reels', '04', '릴스 대본',      '같은 소재를 영상으로 한 번 더. 처음 3초에 넘길지 말지가 갈립니다.'],
-  ['card',  '05', '카드뉴스',       '한 장에 한 가지씩. 표지에서 넘길 이유를 만들어 줍니다.'],
-  ['ref',   '06', '자료실',         '체험단 · 제휴 · 도구 사이트를 모아 두고 이름이나 설명으로 걸러 봅니다.']
+  ['promo', '03', '홍보글 · 내 양식', '전시 · 행사 정보를 넣으면 늘 쓰던 양식 그대로 나옵니다. 인사말과 마무리까지 내 것으로.'],
+  ['check', '04', '발행 전 점검',   '다 쓴 글을 붙여 넣으면 글자수 · 키워드 · 문단 · 해시태그를 훑고 고칠 자리를 짚어 줍니다.'],
+  ['reels', '05', '릴스 캡션 · 대본', '늘 쓰던 캡션 흐름 그대로. 블로그로 넘어오게 만드는 문장까지 자동으로 붙습니다.'],
+  ['card',  '06', '카드뉴스',       '한 장에 한 가지씩. 표지에서 넘길 이유를 만들어 줍니다.'],
+  ['ref',   '07', '자료실',         '체험단 · 제휴 · 도구 사이트를 모아 두고 이름이나 설명으로 걸러 봅니다.']
 ];
 function renderHome() {
   const g = $('#homecards'); g.innerHTML = '';
@@ -1265,6 +1419,230 @@ function runCheck() {
 }
 
 /* =========================================================================
+   내 프로필 — 홍보글 · 캡션이 같이 쓴다
+   ========================================================================= */
+const P_DEF = {
+  nick: '밥풀', emoji: '🌿', emoji2: '🍚',
+  hello: '밥 한 공기처럼 든든한 기록을 남기는 블로거, 밥풀입니다',
+  bye: '오늘도 읽어주셔서 감사합니다!',
+  sumlabel: '밥풀의 한 줄 정리'
+};
+function prof() {
+  const g = (id, d) => ($('#' + id).value.trim() || d);
+  return {
+    nick: g('p-nick', P_DEF.nick),
+    emoji: g('p-emoji', P_DEF.emoji),
+    emoji2: g('p-emoji2', P_DEF.emoji2),
+    hello: g('p-hello', P_DEF.hello),
+    bye: g('p-bye', P_DEF.bye),
+    sumlabel: g('p-sumlabel', P_DEF.sumlabel)
+  };
+}
+const lines = v => String(v || '').split(/\n/).map(s => s.trim()).filter(Boolean);
+
+/* 받침이 있으면 「이 · 은 · 을」, 없으면 「가 · 는 · 를」.
+   「2026」처럼 숫자로 끝나면 읽는 소리(육 · 이 · 사 …)로 판단한다. */
+function hasJong(w) {
+  const s = String(w || '').trim();
+  if (!s) return true;
+  const ch = s.slice(-1), c = ch.charCodeAt(0);
+  if (c >= 0xAC00 && c <= 0xD7A3) return (c - 0xAC00) % 28 !== 0;   // 한글
+  const digit = { '0': true, '1': true, '2': false, '3': true, '4': false,
+                  '5': false, '6': true, '7': true, '8': true, '9': false };
+  if (ch in digit) return digit[ch];
+  return true;
+}
+const josaIGa = w => hasJong(w) ? '이' : '가';
+const josaEun = w => hasJong(w) ? '은' : '는';
+
+/* =========================================================================
+   홍보글 — 늘 쓰던 양식
+   ========================================================================= */
+function promoPost() {
+  const P = prof();
+  const v = id => $('#' + id).value.trim();
+  const name = v('g-name');
+  if (!name) { toast('행사 · 전시명을 먼저 적어주세요'); return; }
+  const kw = v('g-kw') || name;
+  const L = [];
+  const put = (s) => L.push(s);
+  const blank = () => { if (L.length && L[L.length - 1] !== '') L.push(''); };
+
+  const kind = v('g-type') || '전시';          // 전시 · 행사 · 공연 …
+  const temoji = v('g-titleemoji') || '🗿';
+
+  // 제목
+  const hook = v('g-hook');
+  put(temoji + ' ' + (hook || name));
+  put(name + (hook ? ' 미리보기' : ''));
+  blank();
+
+  // 인사
+  put('안녕하세요.');
+  put(P.hello + ' ' + P.emoji);
+  blank();
+
+  // 도입
+  lines(v('g-intro')).forEach(put);
+  blank();
+
+  const place = v('g-place'), addr = v('g-addr'), period = v('g-period');
+  const scale = v('g-scale');
+  if (period) put(period + ',');
+  if (scale) put(scale + '하는');
+  put(name + josaIGa(name));
+  put(place ? place + '에서 열립니다.' : '열립니다.');
+  blank();
+
+  // 기본 정보
+  put('📌 ' + kind + ' 기본 정보 한눈에 정리');
+  put('');
+  put('· ' + kind + '명 : ' + name);
+  if (place) put('· 장소 : ' + place + (addr ? ' (' + addr + ')' : ''));
+  if (period) put('· 기간 : ' + period);
+  blank();
+
+  const hours = lines(v('g-hours'));
+  if (hours.length) {
+    put('⏰ 관람 시간');
+    put('');
+    hours.forEach(h => put('· ' + h));
+    const notice = v('g-notice');
+    if (notice) { put(''); put('※ ' + notice); }
+    blank();
+  }
+  const opening = v('g-open');
+  if (opening) { put('🎉 개막식'); put(''); put('· ' + opening); blank(); }
+
+  // 특별한 점
+  const parts = lines(v('g-parts'));
+  put('🎨 이번 ' + kind + ', 뭐가 특별할까?');
+  put('');
+  if (scale) { put(kw + '에는'); put(scale + '해'); put('정말 다양한 작품을 한자리에서 만날 수 있어요.'); put(''); }
+  if (parts.length) {
+    put('구성도 굉장히 탄탄합니다.');
+    put('');
+    parts.forEach(x => put('· ' + x));
+    put('');
+  }
+  lines(v('g-why')).forEach(put);
+  blank();
+
+  // 입장료
+  const fee = lines(v('g-fee')), free = lines(v('g-free'));
+  if (fee.length) {
+    put('💸 입장료 안내'); put('');
+    fee.forEach(x => put('· ' + x)); blank();
+  }
+  if (free.length) {
+    put('🎟️ 무료 입장 대상'); put('');
+    free.forEach(x => put('· ' + x)); blank();
+  }
+
+  // 추천 대상
+  const forWhom = lines(v('g-for'));
+  if (forWhom.length) {
+    put('🙋‍♀️ 이런 분들께 추천해요'); put('');
+    forWhom.forEach(x => put('✔️ ' + x));
+    const around = v('g-around');
+    if (around) { put(''); put(around); }
+    blank();
+  }
+
+  // 한 줄 정리
+  const sum = lines(v('g-sum'));
+  if (sum.length) {
+    put('🧡 ' + P.sumlabel); put('');
+    sum.forEach(put); blank();
+  }
+
+  // 문의 · 주최
+  const contact = v('g-contact'), host = v('g-host');
+  if (contact || host) {
+    put('📞 문의 및 주최'); put('');
+    if (contact) put('· 문의 : ' + contact);
+    if (host) put('· ' + host);
+    blank();
+  }
+
+  // 마무리
+  put(P.emoji2 + ' ' + P.bye);
+  put('일정 다가오면 관람 팁이나 추천 포인트도 또 정리해볼게요 ' + P.emoji);
+  blank();
+
+  // 해시태그 · 점검 안내
+  const tag = kw.replace(/\s+/g, '');
+  put('#' + tag + ' #' + (place || '').replace(/\s+/g, '') + ' #전시추천 #문화생활 #전시회추천');
+  put('');
+  put('─'.repeat(46));
+  put('발행 전에 「점검」 탭에 이 글을 그대로 붙여 넣어 보세요.');
+  put('메인 키워드 「' + kw + '」로 글자수 · 키워드 횟수 · 문단을 훑어 줍니다.');
+  $('#g-out').textContent = L.join('\n');
+}
+
+/* =========================================================================
+   릴스 캡션 — 늘 쓰던 흐름
+   질문으로 열고 → 통념을 세우고 → 뒤집고 → 근거 → 블로그로 넘긴다.
+   블로그 유도는 강요가 아니라 「안 보면 손해」로 붙인다.
+   ========================================================================= */
+function reelCaption() {
+  const v = id => $('#' + id).value.trim();
+  const hook = v('n-hook');
+  if (!hook) { toast('첫 줄을 먼저 적어주세요'); return; }
+  const L = [];
+  const put = s => L.push(s);
+  const blank = () => { if (L.length && L[L.length - 1] !== '') L.push(''); };
+
+  put(hook);
+  blank();
+
+  const myth = lines(v('n-myth'));
+  if (myth.length) {
+    put('솔직히 다들 이렇게 생각하지 않나요?');
+    blank();
+    myth.forEach(put);
+    const me = v('n-mythend');
+    if (me) put(me);
+    blank();
+  }
+
+  const turn = v('n-turn');
+  if (turn) { put('저도 그렇게 알았는데'); put(turn + '.'); blank(); }
+
+  const core = v('n-core');
+  if (core) { put(core.replace(/\.$/, '') + '.'); blank(); }
+
+  const pts = lines(v('n-pts'));
+  if (pts.length) { pts.forEach(x => put('✔️ ' + x)); blank(); }
+
+  lines(v('n-else')).forEach(put);
+  if (lines(v('n-else')).length) blank();
+
+  const src = v('n-src');
+  if (src) { put('광고 아닙니다.'); put(src.replace(/\.$/, '') + '.'); blank(); }
+
+  // ── 블로그로 넘기는 자리 ──
+  const only = lines(v('n-only'));
+  put('⚠️ 이 릴스는 요약본이고,');
+  if (only.length) only.forEach(x => put('✔️ ' + x));
+  put('전부 정리한 건 블로그에만 적어뒀어요.');
+  blank();
+  put('👉 자세한 내용은 블로그 꼭 참고하세요.');
+  const loss = v('n-loss');
+  if (loss) put(loss.replace(/\.$/, '') + '.');
+  put('저장해두면 진짜 도움 돼요.');
+  blank();
+
+  const ask = v('n-ask');
+  if (ask) { put('👉 ' + ask); blank(); }
+
+  const tags = String(v('n-tags') || '').split(/[,\s]+/).map(s => s.replace(/^#/, '').trim()).filter(Boolean);
+  if (tags.length) tags.forEach(t => put('#' + t));
+
+  $('#n-out').textContent = L.join('\n');
+}
+
+/* =========================================================================
    릴스
    ========================================================================= */
 const RLEN = [['15', '15초 — 한 가지만'], ['30', '30초 — 기본'], ['45', '45초'], ['60', '60초 — 설명이 필요할 때']];
@@ -1713,6 +2091,65 @@ function bind() {
     $('#c-result').innerHTML = ''; save(); toast('비웠습니다');
   };
 
+  // 홍보글
+  $('#g-go').onclick = promoPost;
+  $('#g-tocheck').onclick = () => {
+    const body = $('#g-out').textContent.split('\n' + '─'.repeat(46))[0].trim();
+    if (!body) { toast('먼저 홍보글을 뽑아 주세요'); return; }
+    const t = body.split('\n').slice(0, 2).join(' ').trim();
+    $('#c-main').value = $('#g-kw').value.trim() || $('#g-name').value.trim();
+    $('#c-title').value = t;
+    $('#c-body').value = body;
+    save(); go('check'); toast('점검 탭으로 옮겼습니다');
+  };
+  $('#g-demo').onclick = () => {
+    const d = {
+      'g-name': '제15회 서울국제조각페스타 2026',
+      'g-type': '전시', 'g-titleemoji': '🗿',
+      'g-kw': '서울국제조각페스타',
+      'g-hook': '조각이 이렇게 다채로웠어?',
+      'g-intro': '회화 전시는 자주 가봤는데\n‘조각’ 전시는 왠지 어렵게 느껴졌다면,\n이번 전시는 생각이 완전히 달라질 거예요.',
+      'g-place': '코엑스 C홀', 'g-addr': '서울 강남구 영동대로 513',
+      'g-period': '2026.01.14.(수) ~ 01.18.(일)',
+      'g-open': '2026년 1월 14일(수) 오후 4시',
+      'g-hours': '01.14.(수) : 15:00 ~ 19:30\n01.15.(목) ~ 01.17.(토) : 11:00 ~ 19:30\n01.18.(일) : 11:00 ~ 18:00',
+      'g-notice': '입장 마감은 종료 30분 전',
+      'g-parts': '개인 부스 & 그룹전\n대형 조각 전시\n기업 협업전\n청년 작가 지원전\n해외 교류 특별전\n문화재단 후원 작가전',
+      'g-scale': '300여 명의 작가가 참여',
+      'g-why': '조각이 단순히 “보는 예술”이 아니라\n공간·재료·스케일로 경험하는 예술이라는 걸\n몸으로 느끼게 되는 구성이라 기대돼요.',
+      'g-fee': '성인 : 20,000원\n청소년 : 15,000원\n어린이 : 10,000원',
+      'g-free': '만 6세 미만 미취학 아동\n만 70세 이상\n장애인\n국가유공자',
+      'g-for': '색다른 전시를 찾고 있는 분\n조각·입체 예술에 관심 있는 분\n작품 구매까지 가능한 아트페어가 궁금한 분\n연인·친구와 문화 데이트하고 싶은 분',
+      'g-around': '특히 코엑스라 전시 보고 → 식사 → 카페까지 동선도 너무 좋아요.',
+      'g-sum': '“조각은 어렵다”는 편견을 제대로 깨줄 전시.\n전시장이 아니라 하나의 거대한 예술 공간에 들어가는 느낌이라\n문화생활 제대로 즐기고 싶은 분들께 추천해요.',
+      'g-contact': '02-720-9101 | sculpturefesta@hanmail.net',
+      'g-host': '주최 (사)한국조각가협회 / 주관 국제조각페스타 운영위원회'
+    };
+    Object.entries(d).forEach(([k, val]) => { $('#' + k).value = val; });
+    save(); promoPost(); toast('예시를 채우고 뽑았습니다');
+  };
+
+  // 릴스 캡션
+  $('#n-go').onclick = reelCaption;
+  $('#n-demo').onclick = () => {
+    const d = {
+      'n-hook': '5성급 호텔 유지 조건, 다들 뭔지 아시나요?',
+      'n-myth': '수영장 크고\n스파 있고\n객실 넓으면',
+      'n-mythend': '→ 5성급.',
+      'n-turn': '소피텔 직원한테 직접 물어보고 생각이 완전 바뀌었어요',
+      'n-core': '5성급을 유지하는 기준은 시설이 아니라 서비스였습니다',
+      'n-pts': '손님이 묻기 전에 먼저 움직이는지\n같은 상황에서도 응대의 ‘결’이 다른지\n이걸 하루 이틀이 아니라 매일 유지하는지',
+      'n-else': '이걸 못 하면\n아무리 좋아 보여도\n5성급은 못 지킨다고 합니다.',
+      'n-src': '스타파인더 활동으로 진행한 실제 직원 인터뷰 내용이에요',
+      'n-only': '왜 서비스가 등급 유지의 핵심인지\n캔들 리추얼·운영 방식·직원 응대 기준까지',
+      'n-loss': '호텔 예약 전에 보면 기준 자체가 달라집니다',
+      'n-ask': '여러분이 생각하던 5성급 유지 조건은 뭐였나요?',
+      'n-tags': '5성급기준, 호텔등급, 소피텔, 스타파인더, 호텔인터뷰, 호캉스정보'
+    };
+    Object.entries(d).forEach(([k, val]) => { $('#' + k).value = val; });
+    save(); reelCaption(); toast('예시를 채우고 뽑았습니다');
+  };
+
   // 릴스 · 카드뉴스
   $('#r-go').onclick = reelScript;
   $('#r-vprompt').onclick = reelVideoPrompt;
@@ -1728,15 +2165,24 @@ function bind() {
   });
 
   // 어둡게 / 밝게
-  $('#themetog').onclick = () => {
-    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-    setTheme(dark ? 'light' : 'dark');
-  };
+  $('#themetog').onclick = () => setTheme(isDark() ? 'light' : 'dark');
+}
+/* 지금 어두운 화면인가 — 직접 고른 값이 있으면 그것, 없으면 기기 설정. */
+function isDark() {
+  const t = document.documentElement.getAttribute('data-theme');
+  if (t) return t === 'dark';
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme:dark)').matches;
 }
 function setTheme(t) {
-  document.documentElement.setAttribute('data-theme', t);
-  $('#themetog').textContent = t === 'dark' ? '밝게' : '어둡게';
-  try { localStorage.setItem('blogdeck.theme', t); } catch (e) {}
+  if (t) {
+    document.documentElement.setAttribute('data-theme', t);
+    try { localStorage.setItem('blogdeck.theme', t); } catch (e) {}
+  } else {
+    // 고른 적이 없으면 표시를 지워 기기 설정을 그대로 따라가게 둔다
+    document.documentElement.removeAttribute('data-theme');
+  }
+  const b = $('#themetog');
+  if (b) b.textContent = isDark() ? '밝게' : '어둡게';
 }
 
 (function init() {
@@ -1751,9 +2197,14 @@ function setTheme(t) {
   renderIdeas();
   renderRef();
   bind();
-  let th = 'light';
-  try { th = localStorage.getItem('blogdeck.theme') || 'light'; } catch (e) {}
-  setTheme(th);
+  let th = null;
+  try { th = localStorage.getItem('blogdeck.theme'); } catch (e) {}
+  setTheme(th);                       // 없으면 기기 설정을 따라간다
+  if (window.matchMedia) {            // 고른 적 없는 사람은 기기 설정이 바뀌면 같이 바뀐다
+    const mq = window.matchMedia('(prefers-color-scheme:dark)');
+    const onch = () => { if (!document.documentElement.getAttribute('data-theme')) setTheme(null); };
+    mq.addEventListener ? mq.addEventListener('change', onch) : mq.addListener(onch);
+  }
   const hash = location.hash.slice(1);
   go(TABS.some(t => t[0] === hash) ? hash : (S.tab || 'home'));
   window.addEventListener('hashchange', () => {
