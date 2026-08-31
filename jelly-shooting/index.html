@@ -926,6 +926,7 @@
       <button class="btn ghost" id="shopBtn" style="padding:12px 22px;font-size:16px;">🛒 창작소</button>
       <button class="btn ghost" id="attendBtn" style="padding:12px 22px;font-size:16px;">📅 출석부</button>
       <button class="btn ghost" id="missionBtn" style="padding:12px 22px;font-size:16px;">📋 오늘의 임무</button>
+      <button class="btn ghost" id="dailyBoardBtn" style="padding:12px 22px;font-size:16px;">🗓 오늘의 판</button>
     </div>
     <!-- 처음 온 사람이 규칙·아이템을 어디서 봐야 하는지 몰랐다. 홈에 그림과 함께 둔다. -->
     <div class="rowbtn">
@@ -1275,6 +1276,17 @@
   </div>
 
   <!-- 출석부 -->
+  <!-- 🗓 오늘의 판 -->
+  <div id="dailyScreen" class="screen hide">
+    <div class="h2">🗓 오늘의 판</div>
+    <div class="tag2">오늘은 <b>모두가 똑같은 젤리 순서</b>로 딱 한 번 해요.<br>
+      같은 판이라 점수를 자랑할 수 있어요!</div>
+    <div class="card" id="dbBox"></div>
+    <div class="tag2" id="dbInfo"></div>
+    <button class="btn lg" id="dbPlayBtn">🗓 오늘의 판 시작 ▶</button>
+    <button class="btn ghost" id="dbBackBtn">← 홈으로</button>
+  </div>
+
   <!-- 📋 오늘의 임무 -->
   <div id="missionScreen" class="screen hide">
     <div class="h2">📋 오늘의 임무</div>
@@ -1381,7 +1393,7 @@ function supaReady(){ return !!(window.supabase && getSupa()); }
 // 서버에 올리는 것 — '가진 것'만. 기기에서 고른 것(난이도·AI 등급)과 기기 표시(연결 번호)는 두고 간다.
 const CLOUD_KEYS=['jelly_coins','jelly_inv','jelly_bought','jelly_crafted','jelly_custom',
   'jelly_caccs','jelly_kinds','jelly_hairs','jelly_char','jelly_nick','jelly_nick_set',
-  'jelly_scores','jelly_streak','jelly_daily','jelly_attend','jelly_lv','jelly_xp','jelly_mi'];
+  'jelly_scores','jelly_streak','jelly_daily','jelly_attend','jelly_lv','jelly_xp','jelly_mi','jelly_db'];
 // off = 서버 안 씀 · device = 익명 계정(이 기기) · linked = 이메일 붙인 계정
 let cloudState='off', cloudUid=null, cloudMail='', cloudTimer=null, cloudBusy=false, cloudMsg='';
 // players 표가 없으면(SQL 을 안 돌렸으면) 계정에 딸린 메모칸(user_metadata)에 저장한다.
@@ -1419,6 +1431,7 @@ function cloudReload(){
   // 화면은 예전 레벨, 저장은 새 레벨이 되어 다음 저장에 서버가 덮인다.
   plv=Math.max(1,loadNum('jelly_lv')||1); pxp=loadNum('jelly_xp');
   mi=loadJSON('jelly_mi',null); miCheck();
+  db=loadJSON('jelly_db',null); dbInit();
   inventory=loadJSON('jelly_inv',{});
   bought=loadJSON('jelly_bought',{});
   crafted=loadJSON('jelly_crafted',[]);
@@ -1445,8 +1458,9 @@ function cloudRefreshUI(){
   try{
     const sc=$('startCoins'); if(sc) sc.textContent='🪙 '+coins;
     const pc=$('profCoins'); if(pc) pc.textContent='🪙 '+coins;
-    syncNickInputs(); syncNickUI(); checkDaily(); syncLevelBadge(); miBadge();
+    syncNickInputs(); syncNickUI(); checkDaily(); syncLevelBadge(); miBadge(); dbBadge();
     if(!$('missionScreen').classList.contains('hide')) buildMission();
+    if(!$('dailyScreen').classList.contains('hide')) buildDailyBoard();
     if(!$('profileScreen').classList.contains('hide')) buildProfile();
     else if(!$('setupScreen').classList.contains('hide')) buildSetupUI();
     if(!$('shopScreen').classList.contains('hide')) buildShop();
@@ -3538,6 +3552,56 @@ function doCreateCustom(cost){
 let toastTimer=null;
 function toast(msg){ const t=$('toast'); t.textContent=msg;
   t.classList.toggle('low',!!running&&!paused); t.classList.add('show'); if(toastTimer)clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),1900); }
+// ================= 🗓 오늘의 판 =================
+// 왜: 매일 들어올 이유가 '출석 40코인' 하나뿐이었다. 그건 30초면 끝난다.
+// 날짜로 판을 만들면 그날은 **모두가 같은 젤리 순서**를 받는다 → 점수 자랑이 성립한다
+// (다른 판 점수는 운이 달라서 자랑이 안 된다). 하루 한 번이라 질리지도 않는다.
+//
+// 서버가 필요 없다. 같은 날 같은 씨앗이면 어느 기기에서든 같은 판이 나온다.
+const DB_MODE='normal';          // 모두 같은 조건이어야 비교가 된다 — 난이도도 고정
+let db=loadJSON('jelly_db',null);   // {last:'2026-8-31', log:[{d,s}...]}  최근 것부터
+let nextDaily=false;
+function dbSave(){ try{ localStorage.setItem('jelly_db',JSON.stringify(db)); }catch(e){} cloudTouch(); }
+function dbInit(){ if(!db||typeof db!=='object'||!Array.isArray(db.log)) db={last:'',log:[]}; }
+// 날짜를 그대로 씨앗으로 — 2026-8-31 → 20260831
+function dbSeed(){ const d=new Date();
+  return ((d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate())>>>0); }
+function dbDoneToday(){ dbInit(); return db.last===todayStr(); }
+function dbTodayScore(){ dbInit(); const t=db.log.find(x=>x.d===todayStr()); return t?t.s:null; }
+function dbRecord(sc){
+  dbInit(); const t=todayStr();
+  db.last=t;
+  const old=db.log.find(x=>x.d===t);
+  if(old){ if(sc>old.s) old.s=sc; }        // 같은 날 두 번 들어오면 높은 쪽을 남긴다
+  else db.log.unshift({d:t,s:sc});
+  db.log=db.log.slice(0,14);               // 두 주치만 들고 있는다
+  dbSave(); dbBadge();
+}
+function dbBadge(){ const b=$('dailyBoardBtn'); if(!b) return;
+  b.textContent='🗓 오늘의 판'+(dbDoneToday()?' ✅':' 🔴'); }
+function openDailyBoard(){ dbInit(); showScreen('dailyScreen'); buildDailyBoard(); }
+function buildDailyBoard(){
+  const box=$('dbBox'); box.innerHTML='';
+  if(!db.log.length){ const e=document.createElement('div'); e.className='rrow';
+    e.textContent='아직 기록이 없어요 — 오늘 첫 판을 해보세요!'; box.appendChild(e); }
+  else db.log.slice(0,7).forEach((x,i)=>{
+    const row=document.createElement('div'); row.className='rrow'+(x.d===todayStr()?' me':'');
+    const when=(x.d===todayStr())?'오늘':(x.d.split('-').slice(1).join('/'));
+    row.innerHTML='<span>'+(i===0?'🗓 ':'')+escapeHtml(when)+'</span><span>⭐ '+x.s+'</span>';
+    box.appendChild(row); });
+  const done=dbDoneToday(), sc=dbTodayScore();
+  $('dbPlayBtn').disabled=done;
+  $('dbPlayBtn').textContent=done?('오늘 완료 ✅ ⭐'+sc):'🗓 오늘의 판 시작 ▶';   // 길면 두 줄로 접힌다
+  $('dbInfo').innerHTML = done
+    ? '내일 0시에 새 판이 나와요. 오늘 점수를 친구에게 자랑해 보세요!'
+    : '난이도는 <b>'+MODES[DB_MODE].emoji+MODES[DB_MODE].name+'</b>으로 고정돼요 — 모두 같은 조건이어야 비교가 되니까요.';
+}
+function startDaily(){
+  if(dbDoneToday()){ toast('🗓 오늘의 판은 하루에 한 번이에요'); return; }
+  ensureAudio(); nextDaily=true; mode=DB_MODE; startGame();
+  toast('🗓 오늘의 판 — 모두 같은 젤리 순서예요!');
+}
+
 // ================= 📋 오늘의 임무 =================
 // 왜 필요한가: 한 판이 끝나면 나갈 이유밖에 없었다. "할 일이 하나 남았다"가 있으면
 // 사람은 한 판을 더 한다. 임무는 그 핑계를 만들어 주는 장치다.
@@ -3759,6 +3823,7 @@ let jellies=[],particles=[],floaters=[],rings=[],shots=[],drops=[],banner=null,c
 let maxCombo=1;                      // 이번 판에서 가장 높았던 콤보 (임무·기록용)
 // ♾ 끝없는 모드 — 5레벨마다 거대 보스가 내려온다. 젤리를 터트리면 그 젤리가 보스에게 날아간다.
 let endless=false, nextEndless=false;
+let daily=false;                     // 🗓 이 판이 '오늘의 판'인가
 let boss=null;                       // {x,y,r,hp,hpMax,vy,swing,flash,shootT,slamT}
 let bossKills=0, bossLv=0;           // 이번 판에 잡은 보스 수 / 마지막으로 보스를 부른 레벨
 let bshots=[];                       // 보스로 날아가는 젤리 조각 {x,y,vx,vy,color,r}
@@ -4059,7 +4124,12 @@ function drawBshots(){
     ctx.restore(); }
 }
 function loseLife(){ lives--; updateHud(); if(lives<=0)gameOver(); }
-function heartStr(){ const max=MODES[mode].lives; return '❤️'.repeat(Math.max(0,lives))+'🤍'.repeat(Math.max(0,max-lives)); }
+// 하트 칸의 폭이 판을 밀어낸다. 하트가 다섯 개를 넘으면 위 칩 줄이 접히고
+// 그만큼 판이 작아진다(순한맛 5개 + 던전 상대 셋이면 실제로 접혔다).
+// 하트팩 Lv.5 는 목숨을 +3 해서 7개까지도 간다 — 그때는 숫자로 줄여 폭을 붙든다.
+function heartStr(){ const max=MODES[mode].lives, n=Math.max(0,lives);
+  if(max<=4 && n<=max) return '❤️'.repeat(n)+'🤍'.repeat(max-n);
+  return '❤️ '+n+'/'+Math.max(max,n); }
 function updateHud(){ $('score').textContent=score;$('combo').textContent='x'+combo;$('level').textContent=level;$('runCoinHud').textContent=runCoins;$('lives').textContent=heartStr(); }
 
 // 젤리 실루엣. 채울 때와 속을 그릴 때(clip) 같은 길을 써야 물선·광택이 밖으로 새지 않는다.
@@ -4300,15 +4370,18 @@ function startGame(){
   if(netMode && MODES[netModeName]) mode=netModeName;
   score=0;combo=1;comboTimer=0;level=1;prog=0;lives=MODES[mode].lives;
   // 대전 시드 > 도전장 시드 > 새 시드. 어느 쪽이든 재현 가능한 판.
+  // 🗓 오늘의 판은 씨앗이 '날짜'다 → 그날은 누구나 같은 젤리 순서를 받는다
   runSeed = netMode ? (netSeed>>>0)
+          : nextDaily ? dbSeed()
           : (battleMode==='accept'&&battleSeed) ? (battleSeed>>>0)
           : ((Math.random()*1e9)>>>0);
   gspawn = mulberry32(runSeed);
   jellies=[];particles=[];floaters=[];rings=[];shots=[];drops=[];banner=null;callout=null;flash=0;spawnTimer=0;elapsed=0;shake=0;frame=0;
   slowTimer=0;x2Timer=0;magnetTimer=0;bombBan=0;slowLv=1;x2Lv=1;magnetLv=1;hexT={zig:0,fog:0,rush:0};hexSeen={};shieldT=0;revealT=0;bolt=0;
   runCoins=0;dropTimer=Math.round(srand(8,12)*60);paused=false;pPopped=0;pMissed=0;maxCombo=1;
-  // ♾ 끝없는 모드는 이 판에만 켜진다. 다음 판에 새어 나가지 않게 여기서 받아 비운다.
+  // ♾ 끝없는 모드 · 🗓 오늘의 판은 이 판에만 켜진다. 다음 판에 새어 나가지 않게 여기서 받아 비운다.
   endless=nextEndless; nextEndless=false; boss=null; bshots=[]; bossKills=0; bossLv=0;
+  daily=nextDaily; nextDaily=false;
   // 목숨은 늘리지 않는다 — 하트가 한 칸 늘면 위 칩 줄이 접혀 판이 작아진다(스모크가 잡는 문제).
   // 대신 보스를 잡으면 하트를 한 칸 돌려준다(최대치까지). 보상이 더 기분 좋기도 하다.
   player={x:W/2,targetX:W/2,mood:'idle',moodTimer:0,recoil:0};updateHud();
@@ -4330,6 +4403,7 @@ function gameOver(){
   // 미뤄 두면 결과 화면에 남은 상태가 그려지고, 그 사이 다른 화면이 그것을 읽는다.
   hexT={zig:0,fog:0,rush:0}; hexSeen={}; shieldT=0; revealT=0; bolt=0; throwGauge=0;
   const wasEndless=endless, kills=bossKills; endless=false; boss=null; bshots=[];
+  const wasDaily=daily; daily=false;
   $('netBar').classList.add('hide'); $('throwWrap').classList.add('hide');
   if(net.watchT){clearInterval(net.watchT);net.watchT=null;}
   coins+=runCoins; saveEconomy();
@@ -4337,6 +4411,7 @@ function gameOver(){
   // (여기가 아니면 중간에 나간 판이 두 번 세지거나 아예 안 세진다)
   const gainXp=xpForRun(score,pPopped,wasNet);
   addXp(gainXp);
+  if(wasDaily) dbRecord(score);
   miAdd({pop:pPopped, play:1, combo:maxCombo, level:level, runcoin:runCoins, versus:wasNet?1:0});
   // 판마다 랭킹이 따로다. 혼자 하기는 난이도별, 던지기 게임은 역할별, 던전은 던전끼리.
   const board=runBoard(wasNet,wasEndless);
@@ -4353,6 +4428,8 @@ function gameOver(){
   $('overMsg').textContent = wasNet
     ? (net.mpWin ? (gameLabel()+' · 🏆 마지막 생존!')
                  : (gameLabel()+(netGame==='throw'?(' · '+roleLabel(myRole)):'')+' · '+MODES[mode].emoji+MODES[mode].name))
+    : wasDaily
+      ? ('🗓 오늘의 판 · '+todayStr()+' · 모두 같은 젤리 순서였어요!')
     : wasEndless
       ? ('♾ 끝없는 모드 · Lv.'+level+' 도달 · 보스 '+kills+'마리 격파'
          +(kills>0?' 🎉':'')+' ('+MODES[mode].emoji+MODES[mode].name+')')
@@ -4373,7 +4450,7 @@ function gameOver(){
   showScreen('overScreen'); lockOverActions(); startAttract(); }
 
 // ================= Screens & flow =================
-const SCREENS=['startScreen','setupScreen','shopScreen','profileScreen','chatScreen','settingsScreen','attendScreen','missionScreen','helpScreen','rankScreen','battleScreen','netScreen','aiScreen','lobbyScreen','acceptScreen','pauseScreen','overScreen'];
+const SCREENS=['startScreen','setupScreen','shopScreen','profileScreen','chatScreen','settingsScreen','attendScreen','missionScreen','dailyScreen','helpScreen','rankScreen','battleScreen','netScreen','aiScreen','lobbyScreen','acceptScreen','pauseScreen','overScreen'];
 function showScreen(id){ if(id!=='overScreen'){ clearOverLock(); celebStop(); watchStop(); }
   // 입어보던 것은 그 화면을 떠나면 없어진다 — 집 화면 얼굴이 안 산 캐릭터가 되면 안 된다
   if(id!=='profileScreen'&&id!=='setupScreen') tryClear();
@@ -4446,6 +4523,7 @@ function buildHelp(){
      +hrow('🎯','던지기 게임','한 사람은 젤리를 던지고, 한 사람은 터트려요. 던지는 무기는 <b>누르는 대로</b> 나가고 값은 ⚡에너지로만 매겨요. 한 판 끝나고 대기실에서 <b>🔄 역할 바꾸기</b>를 누르면 바로 서로 바꿔서 또 해요.')
      +hrow('🤖','AI와 대결','인터넷이 없어도 바로 붙을 수 있어요. 이기면 코인을 줘요. <b>처음이면 🍼 뉴비</b>부터 — 느긋하게 던지고 방해도 안 해요. 익숙해지면 🙂 보통 → 🤓 개똑똑 → 🏆 알파고로 올려보세요.')
      +hrow('📮','도전장','내가 한 판을 그대로 친구에게 보내요. 같은 젤리로 점수를 겨뤄요.')
+     +hrow('🗓️','오늘의 판','<b>하루에 한 번</b>, 그날 날짜로 만든 판이에요. 같은 날에는 <b>누구나 똑같은 젤리 순서</b>가 나와서 점수를 자랑할 수 있어요(다른 판 점수는 운이 달라 비교가 안 돼요). 난이도는 '+MODES[DB_MODE].emoji+MODES[DB_MODE].name+'으로 고정돼요.')
      +hrow('♾️','끝없는 모드','<b>'+BOSS_EVERY+'레벨마다 거대 젤리(보스)</b>가 내려와요. 아무 젤리나 터트리면 그 젤리가 <b>보스에게 날아가 1</b>씩 깎고(황금 젤리는 3), 보스를 직접 눌러도 1씩 깎여요. 보스는 폭탄을 뱉고, 바닥까지 내려오면 <b>목숨이 하나</b> 깎여요. 잡으면 큰 점수와 코인, <b>하트 한 칸</b>을 돌려받아요.')
      +hrow('🏆','랭킹','난이도별 순위. 닉네임을 정하면 점수가 올라가요. 끝없는 모드는 점수 규모가 달라서 <b>순위가 따로</b> 있어요.'));
     h+=helpCard('🪙 코인 모으는 법',
@@ -7280,7 +7358,7 @@ function openStart(){
   if(throwerAlive){ throwerAlive=false; if(mirrorRAF){cancelAnimationFrame(mirrorRAF);mirrorRAF=null;} }
   $('throwerView').classList.add('hide'); canvas.style.display='';
   restoreMode();
-  showScreen('startScreen'); $('battleResult').classList.add('hide'); const b=bestScore(),el=$('startBest'); if(b>0){el.textContent='🏆 최고기록 '+b+'점';el.classList.remove('hide');}else el.classList.add('hide'); $('startCoins').textContent='🪙 '+coins; checkDaily(); syncLevelBadge(); miBadge(); loopHero(); startAttract(); }
+  showScreen('startScreen'); $('battleResult').classList.add('hide'); const b=bestScore(),el=$('startBest'); if(b>0){el.textContent='🏆 최고기록 '+b+'점';el.classList.remove('hide');}else el.classList.add('hide'); $('startCoins').textContent='🪙 '+coins; checkDaily(); syncLevelBadge(); miBadge(); dbBadge(); loopHero(); startAttract(); }
 function openSetup(){ chatLeave(); showScreen('setupScreen'); buildSetupUI(); loopPreview(); }
 $('playBtn').onclick=()=>{ensureAudio();openSetup();};
 $('shopBtn').onclick=()=>openShop();
@@ -7310,6 +7388,9 @@ $('profBackBtn').onclick=()=>{ if(profFrom==='setupScreen')openSetup();
 // (난이도 화면을 한 번 더 거치게 하면 '바로 한 판'이라는 이 게임의 장점이 깨진다)
 $('endlessBtn').onclick=()=>{ ensureAudio(); nextEndless=true; restoreMode();
   toast('♾️ 끝없는 모드 — '+BOSS_EVERY+'레벨마다 보스가 내려와요!'); startGame(); };
+$('dailyBoardBtn').onclick=openDailyBoard;
+$('dbBackBtn').onclick=()=>openStart();
+$('dbPlayBtn').onclick=startDaily;
 $('missionBtn').onclick=openMission;
 $('miBackBtn').onclick=()=>openStart();
 $('dailyBtn').onclick=claimDaily;
