@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>혼자 만드는 사람을 위한 프롬프트 워크벤치 · 씬덱</title>
+<meta name="description" content="영어를 못해도 됩니다. 한국어로 쓰면 미드저니·런웨이·Veo 프롬프트가 나옵니다. 웹툰·애니·단편영화·드라마, 1인 창작자를 위한 도구.">
+<link rel="canonical" href="https://yellow8227-cmd.github.io/char-counter/scenedeck/about.html">
+<meta name="theme-color" content="#37352f">
+<link rel="stylesheet" href="docs/doc.css">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SCENEDECK">
+<meta property="og:title" content="혼자 만드는 사람을 위한 프롬프트 워크벤치">
+<meta property="og:description" content="영어를 못해도 됩니다. 한국어로 쓰면 프롬프트가 나옵니다.">
+<meta property="og:url" content="https://yellow8227-cmd.github.io/char-counter/scenedeck/about.html">
+<meta property="og:image" content="https://yellow8227-cmd.github.io/char-counter/scenedeck/og.png">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  .hero{padding:16px 0 0}
+  .hero h1{font-size:clamp(30px,6vw,48px);line-height:1.22;letter-spacing:-.025em;margin:0 0 18px}
+  .hero .lead{font-size:19px;color:var(--tx2);margin:0 0 22px;line-height:1.8}
+  .hero .lead b{color:var(--tx)}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 30px;padding:0;list-style:none}
+  .tags li{font-size:13.5px;color:var(--tx2);border:1px solid var(--line);
+    border-radius:999px;padding:5px 13px;margin:0}
+  figure{margin:0 0 26px}
+  figure img{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:4px}
+  figcaption{font-size:13px;color:var(--tx3);margin-top:9px;line-height:1.6}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:600px){.two{grid-template-columns:1fr}}
+  .two img{aspect-ratio:3/4;object-fit:cover}
+  .steps{counter-reset:st;list-style:none;padding:0;margin:0 0 10px}
+  .steps>li{counter-increment:st;position:relative;padding-left:44px;margin:0 0 34px}
+  .steps>li::before{content:counter(st,decimal-leading-zero);position:absolute;left:0;top:3px;
+    font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--acc)}
+  .steps h3{margin:0 0 8px}
+  .steps p{margin:0 0 14px;color:var(--tx2)}
+  .bad{color:var(--tx3)}
+  .price{text-align:center;padding:34px 26px}
+  .vgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 10px}
+  @media(max-width:600px){.vgrid{grid-template-columns:1fr}}
+  .vgrid video{width:100%;height:auto;display:block;border:1px solid var(--line);
+    border-radius:4px;background:#0f0f0e;object-fit:cover}
+  .vgrid.pv video{aspect-ratio:4/5}
+  .vgrid.lv video{aspect-ratio:16/9}
+  .cap{font-size:13px;color:var(--tx3);margin:0 0 26px;line-height:1.7}
+  .price .amt{font-size:15px;color:var(--tx3);font-family:var(--mono);letter-spacing:.1em;margin:0 0 10px}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap">
+  <a class="home" href="https://yellow8227-cmd.github.io/char-counter/scenedeck/">SCENEDECK<span>씬덱</span></a>
+  <a href="docs/">문서 ↗</a>
+</div></div>
+
+<div class="wrap">
+<article class="hero">
+
+<h1>혼자 만드는 사람을 위한<br>프롬프트 워크벤치</h1>
+<p class="lead"><b>영어를 못해도 됩니다.</b> 한국어로 쓰면
+미드저니 · 런웨이 · Veo 프롬프트가 나옵니다.<br>
+대본을 넣으면 씬과 컷으로 알아서 나뉩니다.</p>
+<ul class="tags">
+  <li>웹툰</li><li>애니메이션</li><li>단편영화</li><li>드라마 기획</li>
+  <li>뮤직비디오</li><li>유튜브 시리즈</li>
+</ul>
+
+<figure>
+  <img src="img/work-hanbok-wide.jpg" alt="한복 차림 인물의 웹툰풍 일러스트" loading="lazy" width="1400" height="785">
+  <figcaption>만든 사람의 작업 — 미드저니</figcaption>
+</figure>
+
+<h2>지금은 이렇게 하고 있습니다</h2>
+
+<p>혼자 만들면 사람이 없습니다. 콘티도 혼자 짜고, 프롬프트도 혼자 씁니다.
+그런데 그 프롬프트가 <b>영어</b>여야 합니다.</p>
+
+<ul>
+<li><b>디스코드는 한국어를 인식하지 못합니다.</b> 반드시 영어여야 하고,
+그 위에 <code>--ar</code> <code>--style</code> <code>--no</code> 같은 전용 형식까지 맞춰야 합니다.
+초보에게 가장 큰 벽으로 꼽히는 것이 정확히 이 둘입니다.</li>
+<li>그래서 <b>챗GPT를 하나 더 켭니다.</b> 한국어를 넣고 영어를 받아 옮겨 붙입니다.
+창 두 개를 오가는 것이 지금의 표준 작업 방식입니다.</li>
+</ul>
+
+<p>그렇게 해도 <b class="bad">안 나옵니다.</b></p>
+
+<ul>
+<li>같은 인물인데 컷마다 얼굴이 다릅니다.</li>
+<li>1944년이라고 적었는데 데님 재킷을 입고 나옵니다.</li>
+<li>두 명만 있어야 하는데 뒤에 넷이 서 있습니다.</li>
+<li>어느 순간 <b>「사용 정책 위반」</b>이 뜨고, 왜 뜨는지 알려주지 않습니다.</li>
+</ul>
+
+<h2>대본을 넣으면 끝납니다</h2>
+
+<ol class="steps">
+<li>
+  <h3>대본을 넣습니다</h3>
+  <p><code>.docx</code> · <code>.txt</code> · <code>.fdx</code> · <code>.pdf</code>.
+  붙여넣어도 됩니다. 설치도 로그인도 없습니다.</p>
+  <figure><img src="img/app-script.jpg" alt="대본 파일을 넣는 화면" loading="lazy" width="1400" height="941"></figure>
+</li>
+<li>
+  <h3>씬과 컷으로 알아서 나뉩니다</h3>
+  <p>머리글을 읽어 씬을 나누고, 지문을 문장 단위로 쪼개 컷을 만듭니다.
+  샷 사이즈 · 앵글 · 카메라 무브 · 길이까지 자동으로 붙습니다.
+  실제 장편 대본 하나가 <b>69씬 2,935컷</b>으로 나뉩니다.</p>
+  <figure><img src="img/app-cuts.jpg" alt="씬과 컷으로 나뉜 목록" loading="lazy" width="1400" height="941"></figure>
+</li>
+<li>
+  <h3>프롬프트가 나옵니다</h3>
+  <p>미드저니 · 런웨이 · 클링 · Veo 각각의 형식으로. <b>복사만 누르면 끝입니다.</b><br>
+  그리고 영문 프롬프트 아래에 <b>한글 되짚기</b>가 붙습니다 —
+  무엇이 왜 들어갔는지 한 줄씩 한국어로 보여줍니다.
+  영어를 몰라도 <b>내가 무엇을 지시했는지</b> 알 수 있습니다.</p>
+  <figure><img src="img/app-prompt.jpg" alt="한국어 지문에서 만들어진 영문 프롬프트와 한글 되짚기" loading="lazy" width="1400" height="941"></figure>
+</li>
+</ol>
+
+<h2>번역기가 아닙니다</h2>
+
+<p>챗GPT에 번역을 시키면 <b>번역만</b> 됩니다.
+「낡은 저고리」가 <code>a worn jacket</code>이 되고, 그러면 낡은 <b>데님 재킷</b>이 나옵니다.
+정확히 그렇게 나옵니다.</p>
+
+<p>씬덱은 한국어 지문에서 영어 프롬프트를 <b>조립</b>합니다.
+그 안에 들어 있는 것은 번역이 아니라 <b>쌓아온 규칙</b>입니다.</p>
+
+<ul>
+<li><b>시대 잠금</b> — 시대를 고르면 그 시대의 옷감·색·재봉법을 못 박고,
+그 시대에 없던 것을 배제합니다. 데님·지퍼·운동화·손목시계가 새어 들지 않습니다.</li>
+<li><b>인물 고정</b> — 캐릭터를 한 번 만들면 그 인물이 나오는 모든 컷에 같은 외형 블록이 붙습니다.
+역할만 적어도 의상·나이·성별이 자동으로 채워집니다.</li>
+<li><b>인원 못 박기</b> — 두 명이면 두 명. 배경이 사람으로 들어차지 않습니다.</li>
+<li><b>막힐 때 우회</b> — 실루엣 · 그림자 · 프레임 밖 · 직후 · 사물 인서트.
+잘라내는 것이 아니라 <b>화면에 담는 것을 바꾸는</b> 실제 영화 문법입니다.</li>
+<li><b>위험어 검사</b> — 프롬프트를 넣기 전에 막힐 만한 것을 미리 짚어줍니다.</li>
+</ul>
+
+<p>그리고 <b>아무것도 밖으로 나가지 않습니다.</b> 서버가 없고 계정도 없습니다.
+쓴 내용은 이 브라우저 안에만 저장됩니다.</p>
+
+<h2>스틸에서 멈추지 않습니다</h2>
+
+<p>같은 인물을 여러 컷에 걸쳐 유지하는 것이 이 일의 절반입니다.
+얼굴이 컷마다 달라지면 이어 붙일 수가 없기 때문입니다.
+씬덱은 인물의 생김새·의상·나이를 <b>모든 컷에 같은 문장으로 박아 넣습니다.</b></p>
+
+<div class="vgrid pv">
+  <video src="vid/cut-portrait.mp4" poster="img/poster-cut-portrait.jpg"
+    muted loop playsinline preload="none" width="560" height="704"
+    aria-label="정장 차림 인물의 세로 클로즈업 영상"></video>
+  <video src="vid/cut-man-close.mp4" poster="img/poster-cut-man-close.jpg"
+    muted loop playsinline preload="none" width="832" height="464"
+    aria-label="땀에 젖은 남자 인물의 클로즈업 영상"></video>
+</div>
+<p class="cap">인물 클로즈업 — 만든 사람의 작업</p>
+
+<div class="vgrid lv">
+  <video src="vid/cut-front.mp4" poster="img/poster-cut-front.jpg"
+    muted loop playsinline preload="none" width="1280" height="720"
+    aria-label="같은 인물의 정면 클로즈업 영상"></video>
+  <video src="vid/cut-ots.mp4" poster="img/poster-cut-ots.jpg"
+    muted loop playsinline preload="none" width="1280" height="720"
+    aria-label="같은 인물이 화면 앞에 선 어깨 너머 영상"></video>
+</div>
+<p class="cap"><b>같은 인물, 샷만 바뀝니다</b> — 정면 클로즈업에서 어깨 너머로.
+씬덱이 컷을 나눌 때 하는 일이 정확히 이것입니다.</p>
+
+<p>이미지든 영상이든 넣는 문장은 같습니다.
+씬덱은 <b>도구를 골라주지 않고 문장을 만들어 줍니다</b> —
+미드저니에 넣어도, 런웨이나 Veo에 넣어도 같은 인물이 나옵니다.</p>
+
+<h2>장르를 가리지 않습니다</h2>
+
+<p>웹툰이든 시대극이든, 화면에 무엇을 담을지를 정하는 일은 같습니다.
+인물을 고정하고, 시대를 못 박고, 컷을 나누는 것 — 그게 전부입니다.</p>
+
+<div class="two">
+  <figure><img src="img/work-warrior.jpg" alt="비 오는 밤, 검은 한복 차림 인물의 웹툰풍 일러스트" loading="lazy" width="900" height="1350"></figure>
+  <figure><img src="img/work-hanbok-wide.jpg" alt="금박 장신구를 한 인물의 웹툰풍 일러스트" loading="lazy" width="1400" height="785"></figure>
+</div>
+<p style="font-size:13px;color:var(--tx3);margin-top:-14px">만든 사람의 작업 — 미드저니</p>
+
+<h2>만든 사람</h2>
+
+<p><b>장편 시나리오 한 편을 이 도구로 처음부터 끝까지 작업하면서 만들었습니다.</b>
+77,000자 · 69씬 · 2,935컷. 1944년 조선을 배경으로 한 장르물이라
+시대 고증도, 검열에 막히는 것도 전부 직접 겪었습니다.</p>
+
+<p>여기 들어 있는 규칙은 문서를 읽고 만든 것이 아니라
+<b>막히고 고치기를 반복하면서 하나씩 확인한 것</b>입니다.
+무엇이 통과하고 무엇이 막히는지, 그 기록이 그대로 도구가 되었습니다.</p>
+
+<!-- 자격증·교육: 발급기관과 정확한 명칭을 확인한 뒤 여기에 추가한다. 추정해서 쓰지 않는다. -->
+
+<div class="note">
+  <p><b>문서를 먼저 읽어보셔도 됩니다.</b> 여기 적은 규칙들이 왜 그런지,
+  실제로 무엇이 막히고 무엇이 통과했는지 <a href="docs/">문서</a>에 전부 공개해 두었습니다.</p>
+</div>
+
+<div class="cta price">
+  <b>씬덱</b>
+  <p class="amt">설치 없음 · 로그인 없음 · 브라우저에서 바로</p>
+  <a href="https://yellow8227-cmd.github.io/char-counter/scenedeck/">지금 열어보기</a>
+</div>
+
+</article>
+</div>
+
+<footer><div class="wrap">
+  SCENEDECK · <a href="docs/">문서</a> · <a href="https://yellow8227-cmd.github.io/char-counter/">촬영 배치도</a>
+</div></footer>
+<script>
+(function(){
+  var vs=[].slice.call(document.querySelectorAll('.vgrid video'));
+  if(!vs.length) return;
+  var still=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(still||!('IntersectionObserver'in window)){
+    vs.forEach(function(v){v.setAttribute('controls','');v.preload='metadata';});
+    return;
+  }
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      var v=e.target;
+      if(e.isIntersecting){ v.muted=true; var p=v.play(); if(p&&p.catch)p.catch(function(){}); }
+      else if(!v.paused){ v.pause(); }
+    });
+  },{rootMargin:'120px 0px',threshold:.2});
+  vs.forEach(function(v){ v.muted=true; io.observe(v); });
+})();
+</script>
+</body>
+</html>
