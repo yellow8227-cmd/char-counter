@@ -32,6 +32,13 @@ python counter.py
 
 ## 같이 들어 있는 것
 
+- [`blogdeck/`](blogdeck/) — ✍️ **BLOGDECK · 블로그덱**.
+  키워드 고르기부터 발행 전 점검, 릴스 대본과 카드뉴스까지 한 자리에서 굴리는 단일 HTML 워크벤치입니다.
+  다 쓴 글을 붙여 넣으면 **글자수 · 키워드 · 띄어쓰기 어긋남 · 문단 · 해시태그**를 훑고 고칠 자리를 짚어 줍니다.
+  `blogdeck/index.html`을 더블클릭하면 바로 열리고,
+  `https://<계정>.github.io/char-counter/blogdeck/` 주소로도 열립니다.
+  자세한 설명은 [`blogdeck/README.md`](blogdeck/README.md)에 있습니다.
+
 - [`scenedeck/`](scenedeck/) — 🎬 **SCENEDECK · 씬덱**.
   시나리오부터 AI 프롬프트까지 한 자리에서 굴리는 단일 HTML 워크벤치입니다.
   `scenedeck/index.html`을 더블클릭하면 바로 열리고,
