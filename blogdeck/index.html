@@ -423,7 +423,18 @@ footer .mini{max-width:640px; margin:0 auto}
   </div>
 
   <div class="card">
-    <h3><span class="num">02</span> 단락 짜기</h3>
+    <h3><span class="num">02</span> 제목 후보</h3>
+    <p class="lede">검색해서 들어오는 글이라 <b>메인 키워드가 제목에 꼭</b> 들어가야 하지만,
+       키워드만 나열하면 눌러지지 않습니다. 아래에서 골라 키워드를 얹으세요. <b>60자 안쪽</b>으로.</p>
+    <div class="btns" style="margin:0 0 4px">
+      <button class="btn pri" id="w-titles">제목 뽑기</button>
+      <button class="btn" data-copy="w-titleout">복사</button>
+    </div>
+    <div class="out" id="w-titleout"></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="num">03</span> 단락 짜기</h3>
     <p class="lede">고른 종류에 맞는 순서가 자동으로 잡힙니다. 이대로 인용구를 먼저 깔아 두고 사이를 채우면 됩니다.</p>
     <div class="btns" style="margin:0 0 4px">
       <button class="btn pri" id="w-outline">단락 만들기</button>
@@ -433,7 +444,7 @@ footer .mini{max-width:640px; margin:0 auto}
   </div>
 
   <div class="card">
-    <h3><span class="num">03</span> AI에게 시킬 말</h3>
+    <h3><span class="num">04</span> AI에게 시킬 말</h3>
     <p class="lede">막연히 「글 써줘」라고 하면 쓸 수 없는 글이 나옵니다.
        <b>연차 · 대상 · 키워드 · 글자수 · 단락수 · 말투</b>를 다 박아서 시킵니다.</p>
     <div class="btns" style="margin:0 0 4px">
@@ -453,7 +464,7 @@ footer .mini{max-width:640px; margin:0 auto}
   </div>
 
   <div class="card">
-    <h3><span class="num">04</span> 사진이 없을 때</h3>
+    <h3><span class="num">05</span> 사진이 없을 때</h3>
     <p class="lede">본문을 붙여 넣고 아래 문장을 이어 붙이면, 분위기가 이어지는 실사 이미지를 받을 수 있습니다.</p>
     <div class="row row2">
       <label class="f"><span>몇 장</span><input type="number" id="w-imgn" value="5" min="1" max="20"></label>
@@ -467,7 +478,7 @@ footer .mini{max-width:640px; margin:0 auto}
   </div>
 
   <div class="card">
-    <h3><span class="num">05</span> 소재를 미리 쌓아 두기</h3>
+    <h3><span class="num">06</span> 소재를 미리 쌓아 두기</h3>
     <p class="lede">「오늘 뭐 쓰지」로 노트북 앞에서 고민하는 시간이 제일 아깝습니다.
        최소 3일 ~ 많게는 7일치를 미리 적어 두세요.</p>
     <div class="row">
@@ -619,7 +630,25 @@ footer .mini{max-width:640px; margin:0 auto}
   </div>
 
   <div class="card">
-    <h3><span class="num">01</span> 캡션 <span class="badge b-ok">내 양식</span></h3>
+    <h3><span class="num">01</span> 첫 줄 후보 <span class="badge b-bad">3초 안에 갈립니다</span></h3>
+    <p class="lede">바이럴 릴스 대부분이 <b>1.5초 안에</b> 핵심을 보여줍니다. 인사부터 하면 그 사이에 넘어갑니다.
+       주제만 적고 뽑아서 제일 센 것을 위 캡션 첫 줄에 넣으세요.</p>
+    <div class="row row2">
+      <label class="f"><span>주제</span><input type="text" id="h-topic" placeholder="5성급 호텔 유지 조건"></label>
+      <label class="f"><span>숫자 <span class="mini">(3 · 5 · 7이 잘 먹힙니다)</span></span>
+        <input type="number" id="h-n" value="5" min="2" max="20"></label>
+      <label class="f"><span>얻어 갈 것 <span class="mini">(선택)</span></span>
+        <input type="text" id="h-gain" placeholder="호텔 고르는 기준 잡기"></label>
+    </div>
+    <div class="btns">
+      <button class="btn pri" id="h-go">첫 줄 뽑기</button>
+      <button class="btn" data-copy="h-out">복사</button>
+    </div>
+    <div class="out" id="h-out"></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="num">02</span> 캡션 <span class="badge b-ok">내 양식</span></h3>
     <p class="lede">칸을 다 채우지 않아도 됩니다. 비운 자리는 알아서 빠집니다.</p>
     <label class="f"><span>첫 줄 — 질문으로 엽니다 <span class="mini">(제일 중요합니다)</span></span>
       <input type="text" id="n-hook" placeholder="5성급 호텔 유지 조건, 다들 뭔지 아시나요?"></label>
@@ -658,7 +687,7 @@ footer .mini{max-width:640px; margin:0 auto}
   </div>
 
   <div class="card">
-    <h3><span class="num">02</span> 찍을 때 쓰는 대본</h3>
+    <h3><span class="num">03</span> 찍을 때 쓰는 대본</h3>
     <div class="row">
       <label class="f"><span>주제 · 소재</span>
         <input type="text" id="r-topic" placeholder="동래역 돈까스 맛집 방문 후기"></label>
@@ -681,7 +710,7 @@ footer .mini{max-width:640px; margin:0 auto}
   </div>
 
   <div class="card">
-    <h3><span class="num">03</span> 영상 AI에게 시킬 말</h3>
+    <h3><span class="num">04</span> 영상 AI에게 시킬 말</h3>
     <p class="lede">찍어 둔 게 없을 때, 위 대본의 장면을 그대로 영상 프롬프트로 바꿉니다.</p>
     <div class="btns" style="margin:0 0 4px">
       <button class="btn pri" id="r-vprompt">영상 프롬프트 뽑기</button>
@@ -722,7 +751,18 @@ footer .mini{max-width:640px; margin:0 auto}
   </div>
 
   <div class="card">
-    <h3><span class="num">02</span> 그림 프롬프트</h3>
+    <h3><span class="num">02</span> 표지 문구 후보 <span class="badge b-ok">가장 공들일 자리</span></h3>
+    <p class="lede">첫 장에서 넘길지 말지가 갈립니다. 유형별로 뽑아 놓고 <b>제일 손이 가는 것</b>을 고르세요.
+       한 줄은 <b>20자 안쪽</b>, 넘으면 두 줄로 끊습니다.</p>
+    <div class="btns" style="margin:0 0 4px">
+      <button class="btn pri" id="d-hooks">표지 문구 뽑기</button>
+      <button class="btn" data-copy="d-hookout">복사</button>
+    </div>
+    <div class="out" id="d-hookout"></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="num">03</span> 그림 프롬프트</h3>
     <p class="lede">장마다 배경 이미지가 필요할 때. 톤이 흩어지지 않게 한 번에 뽑습니다.</p>
     <div class="btns" style="margin:0 0 4px">
       <button class="btn pri" id="d-img">이미지 프롬프트 뽑기</button>
@@ -1419,6 +1459,121 @@ function runCheck() {
 }
 
 /* =========================================================================
+   후킹 문구 — 표지 · 제목 · 릴스 첫 줄이 같은 창고를 쓴다
+
+   유형은 「사람이 왜 멈추는가」로 나눈다. 궁금해서 · 내 얘기 같아서 ·
+   손해 볼까 봐 · 숫자가 만만해 보여서. 그래서 유형마다 why 를 같이 들고 다닌다.
+   틀만 주면 안 쓰게 되므로, 주제를 꽂아 완성된 문장으로 뱉는다.
+   ========================================================================= */
+const HOOKS = [
+  { id: 'q', name: '질문형', why: '답을 모르면 찝찝해서 멈춘다',
+    fit: '표지 · 릴스 첫 줄',
+    make: (t, n, w, g) => [
+      t + ', 다들 뭔지 아시나요?',
+      t + josaEun(t) + ' 왜 그럴까요?',
+      t + ', 이거 하나 때문이었습니다',
+      '혹시 ' + t + ', 이렇게 고르고 계신가요?'
+    ] },
+  { id: 'num', name: '숫자형', why: '몇 개인지 알면 만만해 보여서 넘긴다',
+    fit: '표지 · 제목 · 저장 유도',
+    make: (t, n, w, g) => [
+      t + ' ' + n + '가지',
+      t + ', 이것만 알면 됩니다 (' + n + '가지)',
+      n + '분이면 끝나는 ' + t,
+      t + ' TOP ' + n
+    ] },
+  { id: 'same', name: '공감형', why: '내 얘기 같아서 멈춘다',
+    fit: '표지 · 두 번째 장',
+    make: (t, n, w, g) => [
+      '열심히 알아봐도 ' + t + josaEun(t) + ' 늘 헷갈리죠',
+      '저 역시도 마찬가지였습니다',
+      t + ' 때문에 고생하셨죠',
+      '저만 그런 거 아니죠?'
+    ] },
+  { id: 'gain', name: '혜택형', why: '얻을 것이 먼저 보여서 멈춘다',
+    fit: '제목 · 표지',
+    make: (t, n, w, g) => [
+      t + ' 제대로 고르는 법',
+      t + ', 이것만 알면 됩니다',
+      g ? (g + '까지 한 번에') : (t + ' 처음이라면 이것부터'),
+      t + ' 완벽 정리'
+    ] },
+  { id: 'vs', name: '비교형', why: '차이를 확인하고 싶어서 멈춘다',
+    fit: '표지 · 중간 비교 장',
+    make: (t, n, w, g) => [
+      '되는 ' + t + ' vs 안 되는 ' + t,
+      '더 끌리는 쪽을 골라보세요',
+      '무엇이 차이를 만들었나요?',
+      t + ', 뭐가 다른 걸까요?'
+    ] },
+  { id: 'time', name: '기대효과형', why: '짧은 시간에 얻는다니 해볼 만해 보인다',
+    fit: '표지 · 제목',
+    make: (t, n, w, g) => [
+      n + '분 만에 ' + t + ' 감 잡기',
+      '오늘 안에 끝내는 ' + t,
+      t + ', ' + n + '단계로 끝내기',
+      '한 번만 해두면 계속 쓰는 ' + t
+    ] },
+  { id: 'no', name: '금지 · 경고형', why: '손해 볼까 봐 멈춘다 — 세게 먹히지만 자주 쓰면 닳는다',
+    fit: '릴스 첫 줄 · 표지',
+    make: (t, n, w, g) => [
+      t + ', 이것만은 하지 마세요',
+      '이거 모르면 ' + t + ' 손해 봅니다',
+      '아직도 ' + t + ' 이렇게 하세요?',
+      t + ' 전에 이건 꼭 확인하세요'
+    ] },
+  { id: 'flip', name: '반전형', why: '알던 것과 달라서 끝까지 본다',
+    fit: '릴스 첫 줄 · 표지',
+    make: (t, n, w, g) => [
+      t + ', 저도 그렇게 알았는데 아니었습니다',
+      t + '의 기준은 생각과 완전히 달랐어요',
+      '다들 ' + t + josaEul(t) + ' 오해하고 있습니다',
+      '와… ' + t + ', 이게 된다고?'
+    ] },
+  { id: 'check', name: '체크리스트형', why: '지금 바로 맞춰볼 수 있어서 저장한다',
+    fit: '제목 · 마지막 장',
+    make: (t, n, w, g) => [
+      t + ' 체크리스트 ' + n + '가지',
+      '발행 전 ' + t + ' 점검표',
+      t + ', 이 ' + n + '개만 맞춰보세요',
+      '저장해두고 쓰는 ' + t + ' 체크리스트'
+    ] }
+];
+
+/* 주제를 꽂아 후보를 만든다. 숫자는 3 · 5 · 7 이 잘 먹힌다. */
+function makeHooks(topic, n, who, gain, only) {
+  const t = (topic || '').trim() || '이것';
+  const num = Math.max(3, n || 5);   // 「1가지」는 말이 안 된다. 3 · 5 · 7 이 잘 먹힌다.
+  return HOOKS.filter(h => !only || only.includes(h.id))
+              .map(h => ({ name: h.name, why: h.why, fit: h.fit, lines: h.make(t, num, who, gain) }));
+}
+/* 후보를 늘어놓는다. 글자수를 같이 적어 준다 —
+   「15자 안쪽」이라고 말만 하고 긴 문장을 뱉으면 소용이 없다. */
+function hookBlock(topic, n, who, gain, only, head, limit) {
+  const L = [];
+  if (head) { L.push(head); L.push(''); }
+  let over = 0;
+  makeHooks(topic, n, who, gain, only).forEach(h => {
+    L.push('▌' + h.name + '  — ' + h.why);
+    h.lines.forEach(x => {
+      const len = x.length;
+      let mark = '(' + len + '자)';
+      if (limit && len > limit) { mark += ' ← 두 줄로 나누세요'; over++; }
+      L.push('   · ' + x + '   ' + mark);
+    });
+    L.push('');
+  });
+  if (limit && over) {
+    L.push('※ ' + over + '개가 한 줄 ' + limit + '자를 넘었습니다. 못 쓴다는 뜻이 아니라');
+    L.push('   두 줄로 끊어 앉히라는 뜻입니다. 실제 카드도 대부분 두 줄입니다.');
+    L.push('   예) 「지루한 일상도 / 영화로 완결되는 법」');
+    L.push('   주제 자체가 길면(「블로그 초보가 많이 하는 실수」) 「블로그 실수」로 줄여도 됩니다.');
+    L.push('');
+  }
+  return L;
+}
+
+/* =========================================================================
    내 프로필 — 홍보글 · 캡션이 같이 쓴다
    ========================================================================= */
 const P_DEF = {
@@ -1454,6 +1609,7 @@ function hasJong(w) {
 }
 const josaIGa = w => hasJong(w) ? '이' : '가';
 const josaEun = w => hasJong(w) ? '은' : '는';
+const josaEul = w => hasJong(w) ? '을' : '를';
 
 /* =========================================================================
    홍보글 — 늘 쓰던 양식
@@ -1755,7 +1911,7 @@ function reelVideoPrompt() {
 /* =========================================================================
    카드뉴스
    ========================================================================= */
-const DFORM = ['N가지 리스트', '문제 → 해결', '흔한 실수 모음', '따라하기 순서'];
+const DFORM = ['N가지 리스트', '문제 → 해결', '흔한 실수 모음', '따라하기 순서', 'A vs B 비교', '내 경험 · 후기'];
 function buildCardSelects() {
   const s = $('#d-form'); DFORM.forEach(t => { const o = el('option', '', t); o.value = t; s.appendChild(o); });
 }
@@ -1763,64 +1919,164 @@ function cardNews() {
   const topic = $('#d-topic').value.trim(), kw = $('#d-kw').value.trim();
   const n = Math.max(3, Math.min(15, num($('#d-n').value) || 7));
   const form = $('#d-form').value, tone = $('#d-tone').value.trim();
-  const pts = ($('#d-points').value || '').split(/\n/).map(s => s.trim()).filter(Boolean);
+  const pts = lines($('#d-points').value);
   if (!topic) { toast('주제를 먼저 적어주세요'); return; }
 
-  const bodyN = n - 2;            // 표지 · 마무리를 뺀 알맹이
-  const L = [];
-  L.push('【 카드뉴스 】 ' + topic);
-  L.push('총 ' + n + '장  |  구성 ' + form + (kw ? '  |  키워드 ' + kw : '') + (tone ? '  |  말투 ' + tone : ''));
-  L.push('');
-  L.push('※ 한 장에 한 가지만 담습니다. 두 가지가 들어가면 둘 다 안 읽힙니다.');
-  L.push('※ 표지는 「넘길 이유」를 만드는 자리입니다. 제목만 크게 박지 마세요.');
-  L.push('');
-  L.push('─'.repeat(50));
-  L.push('');
+  /* 장에는 저마다 할 일이 있다. 그냥 내용을 n 등분하면 넘길 이유가 사라진다.
+     표지 · 정리 · 마무리는 고정이고, 장수가 넉넉할 때만 공감 · 문제 · 비교를 끼운다. */
+  const opt = [];
+  if (n >= 5) opt.push('empathy');
+  if (n >= 7) opt.push('problem');
+  if (form === 'A vs B 비교' && n >= 6) opt.push('compare');
+  // 표지와 마무리는 어떤 경우에도 뺄 수 없다. 「정리」는 4장부터 넣는다.
+  const useSum = n >= 4;
+  const fixed = 2 + (useSum ? 1 : 0);
+  let bodyN = n - fixed - opt.length;
+  while (bodyN < 1 && opt.length) { opt.pop(); bodyN = n - fixed - opt.length; }
 
-  // 1장 · 표지
+  const has = r => opt.includes(r);
+  const S = [];
+
+  // ── 표지 ──
   const coverBy = {
-    'N가지 리스트':   topic + '\n' + bodyN + '가지',
-    '문제 → 해결':    topic + '\n이렇게 하면 됩니다',
-    '흔한 실수 모음': '이런 실수\n언제까지 반복할래?',
-    '따라하기 순서':  topic + '\n' + bodyN + '단계로 끝내기'
+    'N가지 리스트':  topic + ' ' + bodyN + '가지',
+    '문제 → 해결':   topic + ', 이렇게 하면 됩니다',
+    '흔한 실수 모음': '이런 실수 언제까지 반복할래?',
+    '따라하기 순서':  topic + ' ' + bodyN + '단계로 끝내기',
+    'A vs B 비교':   '잘 되는 ' + topic + ' vs 묻히는 ' + topic,
+    '내 경험 · 후기': topic + ', 저도 그렇게 알았는데 아니었습니다'
   };
-  L.push('▌1장 · 표지');
-  L.push('  큰 글씨 : ' + (coverBy[form] || topic).split('\n').join(' / '));
-  L.push('  작은 글씨 : ' + (kw ? kw + ' 찾고 있다면' : '저장해두고 보세요'));
-  L.push('  그림 : 주제를 한눈에 보여주는 장면 하나. 글씨는 위쪽에.');
-  L.push('');
+  S.push({
+    role: '표지 · 넘길 이유를 만드는 자리',
+    big: coverBy[form] || topic,
+    chip: kw ? kw + ' 찾고 있다면' : '저장해두고 보세요',
+    body: ['제목만 크게 박지 마세요. 이 장 하나로 넘길지 말지가 갈립니다.',
+           '한 줄 20자 안쪽. 넘으면 두 줄로 끊어 앉힙니다.'],
+    img: topic + '을(를) 한눈에 보여주는 가장 강한 장면 하나',
+    tip: '가장 공들일 장입니다. 아래 「표지 문구 후보」에서 골라 바꿔 보세요.'
+  });
 
-  // 알맹이
+  // ── 공감 ──
+  if (has('empathy')) S.push({
+    role: '공감 · 내 얘기 같게 만드는 자리',
+    big: '저 역시도 마찬가지였습니다',
+    chip: '제 이야기',
+    body: ['읽는 사람이 지금 겪고 있는 상황을 내가 먼저 겪었다고 말합니다.',
+           '여기서 믿음이 생겨야 뒤가 읽힙니다.'],
+    img: '나 또는 예전의 결과물. 잘 나온 것 말고 솔직한 것.',
+    tip: '자랑으로 시작하면 여기서 다 나갑니다.'
+  });
+
+  // ── 문제 제기 ──
+  if (has('problem')) S.push({
+    role: '문제 · 왜 이게 중요한가',
+    big: '왜 이런 일이 생길까요?',
+    chip: '이유',
+    body: ['모르고 지나가면 무엇을 손해 보는지 한 줄로.',
+           '뒤에 나올 해결이 값져 보이게 만드는 자리입니다.'],
+    img: '문제 상황이 그대로 보이는 장면',
+    tip: ''
+  });
+
+  // ── 본론 ──
   for (let i = 0; i < bodyN; i++) {
     const p = pts[i];
-    L.push('▌' + (i + 2) + '장 · ' +
-      (form === 'N가지 리스트' ? (i + 1) + '번째' :
-       form === '문제 → 해결'  ? (i === 0 ? '무엇이 문제인가' : '해결 ' + i) :
-       form === '흔한 실수 모음' ? '실수 ' + (i + 1) :
-       (i + 1) + '단계'));
-    L.push('  큰 글씨 : ' + (p ? p : '(한 줄로 — 15자 안쪽)'));
-    L.push('  풀어 쓰기 : ' + (p ? '「' + p + '」이(가) 왜 문제인지 · 어떻게 하면 되는지를 두세 줄로' : '(두세 줄. 여기서 길어지면 안 읽힙니다)'));
-    L.push('  그림 : ' + (p ? p : '이 장의 내용') + '을(를) 보여주는 장면 하나');
-    L.push('');
+    const label =
+      form === 'N가지 리스트'  ? (i + 1) + '번째' :
+      form === '문제 → 해결'   ? (i === 0 ? '이렇게 해보세요' : '그리고 ' + (i + 1)) :
+      form === '흔한 실수 모음' ? '실수 ' + (i + 1) :
+      form === '따라하기 순서'  ? (i + 1) + '단계' :
+      form === 'A vs B 비교'   ? '차이 ' + (i + 1) :
+                                 '이야기 ' + (i + 1);
+    S.push({
+      role: '본론 ' + (i + 1) + ' · 한 장에 한 가지만',
+      big: p || '(한 줄로 — 20자 안쪽)',
+      chip: label,
+      body: p
+        ? ['「' + p + '」이(가) 왜 그런지 · 어떻게 하면 되는지 3줄로.',
+           '4줄이 넘어가면 글씨를 왼쪽 위로 붙이고 그림을 아래나 오른쪽에 둡니다.']
+        : ['3줄로 끊어 씁니다. 여기서 길어지면 안 읽힙니다.'],
+      img: (p || '이 장의 내용') + '을(를) 보여주는 장면 하나',
+      tip: ''
+    });
   }
 
-  // 마지막
-  L.push('▌' + n + '장 · 마무리');
-  L.push('  큰 글씨 : 오늘 한 이야기');
-  L.push('  풀어 쓰기 : 앞에서 말한 ' + bodyN + '가지를 한 줄씩 다시 나열');
-  L.push('  마지막 줄 : ' + (kw ? '「' + kw + '」 더 자세한 건 블로그에 정리해뒀어요' : '저장해두고 필요할 때 꺼내 보세요'));
-  L.push('  ※ 「저장」을 눌러 달라고 말합니다. 카드뉴스는 저장이 제일 멀리 갑니다.');
+  // ── 비교 ──
+  if (has('compare')) S.push({
+    role: '비교 · 직접 고르게 만드는 자리',
+    big: '더 끌리는 쪽을 골라보세요',
+    chip: '무엇이 차이를 만들었나요?',
+    body: ['거의 같은 두 장을 나란히 놓고 한 가지만 다르게 합니다.',
+           '고르게 만들면 댓글이 붙습니다.'],
+    img: 'A · B 두 장을 나란히. 다른 점 쪽에 점선 화살표를 겁니다.',
+    tip: '차이를 글로 먼저 말하지 마세요. 고른 다음에 알려줘야 남습니다.'
+  });
+
+  // ── 정리 ──
+  if (useSum) S.push({
+    role: '정리 · 다시 훑어주는 자리',
+    big: '오늘 한 이야기',
+    chip: '한 장 요약',
+    body: ['앞에서 말한 것을 한 줄씩 다시 나열합니다.',
+           '여기까지 온 사람이 저장을 누릅니다.'],
+    img: '차분하게 정리되는 느낌의 배경',
+    tip: ''
+  });
+
+  // ── 마무리 · CTA ──
+  S.push({
+    role: '마무리 · 넘겨보낼 자리',
+    big: kw ? '「' + kw + '」 더 자세한 건' : '더 자세한 건',
+    chip: '블로그에 정리해뒀어요',
+    body: ['⚠️ 이건 요약본이고, 전부 정리한 건 블로그에만 적어뒀어요.',
+           '👉 자세한 내용은 블로그 꼭 참고하세요.',
+           '저장해두면 진짜 도움 돼요.'],
+    img: '가장 예쁜 컷 하나로 마무리',
+    tip: '강요하지 말고 「안 보면 반쪽만 본 느낌」으로 남깁니다.'
+  });
+
+  /* ── 글로 뽑기 ── */
+  const L = [];
+  L.push('【 카드뉴스 】 ' + topic);
+  L.push('총 ' + S.length + '장  |  구성 ' + form + (kw ? '  |  키워드 ' + kw : '') + (tone ? '  |  말투 ' + tone : ''));
+  L.push('');
+  L.push('※ 한 장에 한 가지만. 두 가지가 들어가면 둘 다 안 읽힙니다.');
+  L.push('※ 본문은 3줄이 기본입니다. 4줄이 넘으면 글씨를 왼쪽 위로 붙이고 그림을 아래·오른쪽에.');
   L.push('');
   L.push('─'.repeat(50));
+  S.forEach((x, i) => {
+    L.push('');
+    L.push('▌' + (i + 1) + '장 / ' + S.length + '  ·  ' + x.role);
+    L.push('   큰 글씨  : ' + x.big + '   (' + x.big.length + '자' +
+           (x.big.length > 20 ? ' — 두 줄로 나누세요' : '') + ')');
+    L.push('   라벨 칩  : ' + x.chip);
+    x.body.forEach((b, j) => L.push((j === 0 ? '   본문     : ' : '              ') + b));
+    L.push('   그림     : ' + x.img);
+    if (x.tip) L.push('   ※ ' + x.tip);
+  });
+  L.push('');
+  L.push('─'.repeat(50));
+  L.push('');
+  L.push('[ 화면에 늘 얹는 것 ]');
+  L.push('  · 오른쪽 위에 페이지 번호 (1/' + S.length + ' … ' + S.length + '/' + S.length + ')');
+  L.push('    — 몇 장 남았는지 보이면 끝까지 넘깁니다.');
+  L.push('  · 큰 글씨 아래 흰 라벨 칩으로 부제 한 줄');
+  L.push('  · 시선을 옮겨야 하는 곳에는 점선 화살표');
+  L.push('  · 하단에 흰 박스로 한 줄 정리, 핵심 단어에만 밑줄');
+  L.push('  · 로고는 아래 가운데 고정 — 모든 장 같은 자리');
   L.push('');
   L.push('[ 만들 때 지킬 것 ]');
   L.push('  · 정사각형(1:1) 또는 세로(4:5). 하나로 통일합니다.');
   L.push('  · 글씨는 모든 장에서 같은 크기 · 같은 자리에. 장마다 움직이면 조잡해집니다.');
   L.push('  · 색은 두 가지까지. 강조색 하나만 씁니다.');
+  L.push('  · 여백을 아끼지 마세요. 빽빽하면 저장 안 합니다.');
   L.push('  · 폰이 기준입니다. 만든 화면에서 작아 보이면 폰에서는 안 읽힙니다.');
   L.push('');
-  L.push('[ 캡션 · 해시태그 ]');
-  L.push((topic) + (kw ? '\n' + kw + ' 정리해뒀습니다. 저장해두고 보세요.' : ''));
+  L.push('[ 캡션 ]');
+  L.push('첫 줄 후킹 → 본문 2~4줄 → 저장 · 댓글 유도 한 줄 → 해시태그 순서로 씁니다.');
+  L.push('');
+  L.push(S[0].big);
+  L.push((kw ? kw + ' 정리해뒀습니다. 저장해두고 보세요.' : '저장해두고 필요할 때 꺼내 보세요.'));
   const tb = (kw || topic).replace(/\s+/g, '');
   L.push('#' + tb + ' #' + tb + '정리 #' + (topic.split(/\s+/)[0] || '') + ' #저장각 #꿀팁');
   $('#d-out').textContent = L.join('\n');
@@ -2127,6 +2383,43 @@ function bind() {
     };
     Object.entries(d).forEach(([k, val]) => { $('#' + k).value = val; });
     save(); promoPost(); toast('예시를 채우고 뽑았습니다');
+  };
+
+  // 후킹 문구 — 릴스 첫 줄 · 카드뉴스 표지 · 블로그 제목
+  $('#h-go').onclick = () => {
+    const t = $('#h-topic').value.trim() || $('#r-topic').value.trim() || $('#n-hook').value.trim();
+    if (!t) { toast('주제를 먼저 적어주세요'); return; }
+    const L = hookBlock(t, num($('#h-n').value) || 5, '', $('#h-gain').value.trim(),
+      ['q', 'no', 'flip', 'num', 'same', 'vs'],
+      '【 릴스 첫 줄 후보 】 ' + t + '\n\n처음 1.5~3초 안에 이 말이 나와야 합니다. 인사는 하지 않습니다.', 20);
+    L.push('─'.repeat(46));
+    L.push('고른 문장은 「캡션」 카드의 첫 줄에 그대로 넣으세요.');
+    L.push('자막으로도 같이 띄웁니다 — 소리 없이 보는 사람이 대부분입니다.');
+    $('#h-out').textContent = L.join('\n');
+  };
+  $('#d-hooks').onclick = () => {
+    const t = $('#d-topic').value.trim();
+    if (!t) { toast('주제를 먼저 적어주세요'); return; }
+    const bodyN = Math.max(1, (num($('#d-n').value) || 7) - 3);
+    const L = hookBlock(t, bodyN, '', '', ['q', 'num', 'same', 'gain', 'vs', 'time'],
+      '【 표지 문구 후보 】 ' + t + '\n\n한 줄은 20자 안쪽. 넘으면 두 줄로 끊어 앉힙니다.', 20);
+    L.push('─'.repeat(46));
+    L.push('고른 문장을 1장 「큰 글씨」에 넣고, 아래 라벨 칩에 부제를 한 줄 답니다.');
+    $('#d-hookout').textContent = L.join('\n');
+  };
+  $('#w-titles').onclick = () => {
+    const kw = $('#w-main').value.trim();
+    if (!kw) { toast('메인 키워드를 먼저 적어주세요'); return; }
+    const sub = $('#w-sub').value.trim(), who = $('#w-who').value.trim();
+    const L = hookBlock(kw, 5, who, '', ['num', 'gain', 'q', 'vs', 'check', 'no'],
+      '【 제목 후보 】 메인 키워드 : ' + kw + (sub ? '   서브 : ' + sub : ''), 60);
+    L.push('─'.repeat(46));
+    L.push('[ 고르고 나서 ]');
+    L.push('  · 「' + kw + '」이(가) 제목에 그대로 들어갔는지 — 띄어쓰기까지 똑같이.');
+    L.push('  · 같은 말을 두 번 넣지 마세요. 남는 자리엔 ' + (sub ? '「' + sub + '」' : '서브 키워드') + '을(를).');
+    L.push('  · 60자 안쪽. 넘으면 검색 결과에서 잘립니다.');
+    L.push('  · 제목에 쓴 말은 본문에도 반드시 있어야 합니다. 「점검」 탭에서 확인하세요.');
+    $('#w-titleout').textContent = L.join('\n');
   };
 
   // 릴스 캡션
