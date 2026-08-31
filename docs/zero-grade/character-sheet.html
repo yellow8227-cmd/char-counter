@@ -1,0 +1,369 @@
+<title>0등급 캐릭터 시트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#E9ECEC; --surface:#FFFFFF; --surface2:#F2F5F5; --ink:#10161A; --muted:#59666B;
+  --line:#D3DADB; --line-soft:#E2E7E8;
+  --g1:#3E7CA6; --g2:#5E9163; --g4:#A8762A; --g5:#A83E37; --g0:#C63127;
+  --chip-bg:#0B0F11; --chip-line:#000;
+  --shadow:0 1px 2px rgba(16,22,26,.05), 0 8px 24px rgba(16,22,26,.05);
+  --sans:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --disp:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono","SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1013; --surface:#141A1D; --surface2:#1A2225; --ink:#DFE6E7; --muted:#818F93;
+    --line:#242D31; --line-soft:#1D2528;
+    --g1:#6BA8CE; --g2:#84BC89; --g4:#CF9A45; --g5:#D45C52; --g0:#E5473A;
+    --chip-bg:#05080A; --chip-line:#000;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1013; --surface:#141A1D; --surface2:#1A2225; --ink:#DFE6E7; --muted:#818F93;
+  --line:#242D31; --line-soft:#1D2528;
+  --g1:#6BA8CE; --g2:#84BC89; --g4:#CF9A45; --g5:#D45C52; --g0:#E5473A;
+  --chip-bg:#05080A; --chip-line:#000;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.65;
+  -webkit-font-smoothing:antialiased;font-size:15px}
+a{color:inherit}
+b{font-weight:700}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface2);
+  border:1px solid var(--line-soft);border-radius:3px;padding:.05em .34em}
+:focus-visible{outline:2px solid var(--g1);outline-offset:2px;border-radius:3px}
+
+/* ── 상단 ── */
+.top{border-bottom:1px solid var(--line);background:var(--surface);position:relative;z-index:5}
+.top-in{max-width:1240px;margin:0 auto;padding:26px 24px 20px;
+  display:flex;flex-wrap:wrap;align-items:flex-end;gap:20px 32px}
+h1{font-family:var(--disp);font-weight:800;font-size:clamp(26px,3.4vw,38px);letter-spacing:-.025em;
+  margin:0;line-height:1;text-wrap:balance}
+h1 .hanja{font-family:var(--sans);font-weight:500;color:var(--muted);
+  font-size:.5em;letter-spacing:.16em;margin-left:.7em;vertical-align:.22em}
+.sub{font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.06em;
+  text-transform:uppercase;margin:9px 0 0}
+.legend{display:flex;flex-wrap:wrap;gap:7px;margin-left:auto}
+.lg{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;
+  color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 10px 4px 5px}
+
+/* ── 측정기 리드아웃 칩 : 바탕은 항상 검정, 숫자만 발광 ── */
+.chip{font-family:var(--mono);font-weight:500;font-size:10.5px;line-height:1;
+  background:var(--chip-bg);border:1px solid var(--chip-line);border-radius:2px;
+  padding:5px 7px;min-width:26px;text-align:center;letter-spacing:.04em;
+  color:var(--g1);text-shadow:0 0 7px currentColor;flex:none}
+.chip[data-g="2"]{color:var(--g2)} .chip[data-g="4"]{color:var(--g4)}
+.chip[data-g="5"]{color:var(--g5)} .chip[data-g="0"]{color:var(--g0)}
+.chip[data-g="—"]{color:var(--muted);text-shadow:none;opacity:.65}
+.chip[data-g="0"]{animation:err 1.9s steps(1,end) infinite}
+@keyframes err{0%,72%{opacity:1}76%,84%{opacity:.28}88%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.chip[data-g="0"]{animation:none}}
+
+/* ── 레이아웃 ── */
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px 90px;
+  display:grid;grid-template-columns:236px minmax(0,1fr);gap:40px;align-items:start}
+.rail{position:sticky;top:20px;padding:22px 0 0}
+.rail h2{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 10px;font-weight:500}
+.rail ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
+.rail a{display:flex;align-items:center;gap:9px;text-decoration:none;padding:5px 8px;
+  border-radius:4px;border-left:2px solid transparent}
+.rail a:hover{background:var(--surface2)}
+.rail a.on{background:var(--surface);border-left-color:var(--g0);box-shadow:var(--shadow)}
+.rail .no{font-family:var(--mono);font-size:10px;color:var(--muted);width:16px;flex:none;
+  font-variant-numeric:tabular-nums}
+.rail .nm{font-size:13px;font-weight:500;flex:1;min-width:0;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.rail .sep{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);margin:16px 0 6px;padding-left:8px}
+.main{padding:22px 0 0;min-width:0;display:flex;flex-direction:column;gap:22px}
+
+/* ── 안내 ── */
+.howto{background:var(--surface);border:1px solid var(--line);border-radius:8px;
+  padding:20px 24px;box-shadow:var(--shadow)}
+.howto h2{font-family:var(--disp);font-size:16px;font-weight:600;margin:0 0 4px;letter-spacing:-.01em}
+.howto p{margin:0 0 12px;color:var(--muted);font-size:13.5px;max-width:62ch}
+.howto ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:5px;
+  font-size:14px;max-width:62ch}
+.howto ol b{color:var(--ink)}
+
+/* ── 카드 ── */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;
+  box-shadow:var(--shadow);scroll-margin-top:18px;overflow:hidden}
+.hd{display:flex;align-items:flex-start;gap:16px;padding:22px 24px 18px;
+  border-bottom:1px solid var(--line-soft)}
+.hd .idx{font-family:var(--mono);font-size:11px;color:var(--muted);padding-top:6px;
+  font-variant-numeric:tabular-nums;flex:none}
+.hd .names{min-width:0;flex:1}
+.en{font-family:var(--disp);font-weight:800;font-size:clamp(19px,2.5vw,26px);
+  letter-spacing:-.02em;line-height:1.1;margin:0}
+.kn{font-size:13.5px;color:var(--muted);margin:5px 0 0;letter-spacing:.02em}
+.kn strong{color:var(--ink);font-weight:700;font-size:15px}
+.hd .tier{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:var(--muted);
+  text-align:right;padding-top:4px;flex:none;display:flex;flex-direction:column;
+  align-items:flex-end;gap:7px}
+
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:1px;background:var(--line-soft);border-bottom:1px solid var(--line-soft)}
+.meta div{background:var(--surface);padding:13px 24px}
+.meta dt{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 3px}
+.meta dd{margin:0;font-size:14px;line-height:1.55}
+
+.sect{padding:20px 24px}
+.sect+.sect{border-top:1px solid var(--line-soft)}
+.sect>h3{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 12px;font-weight:500}
+.look{margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:9px 28px}
+.look>div{display:grid;grid-template-columns:64px minmax(0,1fr);gap:12px;align-items:baseline}
+.look dt{font-size:12.5px;color:var(--muted);font-weight:500}
+.look dd{margin:0;font-size:13.5px;line-height:1.6}
+
+.note{display:flex;gap:10px;background:var(--surface2);border:1px solid var(--line-soft);
+  border-left:2px solid var(--g0);border-radius:0 5px 5px 0;padding:11px 14px;
+  font-size:13px;line-height:1.6;margin:0}
+.note .mk{font-family:var(--mono);font-size:10px;color:var(--g0);letter-spacing:.1em;
+  padding-top:3px;flex:none}
+
+/* ── 프롬프트 ── */
+.pr{border:1px solid var(--line-soft);border-radius:6px;overflow:hidden;background:var(--surface2)}
+.pr+.pr{margin-top:10px}
+.pr-hd{display:flex;align-items:center;gap:10px;padding:8px 10px 8px 13px;
+  border-bottom:1px solid var(--line-soft)}
+.pr-hd .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--muted);flex:1}
+.pr pre{margin:0;padding:13px;font-family:var(--mono);font-size:12px;line-height:1.72;
+  white-space:pre-wrap;word-break:break-word;color:var(--ink);background:var(--surface)}
+.btn{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;cursor:pointer;
+  background:var(--surface);color:var(--muted);border:1px solid var(--line);
+  border-radius:4px;padding:5px 10px;transition:color .12s,border-color .12s}
+.btn:hover{color:var(--ink);border-color:var(--muted)}
+.btn.ok{color:var(--g2);border-color:var(--g2)}
+.allbar{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+.allbar span{font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.05em}
+
+details{border-top:1px solid var(--line-soft);margin-top:14px;padding-top:13px}
+summary{cursor:pointer;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);list-style:none;display:flex;
+  align-items:center;gap:8px}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"＋";font-size:12px;line-height:1}
+details[open] summary::before{content:"－"}
+summary:hover{color:var(--ink)}
+details>.pr:first-of-type{margin-top:13px}
+
+/* ── 검증표 ── */
+.tblwrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:520px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line-soft);
+  vertical-align:top;line-height:1.6}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);font-weight:500;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.pairs{margin:14px 0 0;padding-left:1.25em;display:flex;flex-direction:column;gap:7px;
+  font-size:13.5px;max-width:70ch}
+
+/* ── 토스트 ── */
+#toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);
+  background:var(--ink);color:var(--surface);font-family:var(--mono);font-size:12px;
+  letter-spacing:.05em;padding:9px 18px;border-radius:5px;opacity:0;pointer-events:none;
+  transition:opacity .18s,transform .18s;z-index:50}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:960px){
+  .wrap{grid-template-columns:1fr;gap:0;padding-inline:16px}
+  .rail{position:static;padding:16px 0 0}
+  .rail ol{flex-direction:row;overflow-x:auto;gap:6px;padding-bottom:8px}
+  .rail li{flex:none}
+  .rail a{border-left:0;border-bottom:2px solid transparent;background:var(--surface);
+    border-radius:5px;padding:6px 11px;box-shadow:var(--shadow)}
+  .rail a.on{border-bottom-color:var(--g0)}
+  .rail .no{display:none}
+  .rail .sep{display:none}
+  .top-in{padding-inline:16px}
+  .hd,.sect,.meta div{padding-inline:16px}
+}
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div>
+      <h1>0등급 캐릭터 시트<span class="hanja">零等級</span></h1>
+      <p class="sub" id="counts"></p>
+    </div>
+    <div class="legend" id="legend"></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="rail" aria-label="인물 목록">
+    <h2>인물</h2>
+    <ol id="rail"></ol>
+  </nav>
+
+  <main class="main">
+    <section class="howto">
+      <h2>뽑는 순서</h2>
+      <p>이 순서를 지켜야 컷마다 얼굴이 딴 사람이 되지 않습니다. 프롬프트는 프리픽스·측정기·파라미터까지
+         합쳐진 한 줄 완성본이라 그대로 붙여넣으면 됩니다.</p>
+      <ol>
+        <li><b>③ 얼굴 클로즈업을 먼저</b> 뽑습니다. 마음에 들 때까지 이것만 반복하세요.</li>
+        <li>확정된 얼굴을 미드저니에 올리고 그 주소를 <code>--oref</code> 로 물립니다.</li>
+        <li>그 상태로 <b>① 정면 → ② 후면</b>. 전신부터 뽑으면 얼굴이 작게 나와 동일성 앵커로 못 씁니다.</li>
+        <li>3패널이 확정되면 그 얼굴을 <b>모든 씬 컷의 <code>--oref</code></b> 로 계속 물립니다.</li>
+      </ol>
+    </section>
+
+    <div id="cards"></div>
+
+    <section class="card" id="verify">
+      <div class="hd"><div class="names">
+        <p class="en">FACE COLLISION CHECK</p>
+        <p class="kn"><strong>얼굴 충돌 검증표</strong> · 뽑고 나서 반드시 대조</p>
+      </div></div>
+      <div class="sect">
+        <div class="tblwrap"><table>
+          <thead><tr><th>축</th><th>갈라져야 하는 지점</th></tr></thead>
+          <tbody>
+            <tr><td>얼굴형</td><td><b>각진 턱</b> 하은·도현·정 과장 ↔ <b>둥근 얼굴</b> 하린·김 노인·한지원 ↔ <b>좁고 긴 얼굴</b> 임선화·윤 감사관 ↔ <b>넓은 얼굴</b> 윤태석</td></tr>
+            <tr><td>눈매</td><td><b>깊은 홑꺼풀</b> 하은·정혜숙(모녀) ↔ <b>큰 쌍꺼풀</b> 하린 ↔ <b>처진 눈</b> 김 노인·강현우 ↔ <b>안경 뒤</b> 임선화·서도윤</td></tr>
+            <tr><td>머리</td><td><b>바짝 묶음</b> 하은·정혜숙(통제) ↔ <b>풀어헤침</b> 하린(해방) ↔ <b>헝클어짐</b> 도현(붕괴) ↔ <b>올백</b> 서도윤(자본)</td></tr>
+            <tr><td>입</td><td><b>일자로 다문 입술</b> 1등급 계열 ↔ <b>웃음 주름 있는 입</b> 5등급 계열</td></tr>
+          </tbody>
+        </table></div>
+        <ol class="pairs">
+          <li><b>하은 ↔ 하린</b> — 각진/둥근, 홑꺼풀/쌍꺼풀, 묶음/풀림. 자매인데 정반대여야 임선화 가설의 반증이 얼굴로 보입니다.</li>
+          <li><b>하은 ↔ 정혜숙</b> — <b>눈매만</b> 공유. 나머지가 닮으면 실패입니다.</li>
+          <li><b>강현우 ↔ 임선화</b> — 둘 다 부드러워 보이는데 성질이 반대. 인자한 얼굴의 <b>가짜 온기</b> ↔ 차분한 얼굴의 <b>진짜 냉기</b>.</li>
+        </ol>
+      </div>
+      <div class="sect">
+        <h3>측정기 공통 규칙</h3>
+        <p style="margin:0;font-size:13.5px;max-width:70ch">이음새 없는 매트 다크메탈 밴드, 폭 3cm,
+        <b>버클·잠금장치 없음</b>(풀 수 없다는 설정). 화면 바탕은 <b>항상 검정, 숫자만 발광</b> —
+        스마트워치처럼 보이면 재생성. 밴드 아래 살에 <b>깊게 팬 자국</b>이 있어야 하며,
+        붉은 점이나 상처 자국으로 나오면 재생성합니다.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script id="D" type="application/json">{"chars": [{"en": "KANG HA-EUN", "hanja": "姜 河恩", "ko": "강하은", "grade": "0", "chip": "ERR", "age": "32 (2055)", "height": "약 168 cm", "role": "분류국 1등급 요원 · 주인공", "tier": "1등급 → 0등급", "person": "감정을 억누르는 게 아니라 출구가 막혀 있다. 7,431건에 손 한 번 안 떨고 서명한다. 문장이 짧고 변명하지 않는다.", "voice": "낮고 평평하다. 억양이 거의 없다. 절대 볼륨을 올리지 않는다.", "look": [["얼굴형", "갸름한 계란형에 <b>각진 턱선</b>"], ["눈", "<b>깊은 홑꺼풀</b>, 차갑고 평평한 시선 — 어머니와 유일하게 공유하는 부위"], ["입", "도톰하지만 항상 일자로 다물려 있음"], ["피부", "웜톤, 잡티 없음, <b>무화장</b>"], ["머리", "검은 머리를 낮게 묶은 번, <b>관자놀이에 잔머리 몇 가닥</b>"], ["체형", "마른 편, 어깨가 늘 반듯함"], ["의상", "흰 셔츠 위 검정 테일러드 수트, 주름 없음"], ["측정기", "파랑 <code>1.2</code> → 발각 후 <b>붉은 ERROR 점멸, 숫자 없음</b>"], ["특징", "밴드 아래 <b>깊게 팬 살 자국</b> · 무의식적으로 왼손이 오른손을 잡는 버릇"]], "note": "블록은 무화장 v5 기준입니다. 확정 레퍼런스의 붉은 립을 살리시려면 <code>no makeup</code> 을 <code>soft red lip</code> 으로만 바꾸면 됩니다.", "front": "Portrait photography, full shot, Fullbody, front view of portrait of a 32 year old korean woman, oval face with a sharp jawline, deep-set monolid eyes, cool flat gaze, lips closed in a straight line, warm-toned clear skin, no makeup, black hair pulled back into a low bun with a few loose strands at the temples, wearing a crisp white shirt under a black tailored suit, completely expressionless, a sleek black measuring band with a calm blue display on the wrist, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "back": "Portrait photography, full shot, Fullbody, Back view of a 32 year old korean woman, oval face with a sharp jawline, deep-set monolid eyes, cool flat gaze, lips closed in a straight line, warm-toned clear skin, no makeup, black hair pulled back into a low bun with a few loose strands at the temples, wearing a crisp white shirt under a black tailored suit, completely expressionless, a sleek black measuring band with a calm blue display on the wrist, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "face": "Portrait photography, Extreme closeup of face of a 32 year old korean woman, oval face with a sharp jawline, deep-set monolid eyes, cool flat gaze, lips closed in a straight line, warm-toned clear skin, no makeup, black hair pulled back into a low bun with a few loose strands at the temples, wearing a crisp white shirt under a black tailored suit, completely expressionless, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "vars": [{"label": "7세 · S#18 회상", "prompt": "Portrait photography, Extreme closeup of face of a 7 year old korean girl, small oval face, deep-set monolid eyes too calm for her age, thin lips, pale skin, hair in two tight braids, wearing a dark mourning dress, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark"}, {"label": "22세 · S#06 프롤로그", "prompt": "Portrait photography, Extreme closeup of face of a 22 year old korean woman, oval face with a sharp jawline, deep-set monolid eyes, thin lips pressed into a straight line, pale skin, black hair tied back tightly, no makeup, wearing a plain white shirt, expressionless, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark"}, {"label": "0등급 · 발각 후", "prompt": "Portrait photography, Extreme closeup of face of a 32 year old korean woman, oval face with a sharp jawline, deep-set monolid eyes, cool flat gaze, lips closed in a straight line, warm-toned clear skin, no makeup, black hair pulled back into a low bun with a few loose strands at the temples, wearing a crisp white shirt under a black tailored suit, completely expressionless, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark"}, {"label": "도주 중", "prompt": "Portrait photography, Extreme closeup of face of a 32 year old korean woman, oval face with a sharp jawline, deep-set monolid eyes, cool flat gaze, lips closed in a straight line, warm-toned clear skin, no makeup, black hair pulled back into a low bun with a few loose strands at the temples, wearing a crisp white shirt under a black tailored suit, completely expressionless, but wearing an oversized worn black hoodie over the suit, a thin fresh cut on her cheekbone, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark"}]}, {"en": "KANG HA-RIN", "hanja": "姜 河潾", "ko": "강하린", "grade": "5", "chip": "5", "age": "25 (2055)", "height": "약 162 cm", "role": "분류국 외부협력실 정보분석관 · 하은의 동생", "tier": "1등급 → 자발적 5등급", "person": "언니와 정반대로 감정이 새어나온다. 겁이 많은데 결정은 언니보다 빠르다.", "voice": "밝고 빠르다 → 격리 후 느리고 갈라진다.", "look": [["얼굴형", "<b>둥글고 부드러운 얼굴</b>"], ["눈", "<b>큰 쌍꺼풀</b>, 따뜻한 시선"], ["머리", "어깨 길이 검은 머리를 <b>풀어헤침</b> — 언니의 「묶음」과 정반대"], ["피부", "창백함"], ["의상", "차콜 오피스 블라우스 → 격리 후 <b>회색 시설복</b>"], ["측정기", "파랑 → 자발적 강등 후 <b>두꺼운 검정 밴드 · 빨강</b>"], ["특징", "약 기운에 손이 느린데, <b>미는 힘에는 망설임이 없다</b>"]], "front": "Portrait photography, full shot, Fullbody, front view of portrait of a 25 year old korean woman, round soft face, large double-lidded eyes, warm gaze, shoulder-length black hair loose, pale skin, wearing a neat charcoal office blouse, a sleek black measuring band with a calm blue display on the wrist, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "back": "Portrait photography, full shot, Fullbody, Back view of a 25 year old korean woman, round soft face, large double-lidded eyes, warm gaze, shoulder-length black hair loose, pale skin, wearing a neat charcoal office blouse, a sleek black measuring band with a calm blue display on the wrist, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "face": "Portrait photography, Extreme closeup of face of a 25 year old korean woman, round soft face, large double-lidded eyes, warm gaze, shoulder-length black hair loose, pale skin, wearing a neat charcoal office blouse, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "vars": [{"label": "6세 · S#16 인서트", "prompt": "Portrait photography, Extreme closeup of face of a 6 year old korean girl, round face, large double-lidded eyes, short bobbed hair, wearing a yellow t-shirt, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark"}, {"label": "15세 · S#06 프롤로그", "prompt": "Portrait photography, Extreme closeup of face of a 15 year old korean girl, round soft face, large double-lidded eyes, messy shoulder-length black hair, wearing a navy school uniform, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark"}, {"label": "격리 중 · S#25", "prompt": "Portrait photography, Extreme closeup of face of a 25 year old korean woman, round soft face, large double-lidded eyes, warm gaze, shoulder-length black hair loose, pale skin, hollow cheeks, dark circles under the eyes, dulled unfocused gaze, dry lips, wearing a grey institutional uniform, hair slightly unkempt, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark"}]}, {"en": "PARK DO-HYUN", "hanja": "朴 度賢", "ko": "박도현", "grade": "5", "chip": "5", "age": "33 (2055)", "height": "약 180 cm", "role": "전직 분류국 정보요원", "tier": "5등급", "person": "5년 전 자기 손으로 형을 신고했다. 죄를 아는 사람의 냉소. 하은을 알아본 이유도 같은 죄를 봤기 때문.", "voice": "낮고 거칠다. 말끝을 흘린다.", "look": [["얼굴형", "<b>각지고 마른 얼굴, 날카로운 턱선</b> — 하은과 같은 얼굴형의 「관리를 놓은 버전」"], ["눈", "지친 <b>처진 눈꺼풀</b>"], ["머리", "헝클어진 검은 머리가 이마를 덮음 · 며칠치 수염"], ["의상", "낡은 오버사이즈 검정 후드 + 바랜 셔츠"], ["측정기", "<b>두꺼운 검정 밴드 · 빨강</b>"], ["특징", "<b>왼쪽 눈썹을 가로지르는 옅은 흉터</b> — 얼굴 식별 앵커"]], "front": "Portrait photography, full shot, Fullbody, front view of portrait of a 33 year old korean man, lean angular face with a sharp jawline, tired hooded eyes, several days of dark stubble, messy black hair falling over his forehead, a faint scar through his left eyebrow, wearing a worn oversized black hoodie over a faded shirt, a thick black measuring band with a red display on the wrist, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "back": "Portrait photography, full shot, Fullbody, Back view of a 33 year old korean man, lean angular face with a sharp jawline, tired hooded eyes, several days of dark stubble, messy black hair falling over his forehead, a faint scar through his left eyebrow, wearing a worn oversized black hoodie over a faded shirt, a thick black measuring band with a red display on the wrist, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "face": "Portrait photography, Extreme closeup of face of a 33 year old korean man, lean angular face with a sharp jawline, tired hooded eyes, several days of dark stubble, messy black hair falling over his forehead, a faint scar through his left eyebrow, wearing a worn oversized black hoodie over a faded shirt, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "vars": [{"label": "28세 정보요원 · 5년 전", "prompt": "Portrait photography, Extreme closeup of face of a 28 year old korean man, lean angular face with a sharp jawline, clear alert eyes, clean shaven, short neat black hair, a faint scar through his left eyebrow, wearing a crisp navy suit, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark"}]}, {"en": "LIM SEON-HWA", "hanja": "林 善花", "ko": "임선화", "grade": "1", "chip": "1", "age": "65 (2055)", "height": "약 158 cm", "role": "분류국 자문위원 · 시스템의 진짜 설계자", "tier": "1등급", "person": "악당처럼 보이면 안 된다. 언니를 잃은 슬픔을 2천만 개의 측정기로 바꾼 학자. 서두르는 법이 없다.", "voice": "느리고 또박또박. 강의하듯. 목소리를 높이지 않는다.", "look": [["얼굴형", "<b>좁고 차분한 얼굴</b>, 잔주름"], ["눈", "얇은 테 안경 뒤의 <b>서두르지 않는 눈</b>"], ["머리", "은발 섞인 검은 머리를 <b>낮게 단정히 묶은 번</b> — 하은과 같은 머리. 25년간 표본을 보다 서로 닮아버린 아이러니"], ["의상", "흰 블라우스 위 부드러운 회색 카디건"], ["측정기", "<b>절대 화면에 노출 금지.</b> 항상 긴 소매로 양 손목을 가린다"], ["특징", "찻잔을 드는 손 · 남의 손목을 끌어당겨 관찰하는 손"]], "note": "<b>손목 노출 절대 금지</b> — 설계자의 등급은 끝까지 미스터리로 둡니다. 어느 패널에서든 밴드가 보이면 재생성하세요.", "front": "Portrait photography, full shot, Fullbody, front view of portrait of a 65 year old korean woman, narrow composed face, fine wrinkles, thin-rimmed glasses, calm unhurried eyes behind the lenses, silver-streaked black hair pulled back into a neat low bun, wearing a soft grey cardigan over a white blouse, long sleeves covering both wrists, scholarly and gentle, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "back": "Portrait photography, full shot, Fullbody, Back view of a 65 year old korean woman, narrow composed face, fine wrinkles, thin-rimmed glasses, calm unhurried eyes behind the lenses, silver-streaked black hair pulled back into a neat low bun, wearing a soft grey cardigan over a white blouse, long sleeves covering both wrists, scholarly and gentle, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "face": "Portrait photography, Extreme closeup of face of a 65 year old korean woman, narrow composed face, fine wrinkles, thin-rimmed glasses, calm unhurried eyes behind the lenses, silver-streaked black hair pulled back into a neat low bun, wearing a soft grey cardigan over a white blouse, long sleeves covering both wrists, scholarly and gentle, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "vars": [{"label": "40대 초반 · S#04 토론", "prompt": "Portrait photography, Extreme closeup of face of a korean woman in her early 40s, composed narrow face, thin-rimmed glasses, calm steady eyes behind the lenses, black hair tied back simply, wearing a neat dark grey suit jacket, long sleeves covering both wrists, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark"}, {"label": "60대 초반 · S#13 강의 영상", "prompt": "Portrait photography, Extreme closeup of face of a korean woman in her early 60s, narrow composed face, thin-rimmed glasses, calm eyes, black hair with grey at the temples pulled back neatly, wearing a dark navy blazer, long sleeves covering both wrists, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark"}]}, {"en": "KANG HYUN-WOO", "hanja": "姜 賢佑", "ko": "강현우", "grade": "1", "chip": "1", "age": "58", "height": "약 174 cm", "role": "분류국 국장 · 표면적 시스템 설계자", "tier": "1등급", "person": "인자한 얼굴의 겁쟁이. 약으로 점수를 유지한다. 따뜻한 위선.", "voice": "부드럽고 따뜻하다. 상대의 이름을 자주 부른다.", "look": [["얼굴형", "<b>둥글고 인자한 얼굴, 깊은 웃음 주름</b>"], ["눈", "따뜻하게 처진 눈"], ["머리", "단정히 빗어넘긴 은발"], ["의상", "흠 없는 차콜 수트, 완벽하게 맨 넥타이"], ["측정기", "매끈한 검정 밴드 · 파랑"], ["특징", "<b>떨리는 손을 다른 손으로 잡아 멈추는 손</b> — 이 인물의 전부"]], "front": "Portrait photography, full shot, Fullbody, front view of portrait of a 58 year old korean man, round kindly face with deep smile lines, warm drooping eyes, neatly combed silver hair, wearing an immaculate charcoal suit with a perfectly knotted tie, a sleek black measuring band with a calm blue display on the wrist, a gentle fatherly expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "back": "Portrait photography, full shot, Fullbody, Back view of a 58 year old korean man, round kindly face with deep smile lines, warm drooping eyes, neatly combed silver hair, wearing an immaculate charcoal suit with a perfectly knotted tie, a sleek black measuring band with a calm blue display on the wrist, a gentle fatherly expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "face": "Portrait photography, Extreme closeup of face of a 58 year old korean man, round kindly face with deep smile lines, warm drooping eyes, neatly combed silver hair, wearing an immaculate charcoal suit with a perfectly knotted tie, a gentle fatherly expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "vars": []}, {"en": "HAN JI-WON", "hanja": "韓 智元", "ko": "한지원", "grade": "1", "chip": "1", "age": "40", "height": "약 166 cm", "role": "청심회 교주 · 신도 200만", "tier": "1등급", "person": "연습된 온화함. 10년 전 격리시설에서 죽은 동생 사진을 서랍에 넣어두고 신도를 넘긴다.", "voice": "낭송하듯 매끄럽다. 울림이 있다.", "look": [["얼굴형", "부드러운 둥근 얼굴, 고요한 이목구비"], ["눈", "온화하게 처진 눈"], ["머리", "길고 곧은 검은 머리를 매끄럽게 넘겨 묶음"], ["피부", "티 없이 창백함"], ["의상", "<b>순백의 한복</b> — 성스러움의 기호"], ["측정기", "매끈한 검정 밴드 · 파랑"]], "front": "Portrait photography, full shot, Fullbody, front view of portrait of a 40 year old korean woman, soft round face with serene features, gentle downturned eyes, long straight black hair pulled back smoothly, flawless pale skin, wearing a pure white hanbok, an expression of practiced calm, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "back": "Portrait photography, full shot, Fullbody, Back view of a 40 year old korean woman, soft round face with serene features, gentle downturned eyes, long straight black hair pulled back smoothly, flawless pale skin, wearing a pure white hanbok, an expression of practiced calm, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "face": "Portrait photography, Extreme closeup of face of a 40 year old korean woman, soft round face with serene features, gentle downturned eyes, long straight black hair pulled back smoothly, flawless pale skin, wearing a pure white hanbok, an expression of practiced calm, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "vars": []}, {"en": "YOON TAE-SEOK", "hanja": "尹 泰錫", "ko": "윤태석", "grade": "1", "chip": "1", "age": "50대 중반", "height": "약 176 cm · 풍채 있음", "role": "감정안전부 장관 · 차기 대권 후보", "tier": "1등급", "person": "전형적인 정치인. 계산이 표정보다 빠르다.", "voice": "크고 잘 훈련된 연설 톤.", "look": [["얼굴형", "<b>넓고 각진 얼굴, 넓은 이마</b> — 다른 마른 1등급들과 대비되게"], ["눈", "작고 계산적인 눈"], ["머리", "숱 많고 잘 손질된 검은 머리, 관자놀이에 흰머리"], ["의상", "네이비 정치인 수트 + <b>라펠 핀</b>"], ["측정기", "매끈한 검정 밴드 · 파랑"]], "front": "Portrait photography, full shot, Fullbody, front view of portrait of a korean man in his mid 50s, broad square face, wide forehead, small calculating eyes, thick well-groomed dark hair with grey at the temples, wearing a navy politician's suit with a lapel pin, a sleek black measuring band with a calm blue display on the wrist, a practiced public smile, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "back": "Portrait photography, full shot, Fullbody, Back view of a korean man in his mid 50s, broad square face, wide forehead, small calculating eyes, thick well-groomed dark hair with grey at the temples, wearing a navy politician's suit with a lapel pin, a sleek black measuring band with a calm blue display on the wrist, a practiced public smile, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "face": "Portrait photography, Extreme closeup of face of a korean man in his mid 50s, broad square face, wide forehead, small calculating eyes, thick well-groomed dark hair with grey at the temples, wearing a navy politician's suit with a lapel pin, a practiced public smile, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "vars": []}, {"en": "SEO DO-YOON", "hanja": "徐 道潤", "ko": "서도윤", "grade": "1", "chip": "1", "age": "45", "height": "약 178 cm", "role": "누벨바이오 CEO · 측정 장비 독점", "tier": "1등급", "person": "끝까지 표정이 무너지지 않는다. 체포되면서도 목례한다.", "voice": "낮고 건조하다. 감정이 실리지 않는다.", "look": [["얼굴형", "좁고 세련된 얼굴, <b>높은 광대</b>"], ["눈", "<b>무테 안경</b> 뒤의 차갑고 영리한 눈"], ["머리", "검은 머리를 단정히 <b>올백</b>"], ["의상", "완벽하게 재단된 다크 차콜 수트, <b>노타이</b>"], ["측정기", "매끈한 검정 밴드 · 파랑"]], "front": "Portrait photography, full shot, Fullbody, front view of portrait of a 45 year old korean man, refined narrow face with high cheekbones, cool intelligent eyes behind rimless glasses, black hair slicked back neatly, wearing a perfectly tailored dark charcoal suit with no tie, a sleek black measuring band with a calm blue display on the wrist, composed and unreadable, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "back": "Portrait photography, full shot, Fullbody, Back view of a 45 year old korean man, refined narrow face with high cheekbones, cool intelligent eyes behind rimless glasses, black hair slicked back neatly, wearing a perfectly tailored dark charcoal suit with no tie, a sleek black measuring band with a calm blue display on the wrist, composed and unreadable, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "face": "Portrait photography, Extreme closeup of face of a 45 year old korean man, refined narrow face with high cheekbones, cool intelligent eyes behind rimless glasses, black hair slicked back neatly, wearing a perfectly tailored dark charcoal suit with no tie, composed and unreadable, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "vars": []}, {"en": "HAN JI-YOUNG", "hanja": "韓 志英", "ko": "한지영", "grade": "2", "chip": "2", "age": "35", "height": "약 165 cm", "role": "탐사보도 기자 · 5년 전 동생이 격리시설에서 사망", "tier": "2등급", "person": "하은과 같은 차가운 눈인데 온도의 방향이 반대 — 하은은 눌러서 차갑고, 지영은 분노 때문에 차갑다.", "voice": "빠르고 단호하다. 질문이 많다.", "look": [["얼굴형", "각진 얼굴, <b>굵고 곧은 눈썹</b>"], ["눈", "날카롭고 단호한 눈"], ["머리", "<b>턱선 길이의 뭉툭한 단발</b> — 하은의 묶은 머리와 실루엣부터 구별"], ["의상", "단정하지만 살짝 낡은 회색 블레이저 + 무지 셔츠"], ["측정기", "검정 밴드 · <b>연초록</b>"]], "front": "Portrait photography, full shot, Fullbody, front view of portrait of a 35 year old korean woman, angular face with strong straight eyebrows, sharp determined eyes, a blunt chin-length black bob, minimal makeup, wearing a neat but slightly worn grey blazer over a plain shirt, a black measuring band with a pale green display on the wrist, a cold focused expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "back": "Portrait photography, full shot, Fullbody, Back view of a 35 year old korean woman, angular face with strong straight eyebrows, sharp determined eyes, a blunt chin-length black bob, minimal makeup, wearing a neat but slightly worn grey blazer over a plain shirt, a black measuring band with a pale green display on the wrist, a cold focused expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "face": "Portrait photography, Extreme closeup of face of a 35 year old korean woman, angular face with strong straight eyebrows, sharp determined eyes, a blunt chin-length black bob, minimal makeup, wearing a neat but slightly worn grey blazer over a plain shirt, a cold focused expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "vars": [{"label": "폭행 후 · S#87~", "prompt": "Portrait photography, Extreme closeup of face of a 35 year old korean woman, angular face with strong straight eyebrows, sharp determined eyes, a blunt chin-length black bob, minimal makeup, wearing a neat but slightly worn grey blazer over a plain shirt, a cold focused expression, a healing bruise on her left cheekbone, sitting in a wheelchair, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark"}]}, {"en": "SECTION CHIEF JEONG", "hanja": "鄭 課長", "ko": "정 과장", "grade": "1", "chip": "1", "age": "45", "height": "약 182 cm", "role": "분류국 색출팀장", "tier": "1등급", "person": "악의가 없는 폭력. 화내지 않는다. 노인을 죽이고 보고서 빈칸을 채운 뒤 커피를 마저 마신다.", "voice": "평이하다. 무전 어투. 억양 변화가 없다.", "look": [["얼굴형", "단단한 사각 얼굴, <b>무거운 턱</b>"], ["눈", "평평하고 감정 없는 눈"], ["머리", "짧게 친 검은 머리"], ["체형", "두꺼운 목, 단단한 체구"], ["의상", "셔츠 위 무지 검정 전술 재킷"], ["측정기", "매끈한 검정 밴드 · 파랑"]], "note": "씬 투입 시 <b>로우앵글 금지 · 눈높이 고정.</b> 앵글로 미화하면 이 인물의 무서움이 사라집니다.", "front": "Portrait photography, full shot, Fullbody, front view of portrait of a 45 year old korean man, hard square face with a heavy jaw, flat emotionless eyes, close-cropped black hair, thick neck and solid build, wearing a plain black tactical jacket over a shirt, a sleek black measuring band with a calm blue display on the wrist, a bored procedural expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "back": "Portrait photography, full shot, Fullbody, Back view of a 45 year old korean man, hard square face with a heavy jaw, flat emotionless eyes, close-cropped black hair, thick neck and solid build, wearing a plain black tactical jacket over a shirt, a sleek black measuring band with a calm blue display on the wrist, a bored procedural expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "face": "Portrait photography, Extreme closeup of face of a 45 year old korean man, hard square face with a heavy jaw, flat emotionless eyes, close-cropped black hair, thick neck and solid build, wearing a plain black tactical jacket over a shirt, a bored procedural expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "vars": []}, {"en": "ELDER KIM", "hanja": "金 老人", "ko": "김 노인", "grade": "5", "chip": "5", "age": "70대 중반", "height": "약 165 cm · 약간 굽음", "role": "5등급 구역 거주자 · 정혜숙의 옛 친구", "tier": "5등급", "person": "이 작품에서 유일하게 따뜻한 얼굴. 하은을 친딸처럼 돌본다.", "voice": "느리고 다정하다.", "look": [["얼굴형", "둥글고 풍상 겪은 얼굴, <b>눈가에 깊은 웃음 주름</b>"], ["눈", "따뜻하게 접히는 눈"], ["머리", "숱 적은 흰머리 · 며칠치 흰 수염"], ["의상", "<b>낡은 회색 패딩 외투</b> + 껴입은 헌 옷"], ["측정기", "두꺼운 검정 밴드 · 빨강"], ["특징", "국자를 내미는 손 · 외투를 걸쳐주는 손"]], "note": "<b>낡은 회색 외투는 소품 순환의 핵심</b> — S#55에서 하은에게 걸쳐주고, S#81에서 하은이 다시 덮어줍니다. 외투 형태를 시트에서 확정하세요.", "front": "Portrait photography, full shot, Fullbody, front view of portrait of a korean man in his mid 70s, round weathered face with deep laugh lines around the eyes, warm crinkled eyes, thin white hair, a few days of white stubble, wearing a worn grey padded coat over layered old clothes, a thick black measuring band with a red display on the wrist, a kind unhurried expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "back": "Portrait photography, full shot, Fullbody, Back view of a korean man in his mid 70s, round weathered face with deep laugh lines around the eyes, warm crinkled eyes, thin white hair, a few days of white stubble, wearing a worn grey padded coat over layered old clothes, a thick black measuring band with a red display on the wrist, a kind unhurried expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "face": "Portrait photography, Extreme closeup of face of a korean man in his mid 70s, round weathered face with deep laugh lines around the eyes, warm crinkled eyes, thin white hair, a few days of white stubble, wearing a worn grey padded coat over layered old clothes, a kind unhurried expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "vars": []}, {"en": "OLD MAN PARK", "hanja": "朴 老人", "ko": "박씨 할아버지", "grade": "5", "chip": "5", "age": "75", "height": "약 172 cm · 약간 굽음", "role": "박상현의 단골 식당 주인 · 마지막 USB 키를 아는 유일한 사람", "tier": "5등급", "person": "김 노인이 둥글고 따뜻하다면 이쪽은 길고 완고하다. 문을 닫으려 한다.", "voice": "짧고 퉁명스럽다.", "look": [["얼굴형", "<b>길고 여윈 얼굴, 팬 볼</b>"], ["눈", "고집스럽게 좁힌 눈"], ["머리", "성긴 회색 머리를 뒤로 빗어넘김"], ["의상", "바랜 작업 재킷 + <b>낡은 앞치마</b> — 앞치마로 「식당 주인」 정체성을 옷에 고정"], ["측정기", "두꺼운 검정 밴드 · 빨강"]], "front": "Portrait photography, full shot, Fullbody, front view of portrait of a 75 year old korean man, long gaunt face with hollow cheeks, stubborn narrowed eyes, sparse grey hair combed back, a slight stoop, wearing a faded work jacket over an old apron, a thick black measuring band with a red display on the wrist, a guarded closed expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "back": "Portrait photography, full shot, Fullbody, Back view of a 75 year old korean man, long gaunt face with hollow cheeks, stubborn narrowed eyes, sparse grey hair combed back, a slight stoop, wearing a faded work jacket over an old apron, a thick black measuring band with a red display on the wrist, a guarded closed expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "face": "Portrait photography, Extreme closeup of face of a 75 year old korean man, long gaunt face with hollow cheeks, stubborn narrowed eyes, sparse grey hair combed back, a slight stoop, wearing a faded work jacket over an old apron, a guarded closed expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "vars": []}, {"en": "AUDITOR YOON", "hanja": "尹 監査官", "ko": "윤 감사관", "grade": "1", "chip": "1", "age": "52", "height": "약 173 cm", "role": "분류국 감사실 · 정혜숙의 옛 간호대 동기", "tier": "1등급", "person": "죄책감의 얼굴. 10년간 USB를 책장 뒤에 두고 열지도 버리지도 못했다.", "voice": "작고 흐린다. 말끝을 맺지 못한다.", "look": [["얼굴형", "길고 좁은 얼굴, 지쳐 처진 이목구비"], ["눈", "<b>미안한 듯 처진 눈</b>"], ["머리", "숱 적은 회색 머리"], ["체형", "둥글게 말린 어깨"], ["의상", "<b>살짝 구겨진 회색 수트</b>"], ["측정기", "매끈한 검정 밴드 · 파랑"]], "note": "<b>유일하게 옷이 구겨진 1등급.</b> 다른 1등급이 전부 immaculate한 것과 대비돼야 합니다 — 그 구김이 그의 양심입니다.", "front": "Portrait photography, full shot, Fullbody, front view of portrait of a 52 year old korean man, long narrow face with tired sagging features, downturned apologetic eyes, thinning grey hair, rounded shoulders, wearing a slightly rumpled grey suit, a sleek black measuring band with a calm blue display on the wrist, a permanently uneasy expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "back": "Portrait photography, full shot, Fullbody, Back view of a 52 year old korean man, long narrow face with tired sagging features, downturned apologetic eyes, thinning grey hair, rounded shoulders, wearing a slightly rumpled grey suit, a sleek black measuring band with a calm blue display on the wrist, a permanently uneasy expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "face": "Portrait photography, Extreme closeup of face of a 52 year old korean man, long narrow face with tired sagging features, downturned apologetic eyes, thinning grey hair, rounded shoulders, wearing a slightly rumpled grey suit, a permanently uneasy expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "vars": []}, {"en": "JEONG HYE-SOOK", "hanja": "鄭 惠淑", "ko": "정혜숙", "grade": "5", "chip": "5", "age": "40대 중반", "height": "약 167 cm", "role": "하은·하린의 어머니 · 1세대 시범 측정 자원자", "tier": "1등급 → 5등급 처분", "person": "정신과 간호사 출신. 격리시설에서 사망. 끝까지 자기를 미워하지 말라 했다.", "voice": "딸에게 「울지 마, 점수 떨어져」를 처음 가르친 목소리.", "look": [["얼굴형", "차분한 계란형에 <b>각진 턱선</b>"], ["눈", "<b>하은과 완전히 동일한 깊은 홑꺼풀</b>"], ["머리", "낮게 단정히 묶은 번"], ["의상", "무지 검정 정장"], ["측정기", "두꺼운 검정 밴드 · 빨강"]], "note": "하은과 공유하는 것은 <b>눈매와 머리 모양뿐.</b> 나머지가 닮으면 실패입니다 — S#39 「닮았네, 눈매가」 복선.", "front": "Portrait photography, full shot, Fullbody, front view of portrait of a korean woman in her mid 40s, calm oval face with a sharp jawline, deep-set monolid eyes identical to her daughter's, black hair in a neat low bun, wearing a plain black suit, a thick black measuring band with a red display on the wrist, no expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "back": "Portrait photography, full shot, Fullbody, Back view of a korean woman in her mid 40s, calm oval face with a sharp jawline, deep-set monolid eyes identical to her daughter's, black hair in a neat low bun, wearing a plain black suit, a thick black measuring band with a red display on the wrist, no expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "face": "Portrait photography, Extreme closeup of face of a korean woman in her mid 40s, calm oval face with a sharp jawline, deep-set monolid eyes identical to her daughter's, black hair in a neat low bun, wearing a plain black suit, no expression, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "vars": [{"label": "30대 초반 · S#18 장례식", "prompt": "Portrait photography, Extreme closeup of face of a korean woman in her early 30s, oval face with a sharp jawline, deep-set monolid eyes, pale skin, black hair in a neat low bun, wearing a black mourning hanbok, holding a newborn, absolutely no tears, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark"}]}, {"en": "PARK SANG-HYUN", "hanja": "朴 相現", "ko": "박상현", "grade": "5", "chip": "5", "age": "40대 초반", "height": "약 177 cm", "role": "박도현의 친형 · 격리시설에서 사망", "tier": "5등급", "person": "동생 도현이 각지고 날카롭다면 형은 넓고 부드럽다. 형제인데 정반대.", "voice": "편안하고 낮다.", "look": [["얼굴형", "<b>넓고 부드러운 얼굴</b>"], ["눈", "둥근 눈"], ["입", "편안한 미소"], ["머리", "짧고 헝클어진 검은 머리"], ["의상", "무지 낡은 재킷"], ["측정기", "두꺼운 검정 밴드 · 빨강"]], "note": "<b>도현이 그 형을 신고했다는 사실이 얼굴로 더 아파야</b> 합니다. 동생과 정반대로 넓고 부드럽게.", "front": "Portrait photography, full shot, Fullbody, front view of portrait of a korean man in his early 40s, broad gentle face with soft round eyes, a warm easy smile, short messy black hair, wearing a plain worn jacket, a thick black measuring band with a red display on the wrist, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "back": "Portrait photography, full shot, Fullbody, Back view of a korean man in his early 40s, broad gentle face with soft round eyes, a warm easy smile, short messy black hair, wearing a plain worn jacket, a thick black measuring band with a red display on the wrist, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "face": "Portrait photography, Extreme closeup of face of a korean man in his early 40s, broad gentle face with soft round eyes, a warm easy smile, short messy black hair, wearing a plain worn jacket, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "vars": []}, {"en": "DA-EUN", "hanja": "多恩", "ko": "다은", "grade": "—", "chip": "·", "age": "6", "height": "약 115 cm", "role": "한지영의 딸", "tier": "—", "person": "아직 측정되지 않은 나이. 이 세계에서 유일하게 등급이 없는 얼굴.", "voice": "또렷하고 높다.", "look": [["얼굴형", "둥근 볼"], ["눈", "크고 호기심 많은 눈"], ["머리", "짧은 단발에 작은 머리핀"], ["의상", "노란 카디건 + 책가방"]], "front": "Portrait photography, full shot, Fullbody, front view of portrait of a 6 year old korean girl, round cheeks, big curious eyes, short bobbed hair with a small hair clip, wearing a school backpack over a yellow cardigan, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "back": "Portrait photography, full shot, Fullbody, Back view of a 6 year old korean girl, round cheeks, big curious eyes, short bobbed hair with a small hair clip, wearing a school backpack over a yellow cardigan, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "face": "Portrait photography, Extreme closeup of face of a 6 year old korean girl, round cheeks, big curious eyes, short bobbed hair with a small hair clip, wearing a school backpack over a yellow cardigan, shot on Hasselblad, Background is neutral grey, cold clinical lighting, hyper-realistic --ar 4:5 --style raw --no text, captions, watermark", "vars": []}], "photo": [{"en": "JEONG HYE-SOOK — 마지막 사진", "ko": "정혜숙 · 두 딸이 한 번도 본 적 없는 얼굴", "scene": "S#106", "note": "<b>이 한 장만 아날로그 룩 + 따뜻한 색.</b> 전 영화가 desaturated인데 이 사진만 색이 있으면, 그 색이 곧 「빼앗긴 삶」입니다.", "prompt": "Analog photography, a candid photo of a korean woman in her early 30s, oval face with a sharp jawline, deep-set monolid eyes crinkled in a real open laugh, hair loose in the wind, wearing a simple summer blouse, Shot on Instant Polaroid, sunlit outdoor background, Analogue aesthetic, warm faded colors --ar 4:5"}, {"en": "HAN SEO-YEON", "ko": "한서연 · 20대 초반 · 한지원의 동생", "scene": "흑백 사진 전용", "note": "언니 한지원과 <b>닮게</b> 뽑아야 서랍 속 사진의 의미가 섭니다.", "prompt": "Analog photography, a black and white portrait photo of a korean woman in her early 20s, soft round face resembling her older sister, gentle downturned eyes, long straight black hair, a shy small smile, Shot on 35mm film, plain studio background, high contrast black and white, Analogue aesthetic --ar 4:5"}, {"en": "LIM SEO-YEON", "ko": "임서연 · 30대 중반 · 임선화의 언니", "scene": "책 표지 사진 전용", "note": "동생 임선화와 <b>닮되 안경이 없습니다.</b> 간호사복이 이 인물의 전부입니다.", "prompt": "Analog photography, a faded black and white portrait photo of a korean woman in her mid 30s, narrow composed face resembling her younger sister, calm eyes without glasses, hair pulled back, wearing a nurse's uniform, Shot on 35mm film, high contrast, slightly damaged photo surface, Analogue aesthetic --ar 4:5"}]}</script>
+<script>
+const D = JSON.parse(document.getElementById('D').textContent);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* 등급 범례 */
+const GRADES = [['1','1등급'],['2','2등급'],['4','4등급'],['5','5등급'],['0','0등급 ERROR']];
+document.getElementById('legend').innerHTML = GRADES.map(([g,l]) =>
+  `<span class="lg"><span class="chip" data-g="${g}">${g==='0'?'ERR':g}</span>${l}</span>`).join('');
+
+const nPrompt = D.chars.reduce((n,c)=>n+3+c.vars.length,0) + D.photo.length;
+document.getElementById('counts').textContent =
+  `인물 ${D.chars.length} · 사진 전용 ${D.photo.length} · 프롬프트 ${nPrompt} · 3패널 규격`;
+
+/* 좌측 명단 */
+document.getElementById('rail').innerHTML =
+  D.chars.map((c,i)=>`<li><a href="#c${i}" data-t="c${i}"><span class="no">${String(i+1).padStart(2,'0')}</span>
+    <span class="nm">${esc(c.ko)}</span><span class="chip" data-g="${esc(c.grade)}">${esc(c.chip)}</span></a></li>`).join('')
+  + `<li class="sep">사진 전용</li>`
+  + D.photo.map((p,i)=>`<li><a href="#p${i}" data-t="p${i}"><span class="no">—</span>
+    <span class="nm">${esc(p.ko.split(' · ')[0])}</span></a></li>`).join('')
+  + `<li class="sep">확인</li><li><a href="#verify" data-t="verify"><span class="no">✓</span>
+    <span class="nm">얼굴 충돌 검증표</span></a></li>`;
+
+/* 프롬프트 블록 */
+const pr = (lbl, text) => `<div class="pr">
+  <div class="pr-hd"><span class="lbl">${esc(lbl)}</span>
+    <button class="btn" data-copy="${esc(text)}">복사</button></div>
+  <pre>${esc(text)}</pre></div>`;
+
+const card = (c,i) => {
+  const all = [c.front, c.back, c.face].join('\n\n');
+  return `<section class="card" id="c${i}">
+    <div class="hd">
+      <span class="idx">${String(i+1).padStart(2,'0')}</span>
+      <div class="names">
+        <p class="en">${esc(c.en)}</p>
+        <p class="kn">${esc(c.hanja)} &nbsp;/&nbsp; <strong>${esc(c.ko)}</strong></p>
+      </div>
+      <div class="tier"><span class="chip" data-g="${esc(c.grade)}">${esc(c.chip)}</span>${esc(c.tier)}</div>
+    </div>
+    <dl class="meta">
+      <div><dt>Age</dt><dd>${esc(c.age)}</dd></div>
+      <div><dt>Height</dt><dd>${esc(c.height)} <span style="color:var(--muted);font-size:12px">(가안)</span></dd></div>
+      <div><dt>Role</dt><dd>${esc(c.role)}</dd></div>
+    </dl>
+    <dl class="meta">
+      <div><dt>Personality</dt><dd>${esc(c.person)}</dd></div>
+      <div><dt>Voice</dt><dd>${esc(c.voice)}</dd></div>
+    </dl>
+    <div class="sect">
+      <h3>외형</h3>
+      <dl class="look">${c.look.map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${v}</dd></div>`).join('')}</dl>
+    </div>
+    ${c.note ? `<div class="sect"><p class="note"><span class="mk">주의</span><span>${c.note}</span></p></div>` : ''}
+    <div class="sect">
+      <div class="allbar"><h3 style="margin:0">프롬프트</h3>
+        <button class="btn" data-copy="${esc(all)}">3패널 한 번에 복사</button>
+        <span>붙여넣기만 하면 됩니다</span></div>
+      ${pr('① 정면 전신', c.front)}
+      ${pr('② 후면 전신', c.back)}
+      ${pr('③ 얼굴 클로즈업 — 이걸 먼저', c.face)}
+      ${c.vars.length ? `<details><summary>배리에이션 ${c.vars.length}</summary>
+        ${c.vars.map(v=>pr(v.label, v.prompt)).join('')}</details>` : ''}
+    </div>
+  </section>`;
+};
+
+const photoCard = (p,i) => `<section class="card" id="p${i}">
+  <div class="hd">
+    <span class="idx">—</span>
+    <div class="names"><p class="en">${esc(p.en)}</p><p class="kn"><strong>${esc(p.ko)}</strong></p></div>
+    <div class="tier">${esc(p.scene)}</div>
+  </div>
+  <div class="sect"><p class="note"><span class="mk">연출</span><span>${p.note}</span></p></div>
+  <div class="sect">${pr('사진 한 장이 곧 시트 — 전신·후면 없음', p.prompt)}</div>
+</section>`;
+
+document.getElementById('cards').innerHTML =
+  D.chars.map(card).join('') +
+  `<section class="card" style="padding:20px 24px;box-shadow:none;background:transparent;border-style:dashed">
+     <h3 style="font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+       color:var(--muted);margin:0;font-weight:500">사진 전용 — 인서트로만 쓰이는 인물</h3></section>` +
+  D.photo.map(photoCard).join('');
+
+/* 복사 */
+const toast = document.getElementById('toast');
+let tid;
+function say(msg){ toast.textContent = msg; toast.classList.add('show');
+  clearTimeout(tid); tid = setTimeout(()=>toast.classList.remove('show'), 1600); }
+
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-copy]'); if(!b) return;
+  const text = b.dataset.copy;
+  try { await navigator.clipboard.writeText(text); }
+  catch { const ta = document.createElement('textarea'); ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta);
+    ta.select(); try{ document.execCommand('copy'); } catch(_){ say('복사가 막혔습니다 — 직접 드래그해 주세요'); ta.remove(); return; }
+    ta.remove(); }
+  const was = b.textContent; b.textContent = '복사됨'; b.classList.add('ok');
+  say(text.split('\n\n').length > 1 ? '3패널 복사됨' : '복사됨');
+  setTimeout(()=>{ b.textContent = was; b.classList.remove('ok'); }, 1500);
+});
+
+/* 현재 보고 있는 인물 표시 */
+const links = new Map([...document.querySelectorAll('.rail a')].map(a=>[a.dataset.t,a]));
+const io = new IntersectionObserver(es=>{
+  es.forEach(en=>{ const a = links.get(en.target.id); if(!a) return;
+    if(en.isIntersecting){ links.forEach(x=>x.classList.remove('on')); a.classList.add('on'); } });
+}, {rootMargin:'-15% 0px -70% 0px'});
+document.querySelectorAll('.card[id]').forEach(s=>io.observe(s));
+</script>
