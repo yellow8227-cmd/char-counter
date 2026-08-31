@@ -689,6 +689,10 @@
   .modebtn.aim    {background:linear-gradient(180deg,#5ad6b0,#22b98c);box-shadow:0 6px 0 #159a72,0 12px 22px rgba(20,160,120,.35);
     grid-column:1/-1;flex-direction:row;gap:10px;padding:11px 8px;}
   .modebtn.aim .d{opacity:.95;}
+  /* ♾️ 끝없는 모드 — 보스가 나오는 판이라 어둡고 붉은 쪽으로. 한 줄을 다 쓴다 */
+  .modebtn.endm   {background:linear-gradient(180deg,#8a4a7a,#5a2050);box-shadow:0 6px 0 #3d1236,0 12px 22px rgba(90,25,75,.4);
+    grid-column:1/-1;flex-direction:row;gap:10px;padding:11px 8px;}
+  .modebtn.endm .d{opacity:.95;}
 
   /* ===== 던지는 사람 화면: 두 창 ===== */
   #throwerView{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;
@@ -914,6 +918,7 @@
       <button class="modebtn rankm" id="rankBtn"><span class="e">🏆</span><span class="n">랭킹</span><span class="d">난이도별 순위</span></button>
       <button class="modebtn chalm" id="battleBtn"><span class="e">📮</span><span class="n">도전장</span><span class="d">같은 판 점수 승부</span></button>
       <button class="modebtn aim" id="aiBtn"><span class="e">🤖</span><span class="n">AI와 대결</span><span class="d">인터넷 없이 바로 붙기</span></button>
+      <button class="modebtn endm" id="endlessBtn"><span class="e">♾️</span><span class="n">끝없는 모드</span><span class="d">5레벨마다 거대 보스</span></button>
     </div>
     <div class="rowbtn">
       <button class="btn ghost" id="chatBtn" style="padding:12px 22px;font-size:16px;">💬 채팅</button>
@@ -3622,6 +3627,11 @@ function loopHero(){ if($('startScreen').classList.contains('hide'))return; hero
 let running=false,score=0,combo=1,comboTimer=0,lives=3,level=1;
 let jellies=[],particles=[],floaters=[],rings=[],shots=[],drops=[],banner=null,callout=null,flash=0;
 let maxCombo=1;                      // 이번 판에서 가장 높았던 콤보 (임무·기록용)
+// ♾ 끝없는 모드 — 5레벨마다 거대 보스가 내려온다. 젤리를 터트리면 그 젤리가 보스에게 날아간다.
+let endless=false, nextEndless=false;
+let boss=null;                       // {x,y,r,hp,hpMax,vy,swing,flash,shootT,slamT}
+let bossKills=0, bossLv=0;           // 이번 판에 잡은 보스 수 / 마지막으로 보스를 부른 레벨
+let bshots=[];                       // 보스로 날아가는 젤리 조각 {x,y,vx,vy,color,r}
 let spawnTimer=0,elapsed=0,shake=0,frame=0,dropTimer=0,paused=false;
 let player={x:W/2,targetX:W/2,mood:'idle',moodTimer:0,recoil:0};
 const JELLY_COLORS=['#ff8fb8','#8fc9ff','#b6ff8f','#ffd98f','#d99bff','#8ff0e0'];
@@ -3683,6 +3693,12 @@ function tolPx(){ return TOL_LEVELS[tolMode]; }
 function hit(mx,my){ if(!running||paused)return; ensureAudio();
   ring(mx,my,'rgba(255,255,255,0.95)',30,3); // 클릭 순간 물결 피드백
   const tol=tolPx();
+  // 0) 보스를 눌렀나 — 보스는 판을 크게 덮으므로 젤리보다 먼저 본다.
+  //    (뒤에 두면 보스 위에 겹친 젤리만 터지고 보스는 안 맞는다)
+  if(boss&&boss.dieT<=0){ const bx=mx-boss.x, by=my-boss.y;
+    if(bx*bx+by*by<=(boss.r*1.05)*(boss.r*1.05)){
+      player.targetX=boss.x; shots.push({tx:boss.x,ty:boss.y,life:1}); player.recoil=10;
+      bossHit(1,mx,my); setMood('mad',40); return; } }
   // 1) 떨어지는 부스트 아이템 먼저 체크
   for(let i=drops.length-1;i>=0;i--){ const dp=drops[i]; if(dp.dead)continue;
     const dx=mx-dp.x,dy=my-dp.y,reach=dp.r+tol+16;
@@ -3714,6 +3730,8 @@ function popGood(j){ j.dead=true;combo=Math.min(combo+1,9);comboTimer=magnetTime
   const g=(netMode&&netGame==='throw') ? POP_BASE*Math.min(5,combo)*mult : j.pts*combo*mult;
   score+=g;
   const cGain=j.gold?12:1; runCoins+=cGain;
+  // ♾ 보스가 있으면 터진 젤리가 보스에게 날아간다 — 터트리는 손맛이 그대로 공격이 된다
+  if(endless&&boss&&boss.dieT<=0) bossThrow(j.x,j.y,j.color,j.gold?3:1);
   burst(j.x,j.y,j.color,j.gold?34:24); burst(j.x,j.y,'#ffffff',6);
   ring(j.x,j.y,j.gold?'#ffce3d':j.color,j.r*3.4,6);
   shake=Math.max(shake,j.gold?9:4);
@@ -3739,6 +3757,177 @@ function updateLevel(){ const m=MODES[mode];
   else prog=target;
   const nl=Math.floor(prog)+1;
   if(nl>level){ level=nl; banner={text:'LEVEL '+level+' 🔥',life:1}; flash=1; playLevelUp(); updateHud(); } }
+// ================= ♾ 끝없는 모드의 보스 =================
+// 왜 보스인가: 한 판이 '오래 버티기'뿐이면 20초쯤 뒤부터 같은 일의 반복이다.
+// 5레벨마다 목표가 하나 생기면 판에 리듬이 생기고, 한 번 앉은 사람이 계속 앉아 있는다.
+//
+// 어떻게 때리나 (둘 다 된다)
+//   ① 보스를 직접 누른다 → 1
+//   ② 아무 젤리나 터트린다 → 그 젤리가 보스에게 날아가 1 (금젤리는 3)
+//      "터트리는 손맛"이 그대로 보스 공격이 되는 게 핵심이다. 새 조작을 배울 필요가 없다.
+// 둥근 네모 — 구형 사파리에는 ctx.roundRect 가 없어서 직접 그린다
+function roundRect(g,x,y,w,h,r){ r=Math.min(r,w/2,h/2); g.beginPath();
+  g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r);
+  g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+const BOSS_EVERY=5;                                  // 몇 레벨마다 나오나
+function bossHpFor(lv){ return 10+Math.floor(lv/BOSS_EVERY)*6; }
+function bossSpawn(){
+  const r=Math.min(W*0.30,104), hp=bossHpFor(level);
+  // 내려오는 속도: 바닥까지 30초쯤. 더 느리면 위협이 아니고, 더 빠르면 손쓸 틈이 없다.
+  boss={x:W/2,y:-r*1.1,r:r,hp:hp,hpMax:hp,vy:0.40+Math.floor(level/BOSS_EVERY)*0.05,swing:Math.random()*7,
+        flash:0,shootT:150,slamT:0,dieT:0};
+  banner={text:'⚠️ 거대 젤리 등장!',life:1.6}; flash=1; shake=22; playBomb();
+  showCallout('보스를 터트려요!','#ff3b5c');
+}
+function bossHit(dmg,fx,fy){
+  if(!boss||boss.dieT>0) return;
+  boss.hp-=dmg; boss.flash=1; shake=Math.max(shake,dmg>=3?14:7);
+  burst(fx,fy,'#ff6b8a',dmg>=3?26:12); floater(fx,fy-20,'-'+dmg,'#ff3b5c');
+  playSquish(dmg>=3?9:5);
+  if(boss.hp<=0){ bossDie(); }
+}
+function bossDie(){
+  boss.dieT=1; bossKills++;
+  const bonus=300+level*40, coin=18+level*2;
+  score+=bonus; runCoins+=coin;
+  // 하트 한 칸 회복 — 최대치는 넘지 않는다(넘기면 위 칩 줄이 접혀 판이 작아진다)
+  const maxL=MODES[mode].lives, healed=(lives<maxL);
+  if(healed) lives++;
+  updateHud();
+  burst(boss.x,boss.y,'#ff3b5c',80); burst(boss.x,boss.y,'#ffffff',40);
+  ring(boss.x,boss.y,'#ffce3d',boss.r*5,12); ring(boss.x,boss.y,'#ff6b8a',boss.r*3.4,9);
+  floater(boss.x,boss.y-boss.r,'+'+bonus,'#e63e72');
+  banner={text:'🎉 보스 격파! +'+bonus,life:1.6}; flash=1; shake=26;
+  toast('🎉 보스 격파! ⭐+'+bonus+' · 🪙+'+coin+(healed?' · ❤️ 하트 회복!':'')); playLevelUp();
+  setMood('proud',90);
+}
+// 터트린 젤리를 보스에게 날린다 — 조각이 날아가 맞는 게 눈에 보여야 '내가 던졌다'가 된다
+function bossThrow(x,y,color,dmg){
+  if(!boss||boss.dieT>0) return;
+  bshots.push({x:x,y:y,color:color,dmg:dmg,r:dmg>=3?13:9,t:0});
+}
+function bossStep(){
+  // 보스 부르기 — 5레벨마다 한 번. 이미 하나 있으면 안 부른다.
+  if(!boss && level>0 && level%BOSS_EVERY===0 && bossLv!==level){ bossLv=level; bossSpawn(); }
+  if(!boss) return;
+  const b=boss;
+  if(b.flash>0) b.flash-=0.08;
+  if(b.dieT>0){ b.dieT+=0.05; if(b.dieT>1.6) boss=null; return; }
+  b.swing+=0.022;
+  const amp=Math.max(0,W/2-b.r*1.34);   // 가시(1.30R)까지 판 안에 있어야 한다
+  b.x=W/2+Math.sin(b.swing)*amp;
+  // 아래로 아주 천천히 — 바닥까지 오면 한 번 내려찍고 위로 되돌아간다(즉사는 억울하다)
+  b.y+=b.vy;
+  if(b.y>H-b.r*1.5){
+    b.y=-b.r*1.1; loseLife();
+    if(lives>0){ banner={text:'💥 보스가 내려찍었다!',life:1.4}; flash=1; shake=26;
+      setMood('ouch',80); playMiss(); }
+  }
+  // 폭탄 뱉기 — 보스가 살아 있는 동안만. 위협이 있어야 '보스'다.
+  b.shootT--;
+  if(b.shootT<=0){ b.shootT=Math.max(70,150-level*3);
+    jellies.push({x:b.x,y:b.y+b.r*0.7,vx:srand(-0.6,0.6),vy:srand(2.0,2.8),r:26,
+      color:'#4a4450',face:'happy',shape:'round',pts:20,bomb:true,gold:false,
+      wob:Math.random()*7,dead:false}); }
+  // 날아가는 젤리 조각이 보스에 닿으면 damage
+  for(const sh of bshots){
+    if(sh.dead) continue;
+    const dx=b.x-sh.x, dy=b.y-sh.y, d=Math.hypot(dx,dy)||1;
+    const sp=13+sh.t*0.6; sh.t++;
+    sh.x+=dx/d*sp; sh.y+=dy/d*sp;
+    if(d<b.r*0.9){ sh.dead=true; bossHit(sh.dmg,sh.x,sh.y); }
+    else if(sh.t>60) sh.dead=true;
+  }
+  bshots=bshots.filter(sh=>!sh.dead);
+}
+// 보스 그리기 — 크고 무섭게. 뾰족한 껍질 · 붉게 빛나는 눈 · 이빨 · 금 간 자리.
+function drawBoss(){
+  if(!boss) return; const b=boss;
+  const dying=b.dieT>0, k=dying?Math.max(0,1-(b.dieT-1)/0.6):1;
+  const pulse=1+Math.sin(frame*0.12)*0.045;
+  const hurt=1-b.hp/b.hpMax;                       // 아플수록 붉어지고 금이 늘어난다
+  ctx.save(); ctx.translate(b.x,b.y);
+  ctx.scale(k*pulse,k*pulse);
+  if(dying) ctx.rotate((b.dieT-1)*0.6);
+  const R=b.r;
+  // 검붉은 기운 — 크게 번지는 원 두 겹
+  for(const [rr,al] of [[2.1,0.10],[1.5,0.16]]){
+    const ag=ctx.createRadialGradient(0,0,R*0.6,0,0,R*rr);
+    ag.addColorStop(0,'rgba(255,50,80,'+(al+Math.sin(frame*0.1)*0.04)+')');
+    ag.addColorStop(1,'rgba(255,50,80,0)');
+    ctx.fillStyle=ag; ctx.beginPath(); ctx.arc(0,0,R*rr,0,7); ctx.fill(); }
+  // 뾰족한 껍질 — 폭탄 젤리와 같은 원리지만 가시가 훨씬 많고 길다
+  const sp=16; ctx.beginPath();
+  for(let i=0;i<sp*2;i++){ const a=i/(sp*2)*Math.PI*2+b.swing*0.35,
+    rr=(i%2? R*1.30:R*1.02)*(1+Math.sin(frame*0.08+i)*0.012);
+    ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr); }
+  ctx.closePath(); ctx.fillStyle=mixHex('#2a1030','#ff2d55',0.12+hurt*0.30); ctx.fill();
+  // 몸통 — 위는 옅고 아래로 새까매지는 젤리
+  const bg=ctx.createLinearGradient(0,-R,0,R);
+  bg.addColorStop(0,mixHex('#6b3a58','#ff4d6d',hurt*0.5));
+  bg.addColorStop(0.45,mixHex('#3d1c33','#ff2d55',hurt*0.28));
+  bg.addColorStop(1,'#170a16');
+  ctx.beginPath(); ctx.arc(0,0,R,0,7); ctx.fillStyle=bg; ctx.fill();
+  ctx.save(); ctx.beginPath(); ctx.arc(0,0,R,0,7); ctx.clip();
+  ctx.fillStyle='rgba(255,255,255,0.14)';
+  ctx.beginPath(); ctx.ellipse(0,-R*1.02,R*0.95,R*0.34,0,0,7); ctx.fill();
+  ctx.fillStyle='rgba(255,70,110,0.20)';
+  ctx.beginPath(); ctx.ellipse(0,R*0.78,R*0.75,R*0.26,0,0,7); ctx.fill();
+  // 금 간 자리 — 체력이 깎일수록 늘어난다
+  const cracks=Math.round(hurt*7);
+  ctx.strokeStyle='rgba(255,90,120,0.75)'; ctx.lineWidth=Math.max(1.5,R*0.022); ctx.lineCap='round';
+  for(let i=0;i<cracks;i++){ const a=i*1.9+0.4; ctx.beginPath();
+    ctx.moveTo(Math.cos(a)*R*0.18,Math.sin(a)*R*0.18);
+    ctx.lineTo(Math.cos(a+0.30)*R*0.62,Math.sin(a+0.30)*R*0.62);
+    ctx.lineTo(Math.cos(a+0.12)*R*0.95,Math.sin(a+0.12)*R*0.95); ctx.stroke(); }
+  ctx.restore();
+  // 뿔 — 머리 위에 셋
+  ctx.fillStyle='#1a0a18';
+  [[-0.52,-0.86,0.30],[0,-1.02,0.36],[0.52,-0.86,0.30]].forEach(([hx,hy,hs])=>{
+    ctx.beginPath(); ctx.moveTo(R*(hx-hs*0.42),R*hy); ctx.lineTo(R*hx,R*(hy-hs*1.5));
+    ctx.lineTo(R*(hx+hs*0.42),R*hy); ctx.closePath(); ctx.fill(); });
+  // 눈 — 붉게 빛나는 세로 눈. 이 게임의 다른 눈과 정반대로 그려야 '적'으로 읽힌다.
+  [-1,1].forEach(sd=>{
+    const ex=sd*R*0.36, ey=-R*0.08;
+    const gg=ctx.createRadialGradient(ex,ey,1,ex,ey,R*0.30);
+    gg.addColorStop(0,'rgba(255,220,120,0.95)'); gg.addColorStop(0.35,'rgba(255,60,80,0.75)');
+    gg.addColorStop(1,'rgba(255,60,80,0)');
+    ctx.fillStyle=gg; ctx.beginPath(); ctx.arc(ex,ey,R*0.30,0,7); ctx.fill();
+    ctx.fillStyle='#fff3c4'; ctx.beginPath(); ctx.ellipse(ex,ey,R*0.115,R*0.155,0,0,7); ctx.fill();
+    ctx.fillStyle='#2a0a12'; ctx.beginPath(); ctx.ellipse(ex,ey,R*0.042,R*0.125,0,0,7); ctx.fill();
+    // 치켜올라간 눈썹
+    ctx.strokeStyle='#1a0a18'; ctx.lineWidth=R*0.075; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(ex-sd*R*0.20,ey-R*0.26); ctx.lineTo(ex+sd*R*0.20,ey-R*0.40); ctx.stroke(); });
+  // 입 — 벌어진 아가리에 이빨
+  ctx.fillStyle='#1a0510';
+  ctx.beginPath(); ctx.ellipse(0,R*0.44,R*0.42,R*0.22,0,0,7); ctx.fill();
+  ctx.fillStyle='#fff3e0';
+  for(let i=-2;i<=2;i++){ const tx=i*R*0.155; ctx.beginPath();
+    ctx.moveTo(tx-R*0.055,R*0.26); ctx.lineTo(tx+R*0.055,R*0.26); ctx.lineTo(tx,R*0.42); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(tx-R*0.05,R*0.63); ctx.lineTo(tx+R*0.05,R*0.63); ctx.lineTo(tx,R*0.48); ctx.closePath(); ctx.fill(); }
+  if(b.flash>0){ ctx.fillStyle='rgba(255,255,255,'+(b.flash*0.55)+')';
+    ctx.beginPath(); ctx.arc(0,0,R*1.1,0,7); ctx.fill(); }
+  ctx.restore();
+  // 체력 띠 — 판 맨 위에. DOM 을 건드리면 판 크기가 흔들리므로 캔버스에 그린다.
+  if(!dying){
+    const bw=W*0.62, bh=15, bx=(W-bw)/2, by=16;   // 판 위 둥근 모서리를 피해 조금 내린다
+    ctx.fillStyle='rgba(30,10,26,0.55)'; roundRect(ctx,bx,by,bw,bh,bh/2); ctx.fill();
+    const pw=Math.max(0,bw*(b.hp/b.hpMax));
+    const hg=ctx.createLinearGradient(bx,0,bx+bw,0);
+    hg.addColorStop(0,'#ff2d55'); hg.addColorStop(1,'#ff9c6b');
+    ctx.fillStyle=hg; roundRect(ctx,bx,by,pw,bh,bh/2); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font='700 12px "NanumGothic",sans-serif'; ctx.textAlign='center';
+    ctx.fillText('⚠️ 거대 젤리  '+Math.max(0,b.hp)+' / '+b.hpMax, W/2, by+bh-2.5);
+  }
+}
+// 날아가는 젤리 조각
+function drawBshots(){
+  for(const sh of bshots){ ctx.save(); ctx.globalAlpha=0.95;
+    ctx.fillStyle=sh.color; ctx.beginPath(); ctx.arc(sh.x,sh.y,sh.r,0,7); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.75)';
+    ctx.beginPath(); ctx.arc(sh.x-sh.r*0.3,sh.y-sh.r*0.3,sh.r*0.34,0,7); ctx.fill();
+    ctx.restore(); }
+}
 function loseLife(){ lives--; updateHud(); if(lives<=0)gameOver(); }
 function heartStr(){ const max=MODES[mode].lives; return '❤️'.repeat(Math.max(0,lives))+'🤍'.repeat(Math.max(0,max-lives)); }
 function updateHud(){ $('score').textContent=score;$('combo').textContent='x'+combo;$('level').textContent=level;$('runCoinHud').textContent=runCoins;$('lives').textContent=heartStr(); }
@@ -3826,6 +4015,7 @@ function foeRing(j){ ctx.strokeStyle='rgba(150,90,255,0.95)';ctx.lineWidth=3;ctx
   ctx.beginPath();ctx.arc(0,0,j.r+5,0,7);ctx.stroke();ctx.setLineDash([]); }
 
 function update(){ elapsed++; updateLevel();
+  if(endless) bossStep();
   if(netMode){ if(elapsed%30===0)netSend({t:'stat',score:score,lives:lives,combo:combo,level:level,px:Math.round(player.x)});
     // 👀 탈락한 사람이 내 화면을 볼 수 있게 판을 간추려 1초에 6번 보낸다.
     // 볼 사람이 생긴 뒤에만 보낸다 — 아무도 안 죽었으면 한 통도 안 나간다.
@@ -3896,6 +4086,7 @@ function render(){ ctx.clearRect(0,0,W,H);
   for(let i=0;i<6;i++){const yy=((elapsed*0.3+i*130)%(H+40))-20;ctx.fillStyle=th.dot;ctx.beginPath();ctx.arc(60+i*75,yy,10+(i%3)*4,0,7);ctx.fill();}
   for(const j of jellies){if(!j.dead&&j.y-j.r<=H)drawJelly(j);}
   for(const dp of drops){if(!dp.dead)drawDrop(dp);}
+  if(endless){ drawBoss(); drawBshots(); }
   for(const p of particles){ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.r*p.life,0,7);ctx.fill();}ctx.globalAlpha=1;
   for(const r of rings){ctx.globalAlpha=Math.max(0,r.life)*0.85;ctx.strokeStyle=r.color;ctx.lineWidth=Math.max(0.5,r.width*r.life);ctx.beginPath();ctx.arc(r.x,r.y,r.r,0,7);ctx.stroke();}ctx.globalAlpha=1;
   for(const s of shots){ctx.globalAlpha=Math.max(0,s.life)*0.8;ctx.strokeStyle='#fff';ctx.lineWidth=2.5*s.life+1;ctx.beginPath();ctx.moveTo(player.x,H-60);ctx.lineTo(s.tx,s.ty);ctx.stroke();}ctx.globalAlpha=1;
@@ -3986,6 +4177,10 @@ function startGame(){
   jellies=[];particles=[];floaters=[];rings=[];shots=[];drops=[];banner=null;callout=null;flash=0;spawnTimer=0;elapsed=0;shake=0;frame=0;
   slowTimer=0;x2Timer=0;magnetTimer=0;bombBan=0;slowLv=1;x2Lv=1;magnetLv=1;hexT={zig:0,fog:0,rush:0};hexSeen={};shieldT=0;revealT=0;bolt=0;
   runCoins=0;dropTimer=Math.round(srand(8,12)*60);paused=false;pPopped=0;pMissed=0;maxCombo=1;
+  // ♾ 끝없는 모드는 이 판에만 켜진다. 다음 판에 새어 나가지 않게 여기서 받아 비운다.
+  endless=nextEndless; nextEndless=false; boss=null; bshots=[]; bossKills=0; bossLv=0;
+  // 목숨은 늘리지 않는다 — 하트가 한 칸 늘면 위 칩 줄이 접혀 판이 작아진다(스모크가 잡는 문제).
+  // 대신 보스를 잡으면 하트를 한 칸 돌려준다(최대치까지). 보상이 더 기분 좋기도 하다.
   player={x:W/2,targetX:W/2,mood:'idle',moodTimer:0,recoil:0};updateHud();
   markAttend();
   showScreen(null);$('hud').classList.remove('hide');$('audioBar').classList.remove('hide');
@@ -4004,6 +4199,7 @@ function gameOver(){
   // 걸린 방해·방어·충전은 판이 끝나는 지금 정리한다. 다음 판 시작(resetRun)까지
   // 미뤄 두면 결과 화면에 남은 상태가 그려지고, 그 사이 다른 화면이 그것을 읽는다.
   hexT={zig:0,fog:0,rush:0}; hexSeen={}; shieldT=0; revealT=0; bolt=0; throwGauge=0;
+  const wasEndless=endless, kills=bossKills; endless=false; boss=null; bshots=[];
   $('netBar').classList.add('hide'); $('throwWrap').classList.add('hide');
   if(net.watchT){clearInterval(net.watchT);net.watchT=null;}
   coins+=runCoins; saveEconomy();
@@ -4013,22 +4209,25 @@ function gameOver(){
   addXp(gainXp);
   miAdd({pop:pPopped, play:1, combo:maxCombo, level:level, runcoin:runCoins, versus:wasNet?1:0});
   // 판마다 랭킹이 따로다. 혼자 하기는 난이도별, 던지기 게임은 역할별, 던전은 던전끼리.
-  const board=runBoard(wasNet);
+  const board=runBoard(wasNet,wasEndless);
   // 내 점수를 먼저 올린 뒤에 읽어야 방금 기록이 순위에 반영된다
   if(wasAi) noRankMsg();
   else submitScore(board,score).then(()=>renderOverOnline(board));
   // 혼자 하기 기록(최고기록·TOP5)에 대전 점수를 섞지 않는다 — 점수 규모가 아예 다르다
   const prev=bestScore();
-  const top=wasNet?getScores():addScore(score);
-  const isBest=!wasNet&&score>prev&&score>0;
+  const top=(wasNet||wasEndless)?getScores():addScore(score);
+  const isBest=!wasNet&&!wasEndless&&score>prev&&score>0;
   $('finalScore').textContent=score; $('newBestWrap').classList.toggle('hide',!isBest);
   $('overCoins').textContent='🪙 +'+runCoins+'  (총 '+coins+')  ·  ⭐ +'+gainXp+' ('+myTitle()+')';
   let msg=isBest?'역대 최고 점수예요! 대단해요 💗':score>=800?'우와 젤리 마스터! 🏆':score>=350?'아주 잘했어요! 👏':'조금만 더! 다시 도전해봐요 ✨';
   $('overMsg').textContent = wasNet
     ? (net.mpWin ? (gameLabel()+' · 🏆 마지막 생존!')
                  : (gameLabel()+(netGame==='throw'?(' · '+roleLabel(myRole)):'')+' · '+MODES[mode].emoji+MODES[mode].name))
-    : (msg+' (Lv.'+level+' · '+MODES[mode].emoji+MODES[mode].name+')');
-  renderRank(top,wasNet?-1:score);
+    : wasEndless
+      ? ('♾ 끝없는 모드 · Lv.'+level+' 도달 · 보스 '+kills+'마리 격파'
+         +(kills>0?' 🎉':'')+' ('+MODES[mode].emoji+MODES[mode].name+')')
+      : (msg+' (Lv.'+level+' · '+MODES[mode].emoji+MODES[mode].name+')');
+  renderRank(top,(wasNet||wasEndless)?-1:score);
   lastRun={seed:runSeed,mode:mode,score:score,net:wasNet};   // 결과 화면에서 이 판을 도전장으로 보낼 수 있게
   const bm=battleMode; battleMode=null; gspawn=null;
   $('battleResult').classList.add('hide'); $('overNickCard').classList.add('hide');
@@ -4036,7 +4235,7 @@ function gameOver(){
   lastBattle=null; celebStop(); $('celebCanvas').classList.add('hide'); buildSayRow(); watchStop();
   $('sendChBtn').disabled=false; $('sendChBtn').textContent='🎯 이 점수로 도전장 보내기';
   // 상대가 던진 젤리 때문에 판이 갈라지므로 대전 판은 도전장으로 재현할 수 없다
-  $('sendChBtn').classList.toggle('hide',wasNet);
+  $('sendChBtn').classList.toggle('hide',wasNet||wasEndless);
   if(bm==='accept') finishAccept();
   if(wasNet) netFinish();
   lastPlay={kind:wasNet?(wasAi?'ai':'online'):'solo',game:netGame,role:myRole};
@@ -4117,7 +4316,8 @@ function buildHelp(){
      +hrow('🎯','던지기 게임','한 사람은 젤리를 던지고, 한 사람은 터트려요. 던지는 무기는 <b>누르는 대로</b> 나가고 값은 ⚡에너지로만 매겨요. 한 판 끝나고 대기실에서 <b>🔄 역할 바꾸기</b>를 누르면 바로 서로 바꿔서 또 해요.')
      +hrow('🤖','AI와 대결','인터넷이 없어도 바로 붙을 수 있어요. 이기면 코인을 줘요. <b>처음이면 🍼 뉴비</b>부터 — 느긋하게 던지고 방해도 안 해요. 익숙해지면 🙂 보통 → 🤓 개똑똑 → 🏆 알파고로 올려보세요.')
      +hrow('📮','도전장','내가 한 판을 그대로 친구에게 보내요. 같은 젤리로 점수를 겨뤄요.')
-     +hrow('🏆','랭킹','난이도별 순위. 닉네임을 정하면 점수가 올라가요.'));
+     +hrow('♾️','끝없는 모드','<b>'+BOSS_EVERY+'레벨마다 거대 젤리(보스)</b>가 내려와요. 아무 젤리나 터트리면 그 젤리가 <b>보스에게 날아가 1</b>씩 깎고(황금 젤리는 3), 보스를 직접 눌러도 1씩 깎여요. 보스는 폭탄을 뱉고, 바닥까지 내려오면 <b>목숨이 하나</b> 깎여요. 잡으면 큰 점수와 코인, <b>하트 한 칸</b>을 돌려받아요.')
+     +hrow('🏆','랭킹','난이도별 순위. 닉네임을 정하면 점수가 올라가요. 끝없는 모드는 점수 규모가 달라서 <b>순위가 따로</b> 있어요.'));
     h+=helpCard('🪙 코인 모으는 법',
       hrow('🍡','젤리 터트리기','젤리 1개 = 1코인, 황금 젤리 = 12코인.')
      +hrow('🎁','출석 보너스','하루 한 번 <b>+'+DAILY_FIRST+'🪙</b>. 하루도 안 빼고 이어서 오면 <b>+'+DAILY_STREAK+'🪙</b>!')
@@ -4259,10 +4459,13 @@ const LB_GAMES={
     tabs:()=>[['throw_thrower','🎯 던지는 사람'],['throw_popper','💥 터트리는 사람']]},
   dungeon:{label:'⚔️ 실시간 던전', tabLabel:'⚔️ 던전', hint:'같은 규칙으로 붙은 점수라 한 줄에 세울 수 있어요.',
     tabs:()=>[['dungeon','⚔️ 던전 점수']]},
+  endless:{label:'♾️ 끝없는 모드', tabLabel:'♾️ 보스 러시', hint:'보스를 잡을수록 점수가 크게 붙어요.',
+    tabs:()=>[['endless','♾️ 끝없는 모드']]},
 };
-const LB_NAME={throw_thrower:'🎯 던지는 사람',throw_popper:'💥 터트리는 사람',dungeon:'⚔️ 실시간 던전'};
+const LB_NAME={throw_thrower:'🎯 던지는 사람',throw_popper:'💥 터트리는 사람',
+  dungeon:'⚔️ 실시간 던전',endless:'♾️ 끝없는 모드'};
 function boardName(b){ return MODES[b] ? (MODES[b].emoji+MODES[b].name) : (LB_NAME[b]||'랭킹'); }
-function boardGame(b){ return MODES[b]?'solo':(b==='dungeon'?'dungeon':'throw'); }
+function boardGame(b){ return MODES[b]?'solo':(b==='endless'?'endless':(b==='dungeon'?'dungeon':'throw')); }
 let lbGame='solo', lbMode=mode;
 function buildLbTabs(){
   const g=$('lbGameTabs'); g.innerHTML='';
@@ -4382,7 +4585,9 @@ async function submitScore(board,sc){
   try{ await getSupa().from('scores').insert(row); }catch(e){}
 }
 // 이 판의 점수가 올라갈 랭킹 판. AI 대결은 어디에도 올리지 않는다(실력이 내 손이 아니다).
-function runBoard(wasNet){
+function runBoard(wasNet,wasEndless){
+  // 끝없는 모드는 점수 규모가 아예 달라서(보스 보너스) 혼자 하기와 섞으면 순위가 무의미해진다
+  if(!wasNet && wasEndless) return 'endless';
   if(!wasNet) return mode;
   return (netGame==='throw') ? 'throw_popper' : 'dungeon';
 }
@@ -6968,6 +7173,10 @@ $('toProfileBtn').onclick=()=>openProfile('setupScreen');
 $('profBackBtn').onclick=()=>{ if(profFrom==='setupScreen')openSetup();
   else if(profFrom==='shopScreen')openShop(); else openStart(); };
 
+// ♾ 끝없는 모드 — 난이도는 지금 고른 것을 그대로 쓰고 바로 시작한다.
+// (난이도 화면을 한 번 더 거치게 하면 '바로 한 판'이라는 이 게임의 장점이 깨진다)
+$('endlessBtn').onclick=()=>{ ensureAudio(); nextEndless=true; restoreMode();
+  toast('♾️ 끝없는 모드 — '+BOSS_EVERY+'레벨마다 보스가 내려와요!'); startGame(); };
 $('missionBtn').onclick=openMission;
 $('miBackBtn').onclick=()=>openStart();
 $('dailyBtn').onclick=claimDaily;
