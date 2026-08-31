@@ -146,7 +146,7 @@ const card = ({ w, h, bg, ink = '#1b1220', body }) => `<!doctype html><meta char
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
   html,body{margin:0;width:${w}px;height:${h}px;overflow:hidden;
-    font-family:'Jua','NanumGothic','Apple SD Gothic Neo',system-ui,sans-serif;}
+    font-family:'Jua','Gowun Dodum','NanumGothic','Apple SD Gothic Neo',system-ui,sans-serif;}
   .bg{position:absolute;inset:0;background:${bg};}
   /* 집중선 — 시선을 가운데 글씨로 모은다.
      선을 촘촘히 넣으면(4도 간격) 축소됐을 때 눈이 어지러운 무늬(모아레)가 생긴다.
@@ -158,42 +158,73 @@ const card = ({ w, h, bg, ink = '#1b1220', body }) => `<!doctype html><meta char
   .glow{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);
     width:${w * 1.5}px;height:${w * 1.5}px;border-radius:50%;
     background:radial-gradient(closest-side, rgba(255,255,255,.58), rgba(255,255,255,0));}
+  /* 가장자리를 살짝 어둡게 — 이것 하나로 판이 평평하지 않고 '떠 있게' 보인다.
+     격자에 여러 장이 붙었을 때 칸끼리 구분되는 효과도 있다. */
+  .vign{position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(120% 85% at 50% 40%,
+      rgba(0,0,0,0) 55%, rgba(80,20,60,.10) 82%, rgba(70,15,55,.22) 100%);}
+  /* 위쪽에서 빛이 드는 결 — 그라데이션만으로는 안 나오는 '광택'을 얹는다 */
+  .sheen{position:absolute;left:0;right:0;top:0;height:${Math.round(h * 0.42)}px;z-index:1;
+    background:linear-gradient(180deg, rgba(255,255,255,.34), rgba(255,255,255,0));}
   /* 잔 점도 같은 이유로 성글게 — 집중선과 겹치면 무늬가 두 겹으로 어지러워진다 */
   .polka{position:absolute;inset:0;opacity:.10;
     background-image:radial-gradient(#fff ${Math.round(w * 0.0035)}px, transparent ${Math.round(w * 0.004)}px);
     background-size:${Math.round(w * 0.085)}px ${Math.round(w * 0.085)}px;}
   /* 젤리·터짐이 깔리는 층 */
   .fx{position:absolute;inset:0;z-index:1;}
+  /* 흰 테두리를 두르면 진한 바탕에서 '오려 붙인 스티커'가 된다.
+     drop-shadow 를 네 방향으로 겹치는 게 캔버스 그림에 테두리를 두르는 유일한 방법이다. */
   .fx img{position:absolute;display:block;
-    filter:drop-shadow(0 ${Math.round(w * 0.01)}px ${Math.round(w * 0.016)}px rgba(90,40,70,.28));}
+    filter:drop-shadow(${Math.round(w * 0.004)}px 0 0 #fff) drop-shadow(-${Math.round(w * 0.004)}px 0 0 #fff)
+           drop-shadow(0 ${Math.round(w * 0.004)}px 0 #fff) drop-shadow(0 -${Math.round(w * 0.004)}px 0 #fff)
+           drop-shadow(0 ${Math.round(w * 0.012)}px ${Math.round(w * 0.018)}px rgba(70,20,60,.32));}
   .in{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;
     justify-content:center;text-align:center;box-sizing:border-box;
     padding:${Math.round(w * 0.06)}px ${Math.round(w * 0.06)}px ${Math.round(w * 0.33)}px;}
   /* 아래에 캐릭터를 세우지 않는 판 — 비워 둘 이유가 없으니 여백을 돌려준다 */
   .in.flat{padding-bottom:${Math.round(w * 0.13)}px;}
   /* 두꺼운 테두리 글씨 — paint-order 가 있어야 테두리가 글자를 갉아먹지 않는다 */
-  h1{margin:0;font-weight:400;line-height:1.04;font-size:${Math.round(w * 0.165)}px;
-    color:#fff;-webkit-text-stroke:${Math.round(w * 0.021)}px ${ink};paint-order:stroke fill;
-    text-shadow:0 ${Math.round(w * 0.015)}px 0 rgba(0,0,0,.24);letter-spacing:-1px;
-    transform:rotate(-1.6deg);}
+  /* 제목 — 흰 글씨 + 두꺼운 검정 테두리(작은 칸에서도 안 묻힌다).
+     그림자를 두 겹 준다: 바로 아래 두꺼운 한 겹(입체) + 멀리 퍼지는 한 겹(바탕에서 뜨게).
+     paint-order 가 있어야 테두리가 글자 속살을 갉아먹지 않는다. */
+  h1{margin:0;font-weight:400;line-height:1.04;font-size:${Math.round(w * 0.168)}px;
+    color:#fff;-webkit-text-stroke:${Math.round(w * 0.022)}px ${ink};paint-order:stroke fill;
+    text-shadow:0 ${Math.round(w * 0.016)}px 0 rgba(58,10,48,.42),
+                0 ${Math.round(w * 0.03)}px ${Math.round(w * 0.045)}px rgba(58,10,48,.28);
+    letter-spacing:-1px;transform:rotate(-1.6deg);}
   h1 em{font-style:normal;color:#ffe14d;}
-  .band{display:inline-block;background:${ink};color:#fff;border-radius:999px;
+  .band{display:inline-block;color:#fff;border-radius:999px;font-family:'Gowun Dodum',sans-serif;
+    background:linear-gradient(180deg,#3a2c46,${ink});
     padding:${Math.round(w * 0.024)}px ${Math.round(w * 0.05)}px;
     font-size:${Math.round(w * 0.042)}px;margin-top:${Math.round(w * 0.035)}px;
-    box-shadow:0 ${Math.round(w * 0.008)}px 0 rgba(0,0,0,.25);}
+    box-shadow:0 ${Math.round(w * 0.008)}px 0 rgba(0,0,0,.3),
+               0 ${Math.round(w * 0.02)}px ${Math.round(w * 0.032)}px rgba(58,10,48,.28),
+               inset 0 1px 0 rgba(255,255,255,.18);}
   .band em{font-style:normal;color:#ffe14d;}
-  .eyebrow{display:inline-block;background:#fff;color:${ink};border-radius:999px;
-    padding:${Math.round(w * 0.018)}px ${Math.round(w * 0.04)}px;font-size:${Math.round(w * 0.036)}px;
-    margin-bottom:${Math.round(w * 0.028)}px;box-shadow:0 ${Math.round(w * 0.006)}px 0 rgba(0,0,0,.2);}
+  .eyebrow{display:inline-block;color:${ink};border-radius:999px;letter-spacing:.3px;
+    font-family:'Gowun Dodum',sans-serif;
+    background:linear-gradient(180deg,#fff,#ffeef7);
+    padding:${Math.round(w * 0.018)}px ${Math.round(w * 0.042)}px;font-size:${Math.round(w * 0.036)}px;
+    margin-bottom:${Math.round(w * 0.03)}px;
+    box-shadow:0 ${Math.round(w * 0.006)}px 0 rgba(0,0,0,.22),
+               0 ${Math.round(w * 0.016)}px ${Math.round(w * 0.026)}px rgba(58,10,48,.22);}
   /* 인스타 광고의 '게임하기' 자리와 같은 알약 단추 */
-  .cta{display:inline-flex;align-items:center;gap:${Math.round(w * 0.018)}px;background:${ink};
-    color:#fff;border-radius:999px;padding:${Math.round(w * 0.03)}px ${Math.round(w * 0.075)}px;
-    font-size:${Math.round(w * 0.055)}px;margin-top:${Math.round(w * 0.04)}px;
-    box-shadow:0 ${Math.round(w * 0.01)}px 0 rgba(0,0,0,.3);}
-  .cta.white{background:#fff;color:${ink};}
+  /* 눌러 달라는 알약 단추 — 아래 두꺼운 한 겹으로 '눌리는 물체'처럼 보이게 한다 */
+  .cta{display:inline-flex;align-items:center;gap:${Math.round(w * 0.018)}px;
+    background:linear-gradient(180deg,#3a2c46,${ink});
+    color:#fff;border-radius:999px;padding:${Math.round(w * 0.031)}px ${Math.round(w * 0.078)}px;
+    font-size:${Math.round(w * 0.057)}px;margin-top:${Math.round(w * 0.042)}px;
+    box-shadow:0 ${Math.round(w * 0.012)}px 0 rgba(0,0,0,.34),
+               0 ${Math.round(w * 0.026)}px ${Math.round(w * 0.04)}px rgba(58,10,48,.32),
+               inset 0 1px 0 rgba(255,255,255,.2);}
+  .cta.white{background:linear-gradient(180deg,#fff,#ffe8f2);color:${ink};
+    box-shadow:0 ${Math.round(w * 0.012)}px 0 rgba(0,0,0,.2),
+               0 ${Math.round(w * 0.026)}px ${Math.round(w * 0.04)}px rgba(58,10,48,.3);}
   /* 캐릭터 — 이 게임의 첫 번째 무기다. 작게 쓰지 않는다 */
   .cut{position:absolute;bottom:${Math.round(-w * 0.07)}px;z-index:2;pointer-events:none;
-    filter:drop-shadow(0 ${Math.round(w * 0.014)}px ${Math.round(w * 0.022)}px rgba(0,0,0,.26));}
+    filter:drop-shadow(${Math.round(w * 0.005)}px 0 0 #fff) drop-shadow(-${Math.round(w * 0.005)}px 0 0 #fff)
+           drop-shadow(0 ${Math.round(w * 0.005)}px 0 #fff) drop-shadow(0 -${Math.round(w * 0.005)}px 0 #fff)
+           drop-shadow(0 ${Math.round(w * 0.016)}px ${Math.round(w * 0.026)}px rgba(70,20,60,.34));}
   .cutL{left:${Math.round(-w * 0.07)}px;width:${Math.round(w * 0.46)}px;transform:rotate(-6deg);}
   .cutR{right:${Math.round(-w * 0.07)}px;width:${Math.round(w * 0.46)}px;transform:rotate(6deg);}
   .cutC{left:50%;width:${Math.round(w * 0.50)}px;transform:translateX(-50%);}
@@ -230,7 +261,7 @@ const card = ({ w, h, bg, ink = '#1b1220', body }) => `<!doctype html><meta char
     color:${ink};box-shadow:0 ${Math.round(w * 0.009)}px 0 rgba(0,0,0,.25);}
   /* 순서 안내 — 캐릭터 위로 지나가는 일이 있어서 어두운 판을 깔아 준다 */
   .steps{display:inline-block;margin-top:${Math.round(w * 0.032)}px;font-size:${Math.round(w * 0.042)}px;
-    color:#fff;font-family:'NanumGothic',sans-serif;font-weight:800;line-height:1.85;
+    color:#fff;font-family:'Gowun Dodum',sans-serif;line-height:1.9;
     background:rgba(27,18,32,.88);border-radius:${Math.round(w * 0.045)}px;
     padding:${Math.round(w * 0.026)}px ${Math.round(w * 0.05)}px;
     box-shadow:0 ${Math.round(w * 0.008)}px 0 rgba(0,0,0,.25);}
@@ -241,8 +272,8 @@ const card = ({ w, h, bg, ink = '#1b1220', body }) => `<!doctype html><meta char
     border-radius:${Math.round(w * 0.072)}px;border:${Math.round(w * 0.009)}px solid ${ink};
     box-shadow:0 ${Math.round(w * 0.014)}px 0 rgba(0,0,0,.25);}
 </style>
-<div class="bg"></div><div class="rays"></div><div class="polka"></div><div class="glow"></div>
-${body}`;
+<div class="bg"></div><div class="rays"></div><div class="polka"></div><div class="sheen"></div>
+<div class="glow"></div>${body}<div class="vign"></div>`;
 
 const lock = `<div class="lock"><img src="${dataURI(join(SHOTS, 'icon-1024.png'))}">젤리슈팅</div>`;
 const note = `<div class="note">광고 없음 · 결제 없음 · 전 연령</div>`;
@@ -252,7 +283,7 @@ const corner = lock + note;
 // 격자에서 세로 한 줄(1·4·7)이 나란히 보인다 → 그 셋에
 // "무엇인지 / 안전한지 / 어떻게 같이 하는지" 를 놓는다.
 const POSTS = [
-  { id: '1-대표', bg: 'linear-gradient(160deg,#ff8fbe,#ff4f8e)', body:
+  { id: '1-대표', bg: 'linear-gradient(158deg,#ffb3d8 0%,#ff6ba6 52%,#f0459b 100%)', body:
     fx([[10, 10, 16, -14, J.pink], [90, 12, 18, 12, J.gold], [15, 30, 12, 22, J.mint],
         [88, 33, 13, -18, J.green], [50, 11, 16, 6, POP.gold], [6, 52, 13, -8, J.blue],
         [95, 56, 12, 16, J.grape]]) + `
@@ -265,7 +296,7 @@ const POSTS = [
     <img class="cut cutL" src="${CH.girl}"><img class="cut cutR" src="${CH.bear}">
     ${corner}` },
 
-  { id: '2-팡팡', bg: 'linear-gradient(160deg,#ffd95c,#ffa32e)', body:
+  { id: '2-팡팡', bg: 'linear-gradient(158deg,#ffe887 0%,#ffb84d 55%,#ff8f3d 100%)', body:
     fx([[16, 14, 22, -10, POP.pink], [84, 18, 20, 14, POP.mint], [50, 7, 14, 6, J.grape],
         [9, 36, 13, 18, J.blue], [92, 40, 14, -16, J.pink], [26, 52, 11, -22, J.green],
         [76, 55, 12, 20, J.gold]]) + `
@@ -277,7 +308,7 @@ const POSTS = [
     <img class="cut cutC" src="${CH.boy}">
     ${corner}` },
 
-  { id: '3-던전', bg: 'linear-gradient(160deg,#9b7cff,#6a45f5)', body:
+  { id: '3-던전', bg: 'linear-gradient(158deg,#b9a2ff 0%,#7d5cf6 52%,#5b39dc 100%)', body:
     fx([[9, 30, 14, -16, J.pink], [91, 34, 15, 14, J.mint], [12, 56, 12, 20, J.gold],
         [89, 60, 13, -20, POP.grape]]) + `
     <div class="top"><h1>같은 판에서<br><em>실시간 대결</em></h1>
@@ -285,7 +316,7 @@ const POSTS = [
     <div class="bleed"><img src="${shot['2-dungeon']}"></div>
     ${corner}` },
 
-  { id: '4-없어요', bg: 'linear-gradient(160deg,#6fd8ff,#2aa8f2)', body:
+  { id: '4-없어요', bg: 'linear-gradient(158deg,#8fe4ff 0%,#3fb6f5 52%,#1f8fe0 100%)', body:
     fx([[10, 11, 15, -14, J.gold], [90, 14, 16, 12, J.pink], [16, 30, 11, 20, J.green],
         [86, 34, 12, -18, J.grape], [50, 6, 13, 8, J.mint]]) + `
     <div class="in">
@@ -301,7 +332,7 @@ const POSTS = [
     <img class="cut cutL" src="${CH.bunny}"><img class="cut cutR" src="${CH.cat}">
     ${corner}` },
 
-  { id: '5-던지기', bg: 'linear-gradient(160deg,#ffa866,#ff7a3d)', body:
+  { id: '5-던지기', bg: 'linear-gradient(158deg,#ffc48f 0%,#ff8f57 52%,#f56a3c 100%)', body:
     fx([[8, 32, 15, -18, J.bearJ], [92, 36, 14, 16, J.blue], [11, 58, 13, 22, POP.pink],
         [90, 62, 12, -14, J.gold]]) + `
     <div class="top"><h1>한 명은 던지고<br>한 명은 <em>터트려요</em></h1>
@@ -309,7 +340,7 @@ const POSTS = [
     <div class="bleed"><img src="${shot['3-throw']}"></div>
     ${corner}` },
 
-  { id: '6-꾸미기', bg: 'linear-gradient(160deg,#ff9ed6,#f45ab4)', body:
+  { id: '6-꾸미기', bg: 'linear-gradient(158deg,#ffbde6 0%,#f871c7 52%,#e148ab 100%)', body:
     fx([[9, 12, 14, -12, J.gold], [91, 15, 15, 14, J.mint], [50, 6, 12, 6, J.green]]) + `
     <div class="in flat">
       <div class="eyebrow">모은 코인으로</div>
@@ -320,7 +351,7 @@ const POSTS = [
     </div>
     ${corner}` },
 
-  { id: '7-초대', bg: 'linear-gradient(160deg,#8be08b,#2fb463)', body:
+  { id: '7-초대', bg: 'linear-gradient(158deg,#a8ecab 0%,#4fc879 52%,#26a862 100%)', body:
     fx([[10, 11, 15, -14, J.pink], [90, 14, 16, 12, J.gold], [15, 31, 11, 20, J.grape],
         [87, 35, 12, -18, J.mint]]) + `
     <div class="in">
@@ -332,7 +363,7 @@ const POSTS = [
     <img class="cut cutR" src="${CH.dog}">
     ${corner}` },
 
-  { id: '8-표정', bg: 'linear-gradient(160deg,#ffc84d,#ff8a2b)', body:
+  { id: '8-표정', bg: 'linear-gradient(158deg,#ffdc7a 0%,#ffa63f 52%,#f5822c 100%)', body:
     fx([[50, 12, 16, 6, POP.gold], [10, 26, 13, -16, J.pink], [90, 30, 14, 14, J.mint]]) + `
     <div class="in">
       <div class="eyebrow">결과 화면이 제일 재밌어요</div>
@@ -342,7 +373,7 @@ const POSTS = [
     <img class="cut cutL" src="${CH.mad}"><img class="cut cutR" src="${CH.wail}">
     ${corner}` },
 
-  { id: '9-플레이', bg: 'linear-gradient(160deg,#ff7aa8,#ff3d78)', body:
+  { id: '9-플레이', bg: 'linear-gradient(158deg,#ff9dc2 0%,#ff5c92 52%,#ef3a78 100%)', body:
     fx([[11, 13, 15, -14, J.gold], [89, 16, 16, 12, J.mint], [17, 33, 11, 20, J.green],
         [85, 37, 12, -18, J.grape], [50, 11, 16, 8, POP.mint]]) + `
     <div class="in flat">
@@ -357,7 +388,7 @@ const POSTS = [
 // ── ⑥ 스토리 · 릴스 표지 (1080x1920) ─────────────────────────────────
 const S = { w: 1080, h: 1920 };
 const STORIES = [
-  { id: 'story-1-광고', bg: 'linear-gradient(160deg,#ff8fbe,#ff4f8e)', body:
+  { id: 'story-1-광고', bg: 'linear-gradient(158deg,#ffb3d8 0%,#ff6ba6 52%,#f0459b 100%)', body:
     fx([[12, 9, 15, -14, J.pink], [88, 12, 16, 12, J.gold], [50, 9, 15, 6, POP.gold],
         [8, 26, 12, 20, J.mint], [92, 30, 13, -16, J.green], [14, 44, 11, 14, J.blue],
         [87, 47, 11, -12, J.grape]]) + `
@@ -369,7 +400,7 @@ const STORIES = [
     <img class="cut cutL" src="${CH.girl}"><img class="cut cutR" src="${CH.boy}">
     ${corner}` },
 
-  { id: 'story-2-외부브라우저', bg: 'linear-gradient(160deg,#6fd8ff,#2f8ee8)', body:
+  { id: 'story-2-외부브라우저', bg: 'linear-gradient(158deg,#8fe4ff 0%,#43a8f2 52%,#2a7fd8 100%)', body:
     fx([[10, 10, 13, -14, J.gold], [90, 13, 14, 12, J.pink]]) + `
     <div class="in">
       <div class="eyebrow">처음 오셨다면 꼭 읽어 주세요</div>
@@ -381,7 +412,7 @@ const STORIES = [
     <img class="cut cutR" src="${CH.dog}">
     ${corner}` },
 
-  { id: 'story-3-초대', bg: 'linear-gradient(160deg,#8be08b,#2fb463)', body:
+  { id: 'story-3-초대', bg: 'linear-gradient(158deg,#a8ecab 0%,#4fc879 52%,#26a862 100%)', body:
     fx([[11, 10, 14, -14, J.pink], [89, 13, 15, 12, J.gold], [50, 9, 14, 6, POP.mint],
         [9, 30, 12, 18, J.grape], [91, 33, 12, -16, J.mint]]) + `
     <div class="in">
@@ -393,7 +424,7 @@ const STORIES = [
     <img class="cut cutL" src="${CH.cat}"><img class="cut cutR" src="${CH.bear}">
     ${corner}` },
 
-  { id: 'story-4-플레이화면', bg: 'linear-gradient(160deg,#9b7cff,#5f3ae8)', body:
+  { id: 'story-4-플레이화면', bg: 'linear-gradient(158deg,#b7a0ff 0%,#7150ee 52%,#5232d4 100%)', body:
     fx([[9, 24, 13, -16, J.pink], [91, 27, 14, 14, J.gold], [8, 44, 12, 20, POP.pink]]) + `
     <div class="top"><h1>지금 이 화면이<br><em>전부예요</em></h1>
       <div class="band">떨어지는 젤리를 톡 — 30초면 배워요</div></div>
