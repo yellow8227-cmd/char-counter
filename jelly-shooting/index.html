@@ -368,6 +368,28 @@
     background:linear-gradient(90deg,#ffb3d8,#ff6ba6);transition:width .3s;}
   .mirow.done .mibar i{background:linear-gradient(90deg,#9be0b0,#37bf6a);}
   .mifoot{font-size:12px;color:#8a6a90;text-align:right;}
+  /* 도감 — 채운 칸과 빈 칸이 한눈에 갈라져야 '채우고 싶다'가 생긴다 */
+  .dexsec{margin:10px 0 4px;font-size:14px;font-weight:800;color:#6b4a72;display:flex;
+    align-items:center;justify-content:space-between;gap:8px;}
+  .dexsec i{font-style:normal;font-size:12px;color:#a07aa8;font-weight:700;}
+  .dexgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:7px;}
+  .dexcell{aspect-ratio:1;border-radius:14px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:2px;font-size:22px;
+    background:rgba(160,120,170,0.10);border:1px dashed rgba(160,120,170,0.35);color:#b9a3bf;}
+  .dexcell span{font-size:9px;font-weight:800;line-height:1.1;text-align:center;}
+  .dexcell.got{background:linear-gradient(180deg,#fff,#ffeef7);border:1px solid rgba(255,150,200,0.55);
+    color:#6b4a72;box-shadow:0 4px 10px rgba(180,110,160,0.18);}
+  /* 업적 한 줄 */
+  .achrow{display:flex;align-items:center;gap:10px;padding:10px 4px;
+    border-bottom:1px dashed rgba(160,120,170,0.28);}
+  .achrow:last-child{border-bottom:0;}
+  .achrow .e{flex:0 0 auto;font-size:22px;width:30px;text-align:center;filter:grayscale(1);opacity:.45;}
+  .achrow.got .e{filter:none;opacity:1;}
+  .achrow .t{flex:1 1 auto;min-width:0;}
+  .achrow .t b{display:block;font-size:14px;color:#6b4a72;}
+  .achrow .t span{font-size:12px;color:#8a6a90;}
+  .achrow.got .t b{color:#37a05e;}
+  .achrow .rw{flex:0 0 auto;font-size:12px;font-weight:900;color:#c98a1e;}
 
   /* in-game item bar — 판 아래 띠의 왼쪽에 가로로 (판을 하나도 가리지 않는다) */
   #itemBar{display:flex;flex-wrap:nowrap;gap:9px;align-items:flex-end;min-width:0;}
@@ -927,6 +949,7 @@
       <button class="btn ghost" id="attendBtn" style="padding:12px 22px;font-size:16px;">📅 출석부</button>
       <button class="btn ghost" id="missionBtn" style="padding:12px 22px;font-size:16px;">📋 오늘의 임무</button>
       <button class="btn ghost" id="dailyBoardBtn" style="padding:12px 22px;font-size:16px;">🗓 오늘의 판</button>
+      <button class="btn ghost" id="dexBtn" style="padding:12px 22px;font-size:16px;">🏅 도감</button>
     </div>
     <!-- 처음 온 사람이 규칙·아이템을 어디서 봐야 하는지 몰랐다. 홈에 그림과 함께 둔다. -->
     <div class="rowbtn">
@@ -1276,6 +1299,17 @@
   </div>
 
   <!-- 출석부 -->
+  <!-- 🏅 도감 · 업적 -->
+  <div id="dexScreen" class="screen hide">
+    <div class="h2">🏅 도감 · 업적</div>
+    <div class="tag2" id="dexTop"></div>
+    <div class="card" id="dexBox"></div>
+    <div class="h2" style="font-size:22px;margin-top:6px;">🎖️ 업적</div>
+    <div class="tag2" id="achTop"></div>
+    <div class="card" id="achBox"></div>
+    <button class="btn ghost" id="dexBackBtn">← 홈으로</button>
+  </div>
+
   <!-- 🗓 오늘의 판 -->
   <div id="dailyScreen" class="screen hide">
     <div class="h2">🗓 오늘의 판</div>
@@ -1393,7 +1427,7 @@ function supaReady(){ return !!(window.supabase && getSupa()); }
 // 서버에 올리는 것 — '가진 것'만. 기기에서 고른 것(난이도·AI 등급)과 기기 표시(연결 번호)는 두고 간다.
 const CLOUD_KEYS=['jelly_coins','jelly_inv','jelly_bought','jelly_crafted','jelly_custom',
   'jelly_caccs','jelly_kinds','jelly_hairs','jelly_char','jelly_nick','jelly_nick_set',
-  'jelly_scores','jelly_streak','jelly_daily','jelly_attend','jelly_lv','jelly_xp','jelly_mi','jelly_db'];
+  'jelly_scores','jelly_streak','jelly_daily','jelly_attend','jelly_lv','jelly_xp','jelly_mi','jelly_db','jelly_dex','jelly_st','jelly_ach'];
 // off = 서버 안 씀 · device = 익명 계정(이 기기) · linked = 이메일 붙인 계정
 let cloudState='off', cloudUid=null, cloudMail='', cloudTimer=null, cloudBusy=false, cloudMsg='';
 // players 표가 없으면(SQL 을 안 돌렸으면) 계정에 딸린 메모칸(user_metadata)에 저장한다.
@@ -1432,6 +1466,7 @@ function cloudReload(){
   plv=Math.max(1,loadNum('jelly_lv')||1); pxp=loadNum('jelly_xp');
   mi=loadJSON('jelly_mi',null); miCheck();
   db=loadJSON('jelly_db',null); dbInit();
+  dex=loadJSON('jelly_dex',null); pstat=loadJSON('jelly_st',null); achDone=loadJSON('jelly_ach',null); dexInit();
   inventory=loadJSON('jelly_inv',{});
   bought=loadJSON('jelly_bought',{});
   crafted=loadJSON('jelly_crafted',[]);
@@ -1461,6 +1496,8 @@ function cloudRefreshUI(){
     syncNickInputs(); syncNickUI(); checkDaily(); syncLevelBadge(); miBadge(); dbBadge();
     if(!$('missionScreen').classList.contains('hide')) buildMission();
     if(!$('dailyScreen').classList.contains('hide')) buildDailyBoard();
+    if(!$('dexScreen').classList.contains('hide')) buildDex();
+    achBadge();
     if(!$('profileScreen').classList.contains('hide')) buildProfile();
     else if(!$('setupScreen').classList.contains('hide')) buildSetupUI();
     if(!$('shopScreen').classList.contains('hide')) buildShop();
@@ -1892,8 +1929,10 @@ const ACCS=[{id:'none',label:'없음'},{id:'bow',label:'리본 🎀'},{id:'hat',
 let character=loadChar()||{kind:'cat',color:'#ffb3c9',acc:'bow',accColor:'#ff5c8a',hair:'basic'};
 if(!character.hair) character.hair='basic';       // 예전에 저장된 캐릭터에는 머리 모양 칸이 없다
 function saveChar(){try{localStorage.setItem('jelly_char',JSON.stringify(character));}catch(e){} cloudTouch();
-  // 차림새를 바꾸면 '꾸미기' 임무가 오른다 (임무 판이 아직 안 만들어졌을 수 있어 조용히 넘긴다)
-  try{ miAdd({dress:1}); }catch(e){} }
+  // 차림새를 바꾸면 '꾸미기' 임무가 오르고, 입어 본 것이 도감에 채워진다
+  // (임무·도감이 아직 안 만들어졌을 수 있어 조용히 넘긴다)
+  try{ miAdd({dress:1}); }catch(e){}
+  try{ dexInit(); pstat.dressed++; dexWear(); }catch(e){} }
 function loadChar(){try{return JSON.parse(localStorage.getItem('jelly_char'));}catch(e){return null;}}
 function getScores(){try{return JSON.parse(localStorage.getItem('jelly_scores'))||[];}catch(e){return[];}}
 function addScore(s){const a=getScores();a.push(s);a.sort((x,y)=>y-x);const top=a.slice(0,5);try{localStorage.setItem('jelly_scores',JSON.stringify(top));}catch(e){}cloudTouch();return top;}
@@ -3365,6 +3404,7 @@ let slowLv=1,x2Lv=1,magnetLv=1,bombBan=0;   // 발동 중인 효과의 레벨 + 
 function applyEffect(eff,lv){
   lv=Math.max(1,Math.min(ITEM_MAX_LV,lv||1));
   const tag=lv>1?(' Lv.'+lv):'';
+  try{ dexAdd('item',eff==='x2'?'x2':eff); }catch(e){}
   if(eff==='heart'){ const n=[1,1,2,2,3][lv-1]; lives+=n; floater(W/2,H*0.45,'💗 +'+n+tag,'#e63e72'); }
   else if(eff==='slow'){ slowLv=lv; slowTimer=(4+lv*2)*60; floater(W/2,H*0.45,'⏱️ 슬로우!'+tag,'#4fa8ff'); }
   else if(eff==='clear'){ let n=0; for(const j of jellies){ if(!j.dead&&j.bomb){ j.dead=true; burst(j.x,j.y,'#4a4450',18); n++; } }
@@ -3533,6 +3573,7 @@ function buildCreator(){
     li.appendChild(b); });
 }
 function createCustom(){
+  try{ dexInit(); pstat.custom=1; dexSave(); }catch(e){}
   const cost=accCost();
   if(coins<cost){ toast('코인이 부족해요! ('+cost.toLocaleString()+'🪙 필요)'); return; }
   askBuy('나만의 악세서리를 만들어요.',cost,()=>doCreateCustom(cost)); }
@@ -3552,6 +3593,140 @@ function doCreateCustom(cost){
 let toastTimer=null;
 function toast(msg){ const t=$('toast'); t.textContent=msg;
   t.classList.toggle('low',!!running&&!paused); t.classList.add('show'); if(toastTimer)clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),1900); }
+// ================= 🏅 도감 · 🎖️ 업적 =================
+// 왜: 모으는 재미는 끝이 없다. 새 그림을 그릴 필요도 없다 — 이미 다 있는 것을
+// '빈 칸'으로 보여 주기만 하면 된다. 빈 칸은 그 자체로 채우고 싶게 만든다.
+//
+// 도감은 '입어 본 것 · 써 본 것'을 센다(산 것이 아니라). 사놓고 안 입으면 안 채워진다.
+let dex=loadJSON('jelly_dex',null);      // {kind:{},hair:{},acc:{},item:{},hex:{}}
+let pstat=loadJSON('jelly_st',null);     // 판을 거듭하며 쌓이는 숫자
+// 이름을 pstat 로 둔 이유: 이 파일에는 presence 상태를 담는 지역 변수 st 가 여러 곳에 있다.
+// 전역을 st 로 두면 그 안에서 우연히 가려져 조용히 엉뚱한 값을 읽는다.
+let achDone=loadJSON('jelly_ach',null);  // {id:1}
+function dexInit(){
+  if(!dex||typeof dex!=='object') dex={};
+  ['kind','hair','acc','item','hex'].forEach(k=>{ if(!dex[k]||typeof dex[k]!=='object') dex[k]={}; });
+  if(!pstat||typeof pstat!=='object') pstat={};
+  ['runs','wins','boss','maxScore','maxCombo','maxLevel','endLevel','coinsEver','custom','four',
+   'streakRuns','noMiss','bombs','fireSec','close','alone','talkAlone','night','lunch','dressed'].forEach(k=>{
+    if(typeof pstat[k]!=='number') pstat[k]=0; });
+  if(!achDone||typeof achDone!=='object') achDone={};
+}
+function dexSave(){ try{ localStorage.setItem('jelly_dex',JSON.stringify(dex));
+  localStorage.setItem('jelly_st',JSON.stringify(pstat));
+  localStorage.setItem('jelly_ach',JSON.stringify(achDone)); }catch(e){} cloudTouch(); }
+// 무엇 하나를 도감에 채운다. 새로 채웠으면 true.
+function dexAdd(group,id){ dexInit(); if(!id||dex[group][id]) return false;
+  dex[group][id]=1; dexSave(); return true; }
+function dexCount(group){ dexInit(); return Object.keys(dex[group]).length; }
+// 지금 입고 있는 차림새를 도감에 넣는다 (saveChar 가 부른다)
+function dexWear(){ dexInit();
+  let neu=false;
+  neu = dexAdd('kind',character.kind) || neu;
+  neu = dexAdd('hair',character.hair) || neu;
+  if(character.acc&&character.acc!=='none') neu = dexAdd('acc',character.acc) || neu;
+  if(neu){ achCheck(); }
+}
+
+// 업적은 '숫자 채우기'만 있으면 재미가 없다. 절반은 웃기는 것으로 둔다 —
+// 새벽에 켰다든가, 서버에 나 혼자였다든가, 딱 한 판만 한다고 해놓고 다섯 판을 했다든가.
+// 그런 게 스크린샷으로 찍혀 돌아다닌다.
+const ACH=[
+  // ── 처음 · 꾸준히
+  {id:'first', e:'🎬', n:'첫 한 판',        d:'한 판을 끝까지 해보기',              coin:40,  ok:()=>pstat.runs>=1},
+  {id:'once',  e:'💤', n:'딱 한 판만 한다더니', d:'앉은 자리에서 다섯 판 내리 하기',  coin:120, ok:()=>pstat.streakRuns>=5},
+  {id:'run50', e:'🏃', n:'쉰 판째',          d:'쉰 판 하기',                        coin:200, ok:()=>pstat.runs>=50},
+  {id:'att7',  e:'📅', n:'일주일 개근',      d:'이레 연속 출석',                     coin:200, ok:()=>loadNum('jelly_streak')>=7},
+  {id:'daily3',e:'🗓️', n:'오늘의 판 사흘',   d:'오늘의 판 사흘 해보기',              coin:150, ok:()=>dbDays()>=3},
+  {id:'plv10', e:'🌱', n:'젤리 장인',        d:'레벨 10 달성',                       coin:200, ok:()=>plv>=10},
+  // ── 실력
+  {id:'combo9',e:'🔥', n:'콤보 만렙',        d:'한 판에서 콤보 9 만들기',            coin:100, ok:()=>pstat.maxCombo>=9},
+  {id:'sc1',   e:'⭐', n:'1만 점',           d:'한 판에서 10,000점',                coin:100, ok:()=>pstat.maxScore>=10000},
+  {id:'sc3',   e:'🌟', n:'3만 점',           d:'한 판에서 30,000점',                coin:250, ok:()=>pstat.maxScore>=30000},
+  {id:'clean', e:'😇', n:'하나도 안 놓쳤다', d:'한 젤리도 안 놓치고 한 판 끝내기',    coin:250, ok:()=>pstat.noMiss>=1},
+  {id:'boom',  e:'💣', n:'폭탄 수집가',      d:'폭탄을 스무 번 눌러 보기 (…왜죠)',    coin:120, ok:()=>pstat.bombs>=20},
+  {id:'fire',  e:'🌶️', n:'핵불닭 생존',      d:'핵불닭에서 1분 버티기',              coin:250, ok:()=>pstat.fireSec>=60},
+  // ── 보스 · 끝없는 모드
+  {id:'boss1', e:'⚔️', n:'첫 보스',          d:'거대 젤리 한 마리 잡기',             coin:100, ok:()=>pstat.boss>=1},
+  {id:'boss10',e:'👹', n:'보스 사냥꾼',      d:'거대 젤리 열 마리 잡기',             coin:300, ok:()=>pstat.boss>=10},
+  {id:'end20', e:'♾️', n:'끝없이',           d:'끝없는 모드 Lv.20 도달',             coin:250, ok:()=>pstat.endLevel>=20},
+  // ── 사람
+  {id:'win1',  e:'🥇', n:'첫 승리',          d:'대전에서 한 번 이기기',              coin:120, ok:()=>pstat.wins>=1},
+  {id:'win10', e:'🏆', n:'열 번 승리',       d:'대전에서 열 번 이기기',              coin:350, ok:()=>pstat.wins>=10},
+  {id:'four',  e:'👨‍👩‍👧‍👦', n:'네 명이서',    d:'4명이 모인 실시간 던전 해보기',      coin:150, ok:()=>pstat.four>=1},
+  {id:'close', e:'🥲', n:'아 진짜 아까웠는데',d:'대전에서 100점 차 안으로 지기',      coin:150, ok:()=>pstat.close>=1},
+  {id:'alone', e:'🕸️', n:'이 서버에 혼자 있다',d:'월드 채팅에 나 혼자 있어 보기',     coin:100, ok:()=>pstat.alone>=1},
+  {id:'talk',  e:'🪞', n:'혼잣말',           d:'아무도 없는 채팅에 말 걸어 보기',     coin:120, ok:()=>pstat.talkAlone>=1},
+  // ── 시간대
+  {id:'night', e:'🌙', n:'새벽 젤리',        d:'새벽 2~5시에 한 판 하기',            coin:150, ok:()=>pstat.night>=1},
+  {id:'lunch', e:'🍚', n:'밥 먹고 바로',     d:'점심시간(12~13시)에 한 판 하기',      coin:100, ok:()=>pstat.lunch>=1},
+  // ── 꾸미기 · 모으기
+  {id:'kindAll',e:'🐾',n:'캐릭터 도감 완성', d:'아홉 종 모두 입어 보기',             coin:400, ok:()=>dexCount('kind')>=KINDS.length},
+  {id:'accAll',e:'🎀', n:'악세서리 도감 완성',d:'악세서리를 모두 써 보기',           coin:400, ok:()=>dexCount('acc')>=ACCS.length-1},
+  {id:'custom',e:'✨', n:'나만의 악세서리',  d:'악세서리를 직접 만들어 보기',         coin:150, ok:()=>pstat.custom>=1},
+  {id:'fashion',e:'🧢',n:'패션에 진심',      d:'차림새를 스무 번 바꿔 보기',          coin:150, ok:()=>pstat.dressed>=20},
+  {id:'rich',  e:'🪙', n:'부자',             d:'코인을 5,000개까지 모아 보기',        coin:300, ok:()=>pstat.coinsEver>=5000},
+];
+function dbDays(){ dbInit(); return db.log.length; }
+// 조건을 만족한 업적을 찾아 그 자리에서 코인을 준다. 한 번 받은 것은 다시 안 준다.
+function achCheck(){
+  dexInit(); let paid=0, got=[];
+  ACH.forEach(a=>{ if(achDone[a.id]) return;
+    let ok=false; try{ ok=!!a.ok(); }catch(e){}
+    if(ok){ achDone[a.id]=1; paid+=a.coin; got.push(a.e+' '+a.n); } });
+  if(paid>0){ coins+=paid; saveEconomy(); playLevelUp();
+    // 한 번에 여러 개가 터지면 알림이 화면을 다 덮는다 — 세 개까지만 이름을 적는다
+    const msg=(got.length<=3)?got.join(' · '):(got.slice(0,2).join(' · ')+' 외 '+(got.length-2)+'개');
+    toast('🎖️ 업적 달성! '+msg+' +'+paid+'🪙'); }
+  if(got.length) dexSave();
+  achBadge();
+}
+function achLeft(){ dexInit(); return ACH.filter(a=>!achDone[a.id]).length; }
+function achBadge(){ const b=$('dexBtn'); if(!b) return;
+  const done=ACH.length-achLeft(); b.textContent='🏅 도감 ('+done+'/'+ACH.length+')'; }
+function openDex(){ dexInit(); achCheck(); showScreen('dexScreen'); buildDex(); }
+function buildDex(){
+  dexInit();
+  const box=$('dexBox'); box.innerHTML='';
+  const sec=(title,list,group,label,emoji)=>{
+    const h=document.createElement('div'); h.className='dexsec';
+    const have=list.filter(x=>dex[group][x.id]).length;
+    h.innerHTML='<span>'+escapeHtml(title)+'</span><i>'+have+' / '+list.length+'</i>';
+    box.appendChild(h);
+    const g=document.createElement('div'); g.className='dexgrid';
+    list.forEach(x=>{ const c=document.createElement('div');
+      const got=!!dex[group][x.id];
+      c.className='dexcell'+(got?' got':'');
+      c.innerHTML=(got?(emoji(x)||'❔'):'❔')+'<span>'+escapeHtml(got?label(x):'???')+'</span>';
+      g.appendChild(c); });
+    box.appendChild(g);
+  };
+  // 이름에 붙은 이모지를 그대로 칸 그림으로 쓴다 — 새로 그릴 게 없다
+  const lastEmoji=t=>{ const m=(t||'').match(/[\p{Extended_Pictographic}\u200d\ufe0f]+/gu); return m?m[m.length-1]:''; };
+  const nameOnly=t=>(t||'').replace(/[\p{Extended_Pictographic}\u200d\ufe0f]+/gu,'').trim();
+  sec('🐾 캐릭터', KINDS, 'kind', x=>nameOnly(x.label), x=>lastEmoji(x.label));
+  sec('💇 머리 모양', HAIRS, 'hair', x=>nameOnly(x.label), x=>lastEmoji(x.label));
+  sec('🎀 악세서리', ACCS.filter(a=>a.id!=='none'), 'acc', x=>nameOnly(x.label), x=>lastEmoji(x.label));
+  sec('🎒 아이템', BASE_ORDER.map(id=>({id:id,label:ITEMS[id].name,e:ITEMS[id].emoji})), 'item',
+      x=>x.label, x=>x.e);
+  sec('⚔️ 던전 무기', HEX_ORDER.map(id=>({id:id,label:HEX[id].n||id,e:HEX[id].e})), 'hex',
+      x=>x.label, x=>x.e);
+  const total=KINDS.length+HAIRS.length+(ACCS.length-1)+BASE_ORDER.length+HEX_ORDER.length;
+  const have=dexCount('kind')+dexCount('hair')+dexCount('acc')+dexCount('item')+dexCount('hex');
+  $('dexTop').innerHTML='입어 보고 써 본 것만 채워져요 — <b>'+have+' / '+total+'</b> 칸'
+    +'<br>만난 사람 캐릭터 <b>'+Object.keys(seenChars).length+'</b>명 기억 중';
+  // 업적
+  const ab=$('achBox'); ab.innerHTML='';
+  ACH.forEach(a=>{ const got=!!achDone[a.id];
+    const row=document.createElement('div'); row.className='achrow'+(got?' got':'');
+    row.innerHTML='<div class="e">'+a.e+'</div><div class="t"><b>'+(got?'✅ ':'')+escapeHtml(a.n)
+      +'</b><span>'+escapeHtml(a.d)+'</span></div><div class="rw">'+(got?'받음':'+'+a.coin+'🪙')+'</div>';
+    ab.appendChild(row); });
+  const done=ACH.length-achLeft();
+  $('achTop').innerHTML='<b>'+done+' / '+ACH.length+'</b> 개 달성'
+    +(achLeft()?' · 남은 것을 하나씩 채워 보세요':' · 전부 달성했어요! 🎉');
+}
+
 // ================= 🗓 오늘의 판 =================
 // 왜: 매일 들어올 이유가 '출석 40코인' 하나뿐이었다. 그건 30초면 끝난다.
 // 날짜로 판을 만들면 그날은 **모두가 같은 젤리 순서**를 받는다 → 점수 자랑이 성립한다
@@ -3910,7 +4085,8 @@ function hit(mx,my){ if(!running||paused)return; ensureAudio();
     if(d2<=reach*reach && d2<bd){ bd=d2; bi=i; } }
   if(bi<0) return;
   const j=jellies[bi]; player.targetX=j.x; shots.push({tx:j.x,ty:j.y,life:1}); player.recoil=8; // 발사!
-  if(j.bomb){ j.dead=true;burst(j.x,j.y,'#4a4450',30);ring(j.x,j.y,'#ff5a5a',j.r*3.6,7);ring(j.x,j.y,'#ffd0d0',j.r*2.2,4);shake=18;playBomb();if(magnetTimer<=0){combo=1;comboTimer=0;}setMood('ouch',75);
+  if(j.bomb){ j.dead=true;try{ dexInit(); pstat.bombs++; }catch(e){}
+    burst(j.x,j.y,'#4a4450',30);ring(j.x,j.y,'#ff5a5a',j.r*3.6,7);ring(j.x,j.y,'#ffd0d0',j.r*2.2,4);shake=18;playBomb();if(magnetTimer<=0){combo=1;comboTimer=0;}setMood('ouch',75);
     if(shieldT>0){ ring(j.x,j.y,'#4fc65f',j.r*4,6); floater(j.x,j.y-j.r,'🛡️ 막았다!','#2f9c4f');
       jGone(j,'fell',lives); }                          // 실드가 막으면 목숨이 안 깎인다
     else { jGone(j,'bomb',lives-1);   // gameOver가 netMode를 끄기 전에 보고한다
@@ -4412,6 +4588,24 @@ function gameOver(){
   const gainXp=xpForRun(score,pPopped,wasNet);
   addXp(gainXp);
   if(wasDaily) dbRecord(score);
+  // 🏅 도감·업적 통계 — 판이 끝나는 지금 한 번에 올린다
+  dexInit();
+  pstat.runs++;
+  pstat.streakRuns=(Date.now()-(pstat.lastEnd||0)<20*60*1000)?(pstat.streakRuns+1):1;   // 20분 안에 이어서 하면 '연속'
+  pstat.lastEnd=Date.now();
+  if(score>pstat.maxScore) pstat.maxScore=score;
+  if(maxCombo>pstat.maxCombo) pstat.maxCombo=maxCombo;
+  if(level>pstat.maxLevel) pstat.maxLevel=level;
+  if(wasEndless&&level>pstat.endLevel) pstat.endLevel=level;
+  pstat.boss+=kills;
+  if(pMissed===0&&pPopped>=30) pstat.noMiss++;         // 서너 개 터트리고 끝낸 판은 세지 않는다
+  if(mode==='fire') pstat.fireSec=Math.max(pstat.fireSec,Math.round(elapsed/60));
+  if(wasNet&&net.mpWin) pstat.wins++;
+  if(coins>pstat.coinsEver) pstat.coinsEver=coins;
+  const hr=new Date().getHours();
+  if(hr>=2&&hr<5) pstat.night++;
+  if(hr>=12&&hr<13) pstat.lunch++;
+  dexSave(); achCheck();
   miAdd({pop:pPopped, play:1, combo:maxCombo, level:level, runcoin:runCoins, versus:wasNet?1:0});
   // 판마다 랭킹이 따로다. 혼자 하기는 난이도별, 던지기 게임은 역할별, 던전은 던전끼리.
   const board=runBoard(wasNet,wasEndless);
@@ -4450,7 +4644,7 @@ function gameOver(){
   showScreen('overScreen'); lockOverActions(); startAttract(); }
 
 // ================= Screens & flow =================
-const SCREENS=['startScreen','setupScreen','shopScreen','profileScreen','chatScreen','settingsScreen','attendScreen','missionScreen','dailyScreen','helpScreen','rankScreen','battleScreen','netScreen','aiScreen','lobbyScreen','acceptScreen','pauseScreen','overScreen'];
+const SCREENS=['startScreen','setupScreen','shopScreen','profileScreen','chatScreen','settingsScreen','attendScreen','missionScreen','dailyScreen','dexScreen','helpScreen','rankScreen','battleScreen','netScreen','aiScreen','lobbyScreen','acceptScreen','pauseScreen','overScreen'];
 function showScreen(id){ if(id!=='overScreen'){ clearOverLock(); celebStop(); watchStop(); }
   // 입어보던 것은 그 화면을 떠나면 없어진다 — 집 화면 얼굴이 안 산 캐릭터가 되면 안 된다
   if(id!=='profileScreen'&&id!=='setupScreen') tryClear();
@@ -4896,6 +5090,9 @@ function chatJoin(){
       Object.keys(st).forEach(k=>{ (st[k]||[]).forEach(p=>{ n++; if(p) seenPut(p.n,p.ch); }); });
     }catch(e){}
     chatCount=n; if(!$('chatScreen').classList.contains('hide')) chatSyncUI();
+    // 🕸️ 이 서버에 혼자 있다 — 채팅에 나 말고 아무도 없을 때. 웃기라고 넣은 업적이다.
+    if(n<=1&&!$('chatScreen').classList.contains('hide')){
+      try{ dexInit(); if(!pstat.alone){ pstat.alone=1; dexSave(); achCheck(); } }catch(e){} }
   });
   chatCh.subscribe(st=>{
     if(st==='SUBSCRIBED'){ try{ chatCh.track({n:nick||'구경중',ch:charPack()}); }catch(e){} }
@@ -4915,6 +5112,8 @@ function chatSay(){
   const m={id:chatId(),name:nick,ch:charPack(),text:text};
   try{ chatCh.send({type:'broadcast',event:'msg',payload:m}); }catch(e){}
   chatPush(chatMsgs,{...m,mine:true});        // 보낸 사람에게는 안 되돌아온다 — 직접 넣는다
+  // 🪞 혼잣말 — 아무도 없는 채팅에 말을 걸었다
+  try{ dexInit(); if(chatCount<=1&&!pstat.talkAlone){ pstat.talkAlone=1; dexSave(); achCheck(); } }catch(e){}
   chatRender('chatBox',chatMsgs,''); }
 
 // ---- 방 안 채팅 ----
@@ -6003,6 +6202,8 @@ function netStartSetup(){
   // 판이 시작될 때의 인원으로 규칙을 고정한다. 중간에 누가 나가도 1:1 승패 판정으로
   // 되돌아가면 안 된다(그러면 net.foe 하나만 보고 엉뚱한 결과가 나온다).
   net.mp=(netGame==='dungeon'&&playerCount()>=3); net.mpWin=false; net.target='';
+  // 👨‍👩‍👧‍👦 네 명이서 — 실제로 네 명이 모여 시작했을 때만 센다
+  try{ if(netGame==='dungeon'&&playerCount()>=4){ dexInit(); pstat.four=1; dexSave(); } }catch(e){}
   // 상대 칩을 눌러 노릴 사람을 고른다. 다시 그릴 때마다 배선하지 않도록 위임해 둔다.
   $('foeHud').onclick=e=>{
     if(!net.mp) return;
@@ -6173,6 +6374,7 @@ function doHex(id){
                  : (h.e+' '+h.n+'은 게이지 '+h.cost+'이 필요해요 (지금 '+Math.floor(throwGauge)+')'));
     return; }
   ensureAudio();
+  try{ dexAdd('hex',id); }catch(e){}                   // 실제로 써 본 무기만 도감에 채운다
   if(h.def){                                           // 🛡️✨ 나를 지키는 아이템
     if(id==='shield'){ shieldT=SHIELD_SEC*60; }
     else { hexT={zig:0,fog:0,rush:0}; revealT=REVEAL_SEC*60; }
@@ -7358,7 +7560,7 @@ function openStart(){
   if(throwerAlive){ throwerAlive=false; if(mirrorRAF){cancelAnimationFrame(mirrorRAF);mirrorRAF=null;} }
   $('throwerView').classList.add('hide'); canvas.style.display='';
   restoreMode();
-  showScreen('startScreen'); $('battleResult').classList.add('hide'); const b=bestScore(),el=$('startBest'); if(b>0){el.textContent='🏆 최고기록 '+b+'점';el.classList.remove('hide');}else el.classList.add('hide'); $('startCoins').textContent='🪙 '+coins; checkDaily(); syncLevelBadge(); miBadge(); dbBadge(); loopHero(); startAttract(); }
+  showScreen('startScreen'); $('battleResult').classList.add('hide'); const b=bestScore(),el=$('startBest'); if(b>0){el.textContent='🏆 최고기록 '+b+'점';el.classList.remove('hide');}else el.classList.add('hide'); $('startCoins').textContent='🪙 '+coins; checkDaily(); syncLevelBadge(); miBadge(); dbBadge(); achBadge(); loopHero(); startAttract(); }
 function openSetup(){ chatLeave(); showScreen('setupScreen'); buildSetupUI(); loopPreview(); }
 $('playBtn').onclick=()=>{ensureAudio();openSetup();};
 $('shopBtn').onclick=()=>openShop();
@@ -7388,6 +7590,8 @@ $('profBackBtn').onclick=()=>{ if(profFrom==='setupScreen')openSetup();
 // (난이도 화면을 한 번 더 거치게 하면 '바로 한 판'이라는 이 게임의 장점이 깨진다)
 $('endlessBtn').onclick=()=>{ ensureAudio(); nextEndless=true; restoreMode();
   toast('♾️ 끝없는 모드 — '+BOSS_EVERY+'레벨마다 보스가 내려와요!'); startGame(); };
+$('dexBtn').onclick=openDex;
+$('dexBackBtn').onclick=()=>openStart();
 $('dailyBoardBtn').onclick=openDailyBoard;
 $('dbBackBtn').onclick=()=>openStart();
 $('dbPlayBtn').onclick=startDaily;
