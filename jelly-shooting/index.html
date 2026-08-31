@@ -351,6 +351,23 @@
       inset 0 -8px 14px -10px rgba(170,110,10,0.45);
     display:inline-flex;align-items:center;gap:6px;}
   .stat.coin b{color:#c98a1e;}
+  /* 레벨 칩 — 코인 칩과 나란히 서지만 색이 달라야 '다른 것'으로 읽힌다 */
+  .lvbadge{background:var(--btn-gloss),
+      linear-gradient(180deg,#eee6ff 0%,#cdb8ff 34%,#b79cff 64%,#8f6ff0 100%);
+    color:#4a2f8a;box-shadow:0 8px 16px -8px rgba(140,100,240,0.6),
+      inset 0 2px 0 rgba(255,255,255,0.9),inset 0 -8px 14px -10px rgba(90,50,170,0.45);
+    font-size:14px;padding:7px 15px;margin-top:6px;}
+  /* 임무 한 줄 — 글 · 게이지 · 보상 */
+  .mirow{display:flex;flex-direction:column;gap:6px;padding:12px 4px;border-bottom:1px dashed rgba(160,120,170,0.28);}
+  .mirow:last-child{border-bottom:0;}
+  .mitop{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:15px;font-weight:800;color:#6b4a72;}
+  .mitop .rw{flex:0 0 auto;font-size:13px;color:#c98a1e;font-weight:900;}
+  .mirow.done .mitop{color:#37a05e;}
+  .mibar{height:12px;border-radius:999px;background:rgba(160,120,170,0.18);overflow:hidden;}
+  .mibar i{display:block;height:100%;border-radius:999px;
+    background:linear-gradient(90deg,#ffb3d8,#ff6ba6);transition:width .3s;}
+  .mirow.done .mibar i{background:linear-gradient(90deg,#9be0b0,#37bf6a);}
+  .mifoot{font-size:12px;color:#8a6a90;text-align:right;}
 
   /* in-game item bar — 판 아래 띠의 왼쪽에 가로로 (판을 하나도 가리지 않는다) */
   #itemBar{display:flex;flex-wrap:nowrap;gap:9px;align-items:flex-end;min-width:0;}
@@ -885,6 +902,7 @@
     <div class="tag2">한 번 잡으면 못 놓는 손맛!<br>딱 3분, 지금 최고기록에 도전하세요 🔥</div>
     <div class="best hide" id="startBest"></div>
     <div class="coinbadge" id="startCoins">🪙 0</div>
+    <div class="coinbadge lvbadge" id="startLevel">🌱 Lv.1 젤리 새싹</div>
     <button class="btn gold dailypulse" id="dailyBtn" style="display:none;padding:14px 34px;font-size:18px;">🎁 오늘의 보너스 받기</button>
     <div class="rowbtn">
       <button class="btn lg" id="playBtn">🍡 혼자 하기 ▶</button>
@@ -902,6 +920,7 @@
       <button class="btn ghost" id="profileBtn" style="padding:12px 22px;font-size:16px;">🙋 내 프로필</button>
       <button class="btn ghost" id="shopBtn" style="padding:12px 22px;font-size:16px;">🛒 창작소</button>
       <button class="btn ghost" id="attendBtn" style="padding:12px 22px;font-size:16px;">📅 출석부</button>
+      <button class="btn ghost" id="missionBtn" style="padding:12px 22px;font-size:16px;">📋 오늘의 임무</button>
     </div>
     <!-- 처음 온 사람이 규칙·아이템을 어디서 봐야 하는지 몰랐다. 홈에 그림과 함께 둔다. -->
     <div class="rowbtn">
@@ -1251,6 +1270,15 @@
   </div>
 
   <!-- 출석부 -->
+  <!-- 📋 오늘의 임무 -->
+  <div id="missionScreen" class="screen hide">
+    <div class="h2">📋 오늘의 임무</div>
+    <div class="tag2">매일 밤 12시에 새 임무 세 개가 나와요.<br>세 개를 다 하면 <b>보너스</b>까지 받아요!</div>
+    <div class="card" id="miBox"></div>
+    <div class="tag2" id="miInfo"></div>
+    <button class="btn ghost" id="miBackBtn">← 홈으로</button>
+  </div>
+
   <div id="attendScreen" class="screen hide">
     <div class="h2">📅 출석부</div>
     <div class="card" id="calBox"></div>
@@ -1348,7 +1376,7 @@ function supaReady(){ return !!(window.supabase && getSupa()); }
 // 서버에 올리는 것 — '가진 것'만. 기기에서 고른 것(난이도·AI 등급)과 기기 표시(연결 번호)는 두고 간다.
 const CLOUD_KEYS=['jelly_coins','jelly_inv','jelly_bought','jelly_crafted','jelly_custom',
   'jelly_caccs','jelly_kinds','jelly_hairs','jelly_char','jelly_nick','jelly_nick_set',
-  'jelly_scores','jelly_streak','jelly_daily','jelly_attend'];
+  'jelly_scores','jelly_streak','jelly_daily','jelly_attend','jelly_lv','jelly_xp','jelly_mi'];
 // off = 서버 안 씀 · device = 익명 계정(이 기기) · linked = 이메일 붙인 계정
 let cloudState='off', cloudUid=null, cloudMail='', cloudTimer=null, cloudBusy=false, cloudMsg='';
 // players 표가 없으면(SQL 을 안 돌렸으면) 계정에 딸린 메모칸(user_metadata)에 저장한다.
@@ -1382,6 +1410,10 @@ function cloudApply(save){
 // (여기를 빼먹으면 화면은 예전 코인, 저장은 새 코인이 되어 다음 저장에 서버가 덮인다)
 function cloudReload(){
   coins=loadNum('jelly_coins');
+  // 레벨·경험치·오늘의 임무도 메모리에 들고 있다 — 같이 다시 읽지 않으면
+  // 화면은 예전 레벨, 저장은 새 레벨이 되어 다음 저장에 서버가 덮인다.
+  plv=Math.max(1,loadNum('jelly_lv')||1); pxp=loadNum('jelly_xp');
+  mi=loadJSON('jelly_mi',null); miCheck();
   inventory=loadJSON('jelly_inv',{});
   bought=loadJSON('jelly_bought',{});
   crafted=loadJSON('jelly_crafted',[]);
@@ -1408,7 +1440,8 @@ function cloudRefreshUI(){
   try{
     const sc=$('startCoins'); if(sc) sc.textContent='🪙 '+coins;
     const pc=$('profCoins'); if(pc) pc.textContent='🪙 '+coins;
-    syncNickInputs(); syncNickUI(); checkDaily();
+    syncNickInputs(); syncNickUI(); checkDaily(); syncLevelBadge(); miBadge();
+    if(!$('missionScreen').classList.contains('hide')) buildMission();
     if(!$('profileScreen').classList.contains('hide')) buildProfile();
     else if(!$('setupScreen').classList.contains('hide')) buildSetupUI();
     if(!$('shopScreen').classList.contains('hide')) buildShop();
@@ -1839,7 +1872,9 @@ const COLORS=['#ffb3c9','#ff9db2','#ffd59e','#ffe36e','#f6f19a','#b6e3a0','#8fe0
 const ACCS=[{id:'none',label:'없음'},{id:'bow',label:'리본 🎀'},{id:'hat',label:'모자 🎩'},{id:'glasses',label:'안경 👓'},{id:'shades',label:'선글라스 🕶️'},{id:'flower',label:'꽃 🌸'},{id:'crown',label:'왕관 👑'},{id:'horns',label:'뿔 😈'}];
 let character=loadChar()||{kind:'cat',color:'#ffb3c9',acc:'bow',accColor:'#ff5c8a',hair:'basic'};
 if(!character.hair) character.hair='basic';       // 예전에 저장된 캐릭터에는 머리 모양 칸이 없다
-function saveChar(){try{localStorage.setItem('jelly_char',JSON.stringify(character));}catch(e){} cloudTouch();}
+function saveChar(){try{localStorage.setItem('jelly_char',JSON.stringify(character));}catch(e){} cloudTouch();
+  // 차림새를 바꾸면 '꾸미기' 임무가 오른다 (임무 판이 아직 안 만들어졌을 수 있어 조용히 넘긴다)
+  try{ miAdd({dress:1}); }catch(e){} }
 function loadChar(){try{return JSON.parse(localStorage.getItem('jelly_char'));}catch(e){return null;}}
 function getScores(){try{return JSON.parse(localStorage.getItem('jelly_scores'))||[];}catch(e){return[];}}
 function addScore(s){const a=getScores();a.push(s);a.sort((x,y)=>y-x);const top=a.slice(0,5);try{localStorage.setItem('jelly_scores',JSON.stringify(top));}catch(e){}cloudTouch();return top;}
@@ -3368,6 +3403,106 @@ function doCreateCustom(cost){
 let toastTimer=null;
 function toast(msg){ const t=$('toast'); t.textContent=msg;
   t.classList.toggle('low',!!running&&!paused); t.classList.add('show'); if(toastTimer)clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),1900); }
+// ================= 📋 오늘의 임무 =================
+// 왜 필요한가: 한 판이 끝나면 나갈 이유밖에 없었다. "할 일이 하나 남았다"가 있으면
+// 사람은 한 판을 더 한다. 임무는 그 핑계를 만들어 주는 장치다.
+// 안 써 본 모드로 밀어 넣는 효과도 있다 — 실시간 던전을 한 번도 안 해 본 사람이 제일 많다.
+//
+// 세는 값은 이미 판 안에 다 있다(pPopped · maxCombo · runCoins · level). 새로 세지 않는다.
+const MI_POOL=[
+  {id:'pop',   stat:'pop',   need:[120,200,300], coin:60,  txt:n=>'젤리 '+n+'개 터트리기'},
+  {id:'combo', stat:'combo', need:[5,7,9],       coin:80,  txt:n=>'한 판에서 콤보 '+n+' 만들기'},   // 콤보 상한이 9다
+  {id:'play',  stat:'play',  need:[2,3,4],       coin:60,  txt:n=>n+'판 하기'},
+  {id:'runcoin',stat:'runcoin',need:[30,45],     coin:70,  txt:n=>'한 판에서 코인 '+n+'개 모으기'},
+  {id:'level', stat:'level', need:[5,7,9],       coin:80,  txt:n=>'한 판에서 Lv.'+n+'까지 올라가기'},
+  {id:'versus',stat:'versus',need:[1,2],         coin:100, txt:n=>'친구나 AI와 '+n+'판 겨루기'},
+  {id:'dress', stat:'dress', need:[1],           coin:50,  txt:n=>'캐릭터 차림새 바꿔 보기'},
+];
+const MI_ALL_BONUS=150;      // 세 개 다 하면 얹어 주는 코인
+let mi=loadJSON('jelly_mi',null);
+// 임무는 '한 판에서'를 재는 것(combo·level·runcoin)과 '오늘 쌓은 것'(pop·play·versus)이 섞여 있다.
+// 전자는 max, 후자는 더하기다 — 종류를 여기서 한 번만 정해 둔다.
+const MI_MAX_KIND={combo:1,level:1,runcoin:1};
+function miSave(){ try{ localStorage.setItem('jelly_mi',JSON.stringify(mi)); }catch(e){} cloudTouch(); }
+// 날짜를 씨앗으로 뽑는다 → 같은 날은 몇 번 들어와도 같은 임무 세 개가 나온다
+function miRoll(){
+  const d=new Date(), key=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
+  const rnd=mulberry32(key>>>0);
+  const pool=MI_POOL.slice(); const list=[];
+  for(let i=0;i<3&&pool.length;i++){
+    const k=Math.floor(rnd()*pool.length), m=pool.splice(k,1)[0];
+    const need=m.need[Math.floor(rnd()*m.need.length)];
+    list.push({id:m.id,need:need,got:0,done:false,coin:m.coin});
+  }
+  mi={day:todayStr(),list:list,bonus:false}; miSave();
+}
+function miCheck(){ if(!mi||mi.day!==todayStr()||!Array.isArray(mi.list)||!mi.list.length) miRoll(); }
+function miDef(id){ return MI_POOL.find(m=>m.id===id)||MI_POOL[0]; }
+// 판이 끝났을 때(또는 차림새를 바꿨을 때) 한 번에 올린다.
+// v 는 {pop, play, combo, level, runcoin, versus, dress} 중 있는 것만.
+function miAdd(v){
+  miCheck(); let paid=0, msg=[];
+  mi.list.forEach(t=>{
+    const d=miDef(t.id); if(t.done) return;
+    const inc=v[d.stat]; if(inc==null) return;
+    t.got = MI_MAX_KIND[d.stat] ? Math.max(t.got,inc) : (t.got+inc);
+    if(t.got>=t.need){ t.done=true; paid+=t.coin; msg.push(d.txt(t.need)); }
+  });
+  const all=mi.list.every(t=>t.done);
+  if(all&&!mi.bonus){ mi.bonus=true; paid+=MI_ALL_BONUS; }
+  if(paid>0){ coins+=paid; saveEconomy(); playLevelUp();
+    toast('📋 임무 완료! +'+paid+'🪙'+(all?' (전부 달성 보너스 포함!)':'')); }
+  miSave(); miBadge();
+}
+function miLeft(){ miCheck(); return mi.list.filter(t=>!t.done).length; }
+// 홈 단추에 남은 개수를 붙인다 — 눌러 보기 전에 할 일이 있다는 걸 알 수 있게
+function miBadge(){ const b=$('missionBtn'); if(!b) return;
+  const n=miLeft(); b.textContent='📋 오늘의 임무'+(n?' ('+n+')':' ✅'); }
+function openMission(){ miCheck(); showScreen('missionScreen'); buildMission(); }
+function buildMission(){
+  const box=$('miBox'); box.innerHTML='';
+  mi.list.forEach(t=>{
+    const d=miDef(t.id), pct=Math.min(100,Math.round(t.got/t.need*100));
+    const row=document.createElement('div'); row.className='mirow'+(t.done?' done':'');
+    const top=document.createElement('div'); top.className='mitop';
+    top.innerHTML='<span>'+(t.done?'✅ ':'')+escapeHtml(d.txt(t.need))+'</span>'
+      +'<span class="rw">+'+t.coin+'🪙</span>';
+    const bar=document.createElement('div'); bar.className='mibar';
+    const fill=document.createElement('i'); fill.style.width=pct+'%'; bar.appendChild(fill);
+    const foot=document.createElement('div'); foot.className='mifoot';
+    foot.textContent=t.done?'받았어요':(Math.min(t.got,t.need)+' / '+t.need);
+    row.appendChild(top); row.appendChild(bar); row.appendChild(foot); box.appendChild(row);
+  });
+  const left=miLeft();
+  $('miInfo').innerHTML = left
+    ? ('남은 임무 <b>'+left+'개</b> · 세 개를 다 하면 <b>+'+MI_ALL_BONUS+'🪙</b> 보너스')
+    : '오늘 임무를 다 했어요! 내일 새 임무가 나와요 🎉';
+}
+
+// ================= 🌱 레벨 · 칭호 =================
+// 코인은 쓰면 사라지지만 칭호는 남는다. '남이 봐 주는 성장'이 있어야 다시 온다.
+const TITLES=[
+  {lv:1, e:'🌱', name:'젤리 새싹'},  {lv:4, e:'🍡', name:'젤리 견습'},
+  {lv:8, e:'✨', name:'젤리 장인'},  {lv:14,e:'🎯', name:'젤리 고수'},
+  {lv:22,e:'👑', name:'젤리 왕'},    {lv:32,e:'🌟', name:'젤리 신'},
+];
+let plv=Math.max(1,loadNum('jelly_lv')||1), pxp=loadNum('jelly_xp');
+function xpNeed(l){ return 90+ (l-1)*50; }           // 1→2 는 90, 뒤로 갈수록 50씩 늘어난다
+function titleOf(l){ let t=TITLES[0]; for(const x of TITLES) if(l>=x.lv) t=x; return t; }
+function myTitle(){ const t=titleOf(plv); return t.e+' Lv.'+plv+' '+t.name; }
+function lvSave(){ try{ localStorage.setItem('jelly_lv',plv); localStorage.setItem('jelly_xp',pxp); }catch(e){} cloudTouch(); }
+// 한 판에서 얻는 경험치 — 점수만 보면 고수만 오르고, 판수만 보면 대충 해도 오른다. 섞는다.
+function xpForRun(sc,popped,wasNet){ return Math.max(8, Math.round(sc/45) + Math.round(popped/6) + (wasNet?15:0)); }
+function addXp(n){
+  pxp+=n; let up=0;
+  while(pxp>=xpNeed(plv)){ pxp-=xpNeed(plv); plv++; up++; }
+  lvSave(); syncLevelBadge();
+  if(up){ const t=titleOf(plv); playLevelUp();
+    toast('🌱 Lv.'+plv+' 달성! '+t.e+' '+t.name); }
+  return up;
+}
+function syncLevelBadge(){ const el=$('startLevel'); if(el) el.textContent=myTitle(); }
+
 const DAILY_FIRST=40, DAILY_STREAK=100;   // 첫날 / 연속 출석 보너스
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 function isYesterday(last,today){const p=last.split('-').map(Number),q=today.split('-').map(Number);const d1=new Date(p[0],p[1]-1,p[2]),d2=new Date(q[0],q[1]-1,q[2]);return Math.round((d2-d1)/86400000)===1;}
@@ -3486,6 +3621,7 @@ function loopHero(){ if($('startScreen').classList.contains('hide'))return; hero
 // ================= Game =================
 let running=false,score=0,combo=1,comboTimer=0,lives=3,level=1;
 let jellies=[],particles=[],floaters=[],rings=[],shots=[],drops=[],banner=null,callout=null,flash=0;
+let maxCombo=1;                      // 이번 판에서 가장 높았던 콤보 (임무·기록용)
 let spawnTimer=0,elapsed=0,shake=0,frame=0,dropTimer=0,paused=false;
 let player={x:W/2,targetX:W/2,mood:'idle',moodTimer:0,recoil:0};
 const JELLY_COLORS=['#ff8fb8','#8fc9ff','#b6ff8f','#ffd98f','#d99bff','#8ff0e0'];
@@ -3571,6 +3707,7 @@ function hit(mx,my){ if(!running||paused)return; ensureAudio();
   else popGood(j);
   updateHud(); }
 function popGood(j){ j.dead=true;combo=Math.min(combo+1,9);comboTimer=magnetTimer>0?999:90;
+  if(combo>maxCombo)maxCombo=combo;
   const mult=x2Timer>0?(x2Lv>=4?3:2):1;
   // 던지기 게임에서는 양쪽이 같은 기준(기본 40 · 콤보 상한 5)으로 계산한다.
   // 젤리 크기로 점수가 갈리면 던지는 쪽이 통제할 수 없는 변수가 생긴다.
@@ -3848,7 +3985,7 @@ function startGame(){
   gspawn = mulberry32(runSeed);
   jellies=[];particles=[];floaters=[];rings=[];shots=[];drops=[];banner=null;callout=null;flash=0;spawnTimer=0;elapsed=0;shake=0;frame=0;
   slowTimer=0;x2Timer=0;magnetTimer=0;bombBan=0;slowLv=1;x2Lv=1;magnetLv=1;hexT={zig:0,fog:0,rush:0};hexSeen={};shieldT=0;revealT=0;bolt=0;
-  runCoins=0;dropTimer=Math.round(srand(8,12)*60);paused=false;pPopped=0;pMissed=0;
+  runCoins=0;dropTimer=Math.round(srand(8,12)*60);paused=false;pPopped=0;pMissed=0;maxCombo=1;
   player={x:W/2,targetX:W/2,mood:'idle',moodTimer:0,recoil:0};updateHud();
   markAttend();
   showScreen(null);$('hud').classList.remove('hide');$('audioBar').classList.remove('hide');
@@ -3870,6 +4007,11 @@ function gameOver(){
   $('netBar').classList.add('hide'); $('throwWrap').classList.add('hide');
   if(net.watchT){clearInterval(net.watchT);net.watchT=null;}
   coins+=runCoins; saveEconomy();
+  // 판이 끝나는 지금 한 번에 정산한다 — 경험치 · 오늘의 임무.
+  // (여기가 아니면 중간에 나간 판이 두 번 세지거나 아예 안 세진다)
+  const gainXp=xpForRun(score,pPopped,wasNet);
+  addXp(gainXp);
+  miAdd({pop:pPopped, play:1, combo:maxCombo, level:level, runcoin:runCoins, versus:wasNet?1:0});
   // 판마다 랭킹이 따로다. 혼자 하기는 난이도별, 던지기 게임은 역할별, 던전은 던전끼리.
   const board=runBoard(wasNet);
   // 내 점수를 먼저 올린 뒤에 읽어야 방금 기록이 순위에 반영된다
@@ -3880,7 +4022,7 @@ function gameOver(){
   const top=wasNet?getScores():addScore(score);
   const isBest=!wasNet&&score>prev&&score>0;
   $('finalScore').textContent=score; $('newBestWrap').classList.toggle('hide',!isBest);
-  $('overCoins').textContent='🪙 +'+runCoins+'  (총 '+coins+')';
+  $('overCoins').textContent='🪙 +'+runCoins+'  (총 '+coins+')  ·  ⭐ +'+gainXp+' ('+myTitle()+')';
   let msg=isBest?'역대 최고 점수예요! 대단해요 💗':score>=800?'우와 젤리 마스터! 🏆':score>=350?'아주 잘했어요! 👏':'조금만 더! 다시 도전해봐요 ✨';
   $('overMsg').textContent = wasNet
     ? (net.mpWin ? (gameLabel()+' · 🏆 마지막 생존!')
@@ -3902,7 +4044,7 @@ function gameOver(){
   showScreen('overScreen'); lockOverActions(); startAttract(); }
 
 // ================= Screens & flow =================
-const SCREENS=['startScreen','setupScreen','shopScreen','profileScreen','chatScreen','settingsScreen','attendScreen','helpScreen','rankScreen','battleScreen','netScreen','aiScreen','lobbyScreen','acceptScreen','pauseScreen','overScreen'];
+const SCREENS=['startScreen','setupScreen','shopScreen','profileScreen','chatScreen','settingsScreen','attendScreen','missionScreen','helpScreen','rankScreen','battleScreen','netScreen','aiScreen','lobbyScreen','acceptScreen','pauseScreen','overScreen'];
 function showScreen(id){ if(id!=='overScreen'){ clearOverLock(); celebStop(); watchStop(); }
   // 입어보던 것은 그 화면을 떠나면 없어진다 — 집 화면 얼굴이 안 산 캐릭터가 되면 안 된다
   if(id!=='profileScreen'&&id!=='setupScreen') tryClear();
@@ -6800,7 +6942,7 @@ function openStart(){
   if(throwerAlive){ throwerAlive=false; if(mirrorRAF){cancelAnimationFrame(mirrorRAF);mirrorRAF=null;} }
   $('throwerView').classList.add('hide'); canvas.style.display='';
   restoreMode();
-  showScreen('startScreen'); $('battleResult').classList.add('hide'); const b=bestScore(),el=$('startBest'); if(b>0){el.textContent='🏆 최고기록 '+b+'점';el.classList.remove('hide');}else el.classList.add('hide'); $('startCoins').textContent='🪙 '+coins; checkDaily(); loopHero(); startAttract(); }
+  showScreen('startScreen'); $('battleResult').classList.add('hide'); const b=bestScore(),el=$('startBest'); if(b>0){el.textContent='🏆 최고기록 '+b+'점';el.classList.remove('hide');}else el.classList.add('hide'); $('startCoins').textContent='🪙 '+coins; checkDaily(); syncLevelBadge(); miBadge(); loopHero(); startAttract(); }
 function openSetup(){ chatLeave(); showScreen('setupScreen'); buildSetupUI(); loopPreview(); }
 $('playBtn').onclick=()=>{ensureAudio();openSetup();};
 $('shopBtn').onclick=()=>openShop();
@@ -6826,6 +6968,8 @@ $('toProfileBtn').onclick=()=>openProfile('setupScreen');
 $('profBackBtn').onclick=()=>{ if(profFrom==='setupScreen')openSetup();
   else if(profFrom==='shopScreen')openShop(); else openStart(); };
 
+$('missionBtn').onclick=openMission;
+$('miBackBtn').onclick=()=>openStart();
 $('dailyBtn').onclick=claimDaily;
 $('createBtn').onclick=createCustom;
 $('openSetBtn').onclick=openSettings;
