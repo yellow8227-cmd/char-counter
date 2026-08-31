@@ -148,17 +148,20 @@ const card = ({ w, h, bg, ink = '#1b1220', body }) => `<!doctype html><meta char
   html,body{margin:0;width:${w}px;height:${h}px;overflow:hidden;
     font-family:'Jua','NanumGothic','Apple SD Gothic Neo',system-ui,sans-serif;}
   .bg{position:absolute;inset:0;background:${bg};}
-  /* 집중선 — 시선을 가운데 글씨로 모은다 */
+  /* 집중선 — 시선을 가운데 글씨로 모은다.
+     선을 촘촘히 넣으면(4도 간격) 축소됐을 때 눈이 어지러운 무늬(모아레)가 생긴다.
+     12줄로 굵고 성글게 깔고, 흐리게 풀어서 '빛이 퍼지는' 느낌만 남긴다. */
   .rays{position:absolute;left:50%;top:40%;width:${w * 2.6}px;height:${w * 2.6}px;
-    transform:translate(-50%,-50%);opacity:.15;
-    background:repeating-conic-gradient(#fff 0deg 4deg, transparent 4deg 9deg);}
+    transform:translate(-50%,-50%);opacity:.10;filter:blur(${Math.round(w * 0.012)}px);
+    background:repeating-conic-gradient(#fff 0deg 13deg, transparent 13deg 30deg);}
   /* 가운데만 밝게 — 글씨가 놓이는 자리를 떠오르게 한다 */
   .glow{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);
     width:${w * 1.5}px;height:${w * 1.5}px;border-radius:50%;
-    background:radial-gradient(closest-side, rgba(255,255,255,.5), rgba(255,255,255,0));}
-  .polka{position:absolute;inset:0;opacity:.16;
-    background-image:radial-gradient(#fff 2px, transparent 2.2px);
-    background-size:${Math.round(w * 0.055)}px ${Math.round(w * 0.055)}px;}
+    background:radial-gradient(closest-side, rgba(255,255,255,.58), rgba(255,255,255,0));}
+  /* 잔 점도 같은 이유로 성글게 — 집중선과 겹치면 무늬가 두 겹으로 어지러워진다 */
+  .polka{position:absolute;inset:0;opacity:.10;
+    background-image:radial-gradient(#fff ${Math.round(w * 0.0035)}px, transparent ${Math.round(w * 0.004)}px);
+    background-size:${Math.round(w * 0.085)}px ${Math.round(w * 0.085)}px;}
   /* 젤리·터짐이 깔리는 층 */
   .fx{position:absolute;inset:0;z-index:1;}
   .fx img{position:absolute;display:block;
@@ -251,7 +254,7 @@ const corner = lock + note;
 const POSTS = [
   { id: '1-대표', bg: 'linear-gradient(160deg,#ff8fbe,#ff4f8e)', body:
     fx([[10, 10, 16, -14, J.pink], [90, 12, 18, 12, J.gold], [15, 30, 12, 22, J.mint],
-        [88, 33, 13, -18, J.green], [50, 6, 20, 6, POP.gold], [6, 52, 13, -8, J.blue],
+        [88, 33, 13, -18, J.green], [50, 11, 16, 6, POP.gold], [6, 52, 13, -8, J.blue],
         [95, 56, 12, 16, J.grape]]) + `
     <div class="in">
       <div class="eyebrow">🍡 젤리슈팅 · JELLY SHOOTING</div>
@@ -330,7 +333,7 @@ const POSTS = [
     ${corner}` },
 
   { id: '8-표정', bg: 'linear-gradient(160deg,#ffc84d,#ff8a2b)', body:
-    fx([[50, 7, 18, 6, POP.gold], [10, 26, 13, -16, J.pink], [90, 30, 14, 14, J.mint]]) + `
+    fx([[50, 12, 16, 6, POP.gold], [10, 26, 13, -16, J.pink], [90, 30, 14, 14, J.mint]]) + `
     <div class="in">
       <div class="eyebrow">결과 화면이 제일 재밌어요</div>
       <h1>이기면 춤추고<br>지면 <em>분해해요</em></h1>
@@ -341,7 +344,7 @@ const POSTS = [
 
   { id: '9-플레이', bg: 'linear-gradient(160deg,#ff7aa8,#ff3d78)', body:
     fx([[11, 13, 15, -14, J.gold], [89, 16, 16, 12, J.mint], [17, 33, 11, 20, J.green],
-        [85, 37, 12, -18, J.grape], [50, 6, 18, 8, POP.mint]]) + `
+        [85, 37, 12, -18, J.grape], [50, 11, 16, 8, POP.mint]]) + `
     <div class="in flat">
       <img class="icon" src="${dataURI(join(SHOTS, 'icon-1024.png'))}">
       <h1 style="margin-top:.3em">지금 바로<br>플레이</h1>
@@ -355,7 +358,7 @@ const POSTS = [
 const S = { w: 1080, h: 1920 };
 const STORIES = [
   { id: 'story-1-광고', bg: 'linear-gradient(160deg,#ff8fbe,#ff4f8e)', body:
-    fx([[12, 9, 15, -14, J.pink], [88, 12, 16, 12, J.gold], [50, 5, 18, 6, POP.gold],
+    fx([[12, 9, 15, -14, J.pink], [88, 12, 16, 12, J.gold], [50, 9, 15, 6, POP.gold],
         [8, 26, 12, 20, J.mint], [92, 30, 13, -16, J.green], [14, 44, 11, 14, J.blue],
         [87, 47, 11, -12, J.grape]]) + `
     <div class="in">
@@ -379,7 +382,7 @@ const STORIES = [
     ${corner}` },
 
   { id: 'story-3-초대', bg: 'linear-gradient(160deg,#8be08b,#2fb463)', body:
-    fx([[11, 10, 14, -14, J.pink], [89, 13, 15, 12, J.gold], [50, 5, 16, 6, POP.mint],
+    fx([[11, 10, 14, -14, J.pink], [89, 13, 15, 12, J.gold], [50, 9, 14, 6, POP.mint],
         [9, 30, 12, 18, J.grape], [91, 33, 12, -16, J.mint]]) + `
     <div class="in">
       <h1>친구 부르는 데<br><em>10초</em></h1>
