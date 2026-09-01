@@ -3648,11 +3648,11 @@ function isMaxLv(id){ return (bought[id]||0)>=ITEM_MAX_LV; }
 function buyCost(id){ return Math.round(ITEMS[id].buy*(1+0.5*(nextLv(id)-1))); }
 // 레벨별 효과를 한 줄로 설명한다 (상점에서 지금 성능을 바로 보여주려고)
 function lvDesc(eff,lv){
-  if(eff==='heart')  return '목숨 +'+[1,1,2,2,3][lv-1];
+  if(eff==='heart')  return t('목숨 +%d').replace('%d',[1,1,2,2,3][lv-1]);
   if(eff==='slow')   return t('슬로우')+' '+(4+lv*2)+t('초');
   if(eff==='x2')     return t('점수')+' ×'+(lv>=4?3:2)+' · '+(6+lv*2)+t('초');
-  if(eff==='magnet') return '자석 '+(6+lv*2)+'초 · 흡인력 '+lv+'단계';
-  if(eff==='clear')  return '폭탄 제거'+(lv>1?(' + '+(lv-1)*2+'초 폭탄 차단'):'');
+  if(eff==='magnet') return t('자석 %d초 · 흡인력 %l단계').replace('%d',6+lv*2).replace('%l',lv);
+  if(eff==='clear')  return t('폭탄 제거')+(lv>1?t(' + %d초 폭탄 차단').replace('%d',(lv-1)*2):'');
   return 'Lv.'+lv;
 }
 function saveEconomy(){try{localStorage.setItem('jelly_coins',coins);localStorage.setItem('jelly_inv',JSON.stringify(inventory));localStorage.setItem('jelly_crafted',JSON.stringify(crafted));localStorage.setItem('jelly_custom',JSON.stringify(customItems));localStorage.setItem('jelly_caccs',JSON.stringify(customAccs));localStorage.setItem('jelly_kinds',JSON.stringify(ownedKinds));localStorage.setItem('jelly_hairs',JSON.stringify(ownedHairs));localStorage.setItem('jelly_bought',JSON.stringify(bought));}catch(e){} cloudTouch();}
@@ -3760,7 +3760,7 @@ function buildShop(){
     // 레벨이 있으면 기본 설명 대신 '지금 성능'과 '다음 레벨'을 보여준다.
     // 기본 설명을 그대로 두면 Lv.5인데 '목숨 +1'이라고 적혀 서로 어긋나 보인다.
     const info = lv
-      ? `<div class="ds">지금 · <b>${lvDesc(it.effect,lv)}</b></div>`+
+      ? `<div class="ds">${escapeHtml(t('지금'))} · <b>${lvDesc(it.effect,lv)}</b></div>`+
         (isMaxLv(id)?'':`<div class="ds nx">⬆ Lv.${nextLv(id)} · ${lvDesc(it.effect,nextLv(id))}</div>`)
       : `<div class="ds">${it.desc}</div>`;
     card.innerHTML=`<div class="ico">${it.emoji}</div><div class="info">`+
@@ -4551,6 +4551,37 @@ const I18N_ROWS=[
   ["⚡ 충전 완료!","⚡ Fully charged!","⚡ チャージ完了！"],
   ["유령이다! 👻","A ghost! 👻","ゆうれいだ！ 👻"],
   ["명","","人"],
+  ["🎉 보스 격파! ⭐+%d · 🪙+%c","🎉 Boss down! ⭐+%d · 🪙+%c","🎉 ボス撃破！ ⭐+%d · 🪙+%c"],
+  [" · ❤️ 하트 회복!"," · ❤️ life restored!"," · ❤️ ハート回復！"],
+  ["%s님이 젤리 %n개를 던졌어요!","%s threw %n jellies at you!","%sさんがゼリーを%n個 投げてきた！"],
+  ["%s님이 유령 젤리 %n개를 던졌어요!","%s threw %n ghost jellies at you!","%sさんがゆうれいゼリーを%n個 投げてきた！"],
+  ["🌱 Lv.%d 달성!","🌱 Reached Lv.%d!","🌱 Lv.%d 達成！"],
+  ["📋 임무 완료! +%d🪙","📋 Mission complete! +%d🪙","📋 ミッション達成！ +%d🪙"],
+  ["🏆 최고기록 %d점","🏆 Best %d pts","🏆 最高記録 %d点"],
+  ["지금","Now","いま"],
+  ["꺼짐","Off","オフ"],
+  ["목숨 +%d","+%d life","目 +%d"],
+  ["폭탄 제거","Clears bombs","爆弾を消す"],
+  ["+ %d초 폭탄 차단","+ no bombs for %ds","+ %d秒 爆弾なし"],
+  ["자석 %d초 · 흡인력 %l단계","Magnet %ds · pull level %l","マグネット%d秒 · 吸引 %l段階"],
+  ["느리게 ×%d","Slow ×%d","おそい ×%d"],
+  ["보통 ×%d","Normal ×%d","ふつう ×%d"],
+  ["빠르게 ×%d","Fast ×%d","はやい ×%d"],
+  ["초고속 ×%d","Insane ×%d","超高速 ×%d"],
+  ["%d년 %d월","%d / %d","%d年 %d月"],
+  ["일","Su","日"],
+  ["월","Mo","月"],
+  ["화","Tu","火"],
+  ["수","We","水"],
+  ["목","Th","木"],
+  ["금","Fr","金"],
+  ["토","Sa","土"],
+  ["이번 달 %d일 출석 · 연속 %d일 🔥 · 총 %d일","%d days this month · %d-day streak 🔥 · %d total","今月%d日 · 連続%d日 🔥 · 合計%d日"],
+  ["🍡 혼자 하기","🍡 Play solo","🍡 ひとりで"],
+  ["♾️ 끝없는 모드","♾️ Endless","♾️ エンドレス"],
+  ["🍼 순한맛","🍼 Mild","🍼 あまくち"],
+  ["😋 보통맛","😋 Normal","😋 ふつう"],
+  ["🌶️ 매운맛","🌶️ Spicy","🌶️ からくち"],
   ["일반","Plain","ふつう"],
   ["유령","Ghost","ゆうれい"],
   ["폭탄","Bomb","ばくだん"],
@@ -4560,7 +4591,6 @@ const I18N_ROWS=[
   ["반투명해서 잘 안 보여요 (⚡26)","See-through and hard to spot (⚡26)","半透明で見えにくい (⚡26)"],
   ["터뜨리면 목숨이 깎여요 (⚡18)","Pops and takes a life (⚡18)","割れると 目が1つ減る (⚡18)"],
   ["한 번에 5개! (⚡35)","Five at once! (⚡35)","一度に5個！ (⚡35)"],
-  ["(나)","(you)","(じぶん)"],
   ["💀탈락","💀out","💀脱落"],
   ["✅생존","✅alive","✅生存"],
   ["🏆 우승! 마지막까지 살아남았어요","🏆 You win! Last one standing","🏆 優勝！ 最後まで生きのこった"],
@@ -4588,7 +4618,6 @@ const I18N_ROWS=[
   ["나중에 바꾸려면 %s이 들어요.","Changing it later costs %s.","あとで変えるには %s かかります。"],
   ["한 번 정하면 이 이름이 내 것이 돼요. 랭킹·채팅에 이 이름으로 올라가요.","Once you set it, this name is yours. It shows on rankings and in chat.","一度決めると この名前があなたのものになります。ランキングとチャットに出ます。"],
   ["· 지금까지 %d개 만들었어요 (값은 계속 같아요)","· %d made so far (the price never changes)","· これまで%d個 作りました (値段は同じです)"],
-  ["— 몇 개를 만들어도 같은 값이에요","— the price is the same however many you make","— 何個作っても同じ値段です"],
   ["받았다! 🟣","Incoming! 🟣","もらった！ 🟣"],
 ];
 const I18N={en:{},ja:{}};
@@ -5077,7 +5106,7 @@ function addXp(n){
   while(pxp>=xpNeed(plv)){ pxp-=xpNeed(plv); plv++; up++; }
   lvSave(); syncLevelBadge();
   if(up){ const t=titleOf(plv); playLevelUp();
-    toast('🌱 Lv.'+plv+' 달성! '+t.e+' '+t.name); }
+    toast(window.t('🌱 Lv.%d 달성!').replace('%d',plv)+' '+t.e+' '+window.t(t.name)); }
   return up;
 }
 function syncLevelBadge(){ const el=$('startLevel'); if(el) el.textContent=myTitle(); }
@@ -5421,8 +5450,8 @@ function spawnDrop(){ const o=DROP_POOL[Math.floor(srnd()*DROP_POOL.length)]; co
   drops.push({x:srand(r+14,W-r-14),y:-r,vy:srand(0.8,1.2),r,type:o.t,emoji:o.e,name:o.n,wob:Math.random()*7,dead:false}); }
 function burst(x,y,color,n){for(let i=0;i<n;i++){const a=Math.random()*7,s=rand(2,7.5);particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1.5,r:rand(3,8.5),color,life:1});}}
 function ring(x,y,color,maxR,width){rings.push({x,y,r:Math.max(5,maxR*0.18),maxR,color,width,life:1});}
-function floater(x,y,text,color){floaters.push({x,y,text,color,life:1});}
-function showCallout(text,color){callout={text,color,life:1};}
+function floater(x,y,text,color){floaters.push({x,y,text:t(text),color,life:1});}
+function showCallout(text,color){callout={text:t(text),color,life:1};}
 // 시작/메뉴 배경: 젤리가 떨어지는 attract 모드
 let attractOn=false,attractT=0,attractJ=[];
 function makeDeco(){const r=rand(20,34),face=['happy','wink','star'][Math.floor(Math.random()*3)],shape=['round','round','bean','bear'][Math.floor(Math.random()*4)];
@@ -5547,7 +5576,8 @@ function bossDie(){
   ring(boss.x,boss.y,'#ffce3d',boss.r*5,12); ring(boss.x,boss.y,'#ff6b8a',boss.r*3.4,9);
   floater(boss.x,boss.y-boss.r,'+'+bonus,'#e63e72');
   banner={text:t('🎉 보스 격파!')+' +'+bonus,life:1.6}; flash=1; shake=26;
-  toast('🎉 보스 격파! ⭐+'+bonus+' · 🪙+'+coin+(healed?' · ❤️ 하트 회복!':'')); playLevelUp();
+  toast(t('🎉 보스 격파! ⭐+%d · 🪙+%c').replace('%d',bonus).replace('%c',coin)
+    +(healed?t(' · ❤️ 하트 회복!'):'')); playLevelUp();
   setMood('proud',90);
 }
 // 터트린 젤리를 보스에게 날린다 — 조각이 날아가 맞는 게 눈에 보여야 '내가 던졌다'가 된다
@@ -5893,7 +5923,7 @@ function render(){ ctx.clearRect(0,0,W,H);
       ctx.restore(); }); }
   ctx.textAlign='center';ctx.font="24px 'Donguri','Apple SD Gothic Neo',sans-serif";
   for(const f of floaters){ctx.globalAlpha=Math.max(0,f.life);ctx.fillStyle=f.color;ctx.fillText(f.text,f.x,f.y);}ctx.globalAlpha=1;
-  if(banner){const a=Math.min(1,banner.life*2);ctx.globalAlpha=a;ctx.fillStyle='#ff4d84';ctx.font="48px 'Nolto','Donguri',sans-serif";ctx.textAlign='center';ctx.shadowColor='rgba(255,255,255,0.9)';ctx.shadowBlur=12;ctx.fillText(banner.text,W/2,H*0.4-(1-banner.life)*30);ctx.shadowColor='transparent';ctx.globalAlpha=1;}
+  if(banner){const a=Math.min(1,banner.life*2);ctx.globalAlpha=a;ctx.fillStyle='#ff4d84';ctx.font="48px 'Nolto','Donguri',sans-serif";ctx.textAlign='center';ctx.shadowColor='rgba(255,255,255,0.9)';ctx.shadowBlur=12;ctx.fillText(t(banner.text),W/2,H*0.4-(1-banner.life)*30);ctx.shadowColor='transparent';ctx.globalAlpha=1;}
   if(callout){const a=Math.min(1,callout.life*2.5),sc=1.35-callout.life*0.35;ctx.save();ctx.globalAlpha=a;ctx.translate(W/2,H*0.3);ctx.scale(sc,sc);ctx.fillStyle=callout.color;ctx.font="42px 'Nolto','Donguri',sans-serif";ctx.textAlign='center';ctx.shadowColor='rgba(255,255,255,0.95)';ctx.shadowBlur=12;ctx.fillText(callout.text,0,0);ctx.shadowColor='transparent';ctx.restore();ctx.globalAlpha=1;}
   ctx.restore();
   if(flash>0){ctx.fillStyle='rgba(255,255,255,'+(flash*0.5)+')';ctx.fillRect(0,0,W,H);} }
@@ -7811,7 +7841,10 @@ function recvThrow(items){
   flash=0.7; shake=Math.max(shake,6);
   const gh=items.some(it=>it.ghost);
   showCallout(gh?t('유령이다! 👻'):t('받았다! 🟣'),'#8a5cff');
-  toast((gh?'👻 ':'🟣 ')+(net.foe?net.foe.name:'친구')+'가 '+(gh?'유령 ':'')+'젤리 '+items.length+'개를 던졌어요!');
+  const who=(net.foe&&net.foe.name)||t('친구');
+  toast((gh?'👻 ':'🟣 ')
+    +(gh?t('%s님이 유령 젤리 %n개를 던졌어요!'):t('%s님이 젤리 %n개를 던졌어요!'))
+      .replace('%s',who).replace('%n',items.length));
 }
 // 효과형 방해 아이템이 도착했다 — 남은 시간은 프레임으로 센다(일시정지에도 안 흐른다)
 function recvHex(kind){
