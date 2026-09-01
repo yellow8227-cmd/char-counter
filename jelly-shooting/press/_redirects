@@ -1,4 +1,2 @@
-/press/*  /:splat  200
-# 영어판 — /en 으로 짧게 열리게
-/en       /en.html   200
-/en/      /en.html   200
+/en      /en.html   200
+/press/* /:splat    200

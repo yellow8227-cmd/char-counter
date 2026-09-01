@@ -59,8 +59,6 @@ It's one HTML file — open a link and you're playing.
 Available in English, 한국어 and 日本語.
 Controls: mouse or touch. Nothing else.
 
-Full site: https://zingy-cupcake-98444a.netlify.app/en
-
 ━━━━━━━━━━━━━━━ 【본문】 여기까지 ━━━━━━━━━━━━━━━
 
 
@@ -68,6 +66,11 @@ Full site: https://zingy-cupcake-98444a.netlify.app/en
   HOW TO PLAY 아래       →  press/shots/appstore-1-play.png
   Live Dungeon 줄 아래   →  press/shots/appstore-2-dungeon.png
   THE ENDING 아래        →  press/shots/appstore-5-result.png
+
+■ 「Full site」 줄은 일부러 뺐습니다
+  영어 소개 페이지가 아직 배포에 안 올라가 있어서 .../en 이 404 가 납니다.
+  (제가 주소를 잘못 적었습니다) 영어 페이지를 배포한 뒤에 이 줄을 넣으세요:
+      Full site: https://zingy-cupcake-98444a.netlify.app/en
 
 ■ 쓰지 말 것
   "오프라인으로도 됩니다" — itch 는 게임을 iframe 안에서 돌리는데 거기서는
