@@ -136,6 +136,17 @@
   #botBand{flex:0 0 auto;width:100%;display:flex;flex-wrap:wrap;align-items:flex-end;
     justify-content:space-between;gap:8px;min-height:0;}
   .blob{position:absolute;border-radius:50%;filter:blur(6px);opacity:.5;pointer-events:none;animation:float 9s ease-in-out infinite;}
+  /* 🎓 가이드 말풍선 — 판 아래쪽에 붙인다(젤리는 위에서 내려오니 시야를 안 가린다) */
+  /* 아래쪽이되 캐릭터보다는 위 — 쏘는 고양이가 가려지면 '내가 쏜다'가 안 읽힌다 */
+  #tutBar{position:absolute;left:50%;bottom:20%;transform:translateX(-50%);width:min(92%,420px);
+    z-index:6;text-align:center;pointer-events:none;}
+  #tutMsg{display:inline-block;padding:11px 18px;border-radius:18px;
+    background:rgba(27,18,32,.90);color:#fff;font-weight:800;font-size:15px;line-height:1.5;
+    box-shadow:0 6px 18px rgba(0,0,0,.28);}
+  #tutRow{margin-top:10px;display:flex;gap:8px;justify-content:center;align-items:center;pointer-events:auto;}
+  #tutRow .btn{padding:11px 26px;font-size:16px;}
+  #tutRow .chip{background:rgba(255,255,255,.86);}
+  #tutRow .hide{display:none;}
   /* 데스크톱 곁판 — 좁은 화면에서는 아예 없다 */
   .deskSide{display:none;}
   @media (min-width:1180px){
@@ -248,6 +259,11 @@
   @keyframes wob{0%,100%{transform:translateY(0) rotate(-2deg) scale(1)}50%{transform:translateY(-2px) rotate(2deg) scale(1.03)}}
   .tag{font-size:clamp(15px,4vw,19px);font-weight:800;color:var(--ink);max-width:340px;line-height:1.5;}
   .tag2{font-size:14px;font-weight:700;color:var(--ink2);margin-top:-4px;}
+  /* 💌 피드백 칸 — 글씨가 16px 미만이면 아이폰이 화면을 확 당긴다 */
+  #fbText{width:100%;box-sizing:border-box;margin-top:10px;padding:12px 14px;font-family:inherit;
+    font-size:16px;line-height:1.6;color:var(--ink);background:#fff;border:2px solid var(--line);
+    border-radius:14px;resize:vertical;min-height:120px;}
+  #fbText:focus{outline:none;border-color:#ff9dc0;}
   /* 🔥 핵불닭 도발 줄 — 홈에서 '한계 돌파' 축을 세우는 자리 */
   .firebar{display:block;margin:8px auto 0;padding:9px 18px;border:0;border-radius:16px;cursor:pointer;
     font-family:inherit;font-size:13.5px;font-weight:800;line-height:1.45;color:#fff;text-align:center;
@@ -886,7 +902,16 @@
       </div>
     </div>
 
-    <div id="stage"><canvas id="game"></canvas></div>
+    <div id="stage"><canvas id="game"></canvas>
+      <!-- 🎓 첫 판 가이드 — 판 위에 얹는다. 설명서는 아무도 안 읽는다. 눌러 가며 배운다. -->
+      <div id="tutBar" class="hide">
+        <div id="tutMsg"></div>
+        <div id="tutRow">
+          <button class="btn" id="tutGo"></button>
+          <button class="chip" id="tutSkip">건너뛰기</button>
+        </div>
+      </div>
+    </div>
 
     <div id="botBand">
       <div id="itemBar" class="hide"></div>
@@ -1125,11 +1150,33 @@
   </div>
 
   <!-- SETTINGS -->
+  <!-- 💌 만든 사람에게 — 게임을 고칠 실마리는 여기서 나온다 -->
+  <div id="fbScreen" class="screen hide">
+    <div class="h2">💌 만든 사람에게</div>
+    <div class="card">
+      <div class="tag2" style="text-align:left;">불편한 곳, 안 되는 것, 있으면 좋겠는 것 — 뭐든 좋아요.
+        읽고 고칩니다. 답장은 못 드려요 🙏</div>
+      <div class="opts" id="fbKind" style="margin-top:10px;"></div>
+      <textarea id="fbText" maxlength="600" rows="6" placeholder="여기에 적어 주세요 (600자까지)"></textarea>
+      <div class="tag2" id="fbCount" style="text-align:right;margin-top:4px;">0 / 600</div>
+      <div style="text-align:center;margin-top:10px;">
+        <button class="btn" id="fbSend">보내기 ✉️</button>
+      </div>
+      <div class="tag2" id="fbNote" style="margin-top:10px;">닉네임과 기기 정보(화면 크기·브라우저)가 같이 갑니다 —
+        어디서 깨지는지 알아야 고칠 수 있어서요. 그 밖에는 아무것도 안 보냅니다.</div>
+    </div>
+    <div style="text-align:center;"><button class="btn ghost" id="fbBack">← 돌아가기</button></div>
+  </div>
+
   <div id="settingsScreen" class="screen hide">
     <div class="h2">⚙️ 설정</div>
     <div class="card">
       <div class="label">🌐 언어 / Language</div>
       <div class="opts" id="langOpts"></div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <button class="btn" id="fbOpen" style="padding:13px 26px;font-size:16px;">💌 만든 사람에게 한마디</button>
+      <div class="tag2" style="margin-top:8px;">불편한 곳·있으면 좋겠는 것을 알려 주세요</div>
     </div>
     <div class="card">
       <div class="setrow"><span>🔊 효과음</span><button class="toggle" id="setSound">켜짐</button></div>
@@ -3900,6 +3947,7 @@ const I18N_ROWS=[
   ["— 몇 개를 만들어도 같은 값이에요","— the same price no matter how many you make","— いくつ作っても同じ値段です"],
   ["— 방을 만드는 사람이 정해요","— set by whoever creates the room","— ルームを作る人が決めます"],
   ["— 채팅이나 대전을 하면 여기에 쌓여요","— people you chat or play with pile up here","— チャットや対戦をするとここに溜まります"],
+  ["← 돌아가기","← Back","← もどる"],
   ["← 뒤로","← Back","← もどる"],
   ["← 홈으로","← Home","← ホームへ"],
   ["⌨️ 컴퓨터로 할 때","⌨️ On a computer","⌨️ パソコンであそぶとき"],
@@ -3941,6 +3989,7 @@ const I18N_ROWS=[
   ["개 달성 · 전부 달성했어요! 🎉","done · every one of them! 🎉","個達成 · 全部達成しました！🎉"],
   ["거대 젤리 열 마리 잡기","Beat ten giant jellies","巨大ゼリーを10体倒す"],
   ["거대 젤리 한 마리 잡기","Beat a giant jelly","巨大ゼリーを1体倒す"],
+  ["건너뛰기","Skip","スキップ"],
   ["게임 끝! 🍭","Game over! 🍭","ゲーム終了！ 🍭"],
   ["게임이 끝난 결과 화면","the result screen after a game","ゲーム終了の結果画面"],
   ["겨우 여기까지요? 다시 😏","That's it? Again 😏","それだけ？もう一回 😏"],
@@ -3956,8 +4005,8 @@ const I18N_ROWS=[
   ["구매","Buy","購入"],
   ["귀걸이","Earrings","イヤリング"],
   ["귀마개","Earmuffs","耳あて"],
-  ["그런데 귀엽다고 얕보지 마세요 😏","Just 3 minutes — beat your best score 🔥","たった3分 — 自己ベストに挑戦 🔥"],
   ["규칙은 3초면 배웁니다.","One tap and you can't put it down!","ワンタップでやめられない！"],
+  ["그런데 귀엽다고 얕보지 마세요 😏","Just 3 minutes — beat your best score 🔥","たった3分 — 自己ベストに挑戦 🔥"],
   ["그만두기 🏠","Quit 🏠","やめる 🏠"],
   ["기기 저장","On device","端末に保存"],
   ["기다리는 사람과 자동으로 이어줘요. 20초 안에 못 만나면 방을 만들어 둡니다.","We'll pair you with someone waiting. If nobody shows up in 20 seconds, we'll open a room for you.","待っている人と自動でつなぎます。20秒で会えなければルームを作っておきます。"],
@@ -4001,12 +4050,15 @@ const I18N_ROWS=[
   ["누구나 쉽게","Easy for anyone","だれでもかんたん"],
   ["누구나 쉽게 · 목숨 %d개","Easy for anyone · %d lives","だれでもかんたん · ライフ%d"],
   ["누르면 목숨이 하나 깎이고 콤보가 풀려요. 바닥까지 떨어뜨려도 괜찮아요.","Tapping one costs a life and breaks your combo. Letting it fall is fine.","押すとライフが1つ減り、コンボが切れます。下まで落としても大丈夫です。"],
+  ["눌러 가면서 규칙을 배워요","Learn the rules by tapping","タップしながらルールを覚えます"],
   ["느리게","Slow","ゆっくり"],
+  ["닉네임과 기기 정보(화면 크기·브라우저)가 같이 갑니다 —\n        어디서 깨지는지 알아야 고칠 수 있어서요. 그 밖에는 아무것도 안 보냅니다.","Your nickname and device info (screen size, browser) are sent along —\n        I need them to know where it broke. Nothing else is sent.","ニックネームと端末情報（画面サイズ・ブラウザ）が一緒に送られます —\n        どこで壊れたか分からないと直せないからです。それ以外は送りません。"],
   ["닉네임을 입력하세요","Enter a nickname","ニックネームを入力"],
   ["닉네임을 정하면 말할 수 있어요","Set a nickname to chat","ニックネームを決めると話せます"],
   ["닉네임을 정하면 온라인 랭킹에 점수가 올라가요!","Set a nickname and your score joins the online ranking!","ニックネームを決めるとオンラインランキングに載ります！"],
   ["닉네임을 정해주세요","Pick a nickname","ニックネームを決めてください"],
   ["님이","","さんが"],
+  ["다 배웠어요! 웃는 젤리를 놓치면 목숨이 깎여요 ❤️","That's it! Miss a smiling jelly and you lose a life ❤️","これで全部！わらってるゼリーを逃すとライフが減ります ❤️"],
   ["다시 부를 수 있어요.","to invite them again.","また呼べます。"],
   ["단발 💇","Bob 💇","ボブ 💇"],
   ["닫기","Close","閉じる"],
@@ -4074,6 +4126,7 @@ const I18N_ROWS=[
   ["버텼어요","survived","耐えました"],
   ["별 핀 ⭐","Star pin ⭐","スターピン ⭐"],
   ["보내기","Send","送る"],
+  ["보내기 ✉️","Send ✉️","おくる ✉️"],
   ["보너스","bonus","ボーナス"],
   ["보스","Bosses","ボス"],
   ["보스 사냥꾼","Boss hunter","ボスハンター"],
@@ -4085,6 +4138,8 @@ const I18N_ROWS=[
   ["볼 하트 💗","Cheek heart 💗","ほおのハート 💗"],
   ["부자","Rich","お金持ち"],
   ["분","m","分"],
+  ["불편한 곳, 안 되는 것, 있으면 좋겠는 것 — 뭐든 좋아요.\n        읽고 고칩니다. 답장은 못 드려요 🙏","Anything awkward, broken, or missing — all welcome.\n        I read every one and fix things. I can't reply, sorry 🙏","使いにくいところ、動かないもの、あったらいいもの — なんでもどうぞ。\n        全部読んで直します。お返事はできません 🙏"],
+  ["불편한 곳·있으면 좋겠는 것을 알려 주세요","Tell me what's awkward or what you'd like","不便なところ・あったらいいものを教えてください"],
   ["비니","Beanie","ニット帽"],
   ["비밀번호 (6자 이상)","Password (6+ characters)","パスワード（6文字以上）"],
   ["비밀번호를 여러 번 틀려도","Even if you get the password wrong many times,","パスワードを何度まちがえても"],
@@ -4148,6 +4203,7 @@ const I18N_ROWS=[
   ["에서 만들어요.",".","で作ります。"],
   ["에서 방금 친 점수를 그대로 도전장으로 보냅니다!","sends the score you just made as a challenge!","から、いまのスコアをそのまま送ります！"],
   ["에서 점수로 승부!","and battle on score!","でスコア勝負！"],
+  ["여기에 적어 주세요 (%d자까지)","Write it here (up to %d characters)","ここに書いてください（%d文字まで）"],
   ["여우 🦊","Fox 🦊","きつね 🦊"],
   ["여우 🦊 🔒","Fox 🦊 🔒","きつね 🦊 🔒"],
   ["여자아이 👧","Girl 👧","おんなのこ 👧"],
@@ -4232,8 +4288,9 @@ const I18N_ROWS=[
   ["젤리 장인","Jelly Artisan","ゼリー職人"],
   ["젤리 터트리기","Popping jellies","ゼリーを弾く"],
   ["젤리곰","Gummy bear","グミベア"],
-  ["젤리슈팅","Jelly Shooting","ゼリーシューティング"],
   ["젤리모","Jellimo","ジェリモ"],
+  ["젤리슈팅","Jelly Shooting","ゼリーシューティング"],
+  ["조금만 더 적어 주세요 🙏","A little more, please 🙏","もう少し書いてください 🙏"],
   ["조금만 더! 다시 도전해봐요 ✨","So close! Give it another go ✨","もう少し！もう一回どうぞ ✨"],
   ["주근깨 ✨","Freckles ✨","そばかす ✨"],
   ["주소가 너무 길어요","The address is too long","アドレスが長すぎます"],
@@ -4331,10 +4388,12 @@ const I18N_ROWS=[
   ["🌍 온라인 랭킹","🌍 Online ranking","🌍 オンラインランキング"],
   ["🌐 브라우저로 열기","🌐 Open in browser","🌐 ブラウザで開く"],
   ["🌐 언어 / Language","🌐 Language","🌐 言語 / Language"],
+  ["🌟 반짝이는 황금 젤리는 코인 12개!","🌟 The sparkling golden jelly is worth 12 coins!","🌟 きらめくゴールデンゼリーはコイン12枚！"],
   ["🌶️ 난이도","🌶️ Difficulty","🌶️ むずかしさ"],
   ["🌶️ 난이도 고르기","🌶️ Pick a difficulty","🌶️ むずかしさを選ぶ"],
   ["🌿 머리 옆에","🌿 Beside the head","🌿 頭のよこに"],
   ["🍡 기본 규칙","🍡 The basics","🍡 きほんルール"],
+  ["🍡 이제 진짜로 ▶","🍡 For real now ▶","🍡 本番いきます ▶"],
   ["🍡 혼자 하기 ▶","🍡 Play solo ▶","🍡 ひとりで遊ぶ ▶"],
   ["🍬 난이도","🍬 Difficulty","🍬 むずかしさ"],
   ["🍬 입에 물기","🍬 In the mouth","🍬 口にくわえる"],
@@ -4350,6 +4409,7 @@ const I18N_ROWS=[
   ["🎉 신기록 달성!","🎉 New record!","🎉 新記録！"],
   ["🎒 아이템","🎒 Items","🎒 アイテム"],
   ["🎒 아이템 설명서","🎒 Item guide","🎒 アイテム説明"],
+  ["🎓 30초 가이드 다시 보기","🎓 Replay the 30-second guide","🎓 30秒ガイドをもう一度"],
   ["🎖️ 업적","🎖️ Achievements","🎖️ じっせき"],
   ["🎖️ 업적 달성!","🎖️ Achievement unlocked!","🎖️ 実績かいほう！"],
   ["🎧 두르고 걸기","🎧 Around and over","🎧 かけて巻く"],
@@ -4378,17 +4438,26 @@ const I18N_ROWS=[
   ["🏆 마지막 생존!","🏆 Last one standing!","🏆 最後の生き残り！"],
   ["🏠 방 만들기","🏠 Create room","🏠 ルームを作る"],
   ["🏠 홈으로","🏠 Home","🏠 ホームへ"],
+  ["🐞 안 돼요 / 이상해요","🐞 Broken / weird","🐞 動かない / おかしい"],
   ["🐾 캐릭터","🐾 Character","🐾 キャラクター"],
   ["👀 관전","👀 Spectate","👀 かんせん"],
   ["👆 실수로 누르지 않게","👆 So you don't tap by mistake —","👆 まちがって押さないように"],
   ["👆 실수로 누르지 않게 잠깐만요…","👆 One moment, so you don't tap by mistake…","👆 まちがって押さないように少しお待ちください…"],
+  ["👇 떨어지는 젤리를 톡 눌러보세요","👇 Tap a falling jelly","👇 落ちてくるゼリーをタップ"],
   ["👥 지금 열린 방","👥 Open rooms","👥 いま開いているルーム"],
   ["👥 참가자","👥 Players","👥 参加者"],
   ["💇 머리 모양","💇 Hair","💇 かみがた"],
   ["💇 머리색","💇 Hair color","💇 かみの色"],
+  ["💌 만든 사람에게","💌 To the maker","💌 作った人へ"],
+  ["💌 만든 사람에게 한마디","💌 Say something to the maker","💌 作った人にひとこと"],
+  ["💌 잘 받았어요. 고맙습니다!","💌 Got it. Thank you!","💌 受け取りました。ありがとう！"],
+  ["💗 그냥 좋아서","💗 Just saying hi","💗 ただ好きで"],
   ["💡 알아두면 좋아요","💡 Good to know","💡 知っておくと便利"],
+  ["💡 이런 게 있으면","💡 I wish it had…","💡 こんなのがあれば"],
   ["💣 뾰족 폭탄 = 피하기","💣 Spiky bomb = avoid it","💣 とがった爆弾 = さける"],
+  ["💣 폭탄은 누르면 안 돼요 — 그냥 지나보내세요","💣 Don't tap bombs — just let them fall","💣 爆弾は押しちゃダメ — そのまま落としてください"],
   ["💥 보스가 내려찍었다!","💥 The boss slammed down!","💥 ボスが叩きつけた！"],
+  ["💥 이렇게 터지면 목숨이 깎여요. 한 번 더 — 그냥 두세요","💥 That costs a life. Once more — leave it alone","💥 これだとライフが減ります。もう一度 — そのままで"],
   ["💥 전체 초기화 (코인·아이템·스킨·기록)","💥 Reset everything (coins, items, skins, records)","💥 全部リセット（コイン・アイテム・スキン・記録）"],
   ["💥 터트리는 사람","💥 Popper","💥 弾く人"],
   ["💥 폭탄 명중!","💥 Bomb hit!","💥 爆弾ヒット！"],
@@ -4400,6 +4469,7 @@ const I18N_ROWS=[
   ["📅 출석부","📅 Daily check-in","📅 出席ボード"],
   ["📊 데이터","📊 Data","📊 データ"],
   ["📋 글만 복사","📋 Copy text","📋 テキストをコピー"],
+  ["📋 복사했어요! 만든 사람에게 붙여넣어 보내 주세요","📋 Copied! Paste it to the maker","📋 コピーしました！作った人に貼って送ってください"],
   ["📋 오늘의 임무","📋 Today's quests","📋 今日のミッション"],
   ["📋 오늘의 임무 (%d)","📋 Today's missions (%d)","📋 今日のミッション (%d)"],
   ["📋 임무 완료! +%d🪙 (전부 달성 보너스 포함!)","📋 Mission complete! +%d🪙 (all-three bonus included!)","📋 任務クリア！+%d🪙（全達成ボーナス込み！）"],
@@ -4427,6 +4497,7 @@ const I18N_ROWS=[
   ["🔗 주소 복사","🔗 Copy link","🔗 リンクをコピー"],
   ["🔗 초대 링크를 복사했어요","🔗 Invite link copied","🔗 しょうたいリンクをコピーしました"],
   ["🔥 버티기","🔥 Survival","🔥 サバイバル"],
+  ["🔥 연달아 터트리면 콤보! 점수가 배로 붙어요","🔥 Chain them for a combo — the score multiplies","🔥 続けて弾くとコンボ！スコアが倍に"],
   ["🔥 핵불닭","🔥 Nuclear","🔥 激辛"],
   ["🔥 핵불닭 버티기","🔥 Nuclear survival","🔥 激辛サバイバル"],
   ["🔨 창작","🔨 Make","🔨 クラフト"],
@@ -4437,6 +4508,7 @@ const I18N_ROWS=[
   ["🗓 오늘의 판 🔴","🗓 Today's board 🔴","🗓 今日の板 🔴"],
   ["😋보통맛","😋Medium","😋ふつう"],
   ["😢 패배","😢 Defeat","😢 まけ"],
+  ["😵 너무 어려워요","😵 Too hard","😵 むずかしすぎます"],
   ["🙋 내 닉네임","🙋 My nickname","🙋 わたしのニックネーム"],
   ["🙋 내 캐릭터 고치기 →","🙋 Edit my character →","🙋 キャラを変える →"],
   ["🙋 내 프로필","🙋 My profile","🙋 マイプロフィール"],
@@ -4980,6 +5052,133 @@ function syncFireBar(){ const b=$('fireBtn'); if(!b) return;
     +(best? ('<b>'+escapeHtml(fireTime(best))+'</b> — '+escapeHtml(fireTaunt(best)))
           : escapeHtml(t('10초도 못 버틸걸요? 😏'))); }
 
+// ================= 🎓 첫 판 가이드 =================
+// 설명서는 아무도 안 읽는다. 규칙 세 줄을 '눌러 가면서' 배우게 한다.
+// 포털이 가장 혹독하게 보는 게 첫 30초라, 여기서 무슨 게임인지 안 보이면 끝이다.
+//
+// 진짜 판을 건드리지 않는다 — 가이드일 때는 스폰·목숨·점수·코인이 전부 멈춘다.
+// 씨앗으로 만드는 판(오늘의 판·도전장)과 절대 섞이면 안 되기 때문이다.
+let tut=null;                       // {i, need, got, wait} · null 이면 가이드가 아니다
+function tutOn(){ return !!tut; }
+function tutDone(){ try{ return localStorage.getItem('jelly_tut')==='1'; }catch(e){ return true; } }
+function tutMark(){ try{ localStorage.setItem('jelly_tut','1'); }catch(e){} }
+
+// 단계마다 '무엇을 띄우고 무엇을 기다리는지'만 적는다.
+const TUT_STEPS=[
+  { msg:'👇 떨어지는 젤리를 톡 눌러보세요', put:'one',   need:1,      go:'' },
+  { msg:'🔥 연달아 터트리면 콤보! 점수가 배로 붙어요', put:'three', need:3, go:'' },
+  { msg:'💣 폭탄은 누르면 안 돼요 — 그냥 지나보내세요', put:'bomb', need:'pass', go:'' },
+  { msg:'🌟 반짝이는 황금 젤리는 코인 12개!', put:'gold',  need:1,      go:'' },
+  { msg:'다 배웠어요! 웃는 젤리를 놓치면 목숨이 깎여요 ❤️', put:null, need:'btn', go:'🍡 이제 진짜로 ▶' },
+];
+// 가이드용 젤리는 손으로 놓는다 — 자리를 정해 둬야 '이걸 누르라'가 성립한다.
+function tutPut(kind){
+  const mk=(x,y,o)=>Object.assign({x:x,y:y,vx:0,vy:0.9,r:30,color:'#ffb3c9',face:'happy',shape:'round',
+    pts:16,bomb:false,gold:false,ghost:false,wob:Math.random()*7,dead:false,tut:true},o||{});
+  if(kind==='one')   jellies.push(mk(W*0.50,-40));
+  if(kind==='three'){ jellies.push(mk(W*0.26,-40,{color:'#a3d5ff'}));
+                      jellies.push(mk(W*0.50,-150,{color:'#b6e3a0'}));
+                      jellies.push(mk(W*0.74,-260,{color:'#ffe36e'})); }
+  if(kind==='bomb')  jellies.push(mk(W*0.50,-40,{bomb:true,color:'#4a4450',pts:20,r:27,vy:1.15}));
+  if(kind==='gold')  jellies.push(mk(W*0.50,-40,{gold:true,color:'#ffce3d',pts:26,r:28,face:'star'}));
+}
+function tutShow(){
+  const st=TUT_STEPS[tut.i];
+  $('tutBar').classList.remove('hide');
+  $('tutMsg').textContent=t(st.msg);
+  const go=$('tutGo');
+  go.textContent=t(st.go||''); go.classList.toggle('hide',!st.go);
+  $('tutSkip').classList.toggle('hide',tut.i>=TUT_STEPS.length-1);
+}
+function tutNext(){
+  tut.i++;
+  if(tut.i>=TUT_STEPS.length){ tutFinish(true); return; }
+  const st=TUT_STEPS[tut.i];
+  tut.got=0; tut.need=st.need;
+  jellies.length=0;                       // 앞 단계가 남기고 간 것을 치운다
+  if(st.put) tutPut(st.put);
+  tutShow();
+}
+// 젤리를 터트렸다 / 놓쳤다 — 가이드가 다음으로 갈지 정한다
+function tutPop(j){
+  if(!tut) return;
+  if(tut.need===1||tut.need===3){ tut.got++; if(tut.got>=tut.need) setTimeout(tutNext,520); }
+  else if(tut.need==='pass'&&j.bomb){     // 폭탄을 눌러 버렸다 — 다시 한 번 보여 준다
+    $('tutMsg').textContent=t('💥 이렇게 터지면 목숨이 깎여요. 한 번 더 — 그냥 두세요');
+    setTimeout(()=>{ if(tut&&tut.need==='pass'){ jellies.length=0; tutPut('bomb'); } },700); }
+}
+function tutFell(j){
+  if(!tut) return;
+  if(tut.need==='pass'&&j.bomb) setTimeout(tutNext,420);
+  else if(tut.need===1||tut.need===3){ tutPut(TUT_STEPS[tut.i].put==='three'?'one':TUT_STEPS[tut.i].put); }
+}
+function tutStart(){
+  tut={i:-1,got:0,need:0};
+  score=0;combo=1;comboTimer=0;level=1;prog=0;lives=MODES[mode].lives;
+  jellies=[];particles=[];floaters=[];rings=[];shots=[];drops=[];banner=null;callout=null;
+  flash=0;spawnTimer=0;elapsed=0;shake=0;frame=0;paused=false;endless=false;daily=false;boss=null;bshots=[];
+  slowTimer=0;x2Timer=0;magnetTimer=0;hexT={zig:0,fog:0,rush:0};shieldT=0;revealT=0;
+  player={x:W/2,targetX:W/2,mood:'idle',moodTimer:0,recoil:0};
+  showScreen(null); $('hud').classList.add('hide'); $('audioBar').classList.add('hide');
+  $('itemBar').classList.add('hide'); $('pauseBtn').classList.add('hide');
+  ensureAudio(); lastT=0; acc=0; running=true;
+  boardUnlock(); resize(true); startLoop(); tutNext();
+}
+// play=true 면 가이드가 끝나고 진짜 판으로 이어진다
+function tutFinish(play){
+  tut=null; running=false; tutMark();
+  $('tutBar').classList.add('hide'); jellies.length=0;
+  if(play) startGame(); else openStart();
+}
+
+// ================= 💌 만든 사람에게 =================
+// 혼자 만드는 게임에서 제일 비싼 건 '무엇이 불편한지 모르는 것'이다.
+// 스토어 리뷰는 안 남고, 인스타 댓글은 칭찬만 온다. 게임 안에 창을 둔다.
+//
+// 서버가 없거나 표가 없으면 글이 사라지면 안 되니, 그때는 복사해 준다.
+// (Supabase 에 feedback 표 만드는 SQL 은 press/랭킹-지키기.md 아래에 적어 뒀다)
+const FB_KINDS=[
+  {id:'bug',  label:'🐞 안 돼요 / 이상해요'},
+  {id:'want', label:'💡 이런 게 있으면'},
+  {id:'hard', label:'😵 너무 어려워요'},
+  {id:'good', label:'💗 그냥 좋아서'},
+];
+let fbKind='bug', fbSending=false;
+function buildFbUI(){
+  const o=$('fbKind'); if(!o) return; o.innerHTML='';
+  FB_KINDS.forEach(k=>{ const b=document.createElement('button');
+    b.className='chip'+(fbKind===k.id?' on':''); b.textContent=t(k.label);
+    b.onclick=()=>{ fbKind=k.id; buildFbUI(); }; o.appendChild(b); });
+  fbCount();
+}
+function fbCount(){ const el=$('fbCount'), ta=$('fbText'); if(el&&ta) el.textContent=(ta.value||'').length+' / 600'; }
+function openFeedback(){ showScreen('fbScreen'); buildFbUI(); setTimeout(()=>{ const ta=$('fbText'); if(ta) ta.focus(); },120); }
+// 기기 정보는 '어디서 깨졌는지'를 알아내는 데만 쓴다. 길게 저장할 이유가 없어 짧게 줄인다.
+function fbEnv(){
+  return [innerWidth+'x'+innerHeight, (devicePixelRatio||1).toFixed(1)+'x', lang,
+          (navigator.userAgent||'').slice(0,120)].join(' · ');
+}
+async function sendFeedback(){
+  if(fbSending) return;
+  const ta=$('fbText'), txt=(ta.value||'').trim();
+  if(txt.length<5){ toast('조금만 더 적어 주세요 🙏'); ta.focus(); return; }
+  fbSending=true; $('fbSend').disabled=true;
+  const row={ kind:fbKind, text:txt.slice(0,600), name:(nick||'').slice(0,10),
+              ver:(typeof GAME!=='undefined'?GAME.mark1:'') , env:fbEnv() };
+  let ok=false;
+  if(supaReady()){
+    try{ const { error } = await getSupa().from('feedback').insert(row); ok=!error;
+      if(error) devHint('feedback 표가 없습니다. press/랭킹-지키기.md 의 SQL 을 돌려주세요: '+error.message);
+    }catch(e){ devHint('피드백 전송 실패: '+e.message); }
+  }
+  fbSending=false; $('fbSend').disabled=false;
+  if(ok){ ta.value=''; fbCount(); toast('💌 잘 받았어요. 고맙습니다!'); setTimeout(()=>openSettings(),700); }
+  else{
+    // 서버가 안 되면 글을 잃지 않게 복사해 준다 — 사람이 다시 쓰게 만들면 안 된다
+    copyText('[젤리모 피드백 · '+fbKind+'] '+txt+'\n— '+fbEnv(), '📋 복사했어요! 만든 사람에게 붙여넣어 보내 주세요');
+  }
+}
+
 const DAILY_FIRST=40, DAILY_STREAK=100;   // 첫날 / 연속 출석 보너스
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 function isYesterday(last,today){const p=last.split('-').map(Number),q=today.split('-').map(Number);const d1=new Date(p[0],p[1]-1,p[2]),d2=new Date(q[0],q[1]-1,q[2]);return Math.round((d2-d1)/86400000)===1;}
@@ -5206,6 +5405,7 @@ function hit(mx,my){ if(!running||paused)return; ensureAudio();
     burst(j.x,j.y,'#4a4450',30);ring(j.x,j.y,'#ff5a5a',j.r*3.6,7);ring(j.x,j.y,'#ffd0d0',j.r*2.2,4);shake=18;playBomb();if(magnetTimer<=0){combo=1;comboTimer=0;}setMood('ouch',75);
     if(shieldT>0){ ring(j.x,j.y,'#4fc65f',j.r*4,6); floater(j.x,j.y-j.r,'🛡️ 막았다!','#2f9c4f');
       jGone(j,'fell',lives); }                          // 실드가 막으면 목숨이 안 깎인다
+    else if(tutOn()){ tutPop(j); }                  // 가이드: 목숨 대신 한 번 더 보여 준다
     else { jGone(j,'bomb',lives-1);   // gameOver가 netMode를 끄기 전에 보고한다
       loseLife(); } }
   else popGood(j);
@@ -5218,6 +5418,7 @@ function popGood(j){ j.dead=true;combo=Math.min(combo+1,9);comboTimer=magnetTime
   const g=(netMode&&netGame==='throw') ? POP_BASE*Math.min(5,combo)*mult : j.pts*combo*mult;
   score+=g;
   const cGain=j.gold?12:1; runCoins+=cGain;
+  if(tutOn()) tutPop(j);
   // ♾ 보스가 있으면 터진 젤리가 보스에게 날아간다 — 터트리는 손맛이 그대로 공격이 된다
   if(endless&&boss&&boss.dieT<=0) bossThrow(j.x,j.y,j.color,j.gold?3:1);
   burst(j.x,j.y,j.color,j.gold?34:24); burst(j.x,j.y,'#ffffff',6);
@@ -5235,7 +5436,7 @@ const PROG_EASE=0.02;      // 목표 난이도로 따라붙는 속도(약 1초�
 // 한 프레임에 오를 수 있는 상한(초당 0.36레벨). 시간으로 오르는 속도는 이보다 한참
 // 낮으므로 평소엔 걸리지 않고, 점수가 한 번에 크게 튈 때만 계단을 막아 준다.
 const PROG_MAX_STEP=0.006;
-function updateLevel(){ const m=MODES[mode];
+function updateLevel(){ if(tutOn()) return; const m=MODES[mode];
   // 대전 모드: 점수와 무관하게 '시간 기반'만 사용 → 두 사람의 난이도 진행이 완전히 동일(공정)
   const target = battleMode ? (elapsed/m.lvl)
                             : Math.max(elapsed/m.lvl, score/LEVEL_STEP_BONUS);
@@ -5521,7 +5722,7 @@ function update(){ elapsed++; updateLevel();
   // ⚡ 스피드업은 슬로우와 곱해진다 — 슬로우를 켜 두면 버틸 수 있게
   const slowF=(slowTimer>0?(0.40-0.03*slowLv):1)*(hexT.rush>0?1.7:1);
   // 던지기 게임에서는 젤리가 저절로 나오지 않는다. 전부 상대가 던진 것이다.
-  if(!(netMode&&netGame==='throw')){
+  if(!(netMode&&netGame==='throw') && !tutOn()){
     spawnTimer++;const d=diff();if(spawnTimer>=d.spawn){spawnTimer=0;spawnJelly();}
     dropTimer--; if(dropTimer<=0){ spawnDrop(); dropTimer=Math.round(srand(13,18)*60); }
   }
@@ -5534,6 +5735,7 @@ function update(){ elapsed++; updateLevel();
     if(j.y-j.r>H){j.dead=true;
       // 마지막 목숨이면 loseLife -> gameOver -> netMode=false 가 되어 보고가 사라진다.
       // 그래서 먼저 알린다.
+      if(tutOn()){ tutFell(j); continue; }          // 가이드에서는 목숨이 안 깎인다
       const blocked=(!j.bomb&&shieldT>0);
       jGone(j,(j.bomb||blocked)?'fell':'miss',(j.bomb||blocked)?lives:lives-1);
       if(blocked){ floater(j.x,H-40,'🛡️ 막았다!','#2f9c4f'); }
@@ -5578,6 +5780,19 @@ function render(){ ctx.clearRect(0,0,W,H);
   ctx.save();if(shake>0)ctx.translate(rand(-shake,shake)*0.4,rand(-shake,shake)*0.4);
   for(let i=0;i<6;i++){const yy=((elapsed*0.3+i*130)%(H+40))-20;ctx.fillStyle=th.dot;ctx.beginPath();ctx.arc(60+i*75,yy,10+(i%3)*4,0,7);ctx.fill();}
   for(const j of jellies){if(!j.dead&&j.y-j.r<=H)drawJelly(j);}
+  // 🎓 가이드: 지금 눌러야 할(또는 두어야 할) 젤리를 고리로 가리킨다
+  if(tutOn()){
+    const bad=(tut.need==='pass');
+    for(const j of jellies){ if(j.dead||j.y+j.r<0) continue;
+      const pu=1+Math.sin(frame*0.14)*0.10;
+      ctx.save(); ctx.translate(j.x,j.y);
+      ctx.strokeStyle=bad?'rgba(255,90,90,0.95)':'rgba(255,255,255,0.95)';
+      ctx.lineWidth=4; ctx.setLineDash(bad?[9,7]:[]);
+      ctx.beginPath(); ctx.arc(0,0,j.r*1.55*pu,0,7); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle=bad?'#ff5a5a':'#fff'; ctx.font='700 22px sans-serif'; ctx.textAlign='center';
+      ctx.fillText(bad?'✕':'👆', 0, j.r*1.55*pu+30);
+      ctx.restore(); }
+  }
   for(const dp of drops){if(!dp.dead)drawDrop(dp);}
   if(endless){ drawBoss(); drawBshots(); }
   for(const p of particles){ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.r*p.life,0,7);ctx.fill();}ctx.globalAlpha=1;
@@ -5658,6 +5873,10 @@ function resumeGame(){ if(!paused)return; paused=false; lastT=0; $('pauseScreen'
 function quitGame(){ paused=false; running=false; boardUnlock(); $('pauseScreen').classList.add('hide'); $('hud').classList.add('hide'); $('audioBar').classList.add('hide'); $('itemBar').classList.add('hide'); $('pauseBtn').classList.add('hide'); if(bgmGain&&bgmOn)bgmGain.gain.value=bgmVol(); openStart(); }
 
 function startGame(){
+  // 🎓 처음 온 사람은 규칙을 모른다. 혼자 하기 첫 판에만 가이드를 먼저 띄운다.
+  // 대전·오늘의 판·끝없는 모드는 씨앗과 규칙이 걸려 있어 절대 끼어들지 않는다.
+  if(!tutOn() && !tutDone() && !netMode && !aiOn && !nextDaily && !nextEndless && !battleMode){
+    tutStart(); return; }
   // 난이도를 먼저 확정한다. 순서가 바뀌면 목숨 수가 내 지난 판 난이도로 정해져서
   // 방장과 참가자의 목숨이 서로 달라진다.
   if(netMode && MODES[netModeName]) mode=netModeName;
@@ -5777,7 +5996,7 @@ function gameOver(){
   showScreen('overScreen'); lockOverActions(); startAttract(); }
 
 // ================= Screens & flow =================
-const SCREENS=['startScreen','setupScreen','shopScreen','profileScreen','chatScreen','settingsScreen','attendScreen','missionScreen','dailyScreen','dexScreen','friendScreen','helpScreen','rankScreen','battleScreen','netScreen','aiScreen','lobbyScreen','acceptScreen','pauseScreen','overScreen'];
+const SCREENS=['startScreen','setupScreen','shopScreen','profileScreen','chatScreen','settingsScreen','fbScreen','attendScreen','missionScreen','dailyScreen','dexScreen','friendScreen','helpScreen','rankScreen','battleScreen','netScreen','aiScreen','lobbyScreen','acceptScreen','pauseScreen','overScreen'];
 function showScreen(id){ if(id!=='overScreen'){ clearOverLock(); celebStop(); watchStop(); }
   // 입어보던 것은 그 화면을 떠나면 없어진다 — 집 화면 얼굴이 안 산 캐릭터가 되면 안 된다
   if(id!=='profileScreen'&&id!=='setupScreen') tryClear();
@@ -5831,6 +6050,9 @@ function buildHelp(){
   $('helpTitle').textContent=t((helpTab==='play')?'🎮 게임 방법':'🎒 아이템 설명서');
   let h='';
   if(helpTab==='play'){
+    h+='<div class="card" style="text-align:center;"><button class="btn" id="tutAgain" style="padding:13px 28px;font-size:16px;">'
+      +escapeHtml(t('🎓 30초 가이드 다시 보기'))+'</button>'
+      +'<div class="tag2" style="margin-top:8px;">'+escapeHtml(t('눌러 가면서 규칙을 배워요'))+'</div></div>';
     h+=helpCard('🍡 기본 규칙',
       hrow('✅','웃는 젤리는 톡 치기','떨어지는 젤리를 손가락(마우스)으로 누르면 터져요. 하나 터트릴 때마다 🪙 1코인.')
      +hrow('💣','뾰족 폭탄은 피하기','누르면 목숨이 하나 깎이고 콤보가 풀려요. 바닥까지 떨어뜨려도 괜찮아요.')
@@ -5895,6 +6117,7 @@ function buildHelp(){
       +accCost().toLocaleString()+'코인</b>이고, 몇 개를 만들어도 값은 같아요. 만든 것은 언제든 바꿔 쓸 수 있어요.')+'</div>');
   }
   b.innerHTML=h;
+  const ta=$('tutAgain'); if(ta) ta.onclick=()=>{ ensureAudio(); tutStart(); };
 }
 
 // ================= 온라인: 닉네임 + 랭킹 =================
@@ -8886,6 +9109,13 @@ $('randomBtn').onclick=()=>{
 // 한 번 더 눌러야 하면 그 사이에 마음이 식는다.
 $('fireBtn').onclick=()=>{ mode=userMode=FIRE; try{ localStorage.setItem('jelly_mode',FIRE); }catch(e){}
   ensureAudio(); startGame(); };
+// 🎓 가이드 단추
+$('tutGo').onclick=()=>{ if(tut) tutNext(); };
+$('tutSkip').onclick=()=>{ if(tut) tutFinish(true); };   // 건너뛰면 바로 진짜 판으로
+$('fbOpen').onclick=openFeedback;
+$('fbBack').onclick=()=>openSettings();
+$('fbSend').onclick=sendFeedback;
+$('fbText').addEventListener('input',fbCount);
 $('againBtn').onclick=playAgain;
 $('editBtn').onclick=()=>openSetup();
 
