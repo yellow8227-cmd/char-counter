@@ -1,7 +1,7 @@
 {
-  "name": "Jelly Shooting",
-  "short_name": "젤리슈팅",
-  "description": "터질 때마다 도파민 팡팡! 귀여운 젤리 슈팅 게임",
+  "name": "Jellito: Tap & Survive",
+  "short_name": "젤리토",
+  "description": "톡 치고 살아남기! 귀여운 젤리 터트리기 · 최대 4명 실시간 대전",
   "lang": "ko",
   "start_url": "./index.html",
   "scope": "./",

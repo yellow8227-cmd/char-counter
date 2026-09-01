@@ -104,7 +104,7 @@ if (existsSync(ico)) {
 // 아티팩트로 올릴 때는 껍데기(doctype·html·head·body)를 빼야 한다 —
 // 올리는 쪽이 그 껍데기를 다시 씌운다. <title> 과 <style> 은 그대로 남긴다.
 // 아티팩트 이름은 설명 없이 이름만 — 갤러리에서 이름으로 찾는다
-const title = '<title>젤리슈팅</title>';
+const title = '<title>젤리토</title>';
 const style = (html.match(/<style>[\s\S]*?<\/style>/) || [''])[0];
 const body  = html.slice(html.indexOf('<body>') + 6, html.lastIndexOf('</body>'));
 const out = join(PRESS, 'artifact.html');

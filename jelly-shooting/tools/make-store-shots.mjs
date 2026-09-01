@@ -197,7 +197,7 @@ function framePage({ shot, cap, tint, w, h }) {
   .phone img{display:block;width:100%;}
   </style>
   <div class="bg"></div><div class="dots"></div>
-  <div class="cap"><i>🍡 젤리슈팅 · Jelly Shooting</i><b>${cap[0]}</b><span>${cap[1]}</span></div>
+  <div class="cap"><i>🍡 젤리토 · Jellito</i><b>${cap[0]}</b><span>${cap[1]}</span></div>
   <div class="phone"><img src="${shot}"></div>`;
 }
 
