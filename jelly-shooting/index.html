@@ -1848,7 +1848,7 @@ async function cloudSignIn(email){
 // 그냥 두면 다음 사람이 내 계정으로 들어와 있다. 나갈 때 이 기기에 남은 기록도 지운다
 // (이메일로 다시 들어오면 서버에서 그대로 돌아온다).
 function cloudOutAsk(){
-  if(cloudState!=='linked'){ toast('이메일을 붙인 계정에서만 로그아웃할 수 있어요'); return; }
+  if(cloudState!=='linked'){ toast(t('이메일을 붙인 계정에서만 로그아웃할 수 있어요')); return; }
   showInvite('이 기기에서 로그아웃할까요?\n이 기기에 남은 기록은 지워지고, '+cloudMail
     +' 로 다시 들어오면 그대로 돌아와요.','🚪 로그아웃',cloudOut); }
 async function cloudOut(){
@@ -4737,6 +4737,54 @@ const I18N_ROWS=[
   ["⚡ 충전 완료!","⚡ Fully charged!","⚡ チャージ完了！"],
   ["유령이다! 👻","A ghost! 👻","ゆうれいだ！ 👻"],
   ["명","","人"],
+  ["이 이름으로 정하기","Use this name","この名前にする"],
+  ["%d점은 도전장을 보낼 수 없어요 😅","You can't send a challenge with %d points 😅","%d点ではちょうせん状を送れません 😅"],
+  ["실시간 대전 판은 도전장으로 보낼 수 없어요 ⚔️","A live match can't be sent as a challenge ⚔️","リアルタイム対戦はちょうせん状にできません ⚔️"],
+  ["📨 친구 부르기 — 찍거나 링크를 보내면 끝","📨 Invite a friend — snap it or send the link","📨 フレンドを呼ぶ — 撮るかリンクを送るだけ"],
+  ["🚪 내가 들어온 방","🚪 The room you joined","🚪 入った部屋"],
+  ["🏠 내가 방장 — 난이도·시간을 내가 정해요","🏠 You're the host — you set difficulty and time","🏠 あなたがホスト — むずかしさと時間を決めます"],
+  ["🚪 참가자 — 방장 설정을 따라요","🚪 Guest — the host's settings apply","🚪 参加者 — ホストの設定にしたがいます"],
+  ["내 역할","Your role","あなたの役割"],
+  ["들어온 친구는 이 설정을 그대로 따라요.","Whoever joins plays with these settings.","入ってきた人はこの設定になります。"],
+  ["✅ 준비 완료 — 방장을 기다려요","✅ Ready — waiting for the host","✅ 準備OK — ホストを待っています"],
+  ["닉네임을 먼저 정해주세요","Pick a name first","先に名前を決めてください"],
+  ["연결을 기다려요…","Waiting for a connection…","接続を待っています…"],
+  ["이메일을 붙인 계정에서만 로그아웃할 수 있어요","You can only sign out of an account with an email attached","メールを付けたアカウントだけログアウトできます"],
+  ["⚠️ 한 번 더 누르면 코인·아이템·스킨·기록이 모두 사라져요","⚠️ Press again and your coins, items, skins and records are all gone","⚠️ もう一度押すと コイン・アイテム・スキン・記録がすべて消えます"],
+  ["🤝 %s 님을 친구로 두었어요","🤝 %s is on your friend list now","🤝 %s さんをともだちにしました"],
+  ["🔗 초대말을 복사했어요! %s 님에게 붙여넣어 보내세요","🔗 Invite copied! Paste it to %s","🔗 招待文をコピーしました！ %s さんに貼って送ってください"],
+  ["🙋 이름을 \"%s\" 로 정할까요?","🙋 Set your name to \"%s\"?","🙋 名前を「%s」にしますか？"],
+  ["한 번 정하면 이 이름이 내 것이 돼요.","Once set, this name is yours.","一度決めると この名前があなたのものになります。"],
+  ["다음에 바꾸려면 🪙 %d코인이 들어요.","Changing it later costs 🪙 %d coins.","つぎに変えるには 🪙 %dコインかかります。"],
+  ["나중에 바꾸려면 🪙 %d코인이 들어요.","Changing it later costs 🪙 %d coins.","あとで変えるには 🪙 %dコインかかります。"],
+  ["🪙 %d코인이 빠져나가요.","🪙 %d coins will be deducted.","🪙 %dコインが引かれます。"],
+  ["코인이 부족해요! (🪙 %d 필요)","Not enough coins! (🪙 %d needed)","コインが足りません！ (🪙 %d 必要)"],
+  ["바꾸기","Change it","変える"],
+  ["난이도","Difficulty","むずかしさ"],
+  ["제한시간 %s초 · 목숨 %d개","%ss limit · %d lives","制限時間%s秒 · 目%d個"],
+  ["목숨 %d개 · 제한시간 %s초","%d lives · %ss limit","目%d個 · 制限時間%s秒"],
+  ["✅ 준비완료","✅ Ready","✅ 準備OK"],
+  ["⌛ 준비중","⌛ Getting ready","⌛ 準備中"],
+  ["친구를 기다려요…","Waiting for a friend…","ともだちを待っています…"],
+  ["🪑 빈 자리","🪑 Empty seat","🪑 空き"],
+  ["온라인 기능 불러오는 중… (%d초 남음)","Loading online features… (%ds left)","オンライン機能を読み込み中… (あと%d秒)"],
+  ["✅ 연결됨","✅ Connected","✅ つながりました"],
+  ["✅ 연결됨 — 친구가 코드를 넣으면 아래에 떠요","✅ Connected — they'll appear below once they enter the code","✅ つながりました — コードを入れると下に出ます"],
+  ["서버에 연결 중…","Connecting to the server…","サーバーに接続中…"],
+  ["아직 연결되지 않았어요","Not connected yet","まだつながっていません"],
+  ["코드는 위에 있으니 먼저 친구에게 보내두세요. 연결되면 대전을 시작할 수 있어요.","The code is above — send it to your friend first. Once connected you can start.","コードは上にあります。先にともだちに送ってください。つながれば始められます。"],
+  ["⏳ %m분 %s초 뒤 자동으로 홈으로 돌아가요","⏳ Returning home in %m:%s","⏳ %m分%s秒後に ホームへもどります"],
+  ["🔄 역할 바꾸기 (지금 나는 %s)","🔄 Swap roles (you are %s)","🔄 役割こうかん (いまは %s)"],
+  ["같은 방 친구와 이야기해보세요 💬","Say something to your room 💬","同じ部屋のともだちと話してみましょう 💬"],
+  ["방이 꽉 찼어요 (최대 %d명) 😢","The room is full (max %d) 😢","部屋がいっぱいです (最大%d人) 😢"],
+  ["한 사람은 젤리를 던지고, 한 사람은 터뜨려요. 던지는 사람은 무기(👻유령·💣폭탄·🌧️젤리비)와 낙하 속도(🐢~🚀)를 골라 상대 화면을 보면서 조준합니다!","One player throws, the other pops. The thrower picks a weapon (👻ghost · 💣bomb · 🌧️jelly rain) and a fall speed (🐢~🚀), watching your screen to aim!","一人が投げて、一人がはじきます。投げる人は武器（👻ゆうれい・💣ばくだん・🌧️ゼリーの雨）と落ちる速さ（🐢~🚀）を選び、相手の画面を見てねらいます！"],
+  ["둘이 똑같은 판을 동시에 플레이해요. 상대 점수가 실시간으로 보이고, 더 오래 버티며 많이 터뜨린 쪽이 승리! 게이지가 차면 방해 젤리를 한 번씩 보낼 수 있어요.","You both play the same board at the same time. Their score updates live, and whoever survives longer and pops more wins! Fill the gauge to send a junk jelly over.","二人が同じ板を同時にプレイします。相手のスコアがリアルタイムで見え、長く耐えて多くはじいたほうが勝ち！ ゲージがたまると じゃまゼリーを送れます。"],
+  ["🎯 던지는 사람 — 상대 화면을 보며 눌러서 던져요. 무기는 누르는 대로 나가고 ⚡에너지만 써요. 낙하 속도(🐢느리게~🚀초고속)는 공짜로 바꿀 수 있어요. 상대가 놓칠수록 콤보가 쌓여요!","🎯 Thrower — watch their screen and tap to throw. Weapons fire exactly where you tap and only cost ⚡energy. Fall speed (🐢slow~🚀insane) is free to change. The more they miss, the higher your combo!","🎯 投げる人 — 相手の画面を見て押して投げます。武器は押したところへ出て ⚡エネルギーだけ使います。落ちる速さ（🐢おそい~🚀ちょうこうそく）は無料で変えられます。相手がのがすほどコンボがたまります！"],
+  ["💥 터트리는 사람 — 젤리가 저절로 안 나와요. 상대가 던진 것만 내려옵니다. 90초를 버티면 승리!","💥 Popper — no jellies spawn on their own. Only what they throw comes down. Survive 90 seconds to win!","💥 はじく人 — ゼリーは自然に出ません。相手が投げたものだけ落ちてきます。90秒たえれば勝ち！"],
+  ["젤리를 터뜨리면 게이지가 차고, 방해 아이템으로 다른 사람 화면에 젤리를 던집니다.","Popping jellies fills your gauge, and junk items throw jellies onto everyone else's screen.","ゼリーをはじくとゲージがたまり、じゃまアイテムで ほかの人の画面にゼリーを投げます。"],
+  ["최대 %d명까지 함께! 목숨을 다 잃으면 탈락, 마지막까지 살아남은 사람이 우승이에요.","Up to %d players! Lose all your lives and you're out — the last one standing wins.","最大%d人まで！ 目をすべて失うと脱落、最後まで生きのこった人が優勝です。"],
+  ["3명 이상이면 방해는 한 사람에게만 날아가요 — 기본은 🎲무작위, 위쪽 상대 칩을 누르면 🎯그 사람만 노려요.","With 3 or more, junk goes to just one person — 🎲random by default, or tap a chip up top to 🎯target them.","3人以上だと じゃまは一人だけに飛びます — 標準は🎲ランダム、上の相手チップを押すと🎯その人をねらいます。"],
+  ["모두 준비하면 카운트다운 후 동시에 시작해요!","Once everyone is ready, it counts down and starts together!","みんな準備できたら カウントダウンのあと同時にスタート！"],
   ["🌍 모두의 방","🌍 Everyone's room","🌍 みんなの部屋"],
   ["지금 %d명","%d here now","いま%d人"],
   ["연결 중…","Connecting…","接続中…"],
@@ -4938,7 +4986,7 @@ function frAdd(name,ch){
   if(frHas(n)) return false;
   friends.unshift({n:n,ch:ch||seenGet(n)||null,at:Date.now()});
   friends=friends.slice(0,30); frSave(); frBadge(); achCheck();
-  toast('🤝 '+n+' 님을 친구로 두었어요');
+  toast(t('🤝 %s 님을 친구로 두었어요').replace('%s',n));
   return true;
 }
 function frDel(name){ frInit(); friends=friends.filter(f=>f.n!==name); frSave(); frBadge(); buildFriends(); }
@@ -4960,7 +5008,7 @@ function frPlayWith(name){
   copyText('🍡 '+(nick||t('나'))+' '+t('님이')+' '+gameName()+t('에 부르고 있어요!')+'\n'
     +location.origin+location.pathname+'?r='+code
     +'\n(안 열리면 방 코드 '+code+' 직접 입력)',
-    '🔗 초대말을 복사했어요! '+name+' 님에게 붙여넣어 보내세요');
+    t('🔗 초대말을 복사했어요! %s 님에게 붙여넣어 보내세요').replace('%s',name));
   netEnterRoom(code,true);
 }
 
@@ -6473,11 +6521,12 @@ function nickCommitAsk(){
     if(nickChanging){ nickChanging=false; nickSet=!!nick; nickDraft=nick; syncNickInputs(); syncNickUI(); }
     return; }
   const fee=nickChanging?NICK_FEE:0;
-  if(fee&&coins<fee){ toast('코인이 부족해요! (🪙 '+fee.toLocaleString()+' 필요)'); return; }
-  showInvite('🙋 이름을 "'+v+'" 로 정할까요?\n'
-    +(fee?('🪙 '+fee.toLocaleString()+'코인이 빠져나가요.'):'한 번 정하면 이 이름이 내 것이 돼요.')
-    +'\n다음에 바꾸려면 🪙 '+NICK_FEE.toLocaleString()+'코인이 들어요.',
-    fee?'바꾸기':'이 이름으로 정하기',
+  if(fee&&coins<fee){ toast(t('코인이 부족해요! (🪙 %d 필요)').replace('%d',fee.toLocaleString())); return; }
+  showInvite(t('🙋 이름을 "%s" 로 정할까요?').replace('%s',v)+'\n'
+    +(fee?t('🪙 %d코인이 빠져나가요.').replace('%d',fee.toLocaleString())
+         :t('한 번 정하면 이 이름이 내 것이 돼요.'))
+    +'\n'+t('다음에 바꾸려면 🪙 %d코인이 들어요.').replace('%d',NICK_FEE.toLocaleString()),
+    fee?t('바꾸기'):t('이 이름으로 정하기'),
     ()=>{ if(fee){ coins-=fee; saveEconomy(); $('startCoins').textContent='🪙 '+coins;
             if($('profCoins')) $('profCoins').textContent='🪙 '+coins; }
       nickChanging=false; saveNick(v); playLevelUp();
@@ -6820,7 +6869,7 @@ function chatSay(){
   chatRender('chatBox',chatMsgs,''); }
 
 // ---- 방 안 채팅 ----
-function roomChatRender(){ chatRender('roomChatBox',roomMsgs,'같은 방 친구와 이야기해보세요 💬'); }
+function roomChatRender(){ chatRender('roomChatBox',roomMsgs,t('같은 방 친구와 이야기해보세요 💬')); }
 function roomChatSay(){
   if(!nick){ toast('닉네임을 먼저 정해주세요 🙋'); return; }
   if(!net.ch){ toast('아직 방에 연결되지 않았어요 🔌'); return; }
@@ -7162,7 +7211,7 @@ function netConnect(){
     if(performance.now()-sdkT0 < SDK_WAIT_MS){
       if(performance.now()-sdkT0>4000 && sdkAltIdx<0) loadSdkAlt();   // 4초 넘게 안 오면 예비 주소도 던져본다
       net.status='connecting';
-      net.statusMsg='온라인 기능 불러오는 중… ('+sdkLeftSec()+'초 남음)';
+      net.statusMsg=t('온라인 기능 불러오는 중… (%d초 남음)').replace('%d',sdkLeftSec());
       renderLobby(); setTimeout(netConnect,500); return;
     }
     net.status='fail';
@@ -7258,7 +7307,7 @@ function netOnMsg(m){
     renderLobby();
   }
   else if(m.t==='roster'){ recvRoster(pid,m.ps); }
-  else if(m.t==='full'){ toast('방이 꽉 찼어요 (최대 '+MAX_PLAYERS+'명) 😢'); netLeave(); openNetMode(netGame); }
+  else if(m.t==='full'){ toast(t('방이 꽉 찼어요 (최대 %d명) 😢').replace('%d',MAX_PLAYERS)); netLeave(); openNetMode(netGame); }
   else if(m.t==='seed'){ if(!net.host){ netSeed=m.seed>>>0; netModeName=MODES[m.mode]?m.mode:'normal';
       net.timeLimit=m.timeLimit||120;
       netGame=(m.game==='throw')?'throw':'dungeon';
@@ -7408,7 +7457,7 @@ function renderRoomList(){
     // 아직 불러오는 중일 수도 있다. '오프라인'이라고 단정하면 다 된 건데도 포기하게 된다.
     const waiting=(!window.supabase && sdkT0 && performance.now()-sdkT0<SDK_WAIT_MS);
     box.innerHTML='<div class="empty">'+(waiting
-      ? '온라인 기능 불러오는 중… ('+sdkLeftSec()+'초 남음)'
+      ? t('온라인 기능 불러오는 중… (%d초 남음)').replace('%d',sdkLeftSec())
       : netWhyOffline())+'</div>';
     return; }
   if(!hubSynced){ box.innerHTML='<div class="empty">열린 방을 찾는 중… 🔍</div>'; return; }
@@ -7692,8 +7741,8 @@ function openNetMode(game){
   showScreen('netScreen'); syncNickInputs();
   $('netTitle').textContent=gameLabel();
   $('netDesc').textContent = netGame==='throw'
-    ? '한 사람은 젤리를 던지고, 한 사람은 터뜨려요. 던지는 사람은 무기(👻유령·💣폭탄·🌧️젤리비)와 낙하 속도(🐢~🚀)를 골라 상대 화면을 보면서 조준합니다!'
-    : '둘이 똑같은 판을 동시에 플레이해요. 상대 점수가 실시간으로 보이고, 더 오래 버티며 많이 터뜨린 쪽이 승리! 게이지가 차면 방해 젤리를 한 번씩 보낼 수 있어요.';
+    ? t('한 사람은 젤리를 던지고, 한 사람은 터뜨려요. 던지는 사람은 무기(👻유령·💣폭탄·🌧️젤리비)와 낙하 속도(🐢~🚀)를 골라 상대 화면을 보면서 조준합니다!')
+    : t('둘이 똑같은 판을 동시에 플레이해요. 상대 점수가 실시간으로 보이고, 더 오래 버티며 많이 터뜨린 쪽이 승리! 게이지가 차면 방해 젤리를 한 번씩 보낼 수 있어요.');
   $('netRoleCard').classList.toggle('hide',netGame!=='throw');
   // 내가 '준비하기'에서 고른 난이도를 기본값으로 놓고, 여기서 바꿀 수 있게 한다
   if(!MODES[netModeName]) netModeName='normal';
@@ -7720,12 +7769,13 @@ function buildNetModeOpts(){
 function syncNetSetup(){
   const m=MODES[netModeName]||MODES.normal, sec=(netGame==='throw')?90:120;
   const ai=$('aiSetupInfo');
-  if(ai) ai.innerHTML='선택: <b>'+m.emoji+m.name+'</b> · 목숨 '+m.lives+'개 · 제한시간 '
-    +((aiGame==='throw')?90:120)+'초';
+  if(ai) ai.innerHTML=escapeHtml(t('선택'))+': <b>'+escapeHtml(m.emoji+t(m.name))+'</b> · '
+    +escapeHtml(t('목숨 %d개 · 제한시간 %s초').replace('%d',m.lives)
+      .replace('%s',(aiGame==='throw')?90:120));
   const el=$('netSetupInfo'); if(!el) return;
   el.innerHTML=t('선택')+': <b>'+m.emoji+t(m.name)+'</b> · '+t('목숨')+' '+m.lives+t('개')+' · '+t('제한시간')+' '+sec+t('초')
-    +(netGame==='throw' ? ' · 내 역할 <b>'+escapeHtml(roleLabel(hostRole))+'</b>' : '')
-    +'<br>들어온 친구는 이 설정을 그대로 따라요.';
+    +(netGame==='throw' ? ' · '+escapeHtml(t('내 역할'))+' <b>'+escapeHtml(roleLabel(hostRole))+'</b>' : '')
+    +'<br>'+escapeHtml(t('들어온 친구는 이 설정을 그대로 따라요.'));
 }
 function netCreate(){
   if(!nickOrPrompt()) return;
@@ -7764,7 +7814,7 @@ function renderLobby(){
   // 방장과 참가자에게 필요한 안내가 다르다
   computeRole();
   $('lobbyMode').textContent=gameLabel()+(netGame==='throw'?(' · 내 역할 '+roleLabel(myRole)):'');
-  $('lobbyCodeLabel').textContent=net.host?'📨 친구 부르기 — 찍거나 링크를 보내면 끝':'🚪 내가 들어온 방';
+  $('lobbyCodeLabel').textContent=net.host?t('📨 친구 부르기 — 찍거나 링크를 보내면 끝'):t('🚪 내가 들어온 방');
   $('lobbyCopyBtn').textContent=net.host?'🔗 링크 복사해서 보내기':'🔗 이 방 링크 복사';
   $('lobbyCode').textContent=net.room||'------';
   const link=net.room?(location.origin+location.pathname+'?r='+net.room):'';
@@ -7772,42 +7822,44 @@ function renderLobby(){
   // QR — 옆에 있는 친구는 코드를 받아 적을 이유가 없다
   if(link){ $('qrWrap').classList.remove('hide'); qrDraw($('qrCanvas'),link); }
   else $('qrWrap').classList.add('hide');
-  $('lobbyRole').textContent=net.host?'🏠 내가 방장 — 난이도·시간을 내가 정해요':'🚪 참가자 — 방장 설정을 따라요';
+  $('lobbyRole').textContent=net.host?t('🏠 내가 방장 — 난이도·시간을 내가 정해요'):t('🚪 참가자 — 방장 설정을 따라요');
   const foe=net.foe, ps=peerList();
   // 이름 옆에 그 사람 얼굴 — 차림새는 hello/roster 로 이미 받아 뒀다.
   // 아직 못 받은 사람(들어온 직후)은 🙋 로 자리만 잡아 준다.
-  let h='<div class="rrow me"><span>'+avaTag()+escapeHtml(nick||'나')+' (나)'+(net.host?' 🏠':'')+'</span><span>'
+  let h='<div class="rrow me"><span>'+avaTag()+escapeHtml(nick||t('나'))+' '+escapeHtml(t('(나)'))+(net.host?' 🏠':'')+'</span><span>'
     +(net.ready?'✅ 준비완료':'⌛ 준비중')+'</span></div>';
   ps.forEach(p=>{ const pc=peerChar(p.id);
     h+='<div class="rrow"><span>'+(pc?avaTag(pc):'🙋 ')+escapeHtml(p.name)+'</span><span>'
-    +(p.ready?'✅ 준비완료':'⌛ 준비중')+'</span></div>'; });
+    +(p.ready?escapeHtml(t('✅ 준비완료')):escapeHtml(t('⌛ 준비중')))+'</span></div>'; });
   // 빈 자리 — 최대 4명까지 들어올 수 있다는 걸 보여준다
   for(let i=playerCount(); i<MAX_PLAYERS; i++){
     h+='<div class="rrow"><span>'+(i===playerCount()&&!ps.length
-      ? '⌛ <span class="wait">친구를 기다려요…</span>' : '🪑 빈 자리')+'</span><span>—</span></div>';
+      ? '⌛ <span class="wait">'+escapeHtml(t('친구를 기다려요…'))+'</span>'
+      : escapeHtml(t('🪑 빈 자리')))+'</span><span>—</span></div>';
   }
   $('lobbyPlayers').innerHTML=h;
   const m=MODES[netModeName]||MODES.normal;
-  $('lobbyInfo').textContent='난이도 '+m.emoji+m.name+' · 제한시간 '+net.timeLimit+'초 · 목숨 '+m.lives+'개';
+  $('lobbyInfo').textContent=t('난이도')+' '+m.emoji+t(m.name)+' · '
+    +t('제한시간 %s초 · 목숨 %d개').replace('%s',net.timeLimit).replace('%d',m.lives);
   // 역할 바꾸기 — 던지기 게임에서, 상대가 있을 때만
   const sw=$('lobbySwapBtn');
   if(sw){ const can=(netGame==='throw'&&!!net.foe&&!aiOn);
     sw.classList.toggle('hide',!can);
-    if(can) sw.textContent='🔄 역할 바꾸기 (지금 나는 '+roleLabel(myRole)+')'; }
+    if(can) sw.textContent=t('🔄 역할 바꾸기 (지금 나는 %s)').replace('%s',roleLabel(myRole)); }
   $('lobbyTip').innerHTML = netGame==='throw'
     ? (myRole==='thrower'
-        ? '🎯 <b>던지는 사람</b> — 상대 화면을 보며 눌러서 던져요. 무기는 <b>누르는 대로 나가고</b> ⚡에너지만 써요. <b>낙하 속도(🐢느리게~🚀초고속)는 공짜로</b> 바꿀 수 있어요. 상대가 놓칠수록 콤보가 쌓여요!'
-        : '💥 <b>터트리는 사람</b> — 젤리가 저절로 안 나와요. 상대가 던진 것만 내려옵니다. 90초를 버티면 승리!')
-    : '젤리를 터뜨리면 게이지가 차고, 방해 아이템으로 <b>다른 사람 화면에 젤리를 던집니다.</b>'
-      +'<br>최대 '+MAX_PLAYERS+'명까지 함께! <b>목숨을 다 잃으면 탈락</b>, 마지막까지 살아남은 사람이 우승이에요.'
-      +'<br>3명 이상이면 방해는 <b>한 사람에게만</b> 날아가요 — 기본은 🎲무작위, 위쪽 상대 칩을 누르면 🎯그 사람만 노려요.'
-      +'<br>모두 준비하면 카운트다운 후 동시에 시작해요!';
+        ? escapeHtml(t('🎯 던지는 사람 — 상대 화면을 보며 눌러서 던져요. 무기는 누르는 대로 나가고 ⚡에너지만 써요. 낙하 속도(🐢느리게~🚀초고속)는 공짜로 바꿀 수 있어요. 상대가 놓칠수록 콤보가 쌓여요!'))
+        : escapeHtml(t('💥 터트리는 사람 — 젤리가 저절로 안 나와요. 상대가 던진 것만 내려옵니다. 90초를 버티면 승리!')))
+    : escapeHtml(t('젤리를 터뜨리면 게이지가 차고, 방해 아이템으로 다른 사람 화면에 젤리를 던집니다.'))
+      +'<br>'+escapeHtml(t('최대 %d명까지 함께! 목숨을 다 잃으면 탈락, 마지막까지 살아남은 사람이 우승이에요.').replace('%d',MAX_PLAYERS))
+      +'<br>'+escapeHtml(t('3명 이상이면 방해는 한 사람에게만 날아가요 — 기본은 🎲무작위, 위쪽 상대 칩을 누르면 🎯그 사람만 노려요.'))
+      +'<br>'+escapeHtml(t('모두 준비하면 카운트다운 후 동시에 시작해요!'));
   // 코드는 이미 위에 떠 있다. 연결이 안 됐으면 그 사실만 정확히 알린다.
   const st=$('lobbyStatus');
-  if(net.status==='ok') st.textContent=foe?'✅ 연결됨':'✅ 연결됨 — 친구가 코드를 넣으면 아래에 떠요';
-  else if(net.status==='connecting') st.textContent='🔌 '+(net.statusMsg||'서버에 연결 중…');
-  else st.textContent='⚠️ '+(net.statusMsg||'아직 연결되지 않았어요')+
-       '\n코드는 위에 있으니 먼저 친구에게 보내두세요. 연결되면 대전을 시작할 수 있어요.';
+  if(net.status==='ok') st.textContent=foe?t('✅ 연결됨'):t('✅ 연결됨 — 친구가 코드를 넣으면 아래에 떠요');
+  else if(net.status==='connecting') st.textContent='🔌 '+t(net.statusMsg||'서버에 연결 중…');
+  else st.textContent='⚠️ '+t(net.statusMsg||'아직 연결되지 않았어요')+
+       '\n'+t('코드는 위에 있으니 먼저 친구에게 보내두세요. 연결되면 대전을 시작할 수 있어요.');
   $('lobbyRetryBtn').classList.toggle('hide',net.status==='ok'||net.status==='connecting');
   $('lobbyNickCard').classList.toggle('hide',!!nick);
   $('roomChatInput').disabled=!nick; roomChatRender();
@@ -7822,10 +7874,10 @@ function renderLobby(){
     rb.onclick=()=>{ if(allReady) netStartMatch(); };
   } else {
     rb.disabled=!ok||!others||net.ready||!nick;
-    rb.textContent = net.ready ? '✅ 준비 완료 — 방장을 기다려요'
-      : !nick ? '닉네임을 먼저 정해주세요'
-      : !ok   ? '연결을 기다려요…'
-      : others? '준비 완료!' : '친구를 기다려요…';
+    rb.textContent = net.ready ? t('✅ 준비 완료 — 방장을 기다려요')
+      : !nick ? t('닉네임을 먼저 정해주세요')
+      : !ok   ? t('연결을 기다려요…')
+      : others? t('준비 완료!') : t('친구를 기다려요…');
     rb.onclick=lobbyReady;
   }
 }
@@ -7846,7 +7898,8 @@ function lobbyTick(){
   }
   const sec=Math.ceil(left/1000);
   // 여기만 갱신한다 — 참가자 목록을 다시 그리면 흐르는 글씨가 매초 처음으로 돌아간다
-  $('lobbyWaitInfo').textContent='⏳ '+Math.floor(sec/60)+'분 '+String(sec%60).padStart(2,'0')+'초 뒤 자동으로 홈으로 돌아가요';
+  $('lobbyWaitInfo').textContent=t('⏳ %m분 %s초 뒤 자동으로 홈으로 돌아가요')
+    .replace('%m',Math.floor(sec/60)).replace('%s',String(sec%60).padStart(2,'0'));
 }
 // 역할 맞바꾸기. 방장의 역할(hostRole)만 뒤집으면 손님은 자동으로 반대가 된다.
 // 누가 눌러도 되게 하고, 바꾼 뒤에는 둘 다 '준비'를 다시 눌러야 시작한다 —
@@ -9178,8 +9231,8 @@ function playAgain(){
 }
 // ---- 결과 화면에서 바로 도전장 보내기 (따로 만드는 화면 없음) ----
 async function sendChallenge(){
-  if(lastRun&&lastRun.net){ toast('실시간 대전 판은 도전장으로 보낼 수 없어요 ⚔️'); return; }
-  if(!lastRun||lastRun.score<=0){ toast('0점은 도전장을 보낼 수 없어요 😅'); return; }
+  if(lastRun&&lastRun.net){ toast(t('실시간 대전 판은 도전장으로 보낼 수 없어요 ⚔️')); return; }
+  if(!lastRun||lastRun.score<=0){ toast(t('%d점은 도전장을 보낼 수 없어요 😅').replace('%d',(lastRun&&lastRun.score)|0)); return; }
   if(!supaReady()){ toast(netWhyOffline()); return; }
   if(!nick){ $('overNickCard').classList.remove('hide'); $('nickInputO').value=nick; $('nickInputO').focus();
     toast('닉네임만 정하면 바로 보낼 수 있어요 🙋'); return; }
@@ -9257,7 +9310,7 @@ function buildTolUI(){ const o=$('tolOpts'); o.innerHTML='';
 let resetArmed=false,resetTimer=null;
 function resetScores(){ localStorage.removeItem('jelly_scores'); toast('🗑️ 최고기록을 지웠어요'); }
 function resetAll(){
-  if(!resetArmed){ resetArmed=true; toast('⚠️ 한 번 더 누르면 코인·아이템·스킨·기록이 모두 사라져요'); if(resetTimer)clearTimeout(resetTimer); resetTimer=setTimeout(()=>{resetArmed=false;},3000); return; }
+  if(!resetArmed){ resetArmed=true; toast(t('⚠️ 한 번 더 누르면 코인·아이템·스킨·기록이 모두 사라져요')); if(resetTimer)clearTimeout(resetTimer); resetTimer=setTimeout(()=>{resetArmed=false;},3000); return; }
   ['jelly_coins','jelly_inv','jelly_crafted','jelly_custom','jelly_kinds','jelly_hairs','jelly_scores','jelly_streak','jelly_daily','jelly_bought'].forEach(k=>localStorage.removeItem(k));
   coins=0; inventory={}; crafted=[]; bought={}; ownedKinds=['cat','dog','bunny']; ownedHairs=['basic'];
   character.hair='basic'; saveChar();
@@ -9391,8 +9444,10 @@ $('overNickOk').onclick=()=>{
   const v=($('nickInputO').value||'').trim().slice(0,10);
   if(!v){ toast('닉네임을 입력해주세요 🙋'); return; }
   if(nickLocked()){ $('overNickCard').classList.add('hide'); sendChallenge(); return; }
-  nickDraft=v; showInvite('🙋 이름을 "'+v+'" 로 정할까요?\n한 번 정하면 이 이름이 내 것이 돼요.\n'
-    +'나중에 바꾸려면 🪙 '+NICK_FEE.toLocaleString()+'코인이 들어요.','이 이름으로 정하기',
+  nickDraft=v; showInvite(t('🙋 이름을 "%s" 로 정할까요?').replace('%s',v)
+    +'\n'+t('한 번 정하면 이 이름이 내 것이 돼요.')
+    +'\n'+t('나중에 바꾸려면 🪙 %d코인이 들어요.').replace('%d',NICK_FEE.toLocaleString()),
+    t('이 이름으로 정하기'),
     ()=>{ saveNick(v); $('overNickCard').classList.add('hide'); sendChallenge(); }); };
 window.addEventListener('keydown',e=>{ if(e.key==='Escape'&&running){ paused?resumeGame():pauseGame(); } });
 $('setSound').onclick=toggleSound;

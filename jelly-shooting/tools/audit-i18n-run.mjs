@@ -93,6 +93,49 @@ const POKES = [
   ['탈락 알림',           `try{ toast(t('💀 %s님이 탈락했어요').replace('%s','JellyKing')) }catch(e){}`],
   ['버티기 결과',         `try{ mode=userMode=FIRE; startGame(); elapsed=60*72; gameOver();
                                for(const sec of [8,20,45,75,200]) try{ fireTaunt(sec) }catch(e){} }catch(e){}`],
+  // ── 여기부터는 정적 검사에 걸린 화면들을 하나씩 열어 본다.
+  //    (오류 문구는 서버를 못 쓰는 자리에서도 떠야 하니 그대로 불러 본다)
+  ['도전장 보내기',      `try{ running=false; openStart(); }catch(e){}
+                          try{ score=0; lastRun={seed:1,mode:'normal',score:0,net:false}; sendChallenge(); }catch(e){}
+                          try{ nick=''; score=8000; lastRun={seed:1,mode:'normal',score:8000,net:false}; sendChallenge(); }catch(e){}
+                          try{ nick='Kami'; lastRun={seed:1,mode:'normal',score:8000,net:true}; sendChallenge(); }catch(e){}`],
+  ['도전장 받기',        `try{ openChallenge&&openChallenge() }catch(e){}
+                          try{ chalOpen&&chalOpen() }catch(e){}
+                          try{ takeChallenge&&takeChallenge('ZZZZ') }catch(e){}
+                          try{ loadChallenge&&loadChallenge('ZZZZ') }catch(e){}`],
+  ['친구 목록',          `try{ nick='Kami'; frAdd&&frAdd('Sky'); frAdd&&frAdd('Choco');
+                               openFriends(); buildFriends(); frBadge(); }catch(e){}
+                          try{ giftCode&&giftCode() }catch(e){}
+                          try{ frPlayWith&&frPlayWith('Sky') }catch(e){}
+                          try{ frDel&&frDel('Choco') }catch(e){}`],
+  ['도감·업적',          `try{ dexInit(); openDex(); buildDex(); achCheck(); achLeft(); achBadge(); }catch(e){}`],
+  ['임무·출석·오늘의 판',  `try{ openMission(); buildMission(); }catch(e){}
+                          try{ markAttend(); openAttend(); }catch(e){}
+                          try{ openDailyBoard(); buildDailyBoard(); checkDaily(); claimDaily(); }catch(e){}`],
+  ['창작소',             `try{ openShop(); buildShop(); }catch(e){}
+                          try{ for(const id in ITEMS) buyItem&&buyItem(id); }catch(e){}
+                          try{ craftItem&&craftItem('clear') }catch(e){}`],
+  ['닉네임',             `try{ nick=''; syncNickInputs(); syncNickUI(); draftNick&&draftNick('Kami');
+                               nickCommitAsk&&nickCommitAsk(); nickTapLocked(); }catch(e){}`],
+  ['계정 화면',          `try{ syncCloudUI(); cloudRefreshUI&&cloudRefreshUI(); cloudSay&&cloudSay();
+                               cloudWhere&&cloudWhere(); cloudWhy&&cloudWhy(); cloudOutAsk&&cloudOutAsk(); }catch(e){}`],
+  ['방 만들기·코드',      `try{ openNetMode&&openNetMode('dungeon') }catch(e){}
+                          try{ netHost&&netHost() }catch(e){} try{ renderLobby&&renderLobby() }catch(e){}
+                          try{ netJoinCode&&netJoinCode('ZZ') }catch(e){}
+                          try{ hubJoin&&hubJoin(); hubRender&&hubRender(); }catch(e){}`],
+  ['랭킹 줄',            `try{ renderRank([{name:'JellyKing',score:32831,me:true},
+                                            {name:'Sky',score:12000,me:false}],0) }catch(e){}
+                          try{ noRankMsg() }catch(e){}`],
+  ['던지기 한계',        `try{ netGame='throw'; hostRole='thrower'; net.host=true; computeRole(); startThrower();
+                               tEnergy=0; for(const k of TW_ORDER){ tKind=k; twTry&&twTry(k); }
+                               mirror.length=0; for(let i=0;i<40;i++) mirror.push({netId:i,x:100,y:100,r:20,
+                                 vx:0,vy:1,color:'#f88',face:'happy',shape:'round',bomb:false,ghost:false,
+                                 gold:false,pts:20,wob:0,dead:false,foe:true,pay:1});
+                               throwOne&&throwOne(0.5); }catch(e){}`],
+  ['전체 초기화',        `try{ wipeAll&&wipeAll() }catch(e){}
+                          try{ resetAll&&resetAll() }catch(e){}
+                          try{ if(typeof askWipe==='function') askWipe(); }catch(e){}`],
+  ['관전 화면',          `try{ watchOpen&&watchOpen(); watchRender&&watchRender(); }catch(e){}`],
 ];
 
 const run = async () => {
