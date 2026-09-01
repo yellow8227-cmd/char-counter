@@ -88,6 +88,10 @@ const OVERLAY = `(()=>{
     pointer-events:none;opacity:0;transition:opacity .3s ease, transform .3s ease;transform:translateY(-10px);}
   #__cap.on{opacity:1;transform:none;}
   #__cap.low{top:auto;bottom:5%;}
+  /* 꾸미는 화면에서는 얼굴이 12% 자리에 있어서 안내 카드가 얼굴을 정확히 덮었다.
+     ("꾸미는 파트에서 캐릭터 얼굴 안보여" 의 진짜 원인이 스크롤이 아니라 이것이었다)
+     그래서 '내 프로필' 머리글 자리까지 올려 붙이는 자리를 하나 더 둔다. */
+  #__cap.hi{top:1.2%;}
   #__cap .in{background:rgba(255,255,255,.94);border-radius:22px;padding:12px 22px;text-align:center;
     box-shadow:0 10px 26px rgba(180,90,140,.28);max-width:88%;}
   #__cap b{display:block;font-size:28px;font-weight:400;color:#c9184a;letter-spacing:-.5px;
@@ -119,9 +123,11 @@ const OVERLAY = `(()=>{
   card.innerHTML='<canvas id="__cardCv" width="380" height="200"></canvas>'
     +'<div class="t"></div><div class="s"></div><div class="u"></div>';
   document.body.appendChild(card);
-  window.__cap=(t,s,low)=>{ cap.querySelector('b').textContent=t||'';
+  window.__cap=(t,s,pos)=>{ cap.querySelector('b').textContent=t||'';
     cap.querySelector('span').textContent=s||'';
-    cap.classList.toggle('low',!!low);          // 승패 그림을 가리지 않게 아래로 내린다
+    // pos: true·'low' 는 아래로(승패 그림을 가리지 않게), 'hi' 는 위로(얼굴을 가리지 않게)
+    cap.classList.toggle('low',pos===true||pos==='low');
+    cap.classList.toggle('hi',pos==='hi');
     cap.classList.add('on'); };
   window.__capOff=()=>cap.classList.remove('on');
   window.__card=(t,s,u)=>{ card.querySelector('.t').innerHTML=t; card.querySelector('.s').textContent=s;
@@ -240,7 +246,7 @@ const run = async () => {
   };
   // 다음 판이 뜬 뒤 천을 걷는다
   const showAgain = async () => { await ev(`__wipeOff()`); await hold(340); };
-  const cap = (t, s, low) => ev(`__cap(${JSON.stringify(t)},${JSON.stringify(s || '')},${!!low})`);
+  const cap = (t, s, pos) => ev(`__cap(${JSON.stringify(t)},${JSON.stringify(s || '')},${JSON.stringify(pos || false)})`);
   const capOff = () => ev(`__capOff()`);
   // 진짜로 젤리를 눌러 플레이한다. ms 동안, 대략 gap 마다 한 번.
   const play = async (ms, gap = 240) => {
@@ -339,7 +345,8 @@ const run = async () => {
   await toFace();
   await showAgain();
   await cap(TX('내 캐릭터를 만들어요','Make your own jelly'),
-            TX('아홉 종 · 색깔 · 얼굴 무늬 · 악세서리','9 characters · colours · face marks · accessories'));
+            TX('아홉 종 · 색깔 · 얼굴 무늬 · 악세서리','9 characters · colours · face marks · accessories'),
+            'hi');                            // 얼굴 위로 — 12% 자리면 얼굴을 덮는다
   await hold(900);
   await pick('#kindOpts button', 2);         // 토끼 — 이 게임의 기본이자 제일 귀여운 얼굴
   await hold(1100);
@@ -630,7 +637,38 @@ const run = async () => {
                   ['04-item.png', at(0.345)], ['05-boss.png', at(0.385)], ['06-fire.png', at(0.520)],
                   ['07-dungeon.png', at(0.640)], ['08-throw.png', at(0.790)],
                   ['09-win.png', at(0.910)], ['10-end.png', at(0.987)]];
-  for (const [name, t] of STILLS) await ff(['-ss', t, '-i', dst, '-frames:v', '1', join(FRM, name)], name);
+  // 낱장이 흰 전환막을 집으면 백지가 나온다 (장면 사이 흰 천이 0.3초쯤 덮는다).
+  // 예전에는 그걸 아무도 안 보고 넘어가서 04-item·07-dungeon 이 백지로 커밋됐다.
+  // 그래서 뽑기 전에 32x32 로 줄여 색이 얼마나 퍼져 있는지 재고, 단색이면
+  // 앞뒤로 조금씩 밀어 가며 다시 잡는다.
+  const spread = t => new Promise(res => {
+    const p = spawn(FFMPEG, ['-hide_banner', '-loglevel', 'error', '-ss', String(t), '-i', dst,
+                             '-frames:v', '1', '-vf', 'scale=32:32', '-f', 'rawvideo',
+                             '-pix_fmt', 'rgb24', '-']);
+    const bufs = []; p.stdout.on('data', d => bufs.push(d));
+    p.on('error', () => res(999));
+    p.on('close', () => {
+      const b = Buffer.concat(bufs); if (b.length < 3) return res(999);
+      let mn = 255, mx = 0;
+      for (let i = 0; i < b.length; i++) { if (b[i] < mn) mn = b[i]; if (b[i] > mx) mx = b[i]; }
+      res(mx - mn);
+    });
+  });
+  const NUDGE = [0, 0.4, -0.4, 0.8, -0.8, 1.2, -1.2];
+  let blank = 0;
+  for (const [name, t0] of STILLS) {
+    let t = +t0, best = -1, bestT = +t0;
+    for (const d of NUDGE) {
+      const tt = Math.max(0.05, Math.min(dur - 0.1, +t0 + d));
+      const sp = await spread(tt);
+      if (sp > best) { best = sp; bestT = tt; }
+      if (sp >= 60) { t = tt; break; }                     // 충분히 알록달록하면 그걸로
+      t = bestT;
+    }
+    if (best < 60) { blank++; console.log('   ⚠ ' + name + ' 이 단색에 가깝습니다 (색폭 ' + best + ')'); }
+    await ff(['-ss', t.toFixed(2), '-i', dst, '-frames:v', '1', join(FRM, name)], name);
+  }
+  if (blank) console.log('   ⚠ 백지에 가까운 낱장 ' + blank + '장 — 장면 시각을 손봐야 합니다');
 
   // 소개 페이지·아티팩트에 담을 작은 판 — 페이지 안의 영상 액자가 340px 이라 540x1170 이면 넉넉하다.
   // (한 파일로 담는 아티팩트는 16MB 제한이 있어서 큰 영상을 그대로 넣을 수 없다)
