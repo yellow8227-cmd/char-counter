@@ -14,3 +14,6 @@ jelly-shooting/press/video/[0-9a-f][0-9a-f][0-9a-f][0-9a-f]*.webm
 
 # 번역 검사 도구가 뱉는 보고서 (매번 바뀜)
 jelly-shooting/press/i18n-빠진문구.txt
+
+# 886x1920 webm — 같은 크기의 30초 mp4 가 대신하고, 애플·인스타는 webm 을 안 받는다
+jelly-shooting/press/video/*-886x1920.webm
