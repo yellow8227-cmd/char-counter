@@ -238,6 +238,14 @@
     -webkit-text-stroke:4px #ff5c8a;paint-order:stroke;                 /* 두껍게 */
     filter:drop-shadow(0 4px 0 #fff) drop-shadow(0 8px 12px rgba(230,62,114,0.35));}
   .logo .dot{display:inline-block;animation:wob 1.4s ease-in-out infinite;}
+  /* 한 단어 로고일 때 밑에 붙는 작은 부제 — 이름만으로 뭘 하는 게임인지 모를 때 필요하다 */
+  .logo .logosub{font-size:clamp(15px,4.2vw,24px);letter-spacing:.24em;line-height:1;margin-top:4px;
+    /* 부모(.logo)가 글자를 투명하게 두고 배경을 비추는 방식이라, 부제는 색을 다시 못 박아야
+       한다. -webkit-text-fill-color 를 안 주면 부제가 하얗게 날아간다. */
+    -webkit-text-stroke:2px #fff;paint-order:stroke fill;
+    filter:drop-shadow(0 2px 0 rgba(255,255,255,.9));
+    background:none;-webkit-background-clip:border-box;background-clip:border-box;
+    color:#ff5c8a;-webkit-text-fill-color:#ff5c8a;}
   /* 위로 6px 튀면 윗줄에 닿는다. 좌우로 살짝 기우는 정도로만 */
   @keyframes wob{0%,100%{transform:translateY(0) rotate(-2deg) scale(1)}50%{transform:translateY(-2px) rotate(2deg) scale(1.03)}}
   .tag{font-size:clamp(15px,4vw,19px);font-weight:800;color:var(--ink);max-width:340px;line-height:1.5;}
@@ -969,7 +977,7 @@
   <div id="startScreen" class="screen">
     <button class="iconbtn" id="openSetBtn" title="설정">⚙️</button>
     <canvas id="heroCanvas" width="160" height="160"></canvas>
-    <div class="logo">Jelly<br><span class="dot">Shooting</span></div>
+    <div class="logo" id="startLogo"></div>
     <div class="tag">터질 때마다 도파민 팡팡 💥</div>
     <div class="tag2">한 번 잡으면 못 놓는 손맛!<br>딱 3분, 지금 최고기록에 도전하세요 🔥</div>
     <div class="best hide" id="startBest"></div>
@@ -1152,7 +1160,7 @@
       <button class="setbtn" id="resetScores">🗑️ 최고기록만 초기화</button>
       <button class="setbtn danger" id="resetAll">💥 전체 초기화 (코인·아이템·스킨·기록)</button>
     </div>
-    <div class="tag2">Jelly Shooting · 만든이 kami 🩷</div>
+    <div class="tag2" id="madeBy"></div>
     <button class="btn ghost" id="setBackBtn">← 홈으로</button>
   </div>
 
@@ -3830,6 +3838,28 @@ function toast(msg){ const el=$('toast'); el.textContent=t(msg);
 //   · 화면에 이미 박혀 있는 글은 MutationObserver 가 붙는 족족 바꿔 준다
 //     → 새 화면을 만들 때 번역 호출을 잊어도 저절로 따라온다
 // 사전에 없는 문구는 한국어로 남는다. 그건 '깨진 것'이 아니라 '아직 안 옮긴 것'이다.
+// ================= 게임 이름 =================
+// 예전에는 이름이 로고·제목·공유 글·PWA 이름 열두 군데에 흩어져 있었다. 이름을 바꾸면
+// 반드시 어딘가를 놓친다. 여기 GAME 만 고치면 화면에 보이는 이름이 전부 따라온다.
+// 크롤러가 읽는 <meta> 와 manifest.json 은 정적이라 손으로 같이 고쳐야 한다:
+//   index.html 6·12·20·22·29·31행 · manifest.json 의 name/short_name
+const GAME={
+  mark1:'Jelly',      // 로고 첫 줄
+  mark2:'Shooting',   // 로고 둘째 줄 ('' 이면 한 줄 로고)
+  sub:'',             // 로고 밑 작은 부제 (예: 'POP PARTY')
+  ko:'젤리슈팅',        // 글 안에서 부르는 이름 — 사전이 언어별로 옮긴다
+};
+function gameName(){ return t(GAME.ko); }
+function applyGameName(){
+  const lg=$('startLogo');
+  if(lg) lg.innerHTML=escapeHtml(GAME.mark1)
+    +(GAME.mark2?('<br><span class="dot">'+escapeHtml(GAME.mark2)+'</span>'):'')
+    +(GAME.sub?('<div class="logosub">'+escapeHtml(GAME.sub)+'</div>'):'');
+  const mb=$('madeBy');
+  if(mb) mb.textContent=(GAME.mark1+' '+GAME.mark2).trim()+' · '+t('만든이 kami 🩷');
+  try{ document.title=(GAME.mark1+' '+GAME.mark2).trim()+' 🍡 | '+t('터질 때마다 도파민 팡팡'); }catch(e){}
+}
+
 const LANGS=[{id:'ko',label:'한국어'},{id:'en',label:'English'},{id:'ja',label:'日本語'}];
 // 사전. [한국어, English, 日本語] 한 줄에 한 문구 — 사람이 읽고 고칠 수 있는 형태로 둔다.
 // %d 는 숫자 자리. 원문에 나오는 숫자 순서를 그대로 지켜야 한다.
@@ -3891,6 +3921,7 @@ const I18N_ROWS=[
   ["같은 판 점수 승부","Same board, score showdown","同じ盤でスコア勝負"],
   ["같은 판을 여러 명이 같이 해요. 목숨이 %d이면 탈락이고, <b>마지막까지 살아남은 사람이 %d등</b>. 젤리를 터트리면 게이지가 차고, 그걸로 상대를 방해해요 (🎒 아이템 설명서 참고).","Several players share one board. At %d lives you're out, and <b>the last one standing takes %dst place</b>. Popping jellies fills a gauge you spend to mess with the others (see the 🎒 item guide).","同じ板を何人かで一緒に遊びます。ライフが%dで脱落、<b>最後まで残った人が%d位</b>。ゼリーを弾くとゲージがたまり、それで相手を妨害します（🎒アイテム説明を参照）。"],
   ["같은 판이라 점수를 자랑할 수 있어요!","Same board, so your score is worth bragging about!","同じ盤だからスコアを自慢できます！"],
+  ["같이 하자!","Let's play together!","いっしょにあそぼう！"],
   ["같이 한 사람을 친구로 두면","Add someone you played with and you can","いっしょに遊んだ人をフレンドにすると"],
   ["개","","個"],
   ["개 달성 · 남은 것을 하나씩 채워 보세요","done · fill the rest in one by one","個達成 · 残りを一つずつ埋めましょう"],
@@ -3958,6 +3989,7 @@ const I18N_ROWS=[
   ["닉네임을 정하면 말할 수 있어요","Set a nickname to chat","ニックネームを決めると話せます"],
   ["닉네임을 정하면 온라인 랭킹에 점수가 올라가요!","Set a nickname and your score joins the online ranking!","ニックネームを決めるとオンラインランキングに載ります！"],
   ["닉네임을 정해주세요","Pick a nickname","ニックネームを決めてください"],
+  ["님이","","さんが"],
   ["다시 부를 수 있어요.","to invite them again.","また呼べます。"],
   ["단발 💇","Bob 💇","ボブ 💇"],
   ["닫기","Close","閉じる"],
@@ -3992,6 +4024,7 @@ const I18N_ROWS=[
   ["마우스로 젤리를 톡 누르세요","Click the jellies with your mouse","マウスでゼリーをタップ"],
   ["만난 사람","People you met","会った人"],
   ["만난 사람 캐릭터","Characters you met","会った人のキャラ"],
+  ["만든이 kami 🩷","made by kami 🩷","制作 kami 🩷"],
   ["매운맛","Spicy","からくち"],
   ["매일 밤 12시에 새 임무 세 개가 나와요.","Three new quests appear every night at midnight.","毎晩12時に新しいミッションが3つ出ます。"],
   ["매일 플레이하면 🍡 도장이 찍혀요!","Play every day and get a 🍡 stamp!","毎日遊ぶと 🍡 スタンプがつきます！"],
@@ -4028,6 +4061,7 @@ const I18N_ROWS=[
   ["보조개 ☺️","Dimples ☺️","えくぼ ☺️"],
   ["보통","Normal","ふつう"],
   ["보통맛","Medium","ふつう"],
+  ["복수해줄 사람? 😤","Anyone want revenge for me? 😤","だれかリベンジして 😤"],
   ["볼 하트 💗","Cheek heart 💗","ほおのハート 💗"],
   ["부자","Rich","お金持ち"],
   ["비니","Beanie","ニット帽"],
@@ -4046,6 +4080,7 @@ const I18N_ROWS=[
   ["선물 코드","gift code","プレゼントコード"],
   ["선물 한 번에","Each gift costs","プレゼント1回で"],
   ["선물의 요정","Gift fairy","プレゼントの妖精"],
+  ["선물이 왔어요! 코인","gift! Coins:","からプレゼント！コイン"],
   ["선택","Chosen","せんたく"],
   ["설정","Settings","設定"],
   ["세 개를 다 하면","Finish all three for a","3つ全部やると"],
@@ -4081,6 +4116,7 @@ const I18N_ROWS=[
   ["앉은 자리에서 다섯 판 내리 하기","Play five rounds in one sitting","座ったまま5回続けてプレイ"],
   ["앱 안의 브라우저로 열렸어요.","Opened in an in-app browser.","アプリ内ブラウザで開かれています。"],
   ["없음","None","なし"],
+  ["에 부르고 있어요!","is calling you in!","によんでいます！"],
   ["에 씌워 보여줘요","and it goes on the face above","にかぶせて見せます"],
   ["에너지","Energy","エネルギー"],
   ["에너지 모으는 중…","Charging energy…","エネルギーをためています…"],
@@ -4123,6 +4159,7 @@ const I18N_ROWS=[
   ["이 들어요.","is charged.","かかります。"],
   ["이 서버에 혼자 있다","Alone on this server","このサーバーに一人"],
   ["이 이름이 내 것","This name is mine","この名前がわたしのもの"],
+  ["이겨볼래? 😎","Think you can beat it? 😎","勝てるかな？ 😎"],
   ["이고, 몇 개를 만들어도 값은 같아요!","— the price is the same no matter how many you make!","で、いくつ作っても同じ値段です！"],
   ["이기면 춤춰요","Winners dance","勝つとおどります"],
   ["이레 연속 출석","Seven days in a row","7日連続ログイン"],
@@ -4156,6 +4193,7 @@ const I18N_ROWS=[
   ["제한시간","Time limit","せいげん時間"],
   ["젤리 %d개 = %d코인, 황금 젤리 = %d코인.","%d jelly = %d coin, golden jelly = %d coins.","ゼリー%d個＝%dコイン、ゴールデンゼリー＝%dコイン。"],
   ["젤리 %d개 — 젤리 %d개를 떨어뜨려요. 세 번 쓰면 ⚡가 한 발 충전! (게이지 %d)","%d jellies — drops %d jellies. Three uses charge one ⚡! (gauge %d)","ゼリー%d個 — ゼリーを%d個落とします。3回使うと⚡が1発チャージ！（ゲージ%d）"],
+  ["젤리 %d개 터트리기","Pop %d jellies","ゼリーを%d個弾く"],
   ["젤리 견습","Jelly Apprentice","ゼリー見習い"],
   ["젤리 고수","Jelly Expert","ゼリー上級者"],
   ["젤리 새싹","Jelly Sprout","ゼリーの芽"],
@@ -4211,6 +4249,7 @@ const I18N_ROWS=[
   ["콤보 = 점수 배수","Combo = score multiplier","コンボ＝スコア倍率"],
   ["콤보 만렙","Max combo","コンボ最大"],
   ["탈락한 뒤 관전","Spectate after you're out","脱落したあとの観戦"],
+  ["터질 때마다 도파민 팡팡","Every pop is a little dopamine hit","弾けるたびにドーパミンどっかん"],
   ["터질 때마다 도파민 팡팡 💥","Every pop is a little dopamine hit 💥","はじけるたびにドーパミン 💥"],
   ["토끼 🐰","Bunny 🐰","うさぎ 🐰"],
   ["투블럭 💈","Undercut 💈","ツーブロック 💈"],
@@ -4237,6 +4276,8 @@ const I18N_ROWS=[
   ["한 사람은 젤리를 던지고, 한 사람은 터트려요. 던지는 무기는 <b>누르는 대로</b> 나가고 값은 ⚡에너지로만 매겨요. 한 판 끝나고 대기실에서 <b>🔄 역할 바꾸기</b>를 누르면 바로 서로 바꿔서 또 해요.","One player throws jellies, the other pops them. Throwing weapons fire <b>the moment you tap</b> and cost only ⚡ energy. After a round, tap <b>🔄 Swap roles</b> in the lobby to switch and go again.","ひとりはゼリーを投げ、ひとりは弾きます。投げる武器は<b>押した分だけ</b>出て、コストは⚡エネルギーだけです。1回終わったらロビーで<b>🔄 役割こうかん</b>を押せばすぐ入れかわってもう1回。"],
   ["한 젤리도 안 놓치고 한 판 끝내기","Finish a round without missing a jelly","1つも逃さずに1回終える"],
   ["한 판에서 %d점","%d points in one round","1回で%d点"],
+  ["한 판에서 Lv.%d까지 올라가기","Reach Lv.%d in one round","1回でLv.%dまで上げる"],
+  ["한 판에서 코인 %d개 모으기","Collect %d coins in one round","1回で%dコイン集める"],
   ["한 판에서 콤보 %d 만들기","Get a %d combo in one round","1回でコンボ%dを出す"],
   ["한 판을 끝까지 해보기","Finish a whole round","1回を最後までやってみる"],
   ["핵불닭","Nuclear","激辛"],
@@ -4462,7 +4503,7 @@ function setLang(id){
   document.documentElement.lang=id;
   if(id==='ko'&&was!=='ko'){ location.reload(); return; }   // 한국어로 되돌릴 땐 원문을 다시 읽어야 한다
   i18nBusy=true; try{ i18nNode(document.body); }finally{ i18nBusy=false; }
-  i18nWatch(); buildLangUI();
+  i18nWatch(); buildLangUI(); applyGameName();
   // 코드가 만들어 넣는 화면들은 다시 그린다
   try{ buildTolUI(); }catch(e){}
   try{ syncLevelBadge(); miBadge(); dbBadge(); achBadge(); frBadge(); }catch(e){}
@@ -4513,7 +4554,7 @@ function frPlayWith(name){
   if(!MODES[netModeName]) netModeName=userMode;
   net.timeLimit=120;
   const code=makeCode();
-  copyText('🍡 '+(nick||'나')+' 님이 젤리슈팅에 부르고 있어요!\n'
+  copyText('🍡 '+(nick||t('나'))+' '+t('님이')+' '+gameName()+t('에 부르고 있어요!')+'\n'
     +location.origin+location.pathname+'?r='+code
     +'\n(안 열리면 방 코드 '+code+' 직접 입력)',
     '🔗 초대말을 복사했어요! '+name+' 님에게 붙여넣어 보내세요');
@@ -4539,7 +4580,7 @@ function giftMake(name){
   const code=giftCode();
   giftUsed[code]=1;                       // 내가 만든 코드는 내가 못 받는다
   frSave(); buildFriends();
-  copyText('🎁 젤리슈팅 선물이 왔어요! 코인 '+GIFT_COIN+'개\n선물 코드: '+code
+  copyText('🎁 '+gameName()+' '+t('선물이 왔어요! 코인')+' '+GIFT_COIN+t('개')+'\n'+t('선물 코드')+': '+code
     +'\n게임 → 🤝 친구 → 선물 코드 칸에 넣으면 받아요\n'+location.origin+location.pathname,
     '🎁 선물 코드를 복사했어요! '+name+' 님에게 보내세요');
 }
@@ -8217,7 +8258,7 @@ function drawCeleb(g,w,h,t,c,still){
   if(!solo) bubble(g,Math.min(w-R*1.25,lx+R*0.60),gy-R*1.62,lsay,sm,'rgba(255,255,255,0.94)','#7c5c8e');
   if(still){
     g.font='900 '+sm+'px system-ui,sans-serif'; g.fillStyle='rgba(120,80,110,0.78)';
-    g.fillText('🍡 '+window.t('젤리슈팅')+(c.what?(' · '+c.what):''),w/2,h*0.972); }
+    g.fillText('🍡 '+window.gameName()+(c.what?(' · '+c.what):''),w/2,h*0.972); }
   g.restore();
 }
 
@@ -8324,9 +8365,10 @@ function shareText(){
   const r=lastRun||{mode:mode,score:score}, m=MODES[r.mode]||MODES.normal;
   const what=(lastPlay.kind==='solo')?(m.emoji+m.name)
     : ((lastPlay.game==='throw'?'🎯 던지기 게임 '+roleLabel(lastPlay.role):'⚔️ 실시간 던전'));
-  if(lastBattle&&lastBattle.mine==='win') return '🍡 젤리슈팅 '+what+' 우승! '+r.score+'점 🏆 이겨볼래? 😎';
-  if(lastBattle&&lastBattle.mine==='lose') return '🍡 젤리슈팅 '+what+' '+r.score+'점… 복수해줄 사람? 😤';
-  return '🍡 젤리슈팅 '+what+' '+r.score+'점! 이겨볼래? 😎';
+  const head='🍡 '+gameName()+' '+t(what)+' ';
+  if(lastBattle&&lastBattle.mine==='win')  return head+t('우승!')+' '+r.score+t('점')+' 🏆 '+t('이겨볼래? 😎');
+  if(lastBattle&&lastBattle.mine==='lose') return head+r.score+t('점')+'… '+t('복수해줄 사람? 😤');
+  return head+r.score+t('점')+'! '+t('이겨볼래? 😎');
 }
 let shareBlob=null, shareUrlObj=null;
 function shareCanvas(scale){
@@ -8364,9 +8406,9 @@ function shareGo(){
   const url=location.origin+location.pathname, text=shareText();
   const f=shareFile();
   if(f&&navigator.canShare&&navigator.canShare({files:[f]})){
-    navigator.share({files:[f],text:text,title:'Jelly Shooting'}).catch(()=>{});
+    navigator.share({files:[f],text:text,title:(GAME.mark1+' '+GAME.mark2).trim()}).catch(()=>{});
     shareClose(); return; }
-  if(navigator.share){ navigator.share({title:'Jelly Shooting',text:text,url:url}).catch(()=>{});
+  if(navigator.share){ navigator.share({title:(GAME.mark1+' '+GAME.mark2).trim(),text:text,url:url}).catch(()=>{});
     shareClose(); return; }
   copyText(text+'\n'+url,'📋 결과를 복사했어요! 붙여넣어 자랑하세요'); shareClose();
 }
@@ -8673,7 +8715,7 @@ $('lobbyReadyBtn').onclick=lobbyReady;
 $('lobbySwapBtn').onclick=swapRoles;
 $('aiAgainSwapBtn').onclick=aiAgainSwap;
 $('lobbyCopyBtn').onclick=()=>copyText(
-  '🍡 젤리슈팅 같이 하자!\n'+location.origin+location.pathname+'?r='+net.room+
+  '🍡 '+gameName()+' '+t('같이 하자!')+'\n'+location.origin+location.pathname+'?r='+net.room+
   '\n(안 열리면 방 코드 '+net.room+' 직접 입력)','🔗 복사됨! 붙여넣어 보내세요');
 $('lobbyRetryBtn').onclick=()=>{ sdkT0=0; sdkAltIdx=-1; netConnect(); };
 // 방장이 대기실을 나갈 때: 방을 닫을지, 열어둔 채로 딴 걸 할지 고른다.
@@ -8865,6 +8907,7 @@ function extOpen(){
 // 🌐 언어 — 화면을 처음 그리기 전에 한 번 훑고, 그 뒤로는 감시가 따라간다
 document.documentElement.lang=lang;
 buildLangUI();
+applyGameName();
 i18nBusy=true; try{ i18nNode(document.body); }finally{ i18nBusy=false; }
 i18nWatch();
 openStart();
