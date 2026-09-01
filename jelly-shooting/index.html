@@ -4754,6 +4754,9 @@ const I18N_ROWS=[
   ["⚡ 충전 완료!","⚡ Fully charged!","⚡ チャージ完了！"],
   ["유령이다! 👻","A ghost! 👻","ゆうれいだ！ 👻"],
   ["명","","人"],
+  ["뚫음 %d/%t","Through %d/%t","とおった %d/%t"],
+  ["낙하 속도: %s","Fall speed: %s","落ちる速さ: %s"],
+  ["(점수 ×%d)","(score ×%d)","(スコア ×%d)"],
   ["이 이름으로 정하기","Use this name","この名前にする"],
   ["%d점은 도전장을 보낼 수 없어요 😅","You can't send a challenge with %d points 😅","%d点ではちょうせん状を送れません 😅"],
   ["실시간 대전 판은 도전장으로 보낼 수 없어요 ⚔️","A live match can't be sent as a challenge ⚔️","リアルタイム対戦はちょうせん状にできません ⚔️"],
@@ -8224,10 +8227,10 @@ function peerChar(id){ const p=net.peers&&net.peers[id]; return (p&&p.char)?char
 function buildSpdBar(){
   const bar=$('spdBar'); bar.innerHTML='';
   TSPD.forEach((sp,i)=>{ const b=document.createElement('button');
-    b.className='spdbtn'+(tSpd===i?' on':''); b.title=sp.n+' (점수 ×'+SPD_PAY[i]+')';
+    b.className='spdbtn'+(tSpd===i?' on':''); b.title=t(sp.n)+' '+t('(점수 ×%d)').replace('%d',SPD_PAY[i]);
     // 폰에서는 이름을 숨기고 그림만 남긴다 — 네 개가 한 줄에 들어가야 상대 화면이 커진다
-    b.innerHTML=sp.e+'<span class="sn">'+sp.n+' ×'+SPD_PAY[i]+'</span>';
-    b.onclick=()=>{ tSpd=i; buildSpdBar(); toast(sp.e+' 낙하 속도: '+sp.n); };
+    b.innerHTML=sp.e+'<span class="sn">'+escapeHtml(t(sp.n))+' ×'+SPD_PAY[i]+'</span>';
+    b.onclick=()=>{ tSpd=i; buildSpdBar(); toast(sp.e+' '+t('낙하 속도: %s').replace('%s',t(sp.n))); };
     bar.appendChild(b); });
 }
 function buildThrowBar(){
@@ -8374,7 +8377,7 @@ function updateTInfo(){
   $('tiScore').textContent='⭐ '+throwScore;
   $('tiCombo').textContent='🔥 x'+tCombo;
   $('tiTime').textContent='⏱ '+Math.max(0,Math.ceil((net.timeLimit*60-elapsed)/60))+t('초');
-  $('tiHit').textContent='뚫음 '+tMissed+'/'+tThrown;
+  $('tiHit').textContent=t('뚫음 %d/%t').replace('%d',tMissed).replace('%t',tThrown);
   $('tiEnergyFill').style.width=Math.max(0,Math.min(100,tEnergy))+'%';
   $('tiEnergyTxt').textContent='⚡ '+Math.floor(tEnergy);
 }

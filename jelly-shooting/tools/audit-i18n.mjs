@@ -69,9 +69,18 @@ jsLines.forEach((line, idx) => {
     const raw = m[1] ?? m[2] ?? m[3];
     if (raw == null || !HAS_KO.test(raw)) continue;
     const at = m.index;
-    // 바로 앞이 t( 이거나 window.t( 이면 번역을 거친다
-    const before = line.slice(Math.max(0, at - 12), at);
-    const wrapped = /(^|[^\w.])(window\.)?t\(\s*$/.test(before);
+    // 번역을 거치나 — 바로 앞이 t( 인 경우와, 삼항 안에 들어앉은 경우
+    //   t(a ? '가' : '나')  처럼 t( 가 앞에 열려 있으면 그 안의 글자도 번역을 탄다.
+    //   '바로 앞'만 보면 이런 것까지 문제로 세어서, 실제로 9곳이 헛되게 잡혔다.
+    const before = line.slice(0, at);
+    const opens = (before.match(/(^|[^\w.])(window\.)?t\(/g) || []).length;
+    const closesAfterLastOpen = (() => {
+      const i = before.search(/(^|[^\w.])(window\.)?t\([^]*$/);
+      if (i < 0) return 0;
+      const tail = before.slice(i);
+      return (tail.match(/\)/g) || []).length;
+    })();
+    const wrapped = opens > 0 && closesAfterLastOpen === 0;
     // 사전에 있나 (숫자는 %d 로 바꿔 한 번 더 본다)
     const key = raw.trim();
     const pat = key.replace(/\d+(?:[.,]\d+)*/g, '%d');

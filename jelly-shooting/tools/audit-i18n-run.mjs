@@ -136,6 +136,13 @@ const POKES = [
                           try{ resetAll&&resetAll() }catch(e){}
                           try{ if(typeof askWipe==='function') askWipe(); }catch(e){}`],
   ['관전 화면',          `try{ watchOpen&&watchOpen(); watchRender&&watchRender(); }catch(e){}`],
+  // 던지는 쪽 머리글(뚫음 n/n · 낙하 속도) — 영상 마지막 확인에서 한글로 남아 있었다
+  ['던지는 쪽 머리글',    `try{ netGame='throw'; hostRole='thrower'; net.host=true; computeRole(); startThrower();
+                               tThrown=29; tMissed=3; tEnergy=66; updateTInfo();
+                               for(let i=0;i<TSPD.length;i++){ tSpd=i; buildSpdBar();
+                                 try{ $('spdBar').querySelectorAll('.spdbtn')[i].onclick() }catch(e){} }
+                               for(const k of TW_ORDER){ tKind=k; refreshThrowBar(); }
+                               drawMyPad&&drawMyPad(); }catch(e){}`],
 ];
 
 const run = async () => {
