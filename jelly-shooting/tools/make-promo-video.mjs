@@ -296,7 +296,7 @@ const run = async () => {
          localStorage.setItem('jelly_lang', ${JSON.stringify(LANG)}); }catch(e){}
     saveNick(${JSON.stringify(TX('까미', 'Kami'))});
     coins=12400;
-    character.kind='cat'; character.color='#ffb3c9'; character.acc='none'; saveChar(); saveEconomy();
+    character.kind='bunny'; character.color='#ffb3c9'; character.acc='none'; saveChar(); saveEconomy();
     ['heart','slow','clear','x2','magnet'].forEach((id,i)=>{ if(!crafted.includes(id))crafted.push(id);
       bought[id]=[3,3,3,4,3][i]; inventory[id]=[3,2,2,2,2][i]; });
     ownedKinds=['cat','dog','bunny','bear','human','girl']; ownedHairs=HAIRS.map(h=>h.id);
@@ -330,13 +330,15 @@ const run = async () => {
   await toFace();
   await showAgain();
   await cap(TX('내 캐릭터를 만들어요','Make your own jelly'),
-            TX('아홉 종 · 머리 12가지 · 피부색 8가지','9 characters · 12 hairstyles · 8 skin tones'));
+            TX('아홉 종 · 색깔 · 얼굴 무늬 · 악세서리','9 characters · colours · face marks · accessories'));
   await hold(900);
-  await tap('#kindOpts button', 8);          // 여자아이 (9종 중 마지막 — 5번은 잠긴 여우다)
+  await tap('#kindOpts button', 2);          // 토끼 — 이 게임의 기본이자 제일 귀여운 얼굴
   await toFace(); await hold(1100);
-  await tap('#skinOpts button', 5);          // 피부색
-  await toFace(); await hold(1100);
-  await tap('#hairOpts button', 4);          // 머리 모양
+  await tap('#colorOpts button', 0);         // 분홍
+  await toFace(); await hold(1000);
+  await tap('#faceOpts button', 4);          // 볼 하트 💗
+  await toFace(); await hold(1000);
+  await tap('#accOpts button', 1);           // 리본 🎀
   await toFace(); await hold(1300);
   await capOff();
   await hold(400);
