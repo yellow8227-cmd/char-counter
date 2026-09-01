@@ -5292,6 +5292,7 @@ function loopPreview(){ if($('setupScreen').classList.contains('hide'))return; p
 // 꾸미고 싶을 때는 갈 곳이 없었다. 캐릭터·악세서리·공방·닉네임을 한 화면에 모은다.
 let profT=0, profFrom='startScreen';
 function loopProfile(){ if($('profileScreen').classList.contains('hide'))return;
+  if(!profCv||!profCv.isConnected) return;
   profT+=MENU_ANIM; profCtx.clearRect(0,0,170,170);
   drawAvatar(profCtx,85,100,54,profFace(),'calm',profT); requestAnimationFrame(loopProfile); }
 function openProfile(from){ ensureAudio(); profFrom=from||'startScreen';
@@ -5306,7 +5307,9 @@ function buildProfile(){
   buildSetupUI();          // 화면이 보이는 중이므로 공방(buildCreator)까지 이어서 그려진다
 }
 let heroT=0;
-function loopHero(){ if($('startScreen').classList.contains('hide'))return; heroT+=MENU_ANIM; hctx.clearRect(0,0,160,160); drawAvatar(hctx,80,88,46,character,'calm',heroT); requestAnimationFrame(loopHero); }
+// 화면이 사라진 뒤에도 requestAnimationFrame 이 한 번 더 돈다 — 그때 요소가 없으면 터진다.
+// (판을 iframe 에 넣고 본문을 갈아끼우면 실제로 났다. 콘솔만 더럽히지만 막아 두는 게 맞다)
+function loopHero(){ const sc=$('startScreen'); if(!sc||sc.classList.contains('hide'))return; heroT+=MENU_ANIM; hctx.clearRect(0,0,160,160); drawAvatar(hctx,80,88,46,character,'calm',heroT); requestAnimationFrame(loopHero); }
 
 // ================= Game =================
 let running=false,score=0,combo=1,comboTimer=0,lives=3,level=1;
