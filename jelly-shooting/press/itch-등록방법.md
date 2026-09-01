@@ -7,13 +7,16 @@
 
 ## ⓪ 올리기 전에 — 5분, 이건 꼭 먼저
 
-**`press/랭킹-지키기.md` 의 SQL 을 Supabase 에 붙여 넣고 실행하세요.**
+**`press/upload/supabase-setup.sql` 파일 전체를 Supabase 에 붙여 넣고 한 번 실행하세요.**
+랭킹 표·지킴막이·피드백 표가 한꺼번에 만들어지고, **맨 끝에서 스스로 검사해 ✅/❌ 표를 찍어 줍니다.**
+여러 번 돌려도 안전합니다.
 지금까지는 아는 사람만 들어왔지만, itch.io 에 올리는 순간 **모르는 사람이 랭킹에 닿습니다.**
 1등이 `999,999,999` 가 된 다음에 고치면 이미 늦습니다.
 
 - Supabase 대시보드 → 왼쪽 **SQL Editor** → **New query** → 붙여넣기 → **Run**
 - 같은 문서 6장의 `feedback` 표 SQL 도 같이 돌리면 💌 피드백 창이 그때 켜집니다
-- 확인법(일부러 가짜를 넣어 에러가 나는지)도 문서 4장에 있습니다
+- 더 확실히 보고 싶으면 `press/upload/supabase-verify.sql` 을 한 줄씩 돌려 보세요 — **앞 세 줄은 에러가 나야 정상**입니다
+- 원리와 한계 설명은 `press/랭킹-지키기.md` 에 있습니다
 
 ---
 
@@ -77,7 +80,7 @@
 
 | 칸 | 파일 |
 |---|---|
-| **Cover image** | `press/shots/cover-1200x630.png` |
+| **Cover image** | **`press/upload/cover-A.png`** (630×500) ⚠️ `cover-1200x630.png` 은 링크 미리보기용이라 itch 에서 잘립니다 |
 | **Screenshots** | `press/shots/appstore-1-play.png` … `appstore-6-home.png` (6장) |
 | **Trailer / video** | 유튜브에 `press/video/jelly-shooting-promo.webm` 을 먼저 올리고 **그 주소**를 넣습니다. itch 는 영상 파일 업로드를 안 받습니다 |
 
@@ -151,7 +154,8 @@ Supabase 는 anon 키로 넣는 것은 도메인을 안 가리므로 대개 그�
 
 ```
 press/upload/jellimo-itch.zip          ← ④ 에 올릴 파일
-press/shots/cover-1200x630.png         ← ⑤ 커버
+press/upload/cover-A.png               ← ⑤ 커버 (630x500)
+press/upload/supabase-setup.sql        ← ⓪ 붙여넣고 Run 할 파일
 press/shots/appstore-1-play.png …-6    ← ⑤ 스크린샷 6장
 press/video/jelly-shooting-promo.webm  ← 유튜브에 올린 뒤 주소만
 press/store-english.md                 ← ⑥ 본문·태그·칸별 값 전부

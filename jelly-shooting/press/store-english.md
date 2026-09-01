@@ -76,7 +76,7 @@ Korean, English and Japanese.
 | **Pricing** | **No payments** (or *Name your own price* if you want a donation button — see `press/수익화-알아보기.md`) |
 | **Uploads** | `jellimo-itch.zip` → tick **"This file will be played in the browser"** |
 | **Embed** | Manually set size, **width 430 · height 932**, tick **Mobile friendly** and **Fullscreen button** |
-| **Cover image** | `press/shots/cover-1200x630.png` (itch wants ≥315×250; a bigger one at the same ratio is better) |
+| **Cover image** | `press/upload/cover-A.png` (630×500 @2x). ⚠️ Do **not** use `cover-1200x630.png` — that's the OG ratio (1.90:1) and itch crops it |
 | **Screenshots** | `press/shots/appstore-1-play.png` … `appstore-6-home.png` |
 | **Genre** | Action |
 | **Tags (max 10 — use all 10)** | `casual` `cute` `multiplayer` `arcade` `html5` `mobile` `2d` `singleplayer` `local-multiplayer` `no-ads` |
@@ -130,7 +130,8 @@ Words people actually type. Genre-only words ("puzzle", "arcade") bury you under
 | Needed | File |
 |---|---|
 | Playable zip | `press/upload/jellimo-itch.zip` |
-| Cover 1200×630 | `press/shots/cover-1200x630.png` |
+| itch cover 630×500 | `press/upload/cover-A.png` (변형 B·C·D 도 같은 폴더) |
+| Link preview (OG) 1200×630 | `press/shots/cover-1200x630.png` — 카톡·트위터 미리보기 전용 |
 | Screenshots ×6 | `press/shots/appstore-1-play.png` … `-6-home.png` |
 | Play feature graphic 1024×500 | `press/shots/play-feature-1024x500.png` |
 | Icon 1024 | `press/shots/icon-1024.png` |
