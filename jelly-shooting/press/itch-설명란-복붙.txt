@@ -1,0 +1,74 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+itch.io  「세부 → 설명」 칸  ·  이 파일을 위에서부터 그대로
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+■ 순서
+  ① 그림 단추(맨 오른쪽 🖼)로 jellimo-play-en.gif 올리기   ← 맨 위
+  ② 아래 【본문】 을 복붙
+  ③ "FIVE WAYS TO PLAY" 아래에 유튜브 주소 한 줄 붙이기
+     (itch 는 주소만 붙이면 자동으로 영상 칸이 됩니다. 파일 업로드는 안 받습니다)
+
+■ 한국어는 넣지 마세요
+  itch 는 영어권 이용자가 대부분입니다. 한글이 섞이면 "내 언어가 아닌 게임"으로
+  읽고 넘어갑니다. 한국어는 소개 페이지 링크로만 두면 됩니다.
+
+
+━━━━━━━━━━━━━━━ 【본문】 여기서부터 복붙 ━━━━━━━━━━━━━━━
+
+Tap the falling jellies. They pop. That's the whole rule —
+and you'll know it in 3 seconds.
+
+Then try 🔥 Nuclear: 2 lives, jellies falling 3.2× faster.
+Most people don't last 10 seconds.
+
+HOW TO PLAY
+• Tap a jelly → it pops. Chain them for a combo multiplier.
+• Let one hit the floor → you lose a life.
+• Never tap the angry face 😡 — that one's a bomb.
+
+FIVE WAYS TO PLAY
+• Solo — four difficulties: Mild · Normal · Spicy · 🔥 Nuclear
+• Live Dungeon — up to 4 players on the same board, last one standing
+• Throw Game — one player throws, the other pops, then you swap
+• Play the AI — four skill levels, works offline
+• Endless — no timer, and a giant boss drops in every 5 levels
+
+PLAY WITH FRIENDS IN 10 SECONDS
+Make a room, send the 4-letter code, play. No accounts, no friend
+requests, no install. Up to 4 players share one board, and every jelly
+you pop sends junk flying at the others.
+
+THE ENDING IS THE BEST PART
+When a round ends you get a picture: the winner dances, the loser folds
+their arms and sulks. Face and pose change every round, and you can
+share it.
+
+MAKE YOUR OWN JELLY
+9 characters, 12 hairstyles, 8 skin tones, 5 face marks, 12 accessories,
+and a workshop where you build your own. Coins come from playing.
+Nothing is for sale, ever.
+
+RANKED BY HOW LONG YOU SURVIVED
+The 🔥 Nuclear leaderboard doesn't rank by score. It ranks by time.
+"12,400 points" means nothing. "1 minute 12 seconds" means everything.
+
+WHAT'S NOT IN IT
+No ads. No purchases. No sign-up. No install. All ages.
+It's one HTML file — open a link and you're playing.
+
+Available in English, 한국어 and 日本語.
+Controls: mouse or touch. Nothing else.
+
+Full site: https://zingy-cupcake-98444a.netlify.app/en
+
+━━━━━━━━━━━━━━━ 【본문】 여기까지 ━━━━━━━━━━━━━━━
+
+
+■ 중간에 스크린샷 끼우면 훨씬 잘 읽힙니다 (선택)
+  HOW TO PLAY 아래       →  press/shots/appstore-1-play.png
+  Live Dungeon 줄 아래   →  press/shots/appstore-2-dungeon.png
+  THE ENDING 아래        →  press/shots/appstore-5-result.png
+
+■ 쓰지 말 것
+  "오프라인으로도 됩니다" — itch 는 게임을 iframe 안에서 돌리는데 거기서는
+  서비스 워커가 제대로 안 붙습니다. 소개 페이지에서만 이야기하세요.
