@@ -98,8 +98,8 @@ R(`<p>단톡방에 <strong>방 코드 네 자리</strong>만 보내면 최대 �
         <p class="who">Group chat · lunch break · after work</p>`);
 R('alt="고양이·강아지·토끼·곰·남자아이·여자아이 여섯 캐릭터"',
   'alt="Six of the characters — cat, dog, bunny, bear, boy and girl"');
-R('<p>아홉 종에서 골라 머리·색깔·악세서리까지 내 마음대로</p>',
-  '<p>Nine characters, plus hair, skin tone, colour and accessories</p>');
+R('<p>아홉 종에서 골라 머리 12가지 · 피부색 8가지 · 악세서리까지 내 마음대로</p>',
+  '<p>Nine characters · 12 hairstyles · 8 skin tones · accessories</p>');
 
 /* ───────── ③-2 한계 돌파 ───────── */
 R('<span class="tag">그래서 더 오래 합니다</span>', '<span class="tag">Why people keep going</span>');
@@ -147,7 +147,7 @@ R(`<p class="stepnote">앱 설치 · 회원가입 · 친구 추가 <strong>없�
       Make an account only if you want to carry your character between phone and laptop.</p>`);
 
 /* ───────── ⑤ 영상 ───────── */
-R('<span class="tag">1분 35초</span>', '<span class="tag">Trailer</span>');
+R('<span class="tag">약 1분</span>', '<span class="tag">Trailer</span>');
 R('<h2 class="display">영상으로 먼저 보세요</h2>', '<h2 class="display">See it before you play it</h2>');
 R('<p class="lead">따로 편집한 화면이 아니라, 실제로 플레이한 화면을 그대로 녹화했어요.</p>',
   '<p class="lead">Not a mock-up. A script actually played the game and this is the recording.</p>');
@@ -210,7 +210,7 @@ R(`<p>표정 · 자세 · 말풍선이 판마다 달라져요. 진 사람은 이
   `<p>Face, pose and speech bubble change every round. Whoever loses watches the winner's
           screen, and the whole scene is one tap away from being shared.</p>`);
 R('<h3 class="display">내 캐릭터 꾸미기</h3>', '<h3 class="display">Make your own jelly</h3>');
-R('<p>캐릭터 아홉 종에 머리 · 색깔 · 악세서리. 코인을 모아 나만의 악세서리도 만들어요.</p>',
+R('<p>캐릭터 아홉 종 · 머리 12가지 · 피부색 8가지 · 악세서리 12가지. 코인을 모아 나만의 악세서리도 만들어요.</p>',
   '<p>Nine characters, 12 hairstyles, 8 skin tones and 12 accessories — plus a workshop where you build your own. Coins come from playing, never from paying.</p>');
 R('<h3 class="display">AI와 연습</h3>', '<h3 class="display">Practise against the AI</h3>');
 R('<p>같이 할 사람이 없을 때도 실력 네 단계 AI와 바로 붙어요. 다시 할 때 실력과 역할을 바꿀 수 있어요.</p>',
@@ -240,6 +240,11 @@ R(`<div><b>같이 하기</b><span>방을 만들면 네 자리 코드가 나와�
         아이템은 아래 줄에서 눌러 써요.</span></div>`,
   `<div><b>Playing together</b><span>Make a room and you get four characters. They type them in and
         you start in the same room. Items are the row along the bottom.</span></div>`);
+
+R(`<p class="stepnote">사실 이걸 안 읽어도 돼요. <strong>처음 시작하면 게임이 직접 알려줍니다</strong> —
+      떨어지는 젤리를 눌러 보고, 콤보를 내 보고, 폭탄을 그냥 지나쳐 보는 것까지 30초면 끝나요.</p>`,
+  `<p class="stepnote">You don't actually need to read this. <strong>The game teaches you on your first round</strong> —
+      tap a jelly, chain a combo, let a bomb go past. Thirty seconds and you're done.</p>`);
 
 /* ───────── ⑨ 만든 이야기 ───────── */
 R('<span class="tag">만든 이야기</span>', '<span class="tag">How it was built</span>');

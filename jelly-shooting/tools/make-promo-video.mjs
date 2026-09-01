@@ -100,6 +100,10 @@ const OVERLAY = `(()=>{
     justify-content:center;gap:14px;opacity:0;transition:opacity .45s ease;pointer-events:none;
     background:radial-gradient(120% 90% at 20% 0%, #fff 0%, #ffe3f0 45%, #efe2ff 100%);}
   #__card.on{opacity:1;}
+  /* 장면 전환용 흰 천 — 이 뒤에서 화면을 갈아 끼운다 */
+  #__wipe{position:fixed;inset:0;z-index:99997;background:#fff6fb;opacity:0;pointer-events:none;
+    transition:opacity .32s ease;}
+  #__wipe.on{opacity:1;}
   #__card .t{font-size:60px;font-weight:400;color:#c9184a;letter-spacing:-1px;line-height:1.08;
     text-align:center;font-family:'Jua','Apple SD Gothic Neo',sans-serif;}
   #__card .s{font-size:20px;font-weight:400;color:#6b5069;text-align:center;padding:0 24px;
@@ -135,6 +139,9 @@ const OVERLAY = `(()=>{
       requestAnimationFrame(tick); };
     tick(); };
   window.__cardOff=()=>card.classList.remove('on');
+  const wipe=document.createElement('div'); wipe.id='__wipe'; document.body.appendChild(wipe);
+  window.__wipeOn =()=>wipe.classList.add('on');
+  window.__wipeOff=()=>wipe.classList.remove('on');
   return 1; })()`;
 
 // ── 세상을 절반 속도로 돌리는 장치 ──
@@ -220,6 +227,8 @@ const run = async () => {
   // ⚠ 녹화 중에는 page.screenshot() 을 부르지 말 것. 그 순간 프레임이 CSS 크기로 들어와
   //   영상에 '작게 박힌 화면'이 생긴다. 낱장은 다 만든 영상에서 뽑는다.
   const ev = e => page.evaluate(e).catch(() => null);
+  // 글자를 읽을 시간은 최종 영상 기준 — 게임이 절반 속도라 실제로는 그 두 배를 기다린다
+  const hold = ms => sleep(ms / SLOW);
   const cap = (t, s, low) => ev(`__cap(${JSON.stringify(t)},${JSON.stringify(s || '')},${!!low})`);
   const capOff = () => ev(`__capOff()`);
   // 진짜로 젤리를 눌러 플레이한다. ms 동안, 대략 gap 마다 한 번.
@@ -295,9 +304,9 @@ const run = async () => {
   await ev(`__card(${JSON.stringify(TX('젤리모', 'Jellimo'))},`
     + `${JSON.stringify(TX('가족도, 연인도, 친구도 · 3분이면 한 판', 'Family, friends, and that one competitive cousin'))},`
     + `${JSON.stringify(TX('앱도 가입도 없이 바로', 'No app. No sign-up. Just a link.'))})`);
-  await sleep(2600);
+  await hold(3000);                 // 여는 카드 — 세 줄을 읽을 만큼
   await ev(`__cardOff()`);
-  await sleep(600);
+  await hold(700);                  // 카드가 사라지는 걸 보고 넘어간다 (0.45초 페이드)
 
   // ── ② 내 캐릭터 꾸미기 ──
   await cap(TX('내 캐릭터 꾸미기','Make your own jelly'), TX('아홉 종 · 머리 · 피부색 · 악세서리','9 characters · hair · skin tone · accessories'));
@@ -354,15 +363,22 @@ const run = async () => {
 
   // ── ③-b ♾ 끝없는 모드의 거대 보스 ──
   // 최근에 들어온 내용인데 예전 영상에는 없었다. 판에 '목표'가 생기는 장면이라 빼면 아깝다.
+  // 장면 바꾸기 — 흰 천을 덮고, 그 뒤에서 판을 정리하고, 다음 판이 뜬 뒤에 천을 걷는다.
+  // 천 없이 바로 갈아 끼우면 홈 화면이 한 번 번쩍이고 지나가 어수선하다.
   const goHome = async () => {
+    await ev(`__wipeOn()`);
+    await hold(340);                       // 천이 덮이는 동안 (0.32초 페이드)
     await ev(`(()=>{ running=false; paused=false; boardUnlock(); try{aiStop();}catch(e){} try{netLeave();}catch(e){}
       ['hud','audioBar','itemBar','pauseBtn','netBar','throwWrap'].forEach(id=>$(id).classList.add('hide'));
       openStart(); return 1; })()`);
-    await sleep(800);
+    await sleep(500);
   };
+  // 다음 판이 뜬 뒤 천을 걷는다
+  const showAgain = async () => { await ev(`__wipeOff()`); await hold(340); };
   await goHome();
   await ev(`(()=>{ nextEndless=true; restoreMode(); startGame(); return 1; })()`);
   await waitFor('running', 9000, '끝없는 모드 시작');
+  await showAgain();
   await sleep(400);
   await cap(TX('♾️ 끝없는 모드', '♾️ Endless mode'),
             TX('5레벨마다 거대 보스가 내려와요', 'A giant boss drops in every 5 levels'));
@@ -395,6 +411,7 @@ const run = async () => {
   await goHome();
   await tap('#fireBtn');
   await waitFor('running', 9000, '핵불닭 시작');
+  await showAgain();
   await sleep(400);
   await cap(TX('귀엽다고 얕보지 마세요', 'Cute? Sure. Merciful? No.'),
             TX('🔥 핵불닭 — 목숨 2개, 속도 3.2배', '🔥 Nuclear — 2 lives, 3.2× speed'));
@@ -412,8 +429,9 @@ const run = async () => {
   await goHome();
   await ev(`(()=>{ aiGame='dungeon'; aiTier='smart'; netModeName='spicy'; userMode='spicy';
     aiGo(); return 1; })()`);
-  await cap(TX('같은 판에서 실시간 대전','Up to 4 players, one board'), TX('방 코드만 알려주면 2~4명이 함께','Share a 4-letter code and you are in'));
   await waitFor('running', 12000, '던전 시작');   // 카운트다운 3-2-1 이 끝날 때까지
+  await showAgain();
+  await cap(TX('같은 판에서 실시간 대전','Up to 4 players, one board'), TX('방 코드만 알려주면 2~4명이 함께','Share a 4-letter code and you are in'));
   await sleep(400);
   await ev(`(()=>{ lives=6; updateHud();
     window.__rush=setInterval(()=>{ try{ if(running){ if(lives<4){lives=4;updateHud();}
@@ -432,14 +450,12 @@ const run = async () => {
   mark('실시간 던전');
 
   // ── ⑤ 던지기 게임 — 내가 던지는 쪽 ──
-  await ev(`(()=>{ running=false; paused=false; boardUnlock(); try{aiStop();}catch(e){} try{netLeave();}catch(e){}
-    ['hud','audioBar','itemBar','pauseBtn','netBar','throwWrap'].forEach(id=>$(id).classList.add('hide'));
-    openStart(); return 1; })()`);
-  await sleep(900);
+  await goHome();
   await ev(`(()=>{ aiGame='throw'; aiRole='thrower'; aiTier='smart'; netModeName='normal';
     aiGo(); return 1; })()`);
-  await cap(TX('던지기 게임','Throw Game'), TX('한 명은 던지고, 한 명은 터트려요','One throws, the other pops. Then you swap.'));
   await waitFor('throwerAlive', 12000, '던지기 시작');
+  await showAgain();
+  await cap(TX('던지기 게임','Throw Game'), TX('한 명은 던지고, 한 명은 터트려요','One throws, the other pops. Then you swap.'));
   await sleep(600);
   await ev(`(()=>{ window.__nrg=setInterval(()=>{ try{ tEnergy=ENERGY_MAX; refreshThrowBar(); }catch(e){} },400);
     return 1; })()`);
@@ -478,7 +494,7 @@ const run = async () => {
     try{ $('finalScore').textContent='15200'; }catch(e){}
     return 1; })()`);
   await waitFor(`!$('overScreen').classList.contains('hide')`, 8000, '결과 화면');
-  await sleep(1600);
+  await hold(1800);
   await cap(TX('이기면 춤추고 · 지면 분해요','Winner dances. Loser sulks.'), TX('표정 · 자세 · 말풍선이 판마다 달라요','Face, pose and speech bubble change every round'), true);
   await sleep(1600);
   await tap('#sayRow .minichip', 1);              // 말풍선 바꾸기 (메시지 보내듯)
@@ -490,17 +506,19 @@ const run = async () => {
   // 결과를 그림으로 공유 — 미리보기까지 보여준다
   await cap(TX('결과는 그림으로 공유','Share the ending as a picture'), TX('이긴 표정과 진 표정이 그대로 담겨요','Both faces end up in the same frame'));
   await ev(`(()=>{ try{ shareOpen(); }catch(e){} return 1; })()`);
-  await sleep(2600);
+  await hold(2600);
   await ev(`(()=>{ try{ shareClose(); }catch(e){} return 1; })()`);
   await capOff();
   await sleep(500);
   mark('결과·공유');
 
   // ── ⑦ 마무리 표지 ──
+  await ev(`__wipeOn()`); await hold(340);      // 결과 화면에서 카드로 부드럽게
   await ev(`__card(${JSON.stringify(TX('지금 한 판 해요', 'Play a round right now'))},`
     + `${JSON.stringify(TX('방 코드 네 자리만 보내면 끝', 'Send four letters. That is the whole invite.'))},`
     + `${JSON.stringify('zingy-cupcake-98444a.netlify.app')})`);
-  await sleep(2400);
+  await ev(`__wipeOff()`);
+  await hold(3600);                 // 닫는 카드 — 주소를 읽고 손으로 옮겨 적을 시간
   mark('마지막 장면');
 
   // 소리 기록을 가져온다
