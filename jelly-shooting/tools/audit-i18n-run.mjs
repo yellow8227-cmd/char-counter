@@ -68,6 +68,31 @@ const POKES = [
   ['결과 공유',        `try{ shareOpen() }catch(e){}`],
   ['관전',             `try{ watchOpen&&watchOpen() }catch(e){}`],
   ['계정',             `try{ openCloud&&openCloud() }catch(e){} try{ syncCloudUI() }catch(e){}`],
+  // ── 결과 화면들. 영상에서 여기가 한국어로 남아 있는 걸 뒤늦게 발견했다.
+  //    판을 끝까지 끌고 가야 나오는 자리라 위의 화면 열기만으로는 안 닿는다.
+  ['던지기 결과 · 이김',  `net.foe={id:'p1',name:'JellyKing'}; net.foeOver=true; net.foeGone=false;
+                          netGame='throw'; myRole='thrower'; net.myScore=1800; net.foeScore=2360;
+                          net.foeReason='dead'; net.myReason='time'; net.mp=false; net.myOver=true;
+                          net.foePopped=18; net.foeMissed=6; aiOn=true; net.prized=false;
+                          try{ netResolve() }catch(e){}`],
+  ['던지기 결과 · 짐',    `myRole='popper'; net.foeReason='time'; net.myReason='dead';
+                          net.myOver=true; net.foeOver=true; pPopped=12; pMissed=9;
+                          try{ netResolve() }catch(e){}`],
+  ['던전 결과 · 1대1',    `netGame='dungeon'; net.mp=false; net.myOver=true; net.foeOver=true;
+                          net.myReason='time'; net.foeReason='dead';
+                          try{ netResolve() }catch(e){}`],
+  ['던전 결과 · 무승부',  `net.myReason='time'; net.foeReason='time'; net.myScore=net.foeScore=9000;
+                          try{ netResolve() }catch(e){}`],
+  ['상대 연결 끊김',      `net.foeGone=true; try{ netResolve() }catch(e){} net.foeGone=false;`],
+  ['상대 결과 기다림',    `net.foeOver=false; try{ netResolve() }catch(e){} net.foeOver=true;`],
+  ['여러 명 결과',        `net.mp=true; net.peers={}; net.order=[];
+                          try{ peerUpsert('p1',{name:'JellyKing',score:12800,lives:0,over:true});
+                               peerUpsert('p2',{name:'Sky',score:6400,lives:2,over:true});
+                               net.order.push('p1'); netResolve(); }catch(e){}`],
+  ['AI 랭킹 안내',        `try{ noRankMsg() }catch(e){}`],
+  ['탈락 알림',           `try{ toast(t('💀 %s님이 탈락했어요').replace('%s','JellyKing')) }catch(e){}`],
+  ['버티기 결과',         `try{ mode=userMode=FIRE; startGame(); elapsed=60*72; gameOver();
+                               for(const sec of [8,20,45,75,200]) try{ fireTaunt(sec) }catch(e){} }catch(e){}`],
 ];
 
 const run = async () => {
