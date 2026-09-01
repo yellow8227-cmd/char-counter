@@ -68,9 +68,14 @@ Controls: mouse or touch. Nothing else.
   THE ENDING 아래        →  press/shots/appstore-5-result.png
 
 ■ 「Full site」 줄은 일부러 뺐습니다
-  영어 소개 페이지가 아직 배포에 안 올라가 있어서 .../en 이 404 가 납니다.
-  (제가 주소를 잘못 적었습니다) 영어 페이지를 배포한 뒤에 이 줄을 넣으세요:
-      Full site: https://zingy-cupcake-98444a.netlify.app/en
+  사이트가 두 개인데 제가 호스트를 잘못 썼습니다.
+      게임        zingy-cupcake-98444a.netlify.app
+      소개 페이지  dashing-quokka-c37a8b.netlify.app   ← /en 은 이쪽에 있습니다
+  게다가 소개 페이지 배포에 en.html 이 아직 안 올라가 있습니다.
+  소개페이지-넷리파이.zip 을 올린 다음, 브라우저로 /en 이 열리는지 먼저 확인하고
+  그때 이 줄을 넣으세요:
+      Full site: https://dashing-quokka-c37a8b.netlify.app/en
+  (사이트 이름을 바꾸실 거면 바꾼 주소로 넣으세요)
 
 ■ 쓰지 말 것
   "오프라인으로도 됩니다" — itch 는 게임을 iframe 안에서 돌리는데 거기서는
