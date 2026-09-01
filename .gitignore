@@ -4,5 +4,6 @@ __pycache__/
 venv/
 
 # 자료 집파일 (tools/make-asset-zips.mjs 로 언제든 다시 만들 수 있어 커밋 안 함)
-jelly-shooting/press/upload/jellimo-insta-assets.zip
+jelly-shooting/press/upload/jellimo-insta-한국어.zip
+jelly-shooting/press/upload/jellimo-insta-English.zip
 jelly-shooting/press/upload/jellimo-itch-assets.zip

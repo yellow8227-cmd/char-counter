@@ -1,6 +1,7 @@
 // 보관용 자료 집파일 2개 만들기
-//   press/upload/jellimo-insta-assets.zip  — 인스타 올릴 사진 + 문구
-//   press/upload/jellimo-itch-assets.zip   — itch.io 올릴 사진 + 게임파일 + 문서
+//   press/upload/jellimo-insta-한국어.zip   — 인스타 올릴 사진(한국어) + 문구
+//   press/upload/jellimo-insta-English.zip  — 인스타 올릴 사진(영어) + 문구
+//   press/upload/jellimo-itch-assets.zip    — itch.io 올릴 사진 + 게임파일 + 문서
 // 실행:  node tools/make-asset-zips.mjs
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -31,7 +32,7 @@ const zipUp = (stageDir, outName) => {
   execSync(`cd ${JSON.stringify(path.join(TMP, stageDir))} && zip -q -r -X ${JSON.stringify(out)} .`);
   const list = execSync(`unzip -Z1 ${JSON.stringify(out)}`).toString().trim().split('\n');
   const size = (fs.statSync(out).size / 1024 / 1024).toFixed(2);
-  console.log(`\n📦 ${outName}  (${size} MB, ${list.length}개)`);
+  console.log(`\n📦 ${outName}  (${size} MB, ${list.filter(f => !f.endsWith('/')).length}개 파일)`);
   for (const f of list) console.log('   ' + f);
   return { out, list };
 };
@@ -39,24 +40,24 @@ const zipUp = (stageDir, outName) => {
 fs.rmSync(TMP, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
 
-/* ───────────────────────── 1. 인스타용 ───────────────────────── */
-const IG = 'insta-pack';
-for (const [src, dst] of [['insta', '한국어'], ['insta-en', 'English']]) {
-  for (const f of dirFiles(`press/${src}`))        cp(`press/${src}/${f}`,        `${IG}/${dst}/${f}`);
-  for (const f of dirFiles(`press/${src}/square`)) cp(`press/${src}/square/${f}`, `${IG}/${dst}/정사각(1대1)/${f}`);
-}
-cp('press/인스타-글로벌.md', `${IG}/문구/인스타-글로벌.md`);
-cp('press/인스타-계정.md',   `${IG}/문구/인스타-계정.md`);
-cp('press/shots/og.jpg',     `${IG}/기타/링크미리보기-og.jpg`);
-
-write(`${IG}/읽어보기.txt`, `젤리모 · 인스타그램 자료 모음
+/* ───────────────────────── 1. 인스타용 (언어별로 나눔 — 한 개로 묶으면 30MB 넘어서 못 보냄) ───────────────────────── */
+const IG_SET = [
+  { stage: 'insta-ko', src: 'insta',    out: 'jellimo-insta-한국어.zip', label: '한국어' },
+  { stage: 'insta-en', src: 'insta-en', out: 'jellimo-insta-English.zip', label: 'English' },
+];
+for (const g of IG_SET) {
+  for (const f of dirFiles(`press/${g.src}`))        cp(`press/${g.src}/${f}`,        `${g.stage}/게시물/${f}`);
+  for (const f of dirFiles(`press/${g.src}/square`)) cp(`press/${g.src}/square/${f}`, `${g.stage}/게시물/정사각(1대1)/${f}`);
+  cp('press/인스타-글로벌.md', `${g.stage}/문구/인스타-글로벌.md`);
+  cp('press/인스타-계정.md',   `${g.stage}/문구/인스타-계정.md`);
+  cp('press/shots/og.jpg',     `${g.stage}/기타/링크미리보기-og.jpg`);
+  write(`${g.stage}/읽어보기.txt`, `젤리모 · 인스타그램 자료 (${g.label})
 ────────────────────────────────
-한국어/            한국어 게시물 9장 (4:5 세로, 1080x1350)
+게시물/            게시물 9장 (4:5 세로, 1080x1350)
   정사각(1대1)/    같은 그림 1:1 판 (프로필 격자용, 1080x1080)
-  story-*.png      스토리 4장 (1080x1920)
-  highlight-*.png  하이라이트 표지 4장 (원형으로 잘림)
-  profile-320.png  프로필 사진
-English/           위와 똑같은 구성, 영어판
+게시물/story-*.png      스토리 4장 (1080x1920)
+게시물/highlight-*.png  하이라이트 표지 4장 (원형으로 잘림)
+게시물/profile-320.png  프로필 사진
 문구/              게시물·스토리 문구, 계정 세팅, 알고리즘 정리
 기타/              링크 미리보기 그림 (카톡·트위터에 링크 붙일 때 뜨는 그림)
 
@@ -67,6 +68,7 @@ English/           위와 똑같은 구성, 영어판
 4) 하이라이트 4개는 한 번만 만들어두면 끝
 문구는 전부 문구/인스타-글로벌.md 안에 복사해 쓰게 정리돼 있습니다.
 `);
+}
 
 /* ───────────────────────── 2. itch.io용 ───────────────────────── */
 const IT = 'itch-pack';
@@ -103,14 +105,22 @@ write(`${IT}/읽어보기.txt`, `젤리모 · itch.io 자료 모음
 나중에 후원(Donate) 이나 유료로 바꿀 때만 세금 정보가 필요합니다.
 `);
 
-const a = zipUp(IG, 'jellimo-insta-assets.zip');
+const made = IG_SET.map(g => zipUp(g.stage, g.out));
 const b = zipUp(IT, 'jellimo-itch-assets.zip');
 
 /* 검사 */
 let bad = 0;
-if (!a.list.some(f => f.startsWith('한국어/')) || !a.list.some(f => f.startsWith('English/'))) { console.error('❌ 인스타 집: 언어 폴더 빠짐'); bad++; }
+const LIMIT = 30 * 1024 * 1024;   // 채팅으로 보낼 수 있는 최대 크기
+for (const z of [...made, b]) {
+  if (!z.list.some(f => f === '읽어보기.txt')) { console.error('❌ 읽어보기.txt 빠짐: ' + z.out); bad++; }
+  if (fs.statSync(z.out).size > LIMIT) { console.error('❌ 30MB 넘음(전송 불가): ' + path.basename(z.out)); bad++; }
+}
+for (const z of made) {
+  if (z.list.filter(f => f.startsWith('게시물/') && f.endsWith('.png')).length !== 27) { console.error('❌ 인스타 그림 27장이 아님: ' + z.out); bad++; }
+  if (z.list.some(f => f.startsWith('커버/') || f.startsWith('게임파일/'))) { console.error('❌ itch 자료가 섞임: ' + z.out); bad++; }
+}
 if (!b.list.includes('게임파일/jellimo-itch.zip')) { console.error('❌ itch 집: 게임파일 빠짐'); bad++; }
-if (a.list.some(f => f.startsWith('커버/')) || b.list.some(f => f.startsWith('한국어/'))) { console.error('❌ 두 집파일이 섞였습니다'); bad++; }
+if (b.list.some(f => f.startsWith('게시물/'))) { console.error('❌ 인스타 자료가 itch 집에 섞임'); bad++; }
 fs.rmSync(TMP, { recursive: true, force: true });
-console.log(bad ? `\n❌ 문제 ${bad}건` : '\n✅ 두 집파일 모두 정상');
+console.log(bad ? `\n❌ 문제 ${bad}건` : `\n✅ 집파일 ${made.length + 1}개 모두 정상`);
 process.exit(bad ? 1 : 0);
