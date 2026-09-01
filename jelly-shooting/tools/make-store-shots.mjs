@@ -149,6 +149,42 @@ export const SCENES = [
     paint: POSE_LOOP(`const cv=$('celebCanvas'), g=cv.getContext('2d');
       g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,cv.width,cv.height);
       drawCeleb(g,cv.width,cv.height,96,lastBattle,false); $('overScreen').scrollTop=0;`) },
+  // 보스 컷은 '보스가 있다' 가 아니라 '지금 위험하다' 를 찍어야 한다.
+  // 그냥 떠 있는 보스는 구경거리고, 목숨 하나 남았는데 보스가 바닥까지 내려온
+  // 순간은 사건이다. 그래서: 목숨 1개 · 체력 거의 그대로 · 보스는 플레이어 코앞 ·
+  // 보스가 뿌린 탄이 떨어지는 중 · 화면 흔들림과 붉은 섬광.
+  { id: '7-boss', cap: [TX('거대 보스가 내려옵니다','Giant boss incoming'), TX('바닥에 닿기 전에 터트려요','Crack it before it lands')], tint: '#ffd9e2',
+    setup: `(()=>{
+      saveNick(${JSON.stringify(TX('까미','Kami'))}); coins=1240; soundOn=false; bgmOn=false;
+      character.kind='girl'; character.color='#ff9db2'; character.hair='braid';
+      character.acc='bow'; character.accColor='#ff5c8a'; saveChar();
+      mode='normal'; userMode='normal'; nextEndless=true; startGame();
+      endless=true;                       // render() 는 endless 일 때만 보스를 그린다
+      score=24160; combo=12; level=15; lives=1; runCoins=118; updateHud();
+      jellies.length=0;
+      // 보스 — 레벨 15 라 크고, 체력은 거의 안 깎였고, 이미 판 아래쪽까지 내려왔다
+      const r=Math.min(W*0.30,104), hp=bossHpFor(level);
+      // boss.flash 도 0 이다 — drawBoss 가 flash 만큼 보스 위에 흰 원을 덮는데,
+      // 0.35 면 몸이 비쳐 보여서 '유령 같은 보스' 가 됐다. 까맣게 꽉 차야 무섭다.
+      boss={x:W*0.5,y:H*0.58,r:r,hp:Math.round(hp*0.82),hpMax:hp,vy:0.6,
+            swing:1.2,flash:0,shootT:20,slamT:0,dieT:0};
+      // 보스가 뿌린 탄 — 플레이어를 향해 떨어지는 중
+      bshots.length=0;
+      [[W*0.30,H*0.74,3],[W*0.62,H*0.80,1],[W*0.46,H*0.88,1]].forEach(([x,y,d])=>{
+        bshots.push({x:x,y:y,color:d>=3?'#ff2d55':'#ff7d9c',dmg:d,r:d>=3?13:9,t:0}); });
+      // 남은 젤리 몇 개 — 이걸 터트려 보스를 때린다(이 게임의 핵심 규칙)
+      [[70,150,26,'#ffce3d',true],[330,210,24,'#4fa8ff',false]].forEach(([x,y,rr,c,g],i)=>{
+        jellies.push({x,y,r:rr,vx:0,vy:2,color:c,face:'happy',shape:'round',
+          bomb:false,gold:g,pts:20,wob:i*1.7,dead:false}); });
+      player.x=W*0.46; player.mood='wail'; player.moodTimer=999;
+      // 흰 섬광(flash)은 넣지 않는다 — 화면 전체를 하얗게 덮어서 정작 주인공인
+      // 보스가 씻겨 나갔다. 위기감은 목숨 1개·체력 띠·떨어지는 탄이 이미 만든다.
+      // 배너도 안 띄운다 — 영어 문장이 한국어보다 길어서 판 밖으로 넘쳤고,
+      // 어차피 같은 말을 위 제목이 하고 있다.
+      shake=10; flash=0; banner=null;
+      running=false; paused=false; render();
+      return 1; })()`,
+    paint: POSE_LOOP('updateHud(); render();') },
   { id: '6-home', cap: [TX('설치 없이 웹에서 바로','No install. Just a link.'), TX('계정 하나로 폰·노트북 함께','One account across phone and laptop')], tint: '#e6f3ff',
     setup: `(()=>{
       soundOn=false; coins=12400; saveNick(${JSON.stringify(TX('까미','Kami'))});
