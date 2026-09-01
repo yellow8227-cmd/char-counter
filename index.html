@@ -6,14 +6,22 @@
 <title>촬영 배치도 — 내일 찍을 것을, 오늘 밤에</title>
 <meta name="description" content="화각과 심도, 180° 선을 종이 위에서 먼저 재 봅니다. 설치도 가입도 없이, 브라우저에서 바로 여는 촬영 프리프로덕션 배치도.">
 <link rel="canonical" href="https://yellow8227-cmd.github.io/char-counter/">
-<meta name="theme-color" content="#efece6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#f2f3f5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0e1014" media="(prefers-color-scheme: dark)">
 
 <!-- 바로가기 아이콘 — 뷰파인더 꺾쇠. iOS·안드로이드는 판을 자기가 둥글리므로 네모로 준다. -->
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-v2.svg?v=2" type="image/svg+xml">
+<link rel="icon" href="favicon-32-v2.png?v=2" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon-v2.png?v=2">
 <link rel="manifest" href="site.webmanifest">
+
+<!-- 글꼴 — 예전엔 「CSP 로 막힌다」고 보고 기기 글꼴만 썼는데, 실제로는 막히지 않는다.
+     나가는 것은 글꼴 파일뿐이고 작업한 배치도는 여전히 이 브라우저 밖으로 안 나간다. -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
 <meta name="apple-mobile-web-app-title" content="촬영 배치도">
 <meta name="apple-mobile-web-app-capable" content="yes">
 
@@ -45,13 +53,16 @@
      ══════════════════════════════════════════════════════════ */
   #app{
     --fs:13px;
-    --r-sm:7px; --r:10px; --r-lg:14px; --r-xl:20px;
+    /* 도면·계측기의 결. 씬덱은 둥근 편집물, 여기는 각진 도면이다. */
+    --r-sm:3px; --r:4px; --r-lg:6px; --r-xl:8px;
     --sp:8px;
-    --acc:#c07800; --acc-ink:#ffffff;
+    /* JS 가 로드할 때 ACCENTS 의 값으로 덮어쓴다. 그 전 한순간 다른 색이
+       번쩍이지 않도록 실제로 뜨는 값(amber light)을 그대로 적어 둔다. */
+    --acc:#d98200; --acc-ink:#ffffff;
     --ease:cubic-bezier(.22,.61,.36,1);
     /* 숫자·수치는 계기판 글씨로 — 자리수가 흔들리지 않는다.
-       바깥 폰트는 CSP 로 막히니 기기에 이미 있는 것 중에서 고른다. */
-    --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Mono",Menlo,Consolas,monospace;
+       JetBrains Mono 를 받아오고, 없으면 기기에 있는 것으로 떨어진다. */
+    --mono:"JetBrains Mono",ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
   }
   /* 밝은 테마 — 종이에 가까운 중성 회색. 파랑기를 줄여 도면 색이 튀지 않게. */
   #app[data-theme="light"]{
@@ -62,7 +73,7 @@
     --warn:#c0392f; --ok:#1e7a52;
     --badge-bad-bg:#fdecea; --badge-bad-ink:#a8322a;
     --badge-mv-bg:#eaf1fa; --badge-mv-ink:#1f5f96;
-    --sel-bg:#fdf6ea;
+    --sel-bg:color-mix(in srgb, var(--acc) 11%, var(--panel));
     --sh-1:0 1px 1px rgba(18,24,38,.04), 0 1px 3px rgba(18,24,38,.05);
     --sh-2:0 1px 2px rgba(18,24,38,.05), 0 8px 24px -8px rgba(18,24,38,.12);
     --sh-3:0 24px 60px -12px rgba(18,24,38,.28), 0 2px 8px rgba(18,24,38,.10);
@@ -78,7 +89,7 @@
     --warn:#ff7d72; --ok:#4fce8e;
     --badge-bad-bg:#3d1e1c; --badge-bad-ink:#ff9d94;
     --badge-mv-bg:#12303f; --badge-mv-ink:#7fd0ff;
-    --sel-bg:#2b2718;
+    --sel-bg:color-mix(in srgb, var(--acc) 16%, var(--panel));
     --sh-1:0 1px 1px rgba(0,0,0,.3), 0 1px 3px rgba(0,0,0,.25);
     --sh-2:0 1px 2px rgba(0,0,0,.35), 0 10px 26px -10px rgba(0,0,0,.6);
     --sh-3:0 28px 70px -14px rgba(0,0,0,.75), 0 2px 8px rgba(0,0,0,.5);
@@ -121,11 +132,10 @@
   }
   .brand{ display:flex; align-items:center; gap:9px; min-width:0 }
   .brand .mark{
-    width:30px; height:30px; flex:none; display:grid; place-items:center;
-    border-radius:9px; font-size:16px; line-height:1;
-    background:linear-gradient(150deg, var(--panel3), var(--panel4));
-    border:1px solid var(--line2); box-shadow:var(--sh-1);
+    width:31px; height:31px; flex:none; display:block;
+    color:var(--ink); background:none; border:0; box-shadow:none;
   }
+  .mk{ width:100%; height:100%; display:block }
   .brand .name{ display:flex; flex-direction:column; gap:1px; min-width:0 }
   .brand h1, .brand .apptitle{
     margin:0; font-size:calc(var(--fs) + 2px); font-weight:750;
@@ -148,8 +158,8 @@
   }
   .titlefield:hover{ border-color:var(--line); background:var(--panel2) }
   .titlefield:focus-within{ border-color:var(--line2); background:var(--panel2) }
-  .titlefield label{ font-size:calc(var(--fs) - 3px); color:var(--sub2);
-    text-transform:uppercase; letter-spacing:.7px; font-weight:650 }
+  .titlefield label{ font-size:calc(var(--fs) - 2px); color:var(--sub2);
+    letter-spacing:.01em; font-weight:700 }
   .titlefield input{
     background:transparent; border:none; padding:6px 4px; width:148px;
     font-weight:650; font-size:calc(var(--fs) + .5px); letter-spacing:-.2px;
@@ -162,7 +172,7 @@
     border-bottom:1px solid var(--line);
   }
   .tab{
-    display:flex; align-items:center; gap:8px; padding:5px 12px; border-radius:999px;
+    display:flex; align-items:center; gap:8px; padding:5px 12px; border-radius:var(--r-sm);
     border:1px solid var(--line); background:var(--panel); color:var(--ink2); cursor:pointer;
     font-size:calc(var(--fs) - 1px); font-weight:550; box-shadow:var(--sh-1);
     transition:.14s var(--ease);
@@ -254,8 +264,8 @@
   }
   .card h2{
     margin:0 0 11px; padding-bottom:9px; border-bottom:1px solid var(--line);
-    font-size:calc(var(--fs) - 3px); color:var(--sub); font-weight:750;
-    letter-spacing:.9px; text-transform:uppercase;
+    font-size:calc(var(--fs) - 1px); color:var(--sub); font-weight:800;
+    letter-spacing:.01em;
     display:flex; align-items:center; gap:7px;
   }
   /* 뷰파인더의 프레이밍 표시를 줄여 놓은 것 — 이 도구의 말투에 맞는 기호 */
@@ -302,8 +312,8 @@
   .shot .mt{ font-size:calc(var(--fs) - 2px); color:var(--sub); line-height:1.55; flex:1; min-width:0 }
   .shot .mt b{ color:var(--ink); font-weight:600 }
   .badge{
-    display:inline-block; border-radius:5px; padding:1px 6px;
-    font-size:calc(var(--fs) - 3.5px); font-weight:750; letter-spacing:.2px;
+    display:inline-block; border-radius:var(--r-sm); padding:1px 6px;
+    font-size:calc(var(--fs) - 2px); font-weight:750; letter-spacing:.01em;
   }
   .badge.bad{ background:var(--badge-bad-bg); color:var(--badge-bad-ink) }
   .badge.mv{ background:var(--badge-mv-bg); color:var(--badge-mv-ink) }
@@ -322,10 +332,10 @@
   .hint{ font-size:calc(var(--fs) - 2.5px); color:var(--sub); line-height:1.85; margin:9px 0 0 }
   .hint b{ color:var(--ink2); font-weight:650 }
   .hint .warnink{ color:var(--warn) }
-  .hint code{ background:var(--panel3); border-radius:4px; padding:1px 5px; font-family:inherit }
+  .hint code{ background:var(--panel3); border-radius:var(--r-sm); padding:1px 5px; font-family:inherit }
   kbd{
     background:var(--panel2); border:1px solid var(--line2); border-bottom-width:2px;
-    border-radius:5px; padding:1px 5px; font-size:calc(var(--fs) - 3.5px);
+    border-radius:var(--r-sm); padding:1px 5px; font-size:calc(var(--fs) - 3.5px);
     font-family:var(--mono); font-weight:600; color:var(--ink2); white-space:nowrap;
   }
   .empty{
@@ -400,7 +410,7 @@
   .fieldlab span{ color:var(--sub2); font-weight:500 }
   .dims label{ display:flex; flex-direction:column; gap:3px; min-width:0 }
   .dims label > span{
-    font-size:calc(var(--fs) - 4px); color:var(--sub2); font-weight:650;
+    font-size:calc(var(--fs) - 2.5px); color:var(--sub2); font-weight:700;
     letter-spacing:.5px; padding-left:2px;
   }
   .dims input{ width:100%; min-width:0 }
@@ -413,7 +423,7 @@
      색은 촬영 조명의 두 축에서 가져왔다 — 텅스텐(3200K)과 데이라이트(5600K).
      텅스텐 쪽은 도구의 강조색(--acc)을 그대로 쓰므로, 설정에서 강조색을
      바꾸면 소개 화면까지 같이 바뀐다.
-     서체는 한글이 들어가는 화면이라 바깥 폰트를 심을 수 없다(CSP·용량).
+     서체는 Pretendard 를 받아오고, 모노는 치수·각도 같은 라틴 숫자에만 쓴다.
      대신 자간·굵기·크기 대비로 표정을 만들고, 계기판 글씨를 곁들인다.
      ══════════════════════════════════════════════════════════ */
   #app{ --daylight:#4f9fc4; --measure:62ch; --beam:11%; --beam-cool:9% }
@@ -428,7 +438,7 @@
     display:flex; align-items:center; gap:12px;
     padding:18px 0; border-bottom:1px solid var(--line);
   }
-  .site .nav .brand .mark{ width:34px; height:34px; font-size:18px }
+  .site .nav .brand .mark{ width:37px; height:37px }
   .site .nav .links{ display:flex; gap:4px; margin-left:auto; align-items:center }
   .site .nav a{
     color:var(--sub); text-decoration:none; font-size:calc(var(--fs) - 1px);
@@ -492,11 +502,10 @@
     letter-spacing:-2px; font-weight:800; text-wrap:balance; max-width:15ch;
   }
   .hero h2 em{
-    font-style:normal; color:var(--acc);
-    /* 초점면 표시처럼 얇은 선 하나만 */
-    text-decoration:underline; text-decoration-thickness:2px;
-    text-underline-offset:.14em;
-    text-decoration-color:color-mix(in srgb, var(--acc) 38%, transparent);
+    font-style:normal; color:var(--acc); white-space:nowrap;
+    /* 초점면 표시처럼 얇은 띠 하나만 — 배경으로 그려 어디서나 같게 나온다 */
+    background:linear-gradient(color-mix(in srgb, var(--acc) 30%, transparent),
+      color-mix(in srgb, var(--acc) 30%, transparent)) 0 86%/100% .12em no-repeat;
   }
   .hero .lede{
     margin:0 0 38px; max-width:38ch; font-size:calc(var(--fs) + 4px);
@@ -507,7 +516,7 @@
   .cta{ display:flex; gap:10px; flex-wrap:wrap; align-items:center }
   .btn{
     display:inline-flex; align-items:center; gap:8px; cursor:pointer;
-    padding:12px 22px; border-radius:999px; text-decoration:none;
+    padding:12px 22px; border-radius:var(--r-sm); text-decoration:none;
     font-size:calc(var(--fs) + 1px); font-weight:700; letter-spacing:-.2px;
     border:1px solid var(--line2); background:var(--panel); color:var(--ink);
     transition:.16s var(--ease); box-shadow:var(--sh-1);
@@ -529,16 +538,16 @@
   @media (max-width:760px){ .facts{ grid-template-columns:repeat(2, minmax(0,1fr)) } }
   .facts div{ background:var(--panel); padding:16px 18px }
   .facts dt{
-    font-family:var(--mono); font-size:calc(var(--fs) + 6px); font-weight:700;
-    letter-spacing:-1px; color:var(--ink); line-height:1.2;
+    font-family:var(--mono); font-size:calc(var(--fs) + 11px); font-weight:700;
+    letter-spacing:-1px; color:var(--ink); line-height:1.15;
   }
   .facts dd{ margin:4px 0 0; font-size:calc(var(--fs) - 2px); color:var(--sub); line-height:1.55 }
 
   /* ── 구획 공통 ── */
   .site section.band{ padding:92px 0; border-top:1px solid var(--line) }
   .eyebrow{
-    display:block; font-family:var(--mono); font-size:calc(var(--fs) - 3.5px);
-    letter-spacing:1.6px; text-transform:uppercase; color:var(--acc); font-weight:700;
+    display:block; font-size:calc(var(--fs) - 1px);
+    letter-spacing:.02em; color:var(--acc); font-weight:800;
     margin-bottom:12px;
   }
   .site h3.title{
@@ -601,6 +610,11 @@
     display:flex; gap:14px; align-items:center; flex-wrap:wrap;
     color:var(--sub); font-size:calc(var(--fs) - 2px);
   }
+  .site .foot a{
+    color:var(--acc); font-weight:700; text-decoration:none;
+    border-bottom:1px solid color-mix(in srgb, var(--acc) 35%, transparent);
+  }
+  .site .foot a:hover{ border-bottom-color:var(--acc) }
   .site .foot .sep{ flex:1 }
   .site .foot b{ color:var(--sub); font-weight:600 }
   /* 잡지 광고 본문처럼 — 행을 직접 끊고 연 사이를 띄운다.
@@ -686,7 +700,7 @@
   <div class="wrap">
     <nav class="nav">
       <div class="brand">
-        <span class="mark" aria-hidden="true">🎬</span>
+        <span class="mark" aria-hidden="true"><svg class="mk" viewBox="0 0 64 64" aria-hidden="true"><path d="M20 32 L58 11 L58 53 Z" fill="currentColor" opacity=".16"/><path d="M20 32 L58 11 M20 32 L58 53" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" fill="none"/><rect x="4" y="23" width="19" height="18" rx="2.5" fill="currentColor"/><circle cx="52" cy="32" r="6" fill="var(--acc)"/></svg></span>
         <span class="name">
           <h1>촬영 배치도</h1>
           <span class="tagline">Shot Planner</span>
@@ -818,7 +832,7 @@
 
 <header>
   <div class="brand">
-    <span class="mark" aria-hidden="true">🎬</span>
+    <span class="mark" aria-hidden="true"><svg class="mk" viewBox="0 0 64 64" aria-hidden="true"><path d="M20 32 L58 11 L58 53 Z" fill="currentColor" opacity=".16"/><path d="M20 32 L58 11 M20 32 L58 53" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" fill="none"/><rect x="4" y="23" width="19" height="18" rx="2.5" fill="currentColor"/><circle cx="52" cy="32" r="6" fill="var(--acc)"/></svg></span>
     <span class="name">
       <span class="apptitle">촬영 배치도</span>
       <span class="tagline">Shot Planner</span>
@@ -1136,11 +1150,13 @@
 </main>
 
 <div class="site"><div class="wrap"><div class="foot">
-  <span>🎬 <b>촬영 배치도</b> — 재 보고 찍으세요.</span>
+  <span><b>촬영 배치도</b> — 재 보고 찍으세요.</span>
   <span class="sep"></span>
   <span>작업한 건 이 브라우저에 남습니다. 다른 컴퓨터에서 이어 하려면 저장해 두었다가 불러오세요.</span>
   <span class="sep"></span>
   <span><a href="scenedeck/">씬덱 — 시나리오를 씬·컷으로 나누고 AI 프롬프트까지 ↗</a></span>
+  <span class="sep"></span>
+  <span><a href="scenedeck/docs/">문서 — 시대 고증 · 막힐 때 · 프롬프트 길이 ↗</a></span>
 </div></div></div>
 
 <!-- ───────── 인쇄용 도면 (평소엔 숨어 있다) ───────── -->
@@ -1322,7 +1338,8 @@ const PAPER = {
     dofFill:'rgba(64,150,225,.22)', dofEdge:'rgba(48,135,215,.9)', focusDot:'#1e78c8',
     camOff:'#8a93a6', camBad:'#d05252', camStroke:'#2c3444',
     camTextOff:'#5d6880', camTextBad:'#b52222',
-    sel:'#ff7a00', handle:'#2f8fd8',
+    get sel(){ return ACC },   /* 선택색은 강조색을 따라간다 — 색을 바꾸면 도면도 같이 바뀐다 */
+    handle:'#2f8fd8',
     pathOff:'rgba(120,140,170,.5)', lightText:'#2c3444', lightSub:'#6a5a30',
     bird:'#e4eaf3',
   },
@@ -1340,7 +1357,8 @@ const PAPER = {
     dofFill:'rgba(79,179,255,.20)', dofEdge:'rgba(110,195,255,.9)', focusDot:'#6ec3ff',
     camOff:'#7c8698', camBad:'#e06868', camStroke:'#0d1017',
     camTextOff:'#9aa4b8', camTextBad:'#ff9a9a',
-    sel:'#ff9433', handle:'#6ec3ff',
+    get sel(){ return ACC },
+    handle:'#6ec3ff',
     pathOff:'rgba(150,170,200,.45)', lightText:'#0d1017', lightSub:'#b9a97a',
     bird:'#141821',
   },
