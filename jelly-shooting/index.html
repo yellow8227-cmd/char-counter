@@ -248,6 +248,13 @@
   @keyframes wob{0%,100%{transform:translateY(0) rotate(-2deg) scale(1)}50%{transform:translateY(-2px) rotate(2deg) scale(1.03)}}
   .tag{font-size:clamp(15px,4vw,19px);font-weight:800;color:var(--ink);max-width:340px;line-height:1.5;}
   .tag2{font-size:14px;font-weight:700;color:var(--ink2);margin-top:-4px;}
+  /* 🔥 핵불닭 도발 줄 — 홈에서 '한계 돌파' 축을 세우는 자리 */
+  .firebar{display:block;margin:8px auto 0;padding:9px 18px;border:0;border-radius:16px;cursor:pointer;
+    font-family:inherit;font-size:13.5px;font-weight:800;line-height:1.45;color:#fff;text-align:center;
+    background:linear-gradient(180deg,#ff6b52,#e2213f);
+    box-shadow:0 4px 0 #b8102c,0 8px 16px rgba(226,33,63,.32);}
+  .firebar:active{transform:translateY(2px);box-shadow:0 2px 0 #b8102c,0 4px 10px rgba(226,33,63,.3);}
+  .firebar b{font-weight:900;}
   /* 한 카드 안에서 항목을 나누는 작은 제목. label 보다 조용해야 카드가 두 장처럼 안 보인다 */
   .sublabel{font-size:14.5px;font-weight:900;color:var(--ink);text-align:left;margin:10px 0 7px;}
   .card > .sublabel:first-child{margin-top:0;}   /* 카드 맨 위일 때만 여백을 없앤다 */
@@ -978,8 +985,10 @@
     <div class="logo" id="startLogo"></div>
     <div class="logosub" id="startLogoSub"></div>
     <div class="tag">터질 때마다 도파민 팡팡 💥</div>
-    <div class="tag2">한 번 잡으면 못 놓는 손맛!<br>딱 3분, 지금 최고기록에 도전하세요 🔥</div>
+    <div class="tag2">규칙은 3초면 배웁니다.<br>그런데 🔥핵불닭은 아직 못 깼죠?</div>
     <div class="best hide" id="startBest"></div>
+    <!-- 🔥 핵불닭 도발. 이 게임의 가장 센 자산인데 설정 안에 숨어 있어서 아무도 몰랐다. -->
+    <button class="firebar" id="fireBtn"></button>
     <div class="coinbadge" id="startCoins">🪙 0</div>
     <div class="coinbadge lvbadge" id="startLevel"></div>
     <button class="btn gold dailypulse" id="dailyBtn" style="display:none;padding:14px 34px;font-size:18px;">🎁 오늘의 보너스 받기</button>
@@ -1508,7 +1517,7 @@ function supaReady(){ return !!(window.supabase && getSupa()); }
 // 서버에 올리는 것 — '가진 것'만. 기기에서 고른 것(난이도·AI 등급)과 기기 표시(연결 번호)는 두고 간다.
 const CLOUD_KEYS=['jelly_coins','jelly_inv','jelly_bought','jelly_crafted','jelly_custom',
   'jelly_caccs','jelly_kinds','jelly_hairs','jelly_char','jelly_nick','jelly_nick_set',
-  'jelly_scores','jelly_streak','jelly_daily','jelly_attend','jelly_lv','jelly_xp','jelly_mi','jelly_db','jelly_dex','jelly_st','jelly_ach','jelly_fr'];
+  'jelly_scores','jelly_streak','jelly_daily','jelly_attend','jelly_lv','jelly_xp','jelly_mi','jelly_db','jelly_dex','jelly_st','jelly_ach','jelly_fr','jelly_fire'];
 // off = 서버 안 씀 · device = 익명 계정(이 기기) · linked = 이메일 붙인 계정
 let cloudState='off', cloudUid=null, cloudMail='', cloudTimer=null, cloudBusy=false, cloudMsg='';
 // players 표가 없으면(SQL 을 안 돌렸으면) 계정에 딸린 메모칸(user_metadata)에 저장한다.
@@ -3866,7 +3875,6 @@ const LANGS=[{id:'ko',label:'한국어'},{id:'en',label:'English'},{id:'ja',labe
 // 사전. [한국어, English, 日本語] 한 줄에 한 문구 — 사람이 읽고 고칠 수 있는 형태로 둔다.
 // %d 는 숫자 자리. 원문에 나오는 숫자 순서를 그대로 지켜야 한다.
 const I18N_ROWS=[
-  ["젤리토","Jellito","ジェリト"],
   ["%d개","%d","%d個"],
   ["%d만 점","%d0,000 pts","%d万点"],
   ["%d명이 모인 실시간 던전 해보기","Play a live dungeon with %d people","%d人のリアルタイムダンジョンを遊ぶ"],
@@ -3875,6 +3883,7 @@ const I18N_ROWS=[
   ["%d초간 젤리가 느려져요","Jellies slow down for %ds","%d秒間ゼリーがゆっくりになります"],
   ["%d초간 젤리가 자동으로 빨려와 터져요!","For %ds jellies get pulled in and pop!","%d秒間ゼリーが吸い寄せられて弾けます！"],
   ["%d판 하기","Play %d rounds","%d回プレイする"],
+  ["(나)","(me)","（わたし）"],
   ["(이 기기)","(this device)","（この端末）"],
   ["(잠시만요)","(one moment)","（少しお待ちください）"],
   ["2배 점수","Double Score","スコア2倍"],
@@ -3945,6 +3954,8 @@ const I18N_ROWS=[
   ["구매","Buy","購入"],
   ["귀걸이","Earrings","イヤリング"],
   ["귀마개","Earmuffs","耳あて"],
+  ["규칙은 3초면 배웁니다.","One tap and you can't put it down!","ワンタップでやめられない！"],
+  ["그런데 🔥핵불닭은 아직 못 깼죠?","Just 3 minutes — beat your best score 🔥","たった3分 — 自己ベストに挑戦 🔥"],
   ["그만두기 🏠","Quit 🏠","やめる 🏠"],
   ["기기 저장","On device","端末に保存"],
   ["기다리는 사람과 자동으로 이어줘요. 20초 안에 못 만나면 방을 만들어 둡니다.","We'll pair you with someone waiting. If nobody shows up in 20 seconds, we'll open a room for you.","待っている人と自動でつなぎます。20秒で会えなければルームを作っておきます。"],
@@ -3976,6 +3987,7 @@ const I18N_ROWS=[
   ["남은 임무 <b>%d개</b> · 세 개를 다 하면 <b>+%d🪙</b> 보너스","<b>%d</b> missions left · finish all three for a <b>+%d🪙</b> bonus","のこり<b>%d</b>件 · 3つ全部やると<b>+%d🪙</b>ボーナス"],
   ["남자아이 🧒","Boy 🧒","おとこのこ 🧒"],
   ["남자아이 🧒 🔒","Boy 🧒 🔒","おとこのこ 🧒 🔒"],
+  ["내 최고","My best","自己ベスト"],
   ["내가 만든 악세서리","My accessories","作ったアクセサリー"],
   ["내가 먼저 죽으면 <b>아직 하는 사람의 화면</b>을 그대로 볼 수 있어요. 여러 명이 남았으면 이름을 눌러 골라 봐요.","If you go out first you can watch <b>a living player's screen</b> live. With several left, tap a name to choose.","先に負けても<b>まだ生きている人の画面</b>をそのまま見られます。何人か残っていれば名前を押して選べます。"],
   ["내가 한 판을 그대로 친구에게 보내요. 같은 젤리로 점수를 겨뤄요.","Send your exact round to a friend. Same jellies, score against score.","自分がプレイした板をそのまま友だちに送ります。同じゼリーでスコアを競います。"],
@@ -3999,6 +4011,7 @@ const I18N_ROWS=[
   ["대전에서 %d점 차 안으로 지기","Lose a match by under %d points","対戦で%d点差以内で負ける"],
   ["대전에서 열 번 이기기","Win ten matches","対戦で10回勝つ"],
   ["대전에서 한 번 이기기","Win a match","対戦で1回勝つ"],
+  ["더 버틸 수 있어요?","Can you last longer?","もっと耐えられる？"],
   ["던지기 게임","Throw Game","投げるゲーム"],
   ["던질 수 있어요!","Ready to throw!","投げられます！"],
   ["도 만들 수 있어요 ✨","can be made too ✨","も作れます ✨"],
@@ -4054,7 +4067,9 @@ const I18N_ROWS=[
   ["방 코드 입력","Enter room code","ルームコードを入力"],
   ["방어","Defend","ぼうぎょ"],
   ["방에 들어왔어요","Joined the room","部屋に入りました"],
+  ["배","×","倍"],
   ["배경음악","Music","BGM"],
+  ["버텼어요","survived","耐えました"],
   ["별 핀 ⭐","Star pin ⭐","スターピン ⭐"],
   ["보내기","Send","送る"],
   ["보너스","bonus","ボーナス"],
@@ -4067,6 +4082,7 @@ const I18N_ROWS=[
   ["복수해줄 사람? 😤","Anyone want revenge for me? 😤","だれかリベンジして 😤"],
   ["볼 하트 💗","Cheek heart 💗","ほおのハート 💗"],
   ["부자","Rich","お金持ち"],
+  ["분","m","分"],
   ["비니","Beanie","ニット帽"],
   ["비밀번호 (6자 이상)","Password (6+ characters)","パスワード（6文字以上）"],
   ["비밀번호를 여러 번 틀려도","Even if you get the password wrong many times,","パスワードを何度まちがえても"],
@@ -4087,6 +4103,7 @@ const I18N_ROWS=[
   ["선택","Chosen","せんたく"],
   ["설정","Settings","設定"],
   ["세 개를 다 하면","Finish all three for a","3つ全部やると"],
+  ["속도","Speed","スピード"],
   ["순한맛","Mild","あまくち"],
   ["쉰 판 하기","Play fifty rounds","50回プレイする"],
   ["쉰 판째","Fifty rounds in","50回目"],
@@ -4095,6 +4112,7 @@ const I18N_ROWS=[
   ["스포츠머리 🏃","Crew cut 🏃","スポーツ刈り 🏃"],
   ["스피드업 — %d초간 젤리가 %d배 빨라져요 (🍡 %d번으로 충전)","Speed up — for %ds jellies move %d× faster (charge with 🍡 ×%d)","スピードアップ — %d秒間ゼリーが%d倍速く（🍡%d回でチャージ）"],
   ["슬로우","Slow","スロー"],
+  ["신기록! 🎉","New record! 🎉","新記録！🎉"],
   ["실드 — %d초간 놓쳐도, 폭탄을 터뜨려도 목숨이 안 깎여요 (게이지 %d)","Shield — for %ds, misses and bombs cost no life (gauge %d)","シールド — %d秒間、落としても爆弾を割ってもライフが減りません（ゲージ%d）"],
   ["실시간 던전","Live Dungeon","リアルタイムダンジョン"],
   ["실시간 던전·던지기 게임에서 써요. <b>젤리를 터트릴 때마다 콤보만큼 게이지가 차고</b>(x1~x9), 게이지를 써서 상대를 방해해요. 🛡️✨는 상대에게 보내는 게 아니라 <b>나를 지키는</b> 것이에요.","Used in the live dungeon and the throw game. <b>Every pop fills the gauge by your combo</b> (x1–x9), and you spend the gauge to disrupt the others. 🛡️✨ aren't sent at anyone — they <b>protect you</b>.","リアルタイムダンジョンと投げゲームで使います。<b>ゼリーを弾くたびにコンボの分だけゲージがたまり</b>（x1〜x9）、ゲージを使って相手を妨害します。🛡️✨は相手に送るのではなく<b>自分を守る</b>ものです。"],
@@ -4107,6 +4125,7 @@ const I18N_ROWS=[
   ["아직 기록이 없어요 — 오늘 첫 판을 해보세요!","No records yet — play today's first round!","まだ記録がありません — 今日の1回目をどうぞ！"],
   ["아직 없어요. 만들면 여기에 모여요 🎀","Nothing yet. What you make gathers here 🎀","まだありません。作るとここに集まります 🎀"],
   ["아직 친구가 없어요 — 아래 «만난 사람»에서 더해 보세요!","No friends yet — add someone from «People you met» below!","まだ友だちがいません — 下の«会った人»から追加してみましょう！"],
+  ["아직 한 번도 안 버텨봤어요 — 몇 초 갈까요?","Never tried it — how long can you last?","まだ挑戦していません — 何秒もつ？"],
   ["아프로 🦱","Afro 🦱","アフロ 🦱"],
   ["아홉 종 모두 입어 보기","Try all nine characters","9種すべて着てみる"],
   ["악세서리 도감 완성","Accessory dex complete","アクセ図鑑コンプリート"],
@@ -4190,6 +4209,7 @@ const I18N_ROWS=[
   ["점 🖤","Beauty mark 🖤","ほくろ 🖤"],
   ["점수","Score","スコア"],
   ["점수가 쌓이면 Lv이 올라가고 젤리가 더 빨라져요.","As your score grows the level rises and the jellies get faster.","スコアがたまるとLvが上がり、ゼリーが速くなります。"],
+  ["점수가 아니라 버틴 시간으로 줄을 세워요.","Ranked by how long you lasted, not by score.","スコアではなく耐えた時間で並びます。"],
   ["점심시간(%d~%d시)에 한 판 하기","Play a round at lunchtime (%d–%d)","お昼休み（%d〜%d時）に1回プレイ"],
   ["정밀","Precise","精密"],
   ["정화 — 걸린 방해를 지우고 %d초간 유령 젤리가 보여요 (게이지 %d)","Cleanse — clears effects on you and reveals ghost jellies for %ds (gauge %d)","浄化 — かかった妨害を消し、%d秒間ゴーストゼリーが見えます（ゲージ%d）"],
@@ -4207,6 +4227,7 @@ const I18N_ROWS=[
   ["젤리 터트리기","Popping jellies","ゼリーを弾く"],
   ["젤리곰","Gummy bear","グミベア"],
   ["젤리슈팅","Jelly Shooting","ゼリーシューティング"],
+  ["젤리토","Jellito","ジェリト"],
   ["조금만 더! 다시 도전해봐요 ✨","So close! Give it another go ✨","もう少し！もう一回どうぞ ✨"],
   ["주근깨 ✨","Freckles ✨","そばかす ✨"],
   ["주소가 너무 길어요","The address is too long","アドレスが長すぎます"],
@@ -4399,6 +4420,9 @@ const I18N_ROWS=[
   ["🔗 링크 복사해서 보내기","🔗 Copy the link and send it","🔗 リンクをコピーして送る"],
   ["🔗 주소 복사","🔗 Copy link","🔗 リンクをコピー"],
   ["🔗 초대 링크를 복사했어요","🔗 Invite link copied","🔗 しょうたいリンクをコピーしました"],
+  ["🔥 버티기","🔥 Survival","🔥 サバイバル"],
+  ["🔥 핵불닭","🔥 Nuclear","🔥 激辛"],
+  ["🔥 핵불닭 버티기","🔥 Nuclear survival","🔥 激辛サバイバル"],
   ["🔨 창작","🔨 Make","🔨 クラフト"],
   ["🔴 대기실","🔴 Waiting room","🔴 ロビー"],
   ["🗑️ 최고기록만 초기화","🗑️ Clear best scores only","🗑️ ハイスコアだけ消す"],
@@ -4509,7 +4533,7 @@ function setLang(id){
   i18nWatch(); buildLangUI(); applyGameName();
   // 코드가 만들어 넣는 화면들은 다시 그린다
   try{ buildTolUI(); }catch(e){}
-  try{ syncLevelBadge(); miBadge(); dbBadge(); achBadge(); frBadge(); }catch(e){}
+  try{ syncLevelBadge(); miBadge(); dbBadge(); achBadge(); frBadge(); syncFireBar(); }catch(e){}
   toast(id==='en'?'🌐 Language: English':'🌐 言語: 日本語');
 }
 function buildLangUI(){ const o=$('langOpts'); if(!o) return; o.innerHTML='';
@@ -4922,6 +4946,23 @@ function addXp(n){
   return up;
 }
 function syncLevelBadge(){ const el=$('startLevel'); if(el) el.textContent=myTitle(); }
+
+// ================= 🔥 핵불닭 버티기 =================
+// 이 게임은 규칙이 세 줄인데 핵불닭은 목숨 2개에 낙하속도 3.2배다. 그 간극이 이 게임의
+// 가장 센 물건인데, 난이도가 준비 화면 안에 숨어 있어서 아무도 존재를 몰랐다.
+// '점수'는 감이 안 오지만 '1분 12초'는 누구나 안다 — 그래서 버틴 시간으로 잰다.
+const FIRE='fire';                       // MODES 의 핵불닭 id
+function fireBest(){ return loadNum('jelly_fire'); }        // 초 단위 정수
+function fireSave(sec){ if(sec>fireBest()){ try{ localStorage.setItem('jelly_fire',sec); }catch(e){} cloudTouch(); return true; } return false; }
+// 47 → '47초', 72 → '1분 12초'. 초는 한 자리도 버리지 않는다(1초 차이로 자랑이 갈린다).
+function fireTime(sec){ sec=Math.max(0,Math.round(sec));
+  return sec<60 ? (sec+t('초')) : (Math.floor(sec/60)+t('분')+' '+(sec%60)+t('초')); }
+function syncFireBar(){ const b=$('fireBtn'); if(!b) return;
+  const best=fireBest(), m=MODES[FIRE];
+  b.innerHTML='🔥 '+escapeHtml(t(m.name))+' · '+escapeHtml(t('목숨'))+' '+m.lives+escapeHtml(t('개'))
+    +' · '+escapeHtml(t('속도'))+' '+m.vy0.toFixed(1)+escapeHtml(t('배'))+'<br>'
+    +(best? (escapeHtml(t('내 최고'))+' <b>'+escapeHtml(fireTime(best))+'</b> — '+escapeHtml(t('더 버틸 수 있어요?')))
+          : escapeHtml(t('아직 한 번도 안 버텨봤어요 — 몇 초 갈까요?'))); }
 
 const DAILY_FIRST=40, DAILY_STREAK=100;   // 첫날 / 연속 출석 보너스
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
@@ -5640,6 +5681,10 @@ function gameOver(){
   hexT={zig:0,fog:0,rush:0}; hexSeen={}; shieldT=0; revealT=0; bolt=0; throwGauge=0;
   const wasEndless=endless, kills=bossKills; endless=false; boss=null; bshots=[];
   const wasDaily=daily; daily=false;
+  // 🔥 버틴 시간 — 섞이면 비교가 안 되니 '혼자 하기 · 핵불닭'만 잰다.
+  const fireSec=(!wasNet&&!wasAi&&!wasEndless&&!wasDaily&&mode===FIRE)?Math.round(elapsed/60):0;
+  const fireNew=fireSec>0 && fireSave(fireSec);
+  if(fireSec>0) submitScore('fire_time',fireSec);
   $('netBar').classList.add('hide'); $('throwWrap').classList.add('hide');
   if(net.watchT){clearInterval(net.watchT);net.watchT=null;}
   coins+=runCoins; saveEconomy();
@@ -5689,7 +5734,9 @@ function gameOver(){
     : wasEndless
       ? (t('♾ 끝없는 모드')+' · Lv.'+level+' '+t('도달')+' · '+t('보스')+' '+kills+t('마리 격파')
          +(kills>0?' 🎉':'')+' ('+modeTag+')')
-      : (msg+' (Lv.'+level+' · '+modeTag+')');
+      : fireSec>0
+        ? ('🔥 '+fireTime(fireSec)+' '+t('버텼어요')+(fireNew?(' · '+t('신기록! 🎉')):'')+' (Lv.'+level+' · '+modeTag+')')
+        : (msg+' (Lv.'+level+' · '+modeTag+')');
   // 🥲 아 진짜 아까웠는데 — 대전에서 100점 차 안으로 졌을 때
   if(wasNet&&!net.mpWin){ try{ let best=0; Object.keys(net.peers||{}).forEach(k=>{
       const p=net.peers[k]; if(p&&p.score>best) best=p.score; });
@@ -5934,9 +5981,15 @@ const LB_GAMES={
     tabs:()=>[['dungeon','⚔️ 던전 점수']]},
   endless:{label:'♾️ 끝없는 모드', tabLabel:'♾️ 보스 러시', hint:'보스를 잡을수록 점수가 크게 붙어요.',
     tabs:()=>[['endless','♾️ 끝없는 모드']]},
+  // 점수가 아니라 '버틴 시간'으로 세우는 판. 점수는 감이 안 오지만 초는 누구나 안다.
+  fire:{label:'🔥 버티기', tabLabel:'🔥 핵불닭', hint:'점수가 아니라 버틴 시간으로 줄을 세워요.',
+    tabs:()=>[['fire_time','🔥 핵불닭 버티기']]},
 };
 const LB_NAME={throw_thrower:'🎯 던지는 사람',throw_popper:'💥 터트리는 사람',
-  dungeon:'⚔️ 실시간 던전',endless:'♾️ 끝없는 모드'};
+  dungeon:'⚔️ 실시간 던전',endless:'♾️ 끝없는 모드',fire_time:'🔥 핵불닭 버티기'};
+// 이 판만 값의 뜻이 다르다 — 점수가 아니라 초다. 표시도 달라야 한다.
+function isTimeBoard(b){ return b==='fire_time'; }
+function lbValue(b,v){ return isTimeBoard(b) ? ('⏱ '+fireTime(v)) : ('⭐ '+v); }
 function boardName(b){ return MODES[b] ? (MODES[b].emoji+t(MODES[b].name)) : t(LB_NAME[b]||'랭킹'); }
 function boardGame(b){ return MODES[b]?'solo':(b==='endless'?'endless':(b==='dungeon'?'dungeon':'throw')); }
 let lbGame='solo', lbMode=mode;
@@ -6006,7 +6059,7 @@ async function loadLeaderboard(){
   rows.forEach((r,i)=>{ const me=r.name===nick, av=rowAva(r.name,r.ch);
     if(!av) noFace++;
     h+='<div class="rrow'+(me?' me':'')+'"><span>'+(['🥇','🥈','🥉'][i]||((i+1)+'.'))+' '+
-       av+escapeHtml(r.name)+'</span><span>⭐ '+r.score+'</span></div>'; });
+       av+escapeHtml(r.name)+'</span><span>'+escapeHtml(lbValue(want,r.score))+'</span></div>'; });
   // 왜 어떤 사람은 얼굴이 없는지 알려 준다. 모르면 '고장'으로 보인다.
   // 여기는 '게임을 하는 사람'이 보는 자리다. 손봐야 할 것(SQL·서버 설정)은 절대 쓰지 않는다 —
   // 예전에 여기에 alter table 한 줄이 그대로 떠서 플레이어가 놀랐다. 그건 콘솔로 보낸다.
@@ -6033,8 +6086,8 @@ async function renderOverOnline(m){
     let h='';
     rows.slice(0,5).forEach((r,i)=>{ const me=(i===mine);
       h+='<div class="rrow'+(me?' me':'')+'"><span>'+(['🥇','🥈','🥉'][i]||((i+1)+'.'))+' '+
-         rowAva(r.name,r.ch)+escapeHtml(r.name)+(me?' (나)':'')+'</span><span>⭐ '+r.score+'</span></div>'; });
-    if(mine>=5) h+='<div class="rrow me"><span>'+(mine+1)+'. '+avaTag()+escapeHtml(nick)+' (나)</span><span>⭐ '+rows[mine].score+'</span></div>';
+         rowAva(r.name,r.ch)+escapeHtml(r.name)+(me?' '+t('(나)'):'')+'</span><span>'+escapeHtml(lbValue(m,r.score))+'</span></div>'; });
+    if(mine>=5) h+='<div class="rrow me"><span>'+(mine+1)+'. '+avaTag()+escapeHtml(nick)+' '+t('(나)')+'</span><span>'+escapeHtml(lbValue(m,rows[mine].score))+'</span></div>';
     h+='<div class="tag2" style="margin-top:6px;">'+
        (mine>=0?('내 순위 '+(mine+1)+'위 / '+rows.length+'명'):(rows.length+'명 참가 중'))+'</div>';
     box.innerHTML=h;
@@ -8633,7 +8686,7 @@ function openStart(){
   if(throwerAlive){ throwerAlive=false; if(mirrorRAF){cancelAnimationFrame(mirrorRAF);mirrorRAF=null;} }
   $('throwerView').classList.add('hide'); canvas.style.display='';
   restoreMode();
-  showScreen('startScreen'); $('battleResult').classList.add('hide'); const b=bestScore(),el=$('startBest'); if(b>0){el.textContent='🏆 최고기록 '+b+'점';el.classList.remove('hide');}else el.classList.add('hide'); $('startCoins').textContent='🪙 '+coins; checkDaily(); syncLevelBadge(); miBadge(); dbBadge(); achBadge(); frBadge(); loopHero(); startAttract(); }
+  showScreen('startScreen'); $('battleResult').classList.add('hide'); const b=bestScore(),el=$('startBest'); if(b>0){el.textContent='🏆 최고기록 '+b+'점';el.classList.remove('hide');}else el.classList.add('hide'); $('startCoins').textContent='🪙 '+coins; checkDaily(); syncLevelBadge(); miBadge(); dbBadge(); achBadge(); frBadge(); syncFireBar(); loopHero(); startAttract(); }
 function openSetup(){ chatLeave(); showScreen('setupScreen'); buildSetupUI(); loopPreview(); }
 $('playBtn').onclick=()=>{ensureAudio();openSetup();};
 $('shopBtn').onclick=()=>openShop();
@@ -8780,6 +8833,10 @@ $('randomBtn').onclick=()=>{
   const locked=KINDS.length-mine.length;
   if(locked) toast('🎲 가진 캐릭터 '+mine.length+'종에서 뽑았어요 (잠긴 '+locked+'종은 제외)');
 };
+// 🔥 도발 줄을 누르면 준비 화면을 거치지 않고 바로 핵불닭으로 들어간다.
+// 한 번 더 눌러야 하면 그 사이에 마음이 식는다.
+$('fireBtn').onclick=()=>{ mode=userMode=FIRE; try{ localStorage.setItem('jelly_mode',FIRE); }catch(e){}
+  ensureAudio(); startGame(); };
 $('againBtn').onclick=playAgain;
 $('editBtn').onclick=()=>openSetup();
 
