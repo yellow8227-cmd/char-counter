@@ -122,7 +122,6 @@ const VID_SET = [
 ];
 for (const v of VID_SET) {
   cp(`press/video/jellimo-promo-${v.lang}.mp4`,          `${v.stage}/유튜브에-올릴것.mp4`);
-  cp(`press/video/jellimo-promo-${v.lang}-30s.mp4`,      `${v.stage}/스토리·릴스용-30초.mp4`);
   cp(`press/video/jellimo-play-${v.lang}.gif`,           `${v.stage}/움직이는그림.gif`);
   cp(`press/video/jellimo-promo-${v.lang}-web.webm`,     `${v.stage}/웹페이지에-박을것.webm`);
   for (const f of fs.readdirSync(P(`press/video/frames/${v.lang}`)).filter(f => f.endsWith('.png')).sort())
@@ -131,7 +130,6 @@ for (const v of VID_SET) {
 ────────────────────────────────
 유튜브에-올릴것.mp4     전체 영상. 유튜브에 올리고, 나온 주소를 itch 설명란에 한 줄로 붙입니다.
                         (itch 는 영상 파일 업로드를 안 받고 유튜브 링크만 받습니다)
-스토리·릴스용-30초.mp4  886x1920 세로. 인스타 스토리·릴스, 애플 앱미리보기에 그대로.
 움직이는그림.gif        7초 반복. itch 설명 맨 위, 트위터, 디스코드에.
 웹페이지에-박을것.webm   소개 페이지 안에 들어가 있는 판 (용량만 줄인 것).
 낱장/                   영상에서 뽑은 정지 그림 — 썸네일이나 게시물에 쓸 수 있습니다.
@@ -162,6 +160,7 @@ if (!b.list.includes('게임파일/jellimo-itch.zip')) { console.error('❌ itch
 if (b.list.some(f => f.startsWith('게시물/'))) { console.error('❌ 인스타 자료가 itch 집에 섞임'); bad++; }
 for (const z of vids) {
   if (!z.list.includes('유튜브에-올릴것.mp4')) { console.error('❌ 영상 집: mp4 빠짐 — ' + z.out); bad++; }
+  if (z.list.some(f => /30초|886/.test(f))) { console.error('❌ 폐기한 30초판이 들어갔습니다 — ' + z.out); bad++; }
   if (!z.list.includes('움직이는그림.gif')) { console.error('❌ 영상 집: gif 빠짐 — ' + z.out); bad++; }
 }
 fs.rmSync(TMP, { recursive: true, force: true });
