@@ -291,7 +291,7 @@ const POSTS = [
         [88, 33, 13, -18, J.green], [50, 11, 16, 6, POP.gold], [6, 52, 13, -8, J.blue],
         [95, 56, 12, 16, J.grape]]) + `
     <div class="in">
-      <div class="eyebrow">🍡 젤리토 · JELLY SHOOTING</div>
+      <div class="eyebrow">🍡 젤리토 · JELLITO</div>
       <h1>온 가족이<br>빠져드는<br><em>재미</em></h1>
       <div class="band">3분이면 한 판 · 설치도 가입도 없이</div>
       <div class="cta">지금 바로 시작 ▶</div>
