@@ -985,7 +985,7 @@
     <div class="logo" id="startLogo"></div>
     <div class="logosub" id="startLogoSub"></div>
     <div class="tag">터질 때마다 도파민 팡팡 💥</div>
-    <div class="tag2">규칙은 3초면 배웁니다.<br>그런데 🔥핵불닭은 아직 못 깼죠?</div>
+    <div class="tag2">규칙은 3초면 배웁니다.<br>그런데 귀엽다고 얕보지 마세요 😏</div>
     <div class="best hide" id="startBest"></div>
     <!-- 🔥 핵불닭 도발. 이 게임의 가장 센 자산인데 설정 안에 숨어 있어서 아무도 몰랐다. -->
     <button class="firebar" id="fireBtn"></button>
@@ -3886,6 +3886,7 @@ const I18N_ROWS=[
   ["(나)","(me)","（わたし）"],
   ["(이 기기)","(this device)","（この端末）"],
   ["(잠시만요)","(one moment)","（少しお待ちください）"],
+  ["10초도 못 버틸걸요? 😏","Bet you can't last 10 seconds 😏","10秒ももたないでしょ？😏"],
   ["2배 점수","Double Score","スコア2倍"],
   ["5레벨마다 거대 보스","A giant boss every 5 levels","5レベルごとに巨大ボス"],
   ["<b>%d레벨마다 거대 젤리(보스)</b>가 내려와요. 아무 젤리나 터트리면 그 젤리가 <b>보스에게 날아가 %d</b>씩 깎고(황금 젤리는 %d), 보스를 직접 눌러도 %d씩 깎여요. 보스는 폭탄을 뱉고, 바닥까지 내려오면 <b>목숨이 하나</b> 깎여요. 잡으면 큰 점수와 코인, <b>하트 한 칸</b>을 돌려받아요.","<b>Every %d levels a giant jelly (boss)</b> comes down. Pop any jelly and it <b>flies at the boss for %d</b> damage (%d for a golden one); tapping the boss directly also does %d. The boss spits bombs, and if it reaches the bottom you <b>lose a life</b>. Beat it for a big score, coins and <b>one heart back</b>.","<b>%dレベルごとに巨大ゼリー（ボス）</b>が降りてきます。どのゼリーを弾いてもそれが<b>ボスに飛んで%d</b>ずつ削り（ゴールデンゼリーは%d）、ボスを直接押しても%dずつ削れます。ボスは爆弾を吐き、下まで降りると<b>ライフが1つ</b>減ります。倒すと大きなスコアとコイン、<b>ハート1つ</b>が戻ります。"],
@@ -3942,6 +3943,7 @@ const I18N_ROWS=[
   ["거대 젤리 한 마리 잡기","Beat a giant jelly","巨大ゼリーを1体倒す"],
   ["게임 끝! 🍭","Game over! 🍭","ゲーム終了！ 🍭"],
   ["게임이 끝난 결과 화면","the result screen after a game","ゲーム終了の結果画面"],
+  ["겨우 여기까지요? 다시 😏","That's it? Again 😏","それだけ？もう一回 😏"],
   ["계속하기 ▶","Resume ▶","つづける ▶"],
   ["계정 이름","account name","アカウント名"],
   ["계정은 잠기지 않아요.","your account is never locked.","アカウントはロックされません。"],
@@ -3954,8 +3956,8 @@ const I18N_ROWS=[
   ["구매","Buy","購入"],
   ["귀걸이","Earrings","イヤリング"],
   ["귀마개","Earmuffs","耳あて"],
+  ["그런데 귀엽다고 얕보지 마세요 😏","Just 3 minutes — beat your best score 🔥","たった3分 — 自己ベストに挑戦 🔥"],
   ["규칙은 3초면 배웁니다.","One tap and you can't put it down!","ワンタップでやめられない！"],
-  ["그런데 🔥핵불닭은 아직 못 깼죠?","Just 3 minutes — beat your best score 🔥","たった3分 — 自己ベストに挑戦 🔥"],
   ["그만두기 🏠","Quit 🏠","やめる 🏠"],
   ["기기 저장","On device","端末に保存"],
   ["기다리는 사람과 자동으로 이어줘요. 20초 안에 못 만나면 방을 만들어 둡니다.","We'll pair you with someone waiting. If nobody shows up in 20 seconds, we'll open a room for you.","待っている人と自動でつなぎます。20秒で会えなければルームを作っておきます。"],
@@ -4090,6 +4092,7 @@ const I18N_ROWS=[
   ["빠르게","Fast","はやい"],
   ["뾰족 폭탄은 피하기","Dodge the spiky bombs","とげとげ爆弾はさける"],
   ["뿔 😈","Horns 😈","つの 😈"],
+  ["사람 맞아요?! 🏆","Are you even human?! 🏆","人間ですか？！🏆"],
   ["상대가 나갔어요","They left","相手が出ていきました"],
   ["새로고침 🔄","Refresh 🔄","更新 🔄"],
   ["새벽 %d~%d시에 한 판 하기","Play a round between %d and %d AM","深夜%d〜%d時に1回プレイ"],
@@ -4154,6 +4157,7 @@ const I18N_ROWS=[
   ["연달아 터트리면 최대 <b>x%d</b>까지 올라가요. 놓치거나 폭탄을 터뜨리면 x%d로 돌아가요.","Pop them back to back and it climbs to <b>x%d</b>. A miss or a bomb drops you back to x%d.","続けて弾くと最大<b>x%d</b>まで上がります。逃したり爆弾を割るとx%dに戻ります。"],
   ["열 번 승리","Ten wins","10勝"],
   ["예: 별하늘 리본","e.g. Starry Ribbon","例: ほしぞらリボン"],
+  ["오, 이제 좀 하네요 👀","Oh, not bad now 👀","お、やるじゃないですか 👀"],
   ["오늘","Today","今日"],
   ["오늘 완료 ✅ ⭐","Done today ✅ ⭐","今日クリア ✅ ⭐"],
   ["오늘 임무를 다 했어요! 내일 새 임무가 나와요 🎉","All done for today! New missions tomorrow 🎉","今日の任務は全部おわり！明日また新しい任務が出ます 🎉"],
@@ -4175,6 +4179,7 @@ const I18N_ROWS=[
   ["으로 고정돼요 — 모두 같은 조건이어야 비교가 되니까요.","— everyone plays the same conditions, so scores compare.","に固定されます — 同じ条件でこそ比べられるからです。"],
   ["으로만 써요 — 광고·알림 안 보내고, 다른 사람에게도 안 보여요.","— no ads, no notifications, and nobody else can see it.","としてだけ使います — 広告も通知も送らず、他の人にも見えません。"],
   ["으로만 써요 — 광고·알림 안 보내고, 다른 사람에게도 안 보여요.\n        안 넣어도 게임은 그대로 할 수 있어요.","is used only for that — no ads, no notifications, never shown to anyone else.\n        You can play just fine without it.","だけに使います — 広告や通知は送らず、他の人にも見せません。\n        入れなくてもゲームはそのまま遊べます。"],
+  ["음… 아직 멀었어요","Hmm… still a long way to go","うーん…まだまだですね"],
   ["이 기기에만 저장돼요 (서버에 연결되지 않았어요)","Saved on this device only (not connected to a server)","この端末にだけ保存されます（サーバーに接続していません）"],
   ["이 기기의 내 번호","My number on this device","この端末の私の番号"],
   ["이 돼요. 랭킹·채팅에 이 이름으로 올라가요.",". This name appears in rankings and chat.","になります。ランキングやチャットにこの名前で出ます。"],
@@ -4194,6 +4199,7 @@ const I18N_ROWS=[
   ["이미 친구예요","Already a friend","もう友だちです"],
   ["이에요 (빠지면 40코인부터 다시).","(miss a day and it starts again from 40).","です（休むと40コインからやり直し）。"],
   ["인싸","Social butterfly","人気者"],
+  ["인정합니다 🔥","Respect 🔥","認めます 🔥"],
   ["인터넷 없이 바로 붙기","No internet needed","ネットなしですぐ対戦"],
   ["인터넷 없이 혼자서 바로 붙어요. 이기면 실력에 따라 코인을 줍니다!","Play right away without internet. Win and earn coins based on the AI's skill!","ネットなしでもすぐ対戦。勝つと強さに応じてコインがもらえます！"],
   ["인터넷이 없어도 바로 붙을 수 있어요. 이기면 코인을 줘요. <b>처음이면 🍼 뉴비</b>부터 — 느긋하게 던지고 방해도 안 해요. 익숙해지면 🙂 보통 → 🤓 개똑똑 → 🏆 알파고로 올려보세요.","Play right away, even offline. Win and you earn coins. <b>New here? Start at 🍼 Rookie</b> — it throws slowly and never interferes. Once you're comfortable, move up: 🙂 Normal → 🤓 Brainy → 🏆 Grandmaster.","インターネットがなくてもすぐ対戦できます。勝つとコインがもらえます。<b>はじめてなら🍼ルーキー</b>から — ゆっくり投げて妨害もしません。慣れたら🙂ふつう → 🤓かしこい → 🏆最強へ上げてみてください。"],
@@ -4957,12 +4963,22 @@ function fireSave(sec){ if(sec>fireBest()){ try{ localStorage.setItem('jelly_fir
 // 47 → '47초', 72 → '1분 12초'. 초는 한 자리도 버리지 않는다(1초 차이로 자랑이 갈린다).
 function fireTime(sec){ sec=Math.max(0,Math.round(sec));
   return sec<60 ? (sec+t('초')) : (Math.floor(sec/60)+t('분')+' '+(sec%60)+t('초')); }
+// 도발은 기록에 따라 달라진다. 같은 말을 계속 하면 두 번째부터는 안 읽힌다.
+// 못할수록 약 올리고, 잘할수록 인정한다 — 그 낙차가 '한 번 더'를 만든다.
+const FIRE_TAUNT=[
+  [15,'겨우 여기까지요? 다시 😏'],
+  [30,'음… 아직 멀었어요'],
+  [60,'오, 이제 좀 하네요 👀'],
+  [90,'인정합니다 🔥'],
+  [1e9,'사람 맞아요?! 🏆'],
+];
+function fireTaunt(sec){ for(const [lim,msg] of FIRE_TAUNT) if(sec<lim) return t(msg); return ''; }
 function syncFireBar(){ const b=$('fireBtn'); if(!b) return;
   const best=fireBest(), m=MODES[FIRE];
   b.innerHTML='🔥 '+escapeHtml(t(m.name))+' · '+escapeHtml(t('목숨'))+' '+m.lives+escapeHtml(t('개'))
     +' · '+escapeHtml(t('속도'))+' '+m.vy0.toFixed(1)+escapeHtml(t('배'))+'<br>'
-    +(best? (escapeHtml(t('내 최고'))+' <b>'+escapeHtml(fireTime(best))+'</b> — '+escapeHtml(t('더 버틸 수 있어요?')))
-          : escapeHtml(t('아직 한 번도 안 버텨봤어요 — 몇 초 갈까요?'))); }
+    +(best? ('<b>'+escapeHtml(fireTime(best))+'</b> — '+escapeHtml(fireTaunt(best)))
+          : escapeHtml(t('10초도 못 버틸걸요? 😏'))); }
 
 const DAILY_FIRST=40, DAILY_STREAK=100;   // 첫날 / 연속 출석 보너스
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
@@ -5735,7 +5751,7 @@ function gameOver(){
       ? (t('♾ 끝없는 모드')+' · Lv.'+level+' '+t('도달')+' · '+t('보스')+' '+kills+t('마리 격파')
          +(kills>0?' 🎉':'')+' ('+modeTag+')')
       : fireSec>0
-        ? ('🔥 '+fireTime(fireSec)+' '+t('버텼어요')+(fireNew?(' · '+t('신기록! 🎉')):'')+' (Lv.'+level+' · '+modeTag+')')
+        ? ('🔥 '+fireTime(fireSec)+' '+t('버텼어요')+' — '+(fireNew?t('신기록! 🎉'):fireTaunt(fireSec))+' (Lv.'+level+' · '+modeTag+')')
         : (msg+' (Lv.'+level+' · '+modeTag+')');
   // 🥲 아 진짜 아까웠는데 — 대전에서 100점 차 안으로 졌을 때
   if(wasNet&&!net.mpWin){ try{ let best=0; Object.keys(net.peers||{}).forEach(k=>{
