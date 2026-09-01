@@ -11,3 +11,6 @@ jelly-shooting/press/upload/jellimo-itch-assets.zip
 # 영상 만들다 남는 찌꺼기
 jelly-shooting/press/video/__*
 jelly-shooting/press/video/[0-9a-f][0-9a-f][0-9a-f][0-9a-f]*.webm
+
+# 번역 검사 도구가 뱉는 보고서 (매번 바뀜)
+jelly-shooting/press/i18n-빠진문구.txt
