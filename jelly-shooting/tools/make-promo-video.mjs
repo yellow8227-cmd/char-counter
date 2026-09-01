@@ -324,6 +324,15 @@ const run = async () => {
   // 위로 밀려 사라졌다. 누른 뒤 곧바로 맨 위로 되돌려 얼굴을 크게 보여 준다.
   // 고르는 것도 둘만 — 피부색과 머리. 얼굴이 눈에 띄게 달라지는 두 가지다.
   const toFace = () => ev(`(()=>{ const s=$('profileScreen'); if(s) s.scrollTop=0; return 1; })()`);
+  // 칩을 누르면 게임이 프로필을 다시 그린다. 그 전에 스크롤을 되돌리면 다시 그릴 때 도로
+  // 내려간다 — 그래서 얼굴이 화면 밖으로 나가 있었다. 다시 그린 뒤에 되돌리고, 한 번 더 확인한다.
+  const pick = async (sel, nth) => {
+    await tap(sel, nth);
+    await sleep(320);          // 다시 그리기가 끝날 때까지
+    await toFace();
+    await sleep(120);
+    await toFace();            // 그래도 움직였으면 한 번 더
+  };
   await ev(`__wipeOn()`); await hold(340);
   await ev(`(()=>{ openProfile('startScreen'); buildProfile&&buildProfile(); return 1; })()`);
   await sleep(500);
@@ -332,14 +341,14 @@ const run = async () => {
   await cap(TX('내 캐릭터를 만들어요','Make your own jelly'),
             TX('아홉 종 · 색깔 · 얼굴 무늬 · 악세서리','9 characters · colours · face marks · accessories'));
   await hold(900);
-  await tap('#kindOpts button', 2);          // 토끼 — 이 게임의 기본이자 제일 귀여운 얼굴
-  await toFace(); await hold(1100);
-  await tap('#colorOpts button', 0);         // 분홍
-  await toFace(); await hold(1000);
-  await tap('#faceOpts button', 4);          // 볼 하트 💗
-  await toFace(); await hold(1000);
-  await tap('#accOpts button', 1);           // 리본 🎀
-  await toFace(); await hold(1300);
+  await pick('#kindOpts button', 2);         // 토끼 — 이 게임의 기본이자 제일 귀여운 얼굴
+  await hold(1100);
+  await pick('#colorOpts button', 0);        // 분홍
+  await hold(1000);
+  await pick('#faceOpts button', 4);         // 볼 하트 💗
+  await hold(1000);
+  await pick('#accOpts button', 1);          // 리본 🎀
+  await hold(1300);
   await capOff();
   await hold(400);
   mark('내 캐릭터');
