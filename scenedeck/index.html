@@ -15,9 +15,9 @@
                         주소로 직접 열어 확인할 수도 있다(…/icon-v8.svg)
      브라우저는 아이콘을 페이지와 따로, 아주 오래 캐시한다. 그래서 새로고침만으로는
      안 바뀌는 일이 흔하고, 파일명을 바꾸는 것이 가장 확실한 방법이다. -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='9' fill='%2337352f'/%3E%3Crect x='6' y='6.5' width='6.5' height='7' rx='1.2' fill='%23f6f5f2'/%3E%3Crect x='51.5' y='6.5' width='6.5' height='7' rx='1.2' fill='%23f6f5f2'/%3E%3Crect x='6' y='17.5' width='6.5' height='7' rx='1.2' fill='%23f6f5f2'/%3E%3Crect x='51.5' y='17.5' width='6.5' height='7' rx='1.2' fill='%23f6f5f2'/%3E%3Crect x='6' y='28.5' width='6.5' height='7' rx='1.2' fill='%23f6f5f2'/%3E%3Crect x='51.5' y='28.5' width='6.5' height='7' rx='1.2' fill='%23f6f5f2'/%3E%3Crect x='6' y='39.5' width='6.5' height='7' rx='1.2' fill='%23f6f5f2'/%3E%3Crect x='51.5' y='39.5' width='6.5' height='7' rx='1.2' fill='%23f6f5f2'/%3E%3Crect x='6' y='50.5' width='6.5' height='7' rx='1.2' fill='%23f6f5f2'/%3E%3Crect x='51.5' y='50.5' width='6.5' height='7' rx='1.2' fill='%23f6f5f2'/%3E%3Crect x='18.5' y='22' width='27' height='20' rx='1.5' fill='%23f6f5f2'/%3E%3C/svg%3E">
-<link rel="icon" type="image/svg+xml" sizes="any" href="icon-v8.svg?v=8">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v8.png?v=8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2064%2064%22%3E%3Crect%20width=%2264%22%20height=%2264%22%20rx=%2212%22%20fill=%22#37352f%22/%3E%3Crect%20x=%2220%22%20y=%229%22%20width=%2235%22%20height=%2235%22%20rx=%225%22%20fill=%22#f6f5f2%22%20opacity=%22.34%22/%3E%3Crect%20x=%2211%22%20y=%2220%22%20width=%2235%22%20height=%2235%22%20rx=%225%22%20fill=%22#f6f5f2%22/%3E%3Cg%20fill=%22#37352f%22%3E%3Crect%20x=%2214.5%22%20y=%2224.5%22%20width=%223.5%22%20height=%224.5%22%20rx=%221%22/%3E%3Crect%20x=%2214.5%22%20y=%2233%22%20width=%223.5%22%20height=%224.5%22%20rx=%221%22/%3E%3Crect%20x=%2214.5%22%20y=%2241.5%22%20width=%223.5%22%20height=%224.5%22%20rx=%221%22/%3E%3Crect%20x=%2239%22%20y=%2224.5%22%20width=%223.5%22%20height=%224.5%22%20rx=%221%22/%3E%3Crect%20x=%2239%22%20y=%2233%22%20width=%223.5%22%20height=%224.5%22%20rx=%221%22/%3E%3Crect%20x=%2239%22%20y=%2241.5%22%20width=%223.5%22%20height=%224.5%22%20rx=%221%22/%3E%3Crect%20x=%2221.5%22%20y=%2230%22%20width=%2214%22%20height=%2212%22%20rx=%221.6%22/%3E%3C/g%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" sizes="any" href="icon-v9.svg?v=9">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v9.png?v=9">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -152,9 +152,10 @@ header{
 .brand{display:flex;align-items:center;gap:12px;background:none;border:none;padding:0;
   cursor:pointer;text-align:left;color:inherit;flex:none;border-radius:0}
 .brand:hover .logo em{color:var(--acc2)}
-.brand .mark{width:30px;height:30px;border-radius:var(--rs);flex:none;display:grid;place-items:center;
-  font-family:var(--slate);font-size:12px;color:var(--ground);letter-spacing:.1em;font-weight:700;
-  background:var(--tx)}
+.brand .mark{width:33px;height:33px;flex:none;display:block;color:var(--tx);
+  transition:color .16s}
+.brand:hover .mark{color:var(--acc)}
+.mk{width:100%;height:100%;display:block}
 .logo{font-family:var(--disp);font-size:20px;white-space:nowrap;line-height:1;letter-spacing:.16em}
 .logo em{font-style:normal;color:var(--acc);transition:color .16s}
 .logo small{display:block;font-family:var(--sans);font-size:10px;letter-spacing:.02em;color:var(--tx3);
@@ -624,6 +625,8 @@ kbd{font-family:var(--mono);font-size:11px;background:transparent;border:1px sol
 
 footer{border-top:1px solid var(--line);background:var(--herobg);color:var(--tx);margin-top:84px}
 footer .logo{color:var(--tx)}
+.flogo{display:flex;align-items:center;gap:12px}
+.flogo .mark{width:33px;height:33px;flex:none;display:block;color:var(--herotx)}
 footer .logo small{color:var(--tx3)}
 .fin{max-width:1180px;margin:0 auto;padding:44px 30px 44px;display:flex;gap:48px;flex-wrap:wrap;align-items:flex-start}
 .fin .fl{flex:1;min-width:230px}
@@ -682,7 +685,7 @@ footer .logo small{color:var(--tx3)}
 <header>
   <div class="hbar">
     <button class="brand" data-go="home" title="홈으로">
-      <span class="mark">SD</span>
+      <span class="mark"><svg class="mk" viewBox="0 0 64 64" aria-hidden="true"><rect x="14" y="6" width="46" height="46" rx="7" fill="currentColor" opacity=".28"/><rect x="4" y="14" width="46" height="46" rx="7" fill="currentColor"/><g fill="var(--ground)"><rect x="9" y="20" width="4.5" height="5.5" rx="1.2"/><rect x="9" y="31" width="4.5" height="5.5" rx="1.2"/><rect x="9" y="42" width="4.5" height="5.5" rx="1.2"/><rect x="40.5" y="20" width="4.5" height="5.5" rx="1.2"/><rect x="40.5" y="31" width="4.5" height="5.5" rx="1.2"/><rect x="40.5" y="42" width="4.5" height="5.5" rx="1.2"/><rect x="17" y="27" width="20" height="16" rx="2"/></g></svg></span>
       <span class="logo">SCENE<em>DECK</em><small>시나리오 · 프롬프트 워크벤치</small></span>
     </button>
     <label class="ptwrap"><span>작품</span><input class="ptitle" id="ptitle" placeholder="제목을 적어주세요"></label>
@@ -1558,7 +1561,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
 <footer>
   <div class="fin">
     <div class="fl">
-      <span class="logo">SCENE<em>DECK</em><small>시나리오 · 프롬프트 워크벤치</small></span>
+      <span class="flogo"><span class="mark"><svg class="mk" viewBox="0 0 64 64" aria-hidden="true"><rect x="14" y="6" width="46" height="46" rx="7" fill="currentColor" opacity=".28"/><rect x="4" y="14" width="46" height="46" rx="7" fill="currentColor"/><g fill="var(--ground)"><rect x="9" y="20" width="4.5" height="5.5" rx="1.2"/><rect x="9" y="31" width="4.5" height="5.5" rx="1.2"/><rect x="9" y="42" width="4.5" height="5.5" rx="1.2"/><rect x="40.5" y="20" width="4.5" height="5.5" rx="1.2"/><rect x="40.5" y="31" width="4.5" height="5.5" rx="1.2"/><rect x="40.5" y="42" width="4.5" height="5.5" rx="1.2"/><rect x="17" y="27" width="20" height="16" rx="2"/></g></svg></span><span class="logo">SCENE<em>DECK</em><small>시나리오 · 프롬프트 워크벤치</small></span></span>
       <p>단일 HTML 파일로 동작하는 무설치 워크벤치입니다. 외부 라이브러리도, 서버도, 계정도 없습니다.</p>
     </div>
     <div class="fnav">

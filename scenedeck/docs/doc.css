@@ -48,8 +48,9 @@ img{max-width:100%;height:auto}
   gap:18px}
 .top a{color:var(--tx2);text-decoration:none;font-size:14px;font-weight:500}
 .top a:hover{color:var(--tx)}
-.top .home{font-family:var(--disp);font-size:16px;font-weight:700;letter-spacing:.15em;
-  color:var(--tx);margin-right:auto}
+.top .home{display:flex;align-items:center;gap:10px;font-family:var(--disp);font-size:16px;
+  font-weight:700;letter-spacing:.15em;color:var(--tx);margin-right:auto}
+.top .home .mk{width:25px;height:25px;flex:none;display:block;color:var(--tx)}
 .top .home span{display:none}
 .top .go{background:var(--acc);color:#fff;padding:8px 16px;border-radius:6px;font-weight:700}
 .top .go:hover{background:var(--acc-d);color:#fff}
