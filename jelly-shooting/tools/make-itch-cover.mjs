@@ -40,7 +40,10 @@ const jelly=async(color,shape='round',gold=false,face='happy')=>'data:image/png;
 })([${JSON.stringify(color)},${JSON.stringify(shape)},${gold},${JSON.stringify(face)}])`);
 
 const CAT   = await cutout({kind:'cat',color:'#ffb3c9',acc:'bow',accColor:'#ff5c8a',hair:'basic'},'happy');
-const GIRL  = await cutout({kind:'girl',color:'#5a4034',acc:'star',accColor:'#ffd166',hair:'afro',skin:'#cf8f5f',face:'freckle'},'wow');
+// 표지의 주인공은 토끼다 — 영상·썸네일과 같은 차림새로 맞춘다.
+// 예전에는 사람 캐릭터를 세웠는데, 홍보물의 얼굴은 하나로 통일하는 게 낫다.
+const BUNNY = await cutout({kind:'bunny',color:'#ffb3c9',acc:'bow',accColor:'#ff5c8a',face:'heart'},'wow');
+const BUNNY2= await cutout({kind:'bunny',color:'#ffb3c9',acc:'bow',accColor:'#ff5c8a',face:'heart'},'happy');
 const BEAR  = await cutout({kind:'bear',color:'#c9a27a',acc:'crown',accColor:'#ffce3d',hair:'basic'},'happy');
 const J = {}; for(const [k,c,s,g] of [['pink','#ff8fb8','round',false],['gold','#ffce3d','round',true],
   ['mint','#7fe0c0','bear',false],['blue','#8fc9ff','bean',false],['grape','#c792ff','round',false],
@@ -107,7 +110,7 @@ const B=await shot('cover-B.png','linear-gradient(150deg,#ff6b52 0%,#e2213f 46%,
    <img class="j" src="${J.grape}" style="left:44%;top:62%;width:10%;transform:rotate(-16deg)">
    <img class="j" src="${J.blue}"  style="left:88%;top:56%;width:11%;transform:rotate(14deg)">
    <img class="j" src="${J.lime}"  style="left:6%;bottom:4%;width:10%;transform:rotate(20deg)">
-   <img class="cut" src="${GIRL}" style="right:1%;width:33%;bottom:3%">
+   <img class="cut" src="${BUNNY}" style="right:1%;width:33%;bottom:3%">
    <div class="wrap z" style="align-items:flex-start;justify-content:flex-start;padding:20px 0 0 24px;text-align:left">
      <h1 style="font-size:74px">Can you<br>last<br><em>10 sec?</em></h1>
      <div class="band" style="margin-top:14px;font-size:18px">🍡 Jellimo · tap &amp; survive</div>
@@ -117,7 +120,7 @@ const B=await shot('cover-B.png','linear-gradient(150deg,#ff6b52 0%,#e2213f 46%,
 // C · 캐릭터를 크게 · 이름은 위에 (귀여움이 먼저 보인다)
 const C=await shot('cover-C.png','linear-gradient(150deg,#a98bff 0%,#7a4ff0 50%,#4f27c4 100%)',
   fx([[4,10,15,-14],[85,8,16,12],[-3,58,13,20],[90,54,12,-16]],jl)+
-  `<img class="cut" src="${GIRL}" style="left:2%;width:47%;bottom:-10%">
+  `<img class="cut" src="${BUNNY}" style="left:2%;width:47%;bottom:-10%">
    <img class="cut" src="${CAT}" style="right:0%;width:45%;bottom:-12%">
    <div class="wrap z" style="justify-content:flex-start;padding-top:22px">
      <h1 style="font-size:86px">Jelli<em>mo</em></h1>
