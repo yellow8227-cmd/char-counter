@@ -498,7 +498,20 @@ const run = async () => {
   const apage = await browser.newPage();
   await apage.goto(GAME);
   await apage.waitForFunction("typeof playSquish==='function'", null, { timeout: 20000 });
-  const audioDur = ((sfx.end + audioOffset) * SLOW) / 1000 + 1.5;   // 영상을 당긴 뒤의 길이
+  // 녹화된 영상의 길이를 먼저 잰다 (당기기 전, 초당 25장 기준)
+  const probe = f => new Promise(res => {
+    let out = ''; const q = spawn(FFMPEG, ['-hide_banner', '-i', f]);
+    q.stderr.on('data', d => out += d);
+    q.on('close', () => { const m = out.match(/Duration: (\d+):(\d+):([\d.]+)/);
+      res(m ? (+m[1] * 3600 + +m[2] * 60 + parseFloat(m[3])) : 0); });
+  });
+  const rawDur = await probe(silent);                 // 녹화 영상 길이(초)
+  const realMs = sfx.end + audioOffset;               // 실제로 흐른 시간(ms)
+  // 둘이 어긋난 만큼 소리 시각을 늘리거나 줄인다. 1 에서 멀수록 녹화가 헐거웠다는 뜻.
+  const rate = (rawDur > 1 && realMs > 1) ? (rawDur * 1000 / realMs) : 1;
+  const audioDur = rawDur * SLOW + 1.0;               // 영상을 당긴 뒤의 길이
+  console.log('   ⏲ 녹화 ' + rawDur.toFixed(1) + '초 · 실제 ' + (realMs / 1000).toFixed(1)
+    + '초 · 시간 눈금 ' + rate.toFixed(3) + (Math.abs(rate - 1) > 0.03 ? ' (어긋난 만큼 소리를 맞춥니다)' : ''));
   const abuf = await apage.evaluate(`(async ([log, states, dur, off, slow]) => {
     const SR=48000;
     const oc=new OfflineAudioContext(2, Math.ceil(SR*dur), SR);
@@ -559,7 +572,7 @@ const run = async () => {
     const u=new Uint8Array(ab); let s='';
     for(let i=0;i<u.length;i+=0x8000) s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));
     return {b64:btoa(s), dur:buf.duration, bgm:window.__bgmSeen||{}};
-  })([${JSON.stringify(sfx.log)}, ${JSON.stringify(sfx.st)}, ${audioDur}, ${audioOffset}, ${SLOW}])`);
+  })([${JSON.stringify(sfx.log)}, ${JSON.stringify(sfx.st)}, ${audioDur}, ${audioOffset}, ${SLOW * rate}])`);
   const audio = join(OUT, `__audio-${LANG}.webm`);
   writeFileSync(audio, Buffer.from(abuf.b64, 'base64'));
   console.log('   🎵 소리 ' + abuf.dur.toFixed(1) + '초 ('
@@ -587,6 +600,8 @@ const run = async () => {
                        '-filter_complex', `[0:v]setpts=${SLOW}*PTS,fps=${FPS}[v]`,
                        '-map', '[v]', '-map', '1:a:0',
                        '-c:v', 'libvpx', '-b:v', '2600k', '-cpu-used', '2',
+                       // 이제 소리를 영상보다 1초 길게 만드니, -shortest 가 자르는 쪽은 소리다.
+                       // (예전에는 소리가 짧아서 영상 끝 — 마지막 카드 — 이 통째로 잘렸다)
                        '-c:a', 'copy', '-shortest', dst], '2배로 당겨 합치기');
   if (!ok) { renameSync(silent, dst); console.log('⚠ 소리 없이 내보냅니다'); }
   else { rmSync(silent, { force: true }); rmSync(audio, { force: true }); }
