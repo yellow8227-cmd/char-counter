@@ -80,7 +80,7 @@
 
 | 칸 | 파일 |
 |---|---|
-| **Cover image** | **`press/upload/cover-A.png`** (630×500) ⚠️ `cover-1200x630.png` 은 링크 미리보기용이라 itch 에서 잘립니다 |
+| **Cover image** | **`press/upload/cover-itch.png`** (630×500) ⚠️ `cover-1200x630.png` 은 링크 미리보기용이라 itch 에서 잘립니다 |
 | **Screenshots** | `press/shots/appstore-1-play.png` … `appstore-6-home.png` (6장) |
 | **Trailer / video** | 유튜브에 `press/video/jelly-shooting-promo.webm` 을 먼저 올리고 **그 주소**를 넣습니다. itch 는 영상 파일 업로드를 안 받습니다 |
 
@@ -154,7 +154,7 @@ Supabase 는 anon 키로 넣는 것은 도메인을 안 가리므로 대개 그�
 
 ```
 press/upload/jellimo-itch.zip          ← ④ 에 올릴 파일
-press/upload/cover-A.png               ← ⑤ 커버 (630x500)
+press/upload/cover-itch.png            ← ⑤ 커버 (630x500 · 지금은 B안)
 press/upload/supabase-setup.sql        ← ⓪ 붙여넣고 Run 할 파일
 press/shots/appstore-1-play.png …-6    ← ⑤ 스크린샷 6장
 press/video/jelly-shooting-promo.webm  ← 유튜브에 올린 뒤 주소만

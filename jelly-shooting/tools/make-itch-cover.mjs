@@ -98,12 +98,21 @@ const A=await shot('cover-A.png','linear-gradient(150deg,#ff7ab4 0%,#f0459b 48%,
      <div class="band">3-min rounds · up to 4 players · no download</div></div>`);
 
 // B · 🔥 도발형 · 어두운 빨강 (흰 목록에서 제일 튄다)
+//    처음엔 얼굴이 너무 커서 턱이 잘리고 아래 3분의 1이 비었다. 얼굴을 줄여 다 보이게 하고,
+//    빈 자리에는 '떨어지는 젤리'를 세워 무슨 게임인지 그림만으로 알게 했다.
 const B=await shot('cover-B.png','linear-gradient(150deg,#ff6b52 0%,#e2213f 46%,#8f0f2c 100%)',
-  fx([[2,8,16,-12],[86,6,17,14],[-3,56,14,18],[89,52,13,-14]],jl)+
-  `<img class="cut" src="${GIRL}" style="right:-12%;width:50%">
-   <div class="wrap z" style="align-items:flex-start;padding-left:26px;text-align:left">
-     <h1 style="font-size:84px">Can you<br>last<br><em>10 sec?</em></h1>
-     <div class="band" style="margin-top:16px">🍡 Jellimo · tap &amp; survive</div></div>`);
+  `<img class="j" src="${J.pink}"  style="left:52%;top:-6%;width:13%;transform:rotate(-12deg)">
+   <img class="j" src="${J.gold}"  style="left:66%;top:14%;width:12%;transform:rotate(10deg)">
+   <img class="j" src="${J.mint}"  style="left:56%;top:40%;width:11%;transform:rotate(18deg)">
+   <img class="j" src="${J.grape}" style="left:44%;top:62%;width:10%;transform:rotate(-16deg)">
+   <img class="j" src="${J.blue}"  style="left:88%;top:56%;width:11%;transform:rotate(14deg)">
+   <img class="j" src="${J.lime}"  style="left:6%;bottom:4%;width:10%;transform:rotate(20deg)">
+   <img class="cut" src="${GIRL}" style="right:1%;width:33%;bottom:3%">
+   <div class="wrap z" style="align-items:flex-start;justify-content:flex-start;padding:20px 0 0 24px;text-align:left">
+     <h1 style="font-size:74px">Can you<br>last<br><em>10 sec?</em></h1>
+     <div class="band" style="margin-top:14px;font-size:18px">🍡 Jellimo · tap &amp; survive</div>
+     <div class="band" style="margin-top:8px;font-size:16px;background:rgba(255,214,64,.95);color:#5a1010">
+       🔥 Nuclear · 2 lives · 3.2× speed</div></div>`);
 
 // C · 캐릭터를 크게 · 이름은 위에 (귀여움이 먼저 보인다)
 const C=await shot('cover-C.png','linear-gradient(150deg,#a98bff 0%,#7a4ff0 50%,#4f27c4 100%)',
@@ -124,6 +133,12 @@ const D=await shot('cover-D.png','linear-gradient(150deg,#ffd36e 0%,#ff9f2e 48%,
    <div class="wrap z" style="justify-content:flex-start;padding-top:26px">
      <h1 style="font-size:92px">Jelli<em>mo</em></h1>
      <div class="band" style="margin-top:10px">tap · pop · survive</div></div>`);
+
+// 고른 안을 '이름이 안 바뀌는 파일'로 한 벌 더 둔다 — 문서·안내가 이 이름을 가리킨다.
+// 다른 안으로 바꾸려면 아래 PICK 만 고치면 된다.
+const PICK='cover-B.png';
+writeFileSync(join(OUT,'cover-itch.png'), readFileSync(join(OUT,PICK)));
+console.log('⭐ cover-itch.png ← '+PICK+' (실제로 올릴 표지)');
 
 // ── itch 목록에 끼워 보기 (흰 바탕에 나란히 붙는 그 상황이 진짜 시험이다)
 const gpg=await (await browser.newContext({viewport:{width:1240,height:1000},deviceScaleFactor:2})).newPage();
