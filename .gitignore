@@ -7,3 +7,7 @@ venv/
 jelly-shooting/press/upload/jellimo-insta-한국어.zip
 jelly-shooting/press/upload/jellimo-insta-English.zip
 jelly-shooting/press/upload/jellimo-itch-assets.zip
+
+# 영상 만들다 남는 찌꺼기
+jelly-shooting/press/video/__*
+jelly-shooting/press/video/[0-9a-f][0-9a-f][0-9a-f][0-9a-f]*.webm

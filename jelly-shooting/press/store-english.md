@@ -39,11 +39,11 @@ no install — the link opens the game itself. Up to 4 players share one board,
 and every jelly you pop sends junk flying at the others. Last one alive wins.
 
 ▸ FIVE WAYS TO PLAY
-· Solo — chase your best score, five difficulties from Mild to Nuclear
+· Solo — chase your best score, four difficulties: Mild · Normal · Spicy · 🔥Nuclear
 · Live Dungeon — up to 4 players, same board, last one standing
 · Throw Game — one player throws, the other pops, then you swap
 · Play the AI — four skill levels, works with no internet
-· Endless — no timer, a giant boss every 5 levels
+· Endless — no timer, and a giant boss comes down every 5 levels
 
 ▸ MAKE YOUR OWN JELLY
 9 characters, 12 hairstyles, 8 skin tones, 5 face marks, 12 accessories —
@@ -135,7 +135,11 @@ Words people actually type. Genre-only words ("puzzle", "arcade") bury you under
 | Screenshots ×6 | `press/shots/appstore-1-play.png` … `-6-home.png` |
 | Play feature graphic 1024×500 | `press/shots/play-feature-1024x500.png` |
 | Icon 1024 | `press/shots/icon-1024.png` |
-| Trailer | `press/video/jelly-shooting-promo.webm` — itch takes a **YouTube link**, not a file upload |
+| Trailer (EN) | `press/video/jellimo-promo-en.mp4` — upload to YouTube, then paste the link into the itch description |
+| Trailer (KO) | `press/video/jellimo-promo-ko.mp4` |
+| Story / 30s cut | `press/video/jellimo-promo-en-30s.mp4` (886×1920) |
+| Looping GIF | `press/video/jellimo-play-en.gif` — drop this at the top of the itch description |
+| Landing page | `press/index.html` (KO) · `press/en.html` (EN) — the `/en` switch is top-right |
 | Instagram set (EN) | `press/insta-en/` |
 
 ---

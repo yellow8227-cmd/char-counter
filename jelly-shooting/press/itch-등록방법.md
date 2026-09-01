@@ -88,7 +88,10 @@
 
 ## ⑥ 설명 · 태그
 
-- **Details(본문)**: `press/store-english.md` 1장의 전체 설명을 그대로 붙여넣기
+- **Details(본문)**: `press/itch-설명란.md` 를 보고 그 순서대로 채우세요.
+  맨 위에 움직이는 그림(`press/video/jellimo-play-en.gif`) → 짧은 도발 → 조작 3줄 →
+  모드 목록 → 유튜브 영상 순서입니다. 붙여넣을 글이 그 문서 안에 통째로 있습니다.
+  ⚠️ 한국어는 섞지 마세요 — 한국어 안내는 소개 페이지(`press/index.html`) 쪽으로 링크만
 - **Genre**: `Action`
 - **Tags (10개 다 쓰세요)**
 
@@ -157,7 +160,10 @@ press/upload/jellimo-itch.zip          ← ④ 에 올릴 파일
 press/upload/cover-itch.png            ← ⑤ 커버 (630x500 · 지금은 B안)
 press/upload/supabase-setup.sql        ← ⓪ 붙여넣고 Run 할 파일
 press/shots/appstore-1-play.png …-6    ← ⑤ 스크린샷 6장
-press/video/jelly-shooting-promo.webm  ← 유튜브에 올린 뒤 주소만
+press/video/jellimo-promo-en.mp4       ← 유튜브에 올린 뒤 주소만 (영어판)
+press/video/jellimo-play-en.gif        ← ⑥ 설명 맨 위에 넣을 움직이는 그림
+press/itch-설명란.md                    ← ⑥ 설명란 순서·붙여넣을 글
+press/en.html                          ← 영어 소개 페이지 (설명 맨 아래 링크)
 press/store-english.md                 ← ⑥ 본문·태그·칸별 값 전부
 press/랭킹-지키기.md                    ← ⓪ 먼저 돌릴 SQL
 ```

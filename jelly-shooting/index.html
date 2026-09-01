@@ -3696,14 +3696,14 @@ function applyEffect(eff,lv){
   const tag=lv>1?(' Lv.'+lv):'';
   try{ dexAdd('item',eff==='x2'?'x2':eff); }catch(e){}
   if(eff==='heart'){ const n=[1,1,2,2,3][lv-1]; lives+=n; floater(W/2,H*0.45,'💗 +'+n+tag,'#e63e72'); }
-  else if(eff==='slow'){ slowLv=lv; slowTimer=(4+lv*2)*60; floater(W/2,H*0.45,'⏱️ 슬로우!'+tag,'#4fa8ff'); }
+  else if(eff==='slow'){ slowLv=lv; slowTimer=(4+lv*2)*60; floater(W/2,H*0.45,t('⏱️ 슬로우!')+tag,'#4fa8ff'); }
   else if(eff==='clear'){ let n=0; for(const j of jellies){ if(!j.dead&&j.bomb){ j.dead=true; burst(j.x,j.y,'#4a4450',18); n++; } }
     bombBan=Math.max(bombBan,(lv-1)*2*60); shake=8;
-    floater(W/2,H*0.45,'🧹 폭탄 '+n+'개 제거!'+tag,'#7a4a63');
-    if(lv>1) floater(W/2,H*0.52,(lv-1)*2+'초간 폭탄 차단','#7a4a63'); }
-  else if(eff==='x2'){ x2Lv=lv; x2Timer=(6+lv*2)*60; floater(W/2,H*0.45,'🌟 점수 '+(lv>=4?3:2)+'배!'+tag,'#ff9c3d'); }
+    floater(W/2,H*0.45,t('🧹 폭탄 %d개 제거!').replace('%d',n)+tag,'#7a4a63');
+    if(lv>1) floater(W/2,H*0.52,t('%d초간 폭탄 차단').replace('%d',(lv-1)*2),'#7a4a63'); }
+  else if(eff==='x2'){ x2Lv=lv; x2Timer=(6+lv*2)*60; floater(W/2,H*0.45,t('🌟 점수 %d배!').replace('%d',(lv>=4?3:2))+tag,'#ff9c3d'); }
   else if(eff==='magnet'){ magnetLv=lv; magnetTimer=(6+lv*2)*60; comboTimer=999;
-    floater(W/2,H*0.45,'🧲 자석 발동!'+tag,'#8a5cff'); }
+    floater(W/2,H*0.45,t('🧲 자석 발동!')+tag,'#8a5cff'); }
 }
 function useItem(id){
   if(!itemsAllowed()) return;                     // 대전에서는 못 쓴다
@@ -4536,6 +4536,18 @@ const I18N_ROWS=[
   ["🪙 100코인","🪙 100 coins","🪙 100コイン"],
   ["🪙 3,000코인","🪙 3,000 coins","🪙 3,000コイン"],
   ["🪙 코인 모으는 법","🪙 How to earn coins","🪙 コインの集めかた"],
+  ["⏱️ 슬로우!","⏱️ Slow-mo!","⏱️ スロー！"],
+  ["🧹 폭탄 %d개 제거!","🧹 %d bombs cleared!","🧹 爆弾%d個 消した！"],
+  ["%d초간 폭탄 차단","No bombs for %ds","%d秒間 爆弾なし"],
+  ["🌟 점수 %d배!","🌟 Score x%d!","🌟 スコア%d倍！"],
+  ["🧲 자석 발동!","🧲 Magnet on!","🧲 マグネット発動！"],
+  ["부스트!","BOOST!","ブースト！"],
+  ["🛡️ 막았다!","🛡️ Blocked!","🛡️ ふせいだ！"],
+  ["놓침!","MISSED!","のがした！"],
+  ["보스를 터트려요!","Pop the boss!","ボスをはじこう！"],
+  ["⚡ 충전 완료!","⚡ Fully charged!","⚡ チャージ完了！"],
+  ["유령이다! 👻","A ghost! 👻","ゆうれいだ！ 👻"],
+  ["받았다! 🟣","Incoming! 🟣","もらった！ 🟣"],
 ];
 const I18N={en:{},ja:{}};
 I18N_ROWS.forEach(r=>{ I18N.en[r[0]]=r[1]; I18N.ja[r[0]]=r[2]; });
@@ -5395,7 +5407,7 @@ function hit(mx,my){ if(!running||paused)return; ensureAudio();
       burst(dp.x,dp.y,'#ffe27a',28); ring(dp.x,dp.y,'#ffd54a',dp.r*3.8,7); playLevelUp(); setMood('wow',60);
       if(dp.type==='coin'){ runCoins+=15; floater(dp.x,dp.y-dp.r,'🪙+15','#c98a1e'); }
       else applyEffect(dp.type,itemLv(dp.type));   // 키워둔 레벨이 주워도 적용된다
-      floater(dp.x,dp.y-dp.r-28,'부스트! '+dp.name,'#8a5cff'); showCallout('BOOST! '+dp.emoji,'#8a5cff');
+      floater(dp.x,dp.y-dp.r-28,t('부스트!')+' '+dp.name,'#8a5cff'); showCallout('BOOST! '+dp.emoji,'#8a5cff');
       updateHud(); return; } }
   // 2) 가장 가까운(여유 범위 안) 젤리를 잡아줌 → 살짝 빗나가도 터짐
   let bi=-1,bd=Infinity;
@@ -5406,7 +5418,7 @@ function hit(mx,my){ if(!running||paused)return; ensureAudio();
   const j=jellies[bi]; player.targetX=j.x; shots.push({tx:j.x,ty:j.y,life:1}); player.recoil=8; // 발사!
   if(j.bomb){ j.dead=true;try{ dexInit(); pstat.bombs++; }catch(e){}
     burst(j.x,j.y,'#4a4450',30);ring(j.x,j.y,'#ff5a5a',j.r*3.6,7);ring(j.x,j.y,'#ffd0d0',j.r*2.2,4);shake=18;playBomb();if(magnetTimer<=0){combo=1;comboTimer=0;}setMood('ouch',75);
-    if(shieldT>0){ ring(j.x,j.y,'#4fc65f',j.r*4,6); floater(j.x,j.y-j.r,'🛡️ 막았다!','#2f9c4f');
+    if(shieldT>0){ ring(j.x,j.y,'#4fc65f',j.r*4,6); floater(j.x,j.y-j.r,t('🛡️ 막았다!'),'#2f9c4f');
       jGone(j,'fell',lives); }                          // 실드가 막으면 목숨이 안 깎인다
     else if(tutOn()){ tutPop(j); }                  // 가이드: 목숨 대신 한 번 더 보여 준다
     else { jGone(j,'bomb',lives-1);   // gameOver가 netMode를 끄기 전에 보고한다
@@ -5469,7 +5481,7 @@ function bossSpawn(){
   boss={x:W/2,y:-r*1.1,r:r,hp:hp,hpMax:hp,vy:0.40+Math.floor(level/BOSS_EVERY)*0.05,swing:Math.random()*7,
         flash:0,shootT:150,slamT:0,dieT:0};
   banner={text:t('⚠️ 거대 젤리 등장!'),life:1.6}; flash=1; shake=22; playBomb();
-  showCallout('보스를 터트려요!','#ff3b5c');
+  showCallout(t('보스를 터트려요!'),'#ff3b5c');
 }
 function bossHit(dmg,fx,fy){
   if(!boss||boss.dieT>0) return;
@@ -5741,8 +5753,8 @@ function update(){ elapsed++; updateLevel();
       if(tutOn()){ tutFell(j); continue; }          // 가이드에서는 목숨이 안 깎인다
       const blocked=(!j.bomb&&shieldT>0);
       jGone(j,(j.bomb||blocked)?'fell':'miss',(j.bomb||blocked)?lives:lives-1);
-      if(blocked){ floater(j.x,H-40,'🛡️ 막았다!','#2f9c4f'); }
-      else if(!j.bomb){loseLife();if(magnetTimer<=0){combo=1;comboTimer=0;}setMood('sad',65);playMiss();floater(j.x,H-40,'놓침!','#b06');} } }
+      if(blocked){ floater(j.x,H-40,t('🛡️ 막았다!'),'#2f9c4f'); }
+      else if(!j.bomb){loseLife();if(magnetTimer<=0){combo=1;comboTimer=0;}setMood('sad',65);playMiss();floater(j.x,H-40,t('놓침!'),'#b06');} } }
   for(const dp of drops){ if(dp.dead)continue; dp.wob+=0.1; dp.y+=dp.vy*slowF; if(dp.y-dp.r>H) dp.dead=true; }
   // 🧲 자석: 좋은 젤리를 플레이어 쪽으로 끌어당기고 자동으로 터뜨림
   if(magnetTimer>0){
@@ -7750,7 +7762,7 @@ function recvThrow(items){
   });
   flash=0.7; shake=Math.max(shake,6);
   const gh=items.some(it=>it.ghost);
-  showCallout(gh?'유령이다! 👻':'받았다! 🟣','#8a5cff');
+  showCallout(gh?t('유령이다! 👻'):t('받았다! 🟣'),'#8a5cff');
   toast((gh?'👻 ':'🟣 ')+(net.foe?net.foe.name:'친구')+'가 '+(gh?'유령 ':'')+'젤리 '+items.length+'개를 던졌어요!');
 }
 // 효과형 방해 아이템이 도착했다 — 남은 시간은 프레임으로 센다(일시정지에도 안 흐른다)
@@ -7788,7 +7800,7 @@ function doHex(id){
   const to=mpTarget();
   if(id==='jelly'){ netSend({t:'throw',items:makeThrowItems(3,false),to:to});
     bolt=Math.min(BOLT_NEED,bolt+1);                   // 🍡를 쓸수록 ⚡가 찬다
-    if(bolt===BOLT_NEED) showCallout('⚡ 충전 완료!','#ff9c3d'); }
+    if(bolt===BOLT_NEED) showCallout(t('⚡ 충전 완료!'),'#ff9c3d'); }
   else if(id==='ghost') netSend({t:'throw',items:makeThrowItems(4,false,true),to:to});
   else if(id==='bomb')  netSend({t:'throw',items:makeThrowItems(5,true),to:to});
   else                  netSend({t:'hex',kind:id,to:to});
