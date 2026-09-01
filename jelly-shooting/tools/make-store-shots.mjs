@@ -205,6 +205,7 @@ function framePage({ shot, cap, tint, w, h }) {
 }
 
 const koLeaks = [];      // 영어판에 남은 한글
+const emptyBtns = [];    // 글자 없이 찍힌 단추
 
 const run = async () => {
   const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox', '--allow-file-access-from-files'] });
@@ -243,6 +244,12 @@ const run = async () => {
           return [...out]; })()`);
         if (ko.length) { koLeaks.push(size.id + '/' + sc.id + ': ' + ko.join(' | ')); }
       }
+      // 글자가 없는 빈 단추가 찍히면 스토어 그림이 고장난 것처럼 보인다 (실제로 하나 있었다)
+      const empty = await page.evaluate(`(()=>[...document.querySelectorAll('button,[class*=btn]')]
+        .filter(e=>e.offsetParent && !(e.textContent||'').trim() && !e.querySelector('img,svg,canvas')
+                   && e.getBoundingClientRect().height>12 && e.getBoundingClientRect().width>60)
+        .map(e=>(e.id||e.className)+' '+Math.round(e.getBoundingClientRect().width)+'x'+Math.round(e.getBoundingClientRect().height)))()`);
+      if (empty.length) emptyBtns.push(size.id + '/' + sc.id + ': ' + empty.join(', '));
       // 캔버스는 크기가 바뀌면 지워진다. 찍기 바로 전에 다시 그려야 판이 비지 않는다.
       if (sc.paint) { await page.evaluate(sc.paint); await page.waitForTimeout(250); }
       const raw = (await page.screenshot({ type: 'png' })).toString('base64');
@@ -306,6 +313,10 @@ const run = async () => {
     console.log('\n❌ 영어 화면에 한글이 남아 있습니다 (' + koLeaks.length + '군데):');
     for (const l of koLeaks) console.log('   · ' + l);
   } else if (LANG !== 'ko') console.log('\n✅ 영어 화면에 남은 한글 없음');
+  if (emptyBtns.length) {
+    console.log('\n⚠ 글자 없는 단추가 찍혔습니다 (' + emptyBtns.length + '군데):');
+    for (const l of emptyBtns) console.log('   · ' + l);
+  }
   console.log('\n총 ' + (made.length + 2) + '장 → press/shots/');
 };
 // 다른 파일이 SCENES 만 가져다 쓸 때는 찍지 않는다 (직접 실행할 때만 돈다)

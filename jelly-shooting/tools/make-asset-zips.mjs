@@ -53,6 +53,10 @@ for (const g of IG_SET) {
   cp('press/인스타-글로벌.md', `${g.stage}/문구/인스타-글로벌.md`);
   cp('press/인스타-계정.md',   `${g.stage}/문구/인스타-계정.md`);
   cp('press/shots/og.jpg',     `${g.stage}/기타/링크미리보기-og.jpg`);
+  const shotDir = g.src === 'insta' ? 'press/shots' : 'press/shots/en';
+  for (const f of ['appstore-1-play.png','appstore-2-dungeon.png','appstore-3-throw.png',
+                   'appstore-4-dress.png','appstore-5-result.png','appstore-6-home.png'])
+    cp(`${shotDir}/${f}`, `${g.stage}/게임화면/${f}`);
   write(`${g.stage}/읽어보기.txt`, `젤리모 · 인스타그램 자료 (${g.label})
 ────────────────────────────────
 게시물/            게시물 9장 (4:5 세로, 1080x1350)
@@ -78,8 +82,8 @@ cp('press/upload/jellimo-itch.zip', `${IT}/게임파일/jellimo-itch.zip`);
 cp('press/upload/cover-itch.png',   `${IT}/커버/cover-itch(이걸-쓰세요).png`);
 for (const v of ['A', 'B', 'C', 'D']) cp(`press/upload/cover-${v}.png`, `${IT}/커버/후보/cover-${v}.png`);
 cp('press/upload/cover-grid.png',   `${IT}/커버/후보/목록에서-이렇게-보여요.png`);
-for (const f of dirFiles('press/shots').filter(f => f.startsWith('appstore-')))
-  cp(`press/shots/${f}`, `${IT}/스크린샷/${f}`);
+for (const f of dirFiles('press/shots/en').filter(f => f.startsWith('appstore-')))
+  cp(`press/shots/en/${f}`, `${IT}/스크린샷/${f}`);
 cp('press/shots/icon-1024.png',           `${IT}/기타/아이콘-1024.png`);
 cp('press/shots/play-feature-1024x500.png', `${IT}/기타/가로배너-1024x500.png`);
 cp('press/shots/og.jpg',                  `${IT}/기타/링크미리보기-og.jpg`);

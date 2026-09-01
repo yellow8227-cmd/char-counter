@@ -345,6 +345,9 @@
   .scoreBig small{font-size:20px;color:var(--ink2);}
   .newbest{background:linear-gradient(90deg,#ffd54a,#ff9c3d);color:#fff;font-weight:900;padding:7px 18px;border-radius:999px;box-shadow:0 6px 16px rgba(255,150,50,0.4);animation:shine 1.2s ease-in-out infinite;}
   @keyframes shine{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+  /* 랭킹을 못 불러왔을 때(인터넷 없음·표 비었음) 빈 상자만 덩그러니 남았다.
+     상자 모양이라 고장난 것처럼 보인다 → 내용이 없으면 아예 안 보이게. */
+  .rank:empty{display:none}
   .rank{background:var(--glass);border:1.5px solid var(--edge);border-radius:var(--r-lg);
     padding:14px 14px 10px;width:min(90vw,330px);box-shadow:var(--sh-soft),var(--sh-in);}
   .rank .t{font-weight:900;color:#a8557a;margin-bottom:9px;font-size:13px;letter-spacing:.3px;}

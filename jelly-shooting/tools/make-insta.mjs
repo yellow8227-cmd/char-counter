@@ -48,7 +48,12 @@ const browser = await chromium.launch({ executablePath: CHROME,
 
 // ── ① 게임에서 그림 조각을 오려 온다 (배경 투명) ─────────────────────
 const gctx = await browser.newContext({ viewport: { width: 430, height: 932 },
-  deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  deviceScaleFactor: 2, isMobile: true, hasTouch: true,
+  locale: LANG === 'en' ? 'en-US' : 'ko-KR' });
+// 게임은 첫 줄에서 저장된 언어를 읽는다 → 페이지가 뜨기 전에 정해 준다.
+// (안 정하면 브라우저 언어를 보고 제 맘대로 골라, 한국어 카드에 영어 화면이 박힐 수 있다)
+await gctx.addInitScript(`try{ localStorage.setItem('jelly_lang', ${JSON.stringify(LANG)});
+  localStorage.setItem('jelly_tut','1'); }catch(e){}`);
 const gpage = await gctx.newPage();
 await gpage.goto(GAME);
 await gpage.waitForFunction("typeof drawAvatar==='function' && typeof withCtx==='function'",
@@ -134,9 +139,13 @@ for (const sc of SCENES.filter(s => NEED.includes(s.id))) {
   await gpage.goto(GAME);
   await gpage.waitForFunction("typeof openStart==='function'", null, { timeout: 20000 });
   await gpage.waitForTimeout(700);
-  await gpage.evaluate('localStorage.clear()');
+  await gpage.evaluate(`(()=>{ localStorage.clear();
+    try{ localStorage.setItem('jelly_lang', ${JSON.stringify(LANG)});
+         localStorage.setItem('jelly_tut','1'); }catch(e){} })()`);
   await gpage.evaluate(sc.setup);
   await gpage.waitForTimeout(600);
+  const shownLang = await gpage.evaluate('lang');
+  if (shownLang !== LANG) { console.error('❌ 게임 화면 언어가 ' + shownLang + ' 입니다 (원한 건 ' + LANG + ')'); process.exit(1); }
   if (sc.paint) { await gpage.evaluate(sc.paint); await gpage.waitForTimeout(250); }
   shot[sc.id] = 'data:image/png;base64,' + (await gpage.screenshot({ type: 'png' })).toString('base64');
   console.log('· 장면 ' + sc.id + ' 찍음');
