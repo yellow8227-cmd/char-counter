@@ -1063,7 +1063,7 @@
   <!-- 💬 월드 채팅 -->
   <div id="chatScreen" class="screen hide">
     <div class="h2">💬 월드 채팅</div>
-    <div class="tag2" id="chatWho">🇰🇷 한국 서버 · 연결 중…</div>
+    <div class="tag2" id="chatWho">🌍 모두의 방 · 연결 중…</div>
     <div class="card hide" id="chatNickCard">
       <div class="label">🙋 닉네임</div>
       <input id="nickInputC" maxlength="10" placeholder="닉네임을 정하면 말할 수 있어요">
@@ -2006,28 +2006,173 @@ function playBoo(){ if(!soundOn||!AC)return; const t=AC.currentTime;
   o.connect(g);g.connect(AC.destination);o.start(t+1.55);o.stop(t+2.12); }
 $('soundBtn').addEventListener('click',toggleSound);
 // ================= BGM =================
-// 두 곡을 쓴다.
-//  · 터트리는 쪽·혼자 하기 = 밝은 다장조 아르페지오. 젤리가 쏟아지는 신나는 느낌.
-//  · 던지는 쪽 = 라단조 그루브. 이쪽은 '내가 언제 던질까' 를 노리는 역할이라
-//    쏟아지는 느낌이 아니라 숨죽여 노리는 리듬이 맞다. 낮은 플럭 베이스 + 엇박 스탭 + 셰이커.
-// 예전에는 bgmTick 이 running 만 봤고 frameLoop 에서만 불려서, 던지는 사람 화면
-// (mirrorLoop · throwerAlive)에서는 음악이 아예 나오지 않았다.
+// 왜 다시 만들었나
+//   예전에는 곡이 두 개였고, 한 곡이 32스텝(약 8.3초)마다 그대로 되풀이됐다.
+//   끝없는 모드는 사람이 20분씩 앉아 있는 판인데 8초 고리를 145번 듣는 셈이라
+//   음악이 있는 게 오히려 지루함을 만들었다. 던지는 쪽 곡은 4.8초 고리였다.
+//
+//   고친 방향 세 가지
+//   ① 곡을 길게 — 한 곡이 네 도막(A·B·C·D)을 지나 128스텝마다 돌아온다(20~33초).
+//   ② 곡을 여섯 개로 — 혼자 하기 · 🔥핵불닭 · ♾️끝없는 모드 · 거대 보스 · 던전 · 던지기.
+//      특히 보스는 떠 있는 동안만 곡이 바뀐다. 판에 사건이 생긴 걸 귀로 먼저 안다.
+//   ③ 레벨이 오르면 층이 쌓인다 — 셰이커가 붙고(hatFrom), 더 오르면 멜로디가
+//      한 옥타브 위로 겹친다(octFrom). 같은 곡인데 판이 진행되는 게 들린다.
+//
+//   음은 진동수를 손으로 적지 않고 음이름으로 적는다(C5 · Bb3 · A#4…).
+//   숫자로 적으면 고치다가 반드시 틀린다. '-' 는 쉼표다.
 let bgmOn=true,bgmNext=0,bgmStep=0,bgmGain=null,bgmCur=null;
-const STEP=0.26;
-const MELODY=[523,659,784,659,587,698,587,0,523,659,784,880,784,659,523,0,587,740,880,740,659,784,659,0,523,659,784,1046,880,784,659,0];
-const BASS=[131,0,196,0,147,0,196,0,131,0,196,0,165,0,196,0,147,0,220,0,165,0,196,0,131,0,196,0,165,0,131,0];
-// 던지는 쪽 — 라단조 5음. 베이스는 엇박으로 통통 튀고, 멜로디는 드물게 한 방씩.
-const T_STEP=0.15;
-const T_BASS=[147,0,147,0,110,0,147,0,175,0,175,0,131,0,110,0,
-              147,0,147,0,110,0,147,0,196,0,175,0,165,0,131,0];
-const T_MEL =[0,0,587,0,0,698,0,0,0,0,880,0,0,784,0,0,
-              0,0,587,0,0,698,0,0,0,0,1047,0,0,880,0,784];
+let bgmForce=null;         // 소개 영상 만들 때만 쓴다 (그때의 곡을 그대로 되살리려고)
+
+// 음이름 → 진동수 (A4=440)
+const NOTE_STEP={C:-9,D:-7,E:-5,F:-4,G:-2,A:0,B:2};
+function nf(n){
+  if(!n||n==='-') return 0;
+  const m=/^([A-G])([#b]?)(\d)$/.exec(n); if(!m) return 0;
+  const semi=NOTE_STEP[m[1]]+(m[2]==='#'?1:(m[2]==='b'?-1:0))+(+m[3]-4)*12;
+  return 440*Math.pow(2,semi/12);
+}
+const seq=(...bars)=>bars.join(' ').trim().split(/\s+/).map(nf);
+
+// ── 🍡 혼자 하기 — 다장조. 젤리가 쏟아지는 밝은 느낌 ──
+const MAIN_MEL=seq(
+  'C5 E5 G5 E5  D5 F5 D5 -   C5 E5 G5 A5  G5 E5 C5 -',      // A
+  'D5 F5 A5 F5  E5 G5 E5 -   C5 E5 G5 C6  A5 G5 E5 -',
+  'E5 G5 C6 G5  F5 A5 F5 -   E5 G5 C6 D6  C6 A5 F5 -',      // B — 한 옥타브 위로 올라간다
+  'G5 B5 D6 B5  A5 C6 A5 -   F5 A5 C6 F6  D6 C6 A5 -',
+  'C5 -  E5 -   G5 -  E5 -   F5 -  A5 -   G5 -  E5 -',      // C — 귀를 쉬게 하는 도막
+  'D5 -  F5 -   A5 -  F5 -   E5 -  G5 -   C5 -  -  -',
+  'C5 D5 E5 F5  G5 A5 B5 C6  B5 A5 G5 F5  E5 D5 C5 -',      // D — 계단으로 올라갔다 내려온다
+  'A4 B4 C5 D5  E5 F5 G5 A5  G5 F5 E5 D5  C5 -  -  -');
+const MAIN_BASS=seq(
+  'C3 -  G3 -   D3 -  G3 -   C3 -  G3 -   E3 -  G3 -',
+  'D3 -  A3 -   E3 -  G3 -   C3 -  G3 -   E3 -  C3 -',
+  'E3 -  B3 -   F3 -  C4 -   E3 -  B3 -   F3 -  A3 -',
+  'G3 -  D4 -   A3 -  E4 -   F3 -  C4 -   D3 -  A3 -',
+  'C3 -  -  -   G3 -  -  -   F3 -  -  -   G3 -  -  -',
+  'D3 -  -  -   A3 -  -  -   E3 -  -  -   C3 -  -  -',
+  'C3 -  G3 -   C3 -  G3 -   G3 -  D3 -   G3 -  D3 -',
+  'A3 -  E3 -   A3 -  E3 -   F3 -  C3 -   C3 -  G3 -');
+const MAIN_PAD=seq('C4 G3 C4 E4   E4 F4 G4 F4   C4 G3 F4 G3   C4 G3 A3 F3');
+
+// ── 🔥 핵불닭 — 가단조. 쉬지 않고 밀어붙인다. 스텝이 가장 짧다 ──
+const FIRE_MEL=seq(
+  'A5 -  C6 -   B5 -  A5 -   G5 -  A5 -   E5 -  -  -',
+  'A5 -  C6 -   D6 -  C6 -   B5 -  A5 -   G5 -  -  -',
+  'E6 -  D6 -   C6 -  B5 -   A5 -  B5 -   C6 -  -  -',
+  'D6 -  C6 -   B5 -  A5 -   G5 -  F5 -   E5 -  -  -',
+  'A4 -  A4 -   C5 -  C5 -   E5 -  E5 -   A5 -  -  -',
+  'G4 -  G4 -   B4 -  B4 -   D5 -  D5 -   G5 -  -  -',
+  'A5 B5 C6 D6  E6 -  D6 -   C6 B5 A5 G5  A5 -  -  -',
+  'F5 G5 A5 B5  C6 -  B5 -   A5 G5 F5 E5  A5 -  -  -');
+const FIRE_BASS=seq(
+  'A2 -  A2 -   A2 -  A2 A2  F2 -  F2 -   F2 -  F2 F2',
+  'G2 -  G2 -   G2 -  G2 G2  E2 -  E2 -   E2 -  E2 E2',
+  'C3 -  C3 -   C3 -  C3 C3  A2 -  A2 -   A2 -  A2 A2',
+  'G2 -  G2 -   G2 -  G2 G2  E2 -  E2 -   E2 -  E2 E2',
+  'A2 -  E3 -   A2 -  E3 -   F2 -  C3 -   F2 -  C3 -',
+  'G2 -  D3 -   G2 -  D3 -   E2 -  B2 -   E2 -  B2 -',
+  'A2 A2 -  A2  -  A2 A2 -   F2 F2 -  F2   -  F2 F2 -',
+  'G2 G2 -  G2  -  G2 G2 -   E2 E2 -  E2   -  E2 E2 -');
+const FIRE_PAD=seq('A3 A3 F3 E3   C4 A3 F3 E3   A3 A3 F3 E3   A3 F3 G3 E3');
+
+// ── ♾️ 끝없는 모드 — 사장조 5음. 오래 들어도 안 지치게 단순하고 넓게 ──
+const ENDL_MEL=seq(
+  'G4 -  B4 -   D5 -  B4 -   G4 -  A4 -   B4 -  D5 -',
+  'E5 -  D5 -   B4 -  A4 -   G4 -  E4 -   G4 -  -  -',
+  'D5 -  E5 -   G5 -  E5 -   D5 -  B4 -   A4 -  B4 -',
+  'D5 -  E5 -   G5 -  A5 -   G5 -  E5 -   D5 -  -  -',
+  'G4 A4 B4 D5  E5 D5 B4 A4  G4 A4 B4 D5  E5 -  -  -',
+  'A4 B4 D5 E5  G5 E5 D5 B4  A4 B4 D5 E5  D5 -  -  -',
+  'B4 -  -  -   D5 -  -  -   E5 -  -  -   G5 -  -  -',
+  'E5 -  -  -   D5 -  -  -   B4 -  -  -   G4 -  -  -');
+const ENDL_BASS=seq(
+  'G2 -  D3 -   G2 -  D3 -   E2 -  B2 -   E2 -  B2 -',
+  'C3 -  G3 -   C3 -  G3 -   D3 -  A3 -   D3 -  A3 -',
+  'G2 -  G2 D3  -  G2 D3 -   E2 -  E2 B2  -  E2 B2 -',
+  'C3 -  C3 G3  -  C3 G3 -   D3 -  D3 A3  -  D3 A3 -',
+  'G2 -  -  -   E2 -  -  -   C3 -  -  -   D3 -  -  -',
+  'G2 -  -  -   E2 -  -  -   C3 -  -  -   D3 -  -  -',
+  'G2 D3 G2 D3  G2 D3 G2 D3  E2 B2 E2 B2  E2 B2 E2 B2',
+  'C3 G3 C3 G3  C3 G3 C3 G3  D3 A3 D3 A3  D3 A3 D3 A3');
+const ENDL_PAD=seq('G3 E3 C4 D4   G3 E3 C4 D4   G3 E3 C4 D4   G3 E3 C4 D4');
+
+// ── ⚠️ 거대 보스 — 라단조. 무겁고 느리게. 짧게(64스텝) 돌아도 되는 곡이다 ──
+const BOSS_MEL=seq(
+  'D5 -  -  -   F5 -  -  -   A5 -  -  -   G5 F5 -  -',
+  'D5 -  -  -   E5 -  -  -   F5 -  -  -   D5 -  -  -',
+  'A5 -  A5 -   Bb5 - A5 -   G5 -  F5 -   E5 -  -  -',
+  'D6 -  C6 -   Bb5 - A5 -   G5 -  A5 -   D5 -  -  -');
+const BOSS_BASS=seq(
+  'D3 -  D3 -   D3 -  D3 D3  Bb2 - Bb2 -  Bb2 - Bb2 Bb2',
+  'C3 -  C3 -   C3 -  C3 C3  D3 -  D3 -   A2 -  A2 A2',
+  'G3 -  G3 -   G3 -  G3 G3  F3 -  F3 -   F3 -  F3 F3',
+  'E3 -  E3 -   E3 -  E3 E3  D3 -  D3 -   D3 -  D3 D3');
+const BOSS_PAD=seq('D4 Bb3 C4 D4   G3 F3 E3 D4');
+
+// ── ⚔️ 실시간 던전 — 라도리안. 사람과 붙는 판이라 각이 서 있다 ──
+const DUN_MEL=seq(
+  'D5 -  F5 -   A5 -  F5 -   E5 -  D5 -   C5 -  D5 -',
+  'F5 -  A5 -   C6 -  A5 -   G5 -  F5 -   E5 -  -  -',
+  'A5 -  C6 -   D6 -  C6 -   A5 -  G5 -   F5 -  G5 -',
+  'A5 -  C6 -   E6 -  D6 -   C6 -  A5 -   D5 -  -  -',
+  'D5 E5 F5 G5  A5 -  G5 -   F5 E5 D5 C5  D5 -  -  -',
+  'F5 G5 A5 C6  D6 -  C6 -   A5 G5 F5 E5  D5 -  -  -',
+  'D5 -  -  -   C5 -  -  -   Bb4 - -  -   A4 -  -  -',
+  'D5 -  -  -   F5 -  -  -   A5 -  -  -   D6 -  -  -');
+const DUN_BASS=seq(
+  'D3 -  A2 -   D3 -  A2 -   Bb2 - F3 -   Bb2 - F3 -',
+  'F2 -  C3 -   F2 -  C3 -   G2 -  D3 -   A2 -  E3 -',
+  'A2 -  E3 -   A2 -  E3 -   F2 -  C3 -   F2 -  C3 -',
+  'D3 -  A2 -   D3 -  A2 -   G2 -  D3 -   A2 -  -  -',
+  'D3 D3 -  A2  -  D3 A2 -   Bb2 Bb2 - F3  -  Bb2 F3 -',
+  'F2 F2 -  C3  -  F2 C3 -   G2 G2 -  D3   A2 -  -  -',
+  'D3 -  -  -   C3 -  -  -   Bb2 - -  -   A2 -  -  -',
+  'D3 -  -  -   F3 -  -  -   A2 -  -  -   D3 -  -  -');
+const DUN_PAD=seq('D4 Bb3 F3 A3   C4 A3 G3 A3   D4 Bb3 F3 G3   D4 C4 Bb3 A3');
+
+// ── 🎯 던지는 쪽 — 라단조. 쏟아지는 느낌이 아니라 '언제 던질까' 노리는 리듬 ──
+const THR_MEL=seq(
+  '-  -  D5 -   -  F5 -  -   -  -  A5 -   -  G5 -  -',
+  '-  -  D5 -   -  F5 -  -   -  -  C6 -   -  A5 -  G5',
+  '-  -  A5 -   -  G5 -  -   -  -  F5 -   -  E5 -  -',
+  '-  -  D5 -   -  E5 -  -   -  -  F5 -   -  D5 -  -',
+  '-  -  F5 -   -  A5 -  -   -  -  D6 -   -  C6 -  -',   // 뒷도막 — 한 단 올라간다
+  '-  -  A5 -   -  C6 -  -   -  -  D6 -   -  A5 -  F5',
+  '-  -  E5 -   -  F5 -  -   -  -  G5 -   -  A5 -  -',
+  '-  -  D5 -   -  A4 -  -   -  -  D5 -   -  -  -  -');
+const THR_BASS=seq(
+  'D3 -  D3 -   A2 -  D3 -   F3 -  F3 -   C3 -  A2 -',
+  'D3 -  D3 -   A2 -  D3 -   G3 -  F3 -   E3 -  C3 -',
+  'A2 -  A2 -   E3 -  A2 -   F3 -  F3 -   C3 -  A2 -',
+  'D3 -  D3 -   A2 -  D3 -   Bb2 - C3 -   D3 -  A2 -',
+  'F3 -  F3 -   C3 -  F3 -   Bb2 - Bb2 -  F3 -  D3 -',
+  'F3 -  F3 -   C3 -  F3 -   C3 -  C3 -   G3 -  E3 -',
+  'A2 -  A2 -   E3 -  A2 -   D3 -  D3 -   A2 -  F3 -',
+  'D3 -  D3 -   A2 -  D3 -   A2 -  A2 -   D3 -  -  -');
+const THR_PAD=seq('D4 A3 F3 C4   D4 A3 G3 E3   F4 C4 Bb3 F3   A3 C4 D4 A3');
+
 const TRACKS={
-  main :{mel:MELODY,bass:BASS, step:STEP,   melType:'triangle',bassType:'sine',
-         melVol:0.5, bassVol:0.6, hat:0},
-  throw:{mel:T_MEL, bass:T_BASS,step:T_STEP,melType:'triangle',bassType:'square',
-         melVol:0.34,bassVol:0.30,hat:2},   // hat: 몇 스텝마다 셰이커를 넣는가
+  main   :{mel:MAIN_MEL,bass:MAIN_BASS,pad:MAIN_PAD,step:0.26,vol:0.15,
+           melType:'triangle',bassType:'sine',   padType:'sine',
+           melVol:0.46,bassVol:0.55,padVol:0.10, hat:4,hatFrom:3,octFrom:7},
+  fire   :{mel:FIRE_MEL,bass:FIRE_BASS,pad:FIRE_PAD,step:0.16,vol:0.14,
+           melType:'square',  bassType:'sawtooth',padType:'triangle',
+           melVol:0.26,bassVol:0.34,padVol:0.07, hat:2,hatFrom:1,octFrom:5},
+  endless:{mel:ENDL_MEL,bass:ENDL_BASS,pad:ENDL_PAD,step:0.24,vol:0.13,
+           melType:'triangle',bassType:'sine',   padType:'sine',
+           melVol:0.40,bassVol:0.50,padVol:0.12, hat:4,hatFrom:4,octFrom:9},
+  boss   :{mel:BOSS_MEL,bass:BOSS_BASS,pad:BOSS_PAD,step:0.22,vol:0.17,
+           melType:'square',  bassType:'sawtooth',padType:'triangle',
+           melVol:0.30,bassVol:0.40,padVol:0.09, hat:2,hatFrom:1,octFrom:0},
+  dungeon:{mel:DUN_MEL, bass:DUN_BASS, pad:DUN_PAD, step:0.21,vol:0.15,
+           melType:'triangle',bassType:'square', padType:'sine',
+           melVol:0.36,bassVol:0.32,padVol:0.09, hat:2,hatFrom:1,octFrom:8},
+  throw  :{mel:THR_MEL, bass:THR_BASS, pad:THR_PAD, step:0.15,vol:0.13,
+           melType:'triangle',bassType:'square', padType:'sine',
+           melVol:0.34,bassVol:0.30,padVol:0.08, hat:2,hatFrom:1,octFrom:0},
 };
+const PAD_EVERY=8;         // 패드는 여덟 스텝마다 한 번, 길게 깔린다
+
 function bgmNote(freq,t,type,vol,dur){ if(!freq)return; const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=freq;
   g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+0.03);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
   o.connect(g);g.connect(bgmGain);o.start(t);o.stop(t+dur+0.02); }
@@ -2041,28 +2186,62 @@ function bgmHat(t,vol){
   const g=AC.createGain(); g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.035);
   n.connect(hp); hp.connect(g); g.connect(bgmGain); n.start(t);
 }
-function bgmVol(){ return bgmCur==='throw'?0.13:0.15; }
+function bgmVol(name){ const tr=TRACKS[name||bgmCur]; return tr?tr.vol:0.15; }
+
+// 지금 어떤 곡이어야 하나. 순서가 뜻이다 — 위가 이긴다.
+function bgmWant(){
+  if(bgmForce) return bgmForce;
+  if(throwerAlive) return 'throw';
+  if(!running) return null;
+  if(typeof boss!=='undefined' && boss) return 'boss';            // 보스가 떠 있는 동안만
+  if(typeof netGame!=='undefined' && netGame==='throw' && (netMode||aiOn)) return 'throw';
+  if(netMode||aiOn) return 'dungeon';
+  if(typeof FIRE!=='undefined' && mode===FIRE) return 'fire';
+  if(typeof endless!=='undefined' && endless) return 'endless';
+  return 'main';
+}
+
 function bgmTick(){
   if(!AC||!bgmOn) return;
-  const want = throwerAlive ? 'throw' : (running ? 'main' : null);
+  const want=bgmWant();
   if(!want) return;
-  if(!bgmGain){ bgmGain=AC.createGain(); bgmGain.gain.value=0.15; bgmGain.connect(AC.destination); }
-  // 곡이 바뀌면 마디 처음부터 다시 — 안 그러면 역할이 바뀔 때 중간부터 튀어나온다
-  if(bgmCur!==want){ bgmCur=want; bgmStep=0; bgmNext=AC.currentTime+0.05; bgmGain.gain.value=bgmVol(); }
+  if(!bgmGain){ bgmGain=AC.createGain(); bgmGain.gain.value=bgmVol(want); bgmGain.connect(AC.destination); }
+  // 곡이 바뀔 때 — 예전에는 그 자리에서 툭 끊겨 다른 곡이 튀어나왔다.
+  // 아주 짧게 숨을 죽였다 올린다(0.06초 내림 → 0.14초 올림). 일부러 그런 것처럼 들린다.
+  if(bgmCur!==want){
+    const now=AC.currentTime, v=bgmVol(want);
+    try{ bgmGain.gain.cancelScheduledValues(now);
+      bgmGain.gain.setValueAtTime(Math.max(0.0001,bgmGain.gain.value),now);
+      bgmGain.gain.linearRampToValueAtTime(0.0001,now+0.06);
+      bgmGain.gain.linearRampToValueAtTime(v,now+0.20);
+    }catch(e){ bgmGain.gain.value=v; }
+    bgmCur=want; bgmStep=0; bgmNext=now+0.10;
+  }
   const tr=TRACKS[want];
+  const lv=(typeof level==='number'&&level>0)?level:1;
   if(bgmNext<AC.currentTime) bgmNext=AC.currentTime+0.05;
   while(bgmNext<AC.currentTime+0.3){
     const i=bgmStep%tr.mel.length;
     bgmNote(tr.mel[i], bgmNext, tr.melType, tr.melVol, tr.step*0.9);
     bgmNote(tr.bass[i],bgmNext, tr.bassType,tr.bassVol, tr.step*0.9);
-    if(tr.hat && bgmStep%tr.hat===0) bgmHat(bgmNext, bgmStep%(tr.hat*4)===0?0.10:0.05);
+    // 패드 — 여덟 스텝을 덮는 긴 음. 곡이 '반주가 있는 음악'처럼 들리게 하는 층이다
+    if(tr.pad && bgmStep%PAD_EVERY===0){
+      const pi=Math.floor(bgmStep/PAD_EVERY)%tr.pad.length;
+      bgmNote(tr.pad[pi], bgmNext, tr.padType, tr.padVol, tr.step*PAD_EVERY*0.95);
+    }
+    // 레벨이 오르면 셰이커가 붙는다
+    if(tr.hat && lv>=(tr.hatFrom||1) && bgmStep%tr.hat===0)
+      bgmHat(bgmNext, bgmStep%(tr.hat*4)===0?0.10:0.05);
+    // 더 오르면 멜로디를 한 옥타브 위로 얇게 겹친다 — 판이 뜨거워지는 게 들린다
+    if(tr.octFrom && lv>=tr.octFrom && tr.mel[i])
+      bgmNote(tr.mel[i]*2, bgmNext, 'sine', tr.melVol*0.26, tr.step*0.6);
     bgmNext+=tr.step; bgmStep++;
   }
 }
 function toggleBgm(){ bgmOn=!bgmOn; ensureAudio();
   const label=bgmOn?'🎵':'🚫';
   ['bgmBtn','tBgmBtn'].forEach(id=>{ const b=$(id); if(b) b.textContent=label; });
-  if(bgmGain) bgmGain.gain.value=bgmOn?bgmVol():0;
+  if(bgmGain) bgmGain.gain.value=bgmOn?bgmVol(bgmCur):0;
   if(typeof syncSettingsUI==='function') syncSettingsUI(); }
 function toggleSound(){ soundOn=!soundOn; ensureAudio();
   const label=soundOn?'🔊':'🔇';
@@ -4393,7 +4572,7 @@ const I18N_ROWS=[
   ["확인하고 도전장 보내기 🎯","Check it and send a challenge 🎯","見てからちょうせん状を送る 🎯"],
   ["황금 젤리","Golden jelly","ゴールデンゼリー"],
   ["효과음","Sound","効果音"],
-  ["🇰🇷 한국 서버 · 연결 중…","🇰🇷 Korea server · connecting…","🇰🇷 韓国サーバー · 接続中…"],
+  ["🌍 모두의 방 · 연결 중…","🌍 Everyone's room · connecting…","🌍 みんなの部屋 · 接続中…"],
   ["🌍 목록에 공개하기","🌍 List it publicly","🌍 リストに公開する"],
   ["🌍 온라인 랭킹","🌍 Online ranking","🌍 オンラインランキング"],
   ["🌐 브라우저로 열기","🌐 Open in browser","🌐 ブラウザで開く"],
@@ -4558,6 +4737,14 @@ const I18N_ROWS=[
   ["⚡ 충전 완료!","⚡ Fully charged!","⚡ チャージ完了！"],
   ["유령이다! 👻","A ghost! 👻","ゆうれいだ！ 👻"],
   ["명","","人"],
+  ["🌍 모두의 방","🌍 Everyone's room","🌍 みんなの部屋"],
+  ["지금 %d명","%d here now","いま%d人"],
+  ["연결 중…","Connecting…","接続中…"],
+  ["누군가","Someone","だれか"],
+  ["구경중","Just looking","見てるだけ"],
+  ["🔁 %s님이 한 판 더 하고 싶어해요!","🔁 %s wants a rematch!","🔁 %sさんがもう一回やりたいそうです！"],
+  ["🙋 %s님이 합류했어요!","🙋 %s joined!","🙋 %sさんが入りました！"],
+  ["친구가 방에서 나갔어요 😢","Your friend left the room 😢","ともだちが部屋を出ました 😢"],
   ["🍼 뉴비 AI","🍼 Rookie AI","🍼 ビギナーAI"],
   ["🙂 보통 AI","🙂 Normal AI","🙂 ふつうAI"],
   ["🤓 개똑똑 AI","🤓 Clever AI","🤓 かしこいAI"],
@@ -5984,8 +6171,8 @@ function giveUpNow(){
 function pauseGame(){ if(!running||paused)return;
   if(netMode){ if(giveUpArmed) giveUpNow(); else armGiveUp(); return; }   // 대전은 포기하고 나가기
   paused=true; $('pauseScreen').classList.remove('hide'); if(bgmGain)bgmGain.gain.value=0; }
-function resumeGame(){ if(!paused)return; paused=false; lastT=0; $('pauseScreen').classList.add('hide'); if(bgmGain&&bgmOn)bgmGain.gain.value=bgmVol(); }
-function quitGame(){ paused=false; running=false; boardUnlock(); $('pauseScreen').classList.add('hide'); $('hud').classList.add('hide'); $('audioBar').classList.add('hide'); $('itemBar').classList.add('hide'); $('pauseBtn').classList.add('hide'); if(bgmGain&&bgmOn)bgmGain.gain.value=bgmVol(); openStart(); }
+function resumeGame(){ if(!paused)return; paused=false; lastT=0; $('pauseScreen').classList.add('hide'); if(bgmGain&&bgmOn)bgmGain.gain.value=bgmVol(bgmCur); }
+function quitGame(){ paused=false; running=false; boardUnlock(); $('pauseScreen').classList.add('hide'); $('hud').classList.add('hide'); $('audioBar').classList.add('hide'); $('itemBar').classList.add('hide'); $('pauseBtn').classList.add('hide'); if(bgmGain&&bgmOn)bgmGain.gain.value=bgmVol(bgmCur); openStart(); }
 
 function startGame(){
   // 🎓 처음 온 사람은 규칙을 모른다. 혼자 하기 첫 판에만 가이드를 먼저 띄운다.
@@ -6511,7 +6698,9 @@ function noRankMsg(){ $('overLbTitle').textContent=t('🌍 온라인 랭킹');
   $('overLb').innerHTML='<div class="rrow">'+escapeHtml(t('🤖 AI 대결은 온라인 랭킹에 올라가지 않아요'))+'</div>'; }
 // ================= 실시간 채팅 =================
 // 두 군데가 있다.
-//   월드 채팅  jelly:chat:kr  — 아무나 들어와 이야기하는 한국 서버 방
+//   월드 채팅  jelly:chat:world  — 나라·언어와 상관없이 모두 같은 방에 들어온다.
+//                  (예전 이름은 jelly:chat:kr 이었는데, 지역 제한이 아니면서 화면에는
+//                   '한국 서버'라고 적혀 있어 영어 이용자에게는 남의 방처럼 보였다)
 //   방 채팅    이미 붙어 있는 방 채널(net.ch)에 {t:'chat'} 로 얹는다 — 새 연결이 필요 없다
 // broadcast 는 지나간 말을 보관하지 않는다(서버에 저장되지 않는다). 그래서 들어온 뒤부터
 // 보이고, 화면을 닫으면 사라진다 — 그 점을 화면에 적어 둔다.
@@ -6544,7 +6733,7 @@ function chatRender(boxId,list,emptyMsg){
     const cfg=m.ch?charSafe(m.ch):((m.name===nick)?character:null);
     return '<div class="cmsg'+(me?' me':'')+'">'
       +(cfg?'<img class="ava" src="'+avatarURL(cfg)+'" alt="">':'')
-      +'<div class="cbody"><div class="cwho">'+escapeHtml(m.name||'누군가')+(me?' (나)':'')
+      +'<div class="cbody"><div class="cwho">'+escapeHtml(m.name||t('누군가'))+(me?t(' (나)'):'')
       +(me?'<button class="cdel" data-id="'+escapeHtml(m.id||'')+'" data-w="'+(world?1:0)
            +'" title="회수">회수</button>':'')+'</div>'
       +'<div class="ctx">'+escapeHtml(m.text)+'</div></div></div>';
@@ -6578,18 +6767,18 @@ function chatSyncUI(){
   const why=chatCanSend();
   $('chatSend').disabled=!!why&&why!=='조금 천천히 보내주세요 🐢';
   $('chatInput').disabled=!nick;
-  $('chatWho').textContent='🇰🇷 한국 서버 · '+(!supaReady()?netWhyOffline()
-    :(chatCh?('지금 '+chatCount+'명'):'연결 중…'));
+  $('chatWho').textContent=t('🌍 모두의 방')+' · '+(!supaReady()?netWhyOffline()
+    :(chatCh?t('지금 %d명').replace('%d',chatCount):t('연결 중…')));
   $('chatHint').innerHTML=nick
     ? '지나간 이야기는 보관되지 않아요 — <b>들어온 뒤부터</b> 보입니다. 서로 예쁘게 이야기해요 🌷'
     : '닉네임을 정하면 이야기할 수 있어요. 프로필 사진도 같이 보여요 🙋'; }
 function chatJoin(){
   if(!supaReady()||chatCh) { chatSyncUI(); return; }
-  chatCh=getSupa().channel('jelly:chat:kr');
+  chatCh=getSupa().channel('jelly:chat:world');
   chatCh.on('broadcast',{event:'msg'},p=>{
     const m=p&&p.payload; if(!m) return;
     const text=chatClean(m.text); if(!text) return;
-    const name=chatClean(m.name).slice(0,10)||'누군가';
+    const name=chatClean(m.name).slice(0,10)||t('누군가');
     seenPut(name,m.ch);
     chatPush(chatMsgs,{id:chatIdSafe(m.id),name:name,ch:m.ch,text:text});
     if(!$('chatScreen').classList.contains('hide')) chatRender('chatBox',chatMsgs,'');
@@ -6609,7 +6798,7 @@ function chatJoin(){
       try{ dexInit(); if(!pstat.alone){ pstat.alone=1; dexSave(); achCheck(); } }catch(e){} }
   });
   chatCh.subscribe(st=>{
-    if(st==='SUBSCRIBED'){ try{ chatCh.track({n:nick||'구경중',ch:charPack()}); }catch(e){} }
+    if(st==='SUBSCRIBED'){ try{ chatCh.track({n:nick||t('구경중'),ch:charPack()}); }catch(e){} }
     else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED'){
       try{ getSupa().removeChannel(chatCh); }catch(e){} chatCh=null;
       if(!$('chatScreen').classList.contains('hide')) chatT=setTimeout(chatJoin,1800); }
@@ -6887,7 +7076,7 @@ function peerCount(){ return peerList().length; }
 function playerCount(){ return 1+peerCount(); }          // 나까지
 function peerUpsert(id,fields){
   if(!net.peers) net.peers={};
-  const p=net.peers[id]||(net.peers[id]={id:id,name:'친구',char:null,score:0,lives:0,
+  const p=net.peers[id]||(net.peers[id]={id:id,name:(aiOn?t(aiCfg().name):t('친구')),char:null,score:0,lives:0,
     combo:1,ready:false,over:false,reason:'',gone:false,seen:0});
   Object.assign(p,fields||{}); p.seen=performance.now();
   // 첫 참가자를 net.foe로 둔다(1:1 화면·던지기 게임이 이걸 쓴다)
@@ -7026,12 +7215,12 @@ function netOnMsg(m){
   // 상대가 '한 판 더'를 눌렀다 — 나도 대기실로 돌아간다(방은 그대로다)
   if(m.t==='again'){
     if($('lobbyScreen').classList.contains('hide')){
-      toast('🔁 '+(m.name||'친구')+'님이 한 판 더 하고 싶어해요!'); rematch(false); }
+      toast(t('🔁 %s님이 한 판 더 하고 싶어해요!').replace('%s',m.name||t('친구'))); rematch(false); }
     return; }
   // 방 채팅 — 이미 붙어 있는 방 채널에 얹혀 온다. hello/hi 블록 안에 두면 도달하지 못한다.
   if(m.t==='chat'){
     const text=chatClean(m.text); if(!text) return;
-    const who=chatClean(m.name).slice(0,10)||'친구';
+    const who=chatClean(m.name).slice(0,10)||t('친구');
     seenPut(who,m.char);
     chatPush(roomMsgs,{id:chatIdSafe(m.id),name:who,ch:m.char,text:text});
     roomChatRender(); return; }
@@ -7044,7 +7233,7 @@ function netOnMsg(m){
   // 방을 열어둔 채 딴 걸 하고 있었다면, 여기서 알림을 띄운다
   if((m.t==='hello'||m.t==='hi')&&net.park){
     net.park=false;
-    const who=m.name||'친구';
+    const who=m.name||t('친구');
     showInvite('🎉 '+who+'님이 내 방에 들어왔어요!\n대전을 시작할까요?','시작하기',()=>{
       if(running){ running=false; paused=false;
         ['hud','audioBar','itemBar','pauseBtn','netBar','throwWrap'].forEach(id=>$(id).classList.add('hide')); }
@@ -7056,7 +7245,7 @@ function netOnMsg(m){
     if(net.host&&!net.peers[pid]&&playerCount()>=MAX_PLAYERS){
       netSend({t:'full',to:pid}); return; }
     const isNew=!net.peers[pid];
-    peerUpsert(pid,{name:m.name||'친구',char:m.char,gone:false});
+    peerUpsert(pid,{name:m.name||t('친구'),char:m.char,gone:false});
     seenPut(m.name,m.char);
     netHelloStop();                       // 상대를 알았으니 인사를 멈춘다
     if(m.t==='hello') netSend({t:'hi',name:nick,char:charPack()});   // 늦게 들어온 쪽에 내 정보 전달
@@ -7065,7 +7254,7 @@ function netOnMsg(m){
       netSend({t:'seed',seed:netSeed,mode:netModeName,timeLimit:net.timeLimit,
         game:netGame,hostRole:hostRole});
       netRoster(); }
-    if(isNew&&netMode) toast('🙋 '+(m.name||'친구')+'님이 합류했어요!');
+    if(isNew&&netMode) toast(t('🙋 %s님이 합류했어요!').replace('%s',m.name||t('친구')));
     renderLobby();
   }
   else if(m.t==='roster'){ recvRoster(pid,m.ps); }
@@ -7108,7 +7297,7 @@ function netOnMsg(m){
     // 바꿔 두면 판이 끝날 때까지 남고, 판 크기도 그대로다.
     if(netMode&&(m.reason||'')==='dead'&&!net.deadSeen[pid]){
       net.deadSeen[pid]=1;
-      const nm=(net.peers[pid]&&net.peers[pid].name)||'친구';
+      const nm=(net.peers[pid]&&net.peers[pid].name)||t('친구');
       foeFlash(pid);
       if(!running) toast(t('💀 %s님이 탈락했어요').replace('%s',nm));
     }
@@ -7132,7 +7321,7 @@ function netOnMsg(m){
     net.foeGone=true;
     // 상대가 나갔다고 내 판을 끊지 않는다. 끝까지 하고 승리로 처리한다.
     if(netMode&&(running||throwerAlive)){ toast('상대가 나갔어요 — 끝까지 해보세요! 🏆'); }
-    else { net.foe=null; net.foeReady=false; net.ready=false; toast('친구가 방에서 나갔어요 😢'); renderLobby(); } }
+    else { net.foe=null; net.foeReady=false; net.ready=false; toast(t('친구가 방에서 나갔어요 😢')); renderLobby(); } }
 }
 
 // ================= 🌍 공개 방 목록 =================
@@ -7209,7 +7398,7 @@ function hubLeave(){ if(hubT){ clearTimeout(hubT); hubT=null; }
 // 내 방을 목록에 올린다 / 내린다
 function hubAdvertise(){
   if(!hub||!net.room||!net.host||!netPublic||aiOn) return;
-  try{ hub.track({room:net.room,name:nick||'누군가',game:netGame,mode:netModeName,role:hostRole,
+  try{ hub.track({room:net.room,name:nick||t('누군가'),game:netGame,mode:netModeName,role:hostRole,
     n:playerCount(),max:MAX_PLAYERS,ch:charPack()}); }catch(e){}
 }
 function hubUnadvertise(){ if(hub){ try{ hub.untrack(); }catch(e){} } }
@@ -7368,7 +7557,7 @@ function buildAiRoleOpts(){
 function aiGo(){ netGame=aiGame; hostRole=(aiGame==='throw')?aiRole:'thrower'; aiMatch(); }
 function aiStart(){
   aiOn=true;
-  net.foe={name:aiCfg().name,char:aiChar()};
+  net.foe={name:t(aiCfg().name),char:aiChar()};
   net.ready=true; net.foeReady=true; net.status='ok'; net.foeGone=false; net.foeOver=false;
   const md=MODES[netModeName]||MODES.normal;
   aiS={score:0,lives:md.lives,jid:0,next:0,pop:0,miss:0,spd:aiCfg().spd,combo:1,hexAt:0};
@@ -7748,7 +7937,7 @@ function netWatch(){
   }
 }
 function updateFoeHud(){
-  const f=net.foeStat, nm=net.foe?net.foe.name:'친구';
+  const f=net.foeStat, nm=net.foe?net.foe.name:t('친구');
   if(netGame==='throw'){   // 던지는 사람에게는 목숨이 없다. 남은 시간을 대신 보여준다.
     const left=Math.max(0,Math.ceil((net.timeLimit*60-elapsed)/60));
     $('foeHud').innerHTML='<b>🎯 '+escapeHtml(nm)+'</b><span>던진 점수 ⭐ '+(f.score|0)+'</span><span>⏱ '+left+'초</span>';

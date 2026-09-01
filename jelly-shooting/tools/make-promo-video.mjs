@@ -149,9 +149,9 @@ const SFX_SHIM = `(()=>{
   (function fps(){ __fc++; const n=Date.now();
     if(n-__fl>=1000){ window.__fps.push(Math.round(__fc*1000/(n-__fl))); __fc=0; __fl=n; }
     requestAnimationFrame(fps); })();
-  window.__st = [];                      // 배경음악용 상태 [시각, 판이 도는가, 던지는 쪽인가]
+  window.__st = [];                      // 배경음악용 상태 [시각, 어떤 곡인가]
   window.__stT = setInterval(()=>{
-    try{ __st.push([Date.now()-window.__t0, running?1:0, throwerAlive?1:0]); }catch(e){}
+    try{ __st.push([Date.now()-window.__t0, (typeof bgmWant==='function')?bgmWant():(running?'main':null)]); }catch(e){}
   }, 200);
   return window.__t0; })()`;
 
@@ -526,17 +526,23 @@ const run = async () => {
     soundOn=true; bgmOn=true; bgmGain=null; bgmCur=null; bgmNext=0; bgmStep=0;
     // 영상에서는 음악을 처음부터 끝까지 깐다(게임에서는 판이 돌 때만 나온다).
     // 표지·꾸미기·결과 화면이 무음이면 '가편'처럼 들린다.
-    bgmVol=()=>(bgmCur==='throw'?0.17:0.20);
-    // 배경음악 — 게임의 bgmTick 을 상태 표에 맞춰 돌린다.
-    // 던지는 쪽일 때만 곡이 바뀌고, 그 밖에는 늘 '판이 도는 중'으로 둔다.
-    const st2 = states.length ? states : [[0,1,0]];
+    const REAL_VOL=bgmVol;
+    bgmVol=(n)=>Math.min(0.22,(REAL_VOL(n)||0.15)*1.35);
+    // 배경음악 — 게임의 bgmTick 을 '그때 어떤 곡이었나' 표에 맞춰 돌린다.
+    // bgmForce 에 곡 이름을 넣으면 bgmWant 가 그걸 그대로 쓴다.
+    const st2 = states.length ? states : [[0,'main']];
     const lastT = st2[st2.length-1][0];
+    const seen = {};
     for(let t=0; t<=lastT+1500; t+=200){
       const near = st2.reduce((a,b)=>Math.abs(b[0]-t)<Math.abs(a[0]-t)?b:a, st2[0]);
       NOW=(t+off)/1000; if(NOW<0) continue;
-      throwerAlive=!!near[2]; running=!throwerAlive;
+      // 화면이 게임 밖(꾸미기·결과)일 때는 앞 곡을 이어 둔다 — 무음보다 낫다
+      bgmForce = near[1] || bgmCur || 'main';
+      seen[bgmForce]=(seen[bgmForce]||0)+1;
       try{ bgmTick(); }catch(e){}
     }
+    bgmForce=null;
+    window.__bgmSeen=seen;
     // 효과음
     for(const [f,a,t] of log){
       NOW=(t+off)/1000; if(NOW<0) continue;
@@ -557,12 +563,17 @@ const run = async () => {
     const ab=await new Blob(chunks,{type:'audio/webm'}).arrayBuffer();
     const u=new Uint8Array(ab); let s='';
     for(let i=0;i<u.length;i+=0x8000) s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));
-    return {b64:btoa(s), dur:buf.duration};
+    return {b64:btoa(s), dur:buf.duration, bgm:window.__bgmSeen||{}};
   })([${JSON.stringify(sfx.log)}, ${JSON.stringify(sfx.st)}, ${audioDur}, ${audioOffset}])`);
   const audio = join(OUT, `__audio-${LANG}.webm`);
   writeFileSync(audio, Buffer.from(abuf.b64, 'base64'));
   console.log('   🎵 소리 ' + abuf.dur.toFixed(1) + '초 ('
     + Math.round(Buffer.from(abuf.b64, 'base64').length / 1024) + 'KB)');
+  // 어떤 곡이 몇 번 나왔나 — 보스·핵불닭 곡이 0 이면 그 장면 음악이 안 들어간 것이다
+  const bgm = abuf.bgm || {};
+  const bgmLine = Object.keys(bgm).map(k => k + ' ' + (bgm[k] * 0.2).toFixed(1) + '초').join(' · ');
+  console.log('   🎶 곡: ' + (bgmLine || '(없음)'));
+  for (const need of ['main', 'boss', 'fire']) if (!bgm[need]) console.log('   ⚠ ' + need + ' 곡이 한 번도 안 나왔습니다');
   await browser.close();
 
   // ── 합치기 ──
