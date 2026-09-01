@@ -448,6 +448,9 @@ const run = async () => {
     throwScore=15200; score=15200; net.myScore=15200;
     if(aiOn){ aiS.score=9800; }
     if(throwerAlive) throwerFinish(); else gameOver();
+    // 끝내는 함수가 화면 숫자를 자기 값으로 다시 쓴다. 몇 초 플레이한 점수(1,620점)가
+    // 마지막 장면에 남으면 초라해서, 끝난 뒤에 시연용 값으로 한 번 더 고정한다.
+    try{ $('finalScore').textContent='15200'; }catch(e){}
     return 1; })()`);
   await waitFor(`!$('overScreen').classList.contains('hide')`, 8000, '결과 화면');
   await sleep(1600);
