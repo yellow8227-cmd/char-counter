@@ -18,6 +18,11 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='9' fill='%2337352f'/%3E%3Crect x='6' y='6.5' width='6.5' height='7' rx='1.2' fill='%23f6f5f2'/%3E%3Crect x='51.5' y='6.5' width='6.5' height='7' rx='1.2' fill='%23f6f5f2'/%3E%3Crect x='6' y='17.5' width='6.5' height='7' rx='1.2' fill='%23f6f5f2'/%3E%3Crect x='51.5' y='17.5' width='6.5' height='7' rx='1.2' fill='%23f6f5f2'/%3E%3Crect x='6' y='28.5' width='6.5' height='7' rx='1.2' fill='%23f6f5f2'/%3E%3Crect x='51.5' y='28.5' width='6.5' height='7' rx='1.2' fill='%23f6f5f2'/%3E%3Crect x='6' y='39.5' width='6.5' height='7' rx='1.2' fill='%23f6f5f2'/%3E%3Crect x='51.5' y='39.5' width='6.5' height='7' rx='1.2' fill='%23f6f5f2'/%3E%3Crect x='6' y='50.5' width='6.5' height='7' rx='1.2' fill='%23f6f5f2'/%3E%3Crect x='51.5' y='50.5' width='6.5' height='7' rx='1.2' fill='%23f6f5f2'/%3E%3Crect x='18.5' y='22' width='27' height='20' rx='1.5' fill='%23f6f5f2'/%3E%3C/svg%3E">
 <link rel="icon" type="image/svg+xml" sizes="any" href="icon-v8.svg?v=8">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v8.png?v=8">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 
 <!--
   링크 미리보기 카드 (카카오톡 · 슬랙 · 페이스북 · 엑스 등)
@@ -78,6 +83,8 @@
   --acc:#37352f; --acc2:#54514a; --accdim:#eceae4; --accbd:#d2d0c9; --onacc:#fdfcfa;
   /* 유일한 유채색 — 잉크블루. 포커스 · 링크 · 영문 필드에만 쓴다 */
   --sig:#3c6191; --sigdim:#eaeff6; --sigbd:#c4d0e0;
+  /* 소개 화면(about.html)과 같은 인디고. 홈 히어로에서만 쓴다 */
+  --acci:#3a57cf; --onacci:#ffffff;
   --teal:#3a6b52; --tealdim:#eaf0ec; --tealbd:#c5d4c9; --red:#96382d; --blue:#3c6191;
   --outbg:#f2f1ec; --outtx:#3a3831; --entx:#3a4c66; --ph:#9b9992;
   --sb:#dcdad3; --sb2:#c0beb6;
@@ -106,6 +113,7 @@
   --tx:#c6c0b4; --tx2:#a09a8e; --tx3:#9a9488;
   --acc:#c6c0b4; --acc2:#a8a296; --accdim:#3a3630; --accbd:#524c43; --onacc:#262420;
   --sig:#8caad2; --sigdim:#262c34; --sigbd:#3d4754;
+  --acci:#7b93f5; --onacci:#171922;
   --teal:#7cb394; --tealdim:#232d26; --tealbd:#3a483d; --red:#d08a7e; --blue:#8caad2;
   --outbg:#221f1b; --outtx:#bdb7ab; --entx:#bfc8d6; --ph:#6e685e;
   --sb:#413c34; --sb2:#544e45;
@@ -537,12 +545,12 @@ kbd{font-family:var(--mono);font-size:11px;background:transparent;border:1px sol
 .hero::before{left:26px;top:24px;border-left:1px solid var(--heroline);border-top:1px solid var(--heroline)}
 .hero::after{right:26px;bottom:24px;border-right:1px solid var(--heroline);border-bottom:1px solid var(--heroline)}
 .hero>*{position:relative;z-index:1}
-.badge{display:inline-flex;align-items:center;gap:14px;font-size:9.5px;font-weight:700;
-  letter-spacing:.22em;text-transform:uppercase;color:var(--herodim);
+.badge{display:inline-flex;align-items:center;gap:12px;font-size:12px;font-weight:700;
+  letter-spacing:.06em;text-transform:none;color:var(--acci);
   background:none;border:0;padding:0;border-radius:0}
-.badge::before{content:"";width:38px;height:1px;background:var(--heroline)}
-.hero h1{font-family:var(--disp);font-size:clamp(30px,4.5vw,52px);line-height:1.22;font-weight:700;
-  margin:26px 0 0;letter-spacing:-.018em;text-wrap:balance;max-width:24ch}
+.badge::before{content:"";width:38px;height:1px;background:var(--acci);opacity:.45}
+.hero h1{font-family:var(--sans);font-size:clamp(30px,4.7vw,52px);line-height:1.2;font-weight:800;
+  margin:26px 0 0;letter-spacing:-.038em;text-wrap:balance;max-width:24ch}
 .brw{display:inline}
 .hero h1{color:var(--herotx)}
 .hero .lead{color:var(--herodim);font-size:14px;line-height:1.9;max-width:56ch;margin:20px 0 0}
@@ -551,12 +559,15 @@ kbd{font-family:var(--mono);font-size:11px;background:transparent;border:1px sol
 /* 검은 바탕 위에서는 버튼도 뒤집는다 */
 .hero .btn{background:transparent;border-color:var(--heroline);color:var(--herotx)}
 .hero .btn:hover{background:var(--bg);border-color:var(--tx2)}
-.hero .btn.pri{background:var(--herotx);border-color:var(--herotx);color:var(--herobg)}
-.hero .btn.pri:hover{background:var(--acc2);border-color:var(--acc2)}
+.hero .btn.pri{background:var(--acci);border-color:var(--acci);color:var(--onacci);font-weight:700}
+.hero .btn.pri:hover{background:var(--acci);border-color:var(--acci);filter:brightness(1.12)}
 .hero .btn.gh{border-color:transparent;color:var(--tx2)}
 .hero .btn.gh:hover{border-color:var(--line2);color:var(--tx)}
 .cta{display:flex;gap:11px;flex-wrap:wrap;margin-top:34px}
 .btn.lg{padding:14px 24px;font-size:12.5px;border-radius:0;letter-spacing:.04em}
+.herowhy{margin:22px 0 0;font-size:12.5px}
+.herowhy a{color:var(--acci);text-decoration:none;font-weight:700;letter-spacing:.01em}
+.herowhy a:hover{text-decoration:underline;text-underline-offset:3px}
 .herofoot{display:flex;gap:0;flex-wrap:wrap;margin-top:48px;padding-top:0;border-top:1px solid var(--heroline)}
 .herofoot div{font-size:10.5px;color:var(--herodim);letter-spacing:.14em;font-weight:600;
   text-transform:uppercase;line-height:1.5;flex:1;min-width:150px;padding:20px 20px 0 0}
@@ -565,22 +576,24 @@ kbd{font-family:var(--mono);font-size:11px;background:transparent;border:1px sol
 
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
 .stepbox{background:none;border:0;border-top:1px solid var(--line2);border-radius:0;padding:16px 0 0}
-.stepbox .n{font-family:var(--mono);font-size:10px;color:var(--tx3);background:none;
-  width:auto;height:auto;border-radius:0;display:block;margin-bottom:12px;letter-spacing:.16em}
-.stepbox h4{margin:0 0 8px;font-size:14.5px;font-family:var(--disp);letter-spacing:.01em}
+.stepbox .n{font-family:var(--disp);font-size:12px;color:var(--acci);background:none;
+  width:auto;height:auto;border-radius:0;display:block;margin-bottom:12px;letter-spacing:.14em;
+  font-weight:700}
+.stepbox h4{margin:0 0 8px;font-size:15px;font-family:var(--sans);font-weight:700;
+  letter-spacing:-.025em}
 .stepbox p{margin:0;font-size:12.5px;color:var(--tx2);line-height:1.8}
 
 .fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(252px,1fr));gap:16px}
 .fcard{display:block;text-align:left;background:transparent;border:1px solid var(--line);
   border-radius:0;padding:22px;cursor:pointer;color:inherit;font:inherit;
   transition:border-color .16s,background .16s}
-.fcard:hover{border-color:var(--tx);background:var(--s1);transform:none}
+.fcard:hover{border-color:var(--acci);background:var(--s1);transform:none}
 .fcard .ic{display:block;margin-bottom:14px;font-family:var(--mono);font-size:9.5px;
   letter-spacing:.2em;color:var(--tx3);text-transform:uppercase}
-.fcard h4{margin:0 0 8px;font-size:14.5px;font-family:var(--disp);letter-spacing:.01em;
-  display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.fcard h4{margin:0 0 8px;font-size:15px;font-family:var(--sans);font-weight:700;
+  letter-spacing:-.025em;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .fcard p{margin:0;font-size:12.5px;color:var(--tx2);line-height:1.8}
-.fcard .go{display:block;margin-top:16px;font-size:11px;font-weight:700;color:var(--tx);letter-spacing:.1em}
+.fcard .go{display:block;margin-top:16px;font-size:11px;font-weight:700;color:var(--acci);letter-spacing:.1em}
 .fcard:hover .go{color:var(--tx)}
 
 .shd{margin:64px 0 20px}
@@ -706,7 +719,8 @@ footer .logo small{color:var(--tx3)}
         <button class="btn lg" data-go="prompt" data-pmset="quick">한 줄만 적고 프롬프트만</button>
         <button class="btn gh lg" data-go="plan">이야기부터 만들기</button>
       </div>
-      <div class="herofoot" id="homestat"></div>
+      <p class="herowhy"><a href="about.html">이 도구를 왜 만들었는지 &rarr;</a></p>
+    <div class="herofoot" id="homestat"></div>
       <p class="mini" id="homeproj" style="margin-top:12px"></p>
     </div>
 
@@ -1571,7 +1585,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
   <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.
     <a class="sib" href="docs/">문서 — 시대 고증 · 막힐 때 · 프롬프트 길이 ↗</a>
     <a class="sib" href="about.html">씬덱은 무엇을 하는가 ↗</a>
-    <a class="sib" href="../">촬영 배치도 — 화각과 180° 선을 먼저 재 보기 ↗</a><span class="ver">화면 v42 · 2026-08-26</span></div>
+    <a class="sib" href="../">촬영 배치도 — 화각과 180° 선을 먼저 재 보기 ↗</a><span class="ver">화면 v43 · 2026-08-31</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
