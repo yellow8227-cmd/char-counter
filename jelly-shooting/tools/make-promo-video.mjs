@@ -681,10 +681,13 @@ const run = async () => {
   // webm 은 인스타가 안 받고, itch 설명란도 유튜브 링크를 받는다 → mp4(h264+aac)가 공용 화폐다
   if (CAN_ENCODE) {
     const mp4 = join(OUT, `jellimo-promo-${LANG}.mp4`);
-    if (await ff(['-i', dst, '-c:v', 'libx264', '-preset', 'slow', '-crf', '20',
+    // 여기에 scale 이 없어서 원본 430x932 그대로 나왔는데 로그는 860x1864 라고 찍고
+    // 있었다. 유튜브에 430px 를 올리면 거기서 또 압축돼 눈에 띄게 흐려진다. 2배로 키운다.
+    if (await ff(['-i', dst, '-vf', 'scale=860:-2:flags=lanczos',
+                  '-c:v', 'libx264', '-preset', 'slow', '-crf', '20',
                   '-r', String(FPS), '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
                   '-c:a', 'aac', '-b:a', '160k', mp4], '유튜브용 mp4'))
-      console.log('🎬 ' + mp4 + '  (860x1864 · 유튜브·인스타 릴스에 그대로 올리는 판)');
+      console.log('🎬 ' + mp4 + '  (860x1864 · 유튜브용. 인스타 릴스는 make-reels.mjs 가 9:16 로 맞춘다)');
 
 
     // itch 설명란 맨 위에 넣을 움직이는 그림 (소리 없이도 무슨 게임인지 보이게)
