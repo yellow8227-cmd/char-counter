@@ -2957,20 +2957,11 @@ function kindExtras(g,R,cfg,mood){
     g.strokeStyle='#5c7cff';g.lineWidth=R*0.10;g.beginPath();g.arc(0,R*0.14,R*0.88,0.33*Math.PI,0.67*Math.PI);g.stroke();
     g.fillStyle='#ffce3d';g.beginPath();g.arc(0,R*1.02,R*0.10,0,7);g.fill();
   }
-  else if(cfg.kind==='bunny'){                            // 🐰 앞니 + 수염
-    // 앞니 자리 — ω 입은 y=R*0.300 에서 시작해 R*0.415 까지 내려간다(반지름 0.115).
-    // 예전에는 앞니를 0.298~0.432 로 그려서 입보다 아래로 삐져나왔고, 그래서
-    // '이빨이 입 밑에 따로 났다'로 보였다. 입 안에 들어앉게 위로 올리고 짧게 줄인다.
-    // 그리고 입을 크게 벌린 표정에는 아예 안 그린다 — 검은 입 안에 흰 네모가 뜬다
-    // (햄스터는 이미 그렇게 하고 있었는데 토끼만 빠져 있었다).
-    const openM=(mood==='wow'||mood==='wail'||mood==='mad');
-    if(!hurt&&!openM){ g.save();
-    g.shadowColor='rgba(110,70,95,0.42)';g.shadowBlur=R*0.06;g.shadowOffsetY=R*0.018;
-    g.fillStyle='#ffffff';
-    [-1,1].forEach(s2=>{ g.beginPath();
-      g.roundRect(s2>0?R*0.007:-R*0.085,R*0.276,R*0.078,R*0.104,[R*0.012,R*0.012,R*0.036,R*0.036]);
-      g.fill(); });
-    g.restore(); }
+  else if(cfg.kind==='bunny'){                            // 🐰 수염
+    // 앞니는 그리지 않는다. ω 입(내려 굽은 두 호)의 가운데 이음새는 위를 향한 좁은
+    // V 라서 흰 네모가 들어갈 '입 안'이 애초에 없다. 어디에 놓아도 '수염에 흰 조각이
+    // 박힌' 모양이 되고, 세 번 위치를 바꿔봐도 같았다. 큰 배율로 뽑아 비교한 결과
+    // 이빨 없는 ω 입이 유일하게 입으로 읽혔다 — 토끼임은 긴 분홍 귀가 이미 말해준다.
     g.strokeStyle='rgba(120,80,100,0.32)';g.lineWidth=Math.max(1,R*0.028);g.lineCap='round';
     [-1,1].forEach(s=>{ g.beginPath();g.moveTo(s*R*0.40,R*0.26);g.lineTo(s*R*0.86,R*0.20);g.stroke();
       g.beginPath();g.moveTo(s*R*0.40,R*0.33);g.lineTo(s*R*0.84,R*0.38);g.stroke(); });
