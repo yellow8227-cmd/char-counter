@@ -17,9 +17,7 @@
 //
 // 만들어지는 것
 //   press/video/jelly-shooting-promo.webm            소개 영상 (소리 있음, 소개 페이지용)
-//   press/video/jelly-shooting-promo-886x1920.webm   앱 미리보기용 30초 판
 //   press/video/jellimo-promo.mp4                    유튜브·인스타에 올리는 판
-//   press/video/jellimo-promo-30s.mp4                스토리·앱미리보기용 30초 판
 //   press/video/jellimo-play.gif                     itch 설명란에 넣는 움직이는 그림
 //   press/video/frames/*.png                          낱장 (영상에서 뽑음)
 //
@@ -229,6 +227,19 @@ const run = async () => {
   const ev = e => page.evaluate(e).catch(() => null);
   // 글자를 읽을 시간은 최종 영상 기준 — 게임이 절반 속도라 실제로는 그 두 배를 기다린다
   const hold = ms => sleep(ms / SLOW);
+
+  // 장면 바꾸기 — 흰 천을 덮고, 그 뒤에서 판을 정리하고, 다음 판이 뜬 뒤에 천을 걷는다.
+  // 천 없이 바로 갈아 끼우면 홈 화면이 한 번 번쩍이고 지나가 어수선하다.
+  const goHome = async () => {
+    await ev(`__wipeOn()`);
+    await hold(340);                       // 천이 덮이는 동안 (0.32초 페이드)
+    await ev(`(()=>{ running=false; paused=false; boardUnlock(); try{aiStop();}catch(e){} try{netLeave();}catch(e){}
+      ['hud','audioBar','itemBar','pauseBtn','netBar','throwWrap'].forEach(id=>$(id).classList.add('hide'));
+      openStart(); return 1; })()`);
+    await sleep(500);
+  };
+  // 다음 판이 뜬 뒤 천을 걷는다
+  const showAgain = async () => { await ev(`__wipeOff()`); await hold(340); };
   const cap = (t, s, low) => ev(`__cap(${JSON.stringify(t)},${JSON.stringify(s || '')},${!!low})`);
   const capOff = () => ev(`__capOff()`);
   // 진짜로 젤리를 눌러 플레이한다. ms 동안, 대략 gap 마다 한 번.
@@ -308,73 +319,53 @@ const run = async () => {
   await ev(`__cardOff()`);
   await hold(700);                  // 카드가 사라지는 걸 보고 넘어간다 (0.45초 페이드)
 
-  // ── ② 내 캐릭터 꾸미기 ──
-  await cap(TX('내 캐릭터 꾸미기','Make your own jelly'), TX('아홉 종 · 머리 · 피부색 · 악세서리','9 characters · hair · skin tone · accessories'));
-  await tap('#profileBtn');
-  await sleep(1100);
+  // ── ② 내 캐릭터 — 얼굴이 바뀌는 걸 보여 준다 ──
+  // 예전 판에서는 선택지를 누르려고 화면을 아래로 굴렸고, 그 바람에 캐릭터 얼굴이
+  // 위로 밀려 사라졌다. 누른 뒤 곧바로 맨 위로 되돌려 얼굴을 크게 보여 준다.
+  // 고르는 것도 둘만 — 피부색과 머리. 얼굴이 눈에 띄게 달라지는 두 가지다.
+  const toFace = () => ev(`(()=>{ const s=$('profileScreen'); if(s) s.scrollTop=0; return 1; })()`);
+  await ev(`__wipeOn()`); await hold(340);
+  await ev(`(()=>{ openProfile('startScreen'); buildProfile&&buildProfile(); return 1; })()`);
+  await sleep(500);
+  await toFace();
+  await showAgain();
+  await cap(TX('내 캐릭터를 만들어요','Make your own jelly'),
+            TX('아홉 종 · 머리 12가지 · 피부색 8가지','9 characters · 12 hairstyles · 8 skin tones'));
+  await hold(900);
   await tap('#kindOpts button', 8);          // 여자아이 (9종 중 마지막 — 5번은 잠긴 여우다)
-  await sleep(1000);
-  await tap('#colorOpts button', 3);         // 옷 색깔
-  await sleep(850);
-  await tap('#skinOpts button', 5);          // 피부색 — 이번에 새로 생긴 칸
-  await sleep(850);
-  await tap('#hairOpts button', 4);          // 머리 모양 (12가지)
-  await sleep(950);
-  await tap('#accOpts button', 3);           // 악세서리
-  await sleep(1200);
+  await toFace(); await hold(1100);
+  await tap('#skinOpts button', 5);          // 피부색
+  await toFace(); await hold(1100);
+  await tap('#hairOpts button', 4);          // 머리 모양
+  await toFace(); await hold(1300);
   await capOff();
-  await tap('#profBackBtn');
-  await sleep(800);
-  mark('꾸미기');
+  await hold(400);
+  mark('내 캐릭터');
 
-  // ── ③ 혼자 하기 — 난이도 고르고 진짜로 플레이 ──
-  await tap('#playBtn');
-  await sleep(700);
-  await cap(TX('난이도 네 단계','Five difficulties'), TX('아이도 어른도 자기 속도로','Kids and adults, each at their own speed'));
-  // 난이도 칸을 글자로 찾으면 언어를 바꿨을 때 헛나간다 → 게임이 쓰는 id(spicy)로 찾는다
-  // 난이도 칸을 글자로 찾으면 영어판에서 헛나간다 → 자리로 찾는다 (순한맛·보통맛·매운맛·핵불닭)
-  const spicy = await page.evaluate(`(()=>{ const b=document.querySelectorAll('#modeOpts button')[2];
-    if(!b) return 0;
-    const r=b.getBoundingClientRect(); return {x:r.left+r.width/2,y:r.top+r.height/2}; })()`);
-  if (spicy && spicy.x) { await page.mouse.click(spicy.x, spicy.y); await sleep(1100); }
-  await capOff();
-  await tap('#startGameBtn');
+  // ── ③ 혼자 하기 — 바로 판으로 들어간다 ──
+  // 꾸미기·난이도 고르기 장면은 뺐다. 메뉴를 여러 번 눌러 가는 화면이라
+  // '플레이'가 아니라 'UI 조작'으로 보이고, 그게 영상이 어색한 가장 큰 원인이었다.
+  // 꾸민 캐릭터는 판 안에서 계속 보이므로 준비 단계에서 미리 입혀 둔다.
+  await ev(`__wipeOn()`); await hold(340);
+  await ev(`(()=>{ try{ openStart(); }catch(e){} mode=userMode='spicy'; startGame(); return 1; })()`);
   await waitFor('running', 9000, '혼자 하기 시작');
+  await showAgain();
   await sleep(500);
   // 트레일러용: 목숨을 넉넉히, 아이템이 자주 떨어지게
   await ev(`(()=>{ lives=6; updateHud();
     window.__rush=setInterval(()=>{ try{ if(running){ if(lives<4){lives=4;updateHud();}
       if(dropTimer>90) dropTimer=45; } }catch(e){} },600); return 1; })()`);
-  await cap(TX('톡 터트리면 콤보!','Tap. It pops. Chain it.'), TX('30초면 배우고, 3분이면 한 판','Learn it in 3 seconds. One round is 3 minutes.'));
-  await play(7200, 230);
+  await cap(TX('톡 터트리면 콤보!','Tap. It pops. Chain it.'), TX('규칙은 3초면 배워요','Three seconds to learn the whole rule'));
+  await play(6000, 230);
   await capOff();
-  await sleep(300);
-
-  // 아이템 네 개를 차례로 써 본다
-  await cap(TX('아이템으로 위기 탈출','Items pull you out of trouble'), TX('하트팩 · 슬로우 · 2배 점수 · 자석','Heart pack · slow-mo · double score · magnet'));
-  for (const i of [1, 3, 4, 2]) {           // 슬로우 → 2배 → 자석 → 폭탄청소
-    await tap('#itemBar .itembtn', i);
-    await play(1500, 240);
-  }
-  await capOff();
-  await play(1200, 240);
+  // 아이템은 하나만 — 네 개를 차례로 누르면 그것도 '메뉴 조작'이 된다
+  await tap('#itemBar .itembtn', 3);        // 2배 점수
+  await play(3000, 230);
   await ev(`(()=>{ clearInterval(window.__rush); return 1; })()`);
   mark('혼자 하기');
 
   // ── ③-b ♾ 끝없는 모드의 거대 보스 ──
   // 최근에 들어온 내용인데 예전 영상에는 없었다. 판에 '목표'가 생기는 장면이라 빼면 아깝다.
-  // 장면 바꾸기 — 흰 천을 덮고, 그 뒤에서 판을 정리하고, 다음 판이 뜬 뒤에 천을 걷는다.
-  // 천 없이 바로 갈아 끼우면 홈 화면이 한 번 번쩍이고 지나가 어수선하다.
-  const goHome = async () => {
-    await ev(`__wipeOn()`);
-    await hold(340);                       // 천이 덮이는 동안 (0.32초 페이드)
-    await ev(`(()=>{ running=false; paused=false; boardUnlock(); try{aiStop();}catch(e){} try{netLeave();}catch(e){}
-      ['hud','audioBar','itemBar','pauseBtn','netBar','throwWrap'].forEach(id=>$(id).classList.add('hide'));
-      openStart(); return 1; })()`);
-    await sleep(500);
-  };
-  // 다음 판이 뜬 뒤 천을 걷는다
-  const showAgain = async () => { await ev(`__wipeOff()`); await hold(340); };
   await goHome();
   await ev(`(()=>{ nextEndless=true; restoreMode(); startGame(); return 1; })()`);
   await waitFor('running', 9000, '끝없는 모드 시작');
@@ -439,78 +430,35 @@ const run = async () => {
   await play(4200, 230);
   await capOff();
   await sleep(200);
-  await cap(TX('방해를 던져요','Throw junk at the others'), TX('지그재그 · 안개 · 폭탄 세트 · 스피드업','Zigzag · fog · bomb pack · speed-up'));
-  for (const h of ['jelly', 'zig', 'bomb', 'fog', 'rush']) {
+  await cap(TX('방해를 던져요','Throw junk at the others'), TX('내가 터트린 게 친구 화면으로','What you pop lands on their screen'));
+  for (const h of ['zig', 'fog']) {          // 눈에 제일 잘 띄는 둘만 — 다섯 개를 다 누르면 또 메뉴 조작이 된다
     await tap('#hex_' + h);
-    await play(1600, 230);
+    await play(2200, 230);
   }
   await capOff();
   await play(1500, 230);
   await ev(`(()=>{ clearInterval(window.__rush); return 1; })()`);
   mark('실시간 던전');
 
-  // ── ⑤ 던지기 게임 — 내가 던지는 쪽 ──
-  await goHome();
-  await ev(`(()=>{ aiGame='throw'; aiRole='thrower'; aiTier='smart'; netModeName='normal';
-    aiGo(); return 1; })()`);
-  await waitFor('throwerAlive', 12000, '던지기 시작');
-  await showAgain();
-  await cap(TX('던지기 게임','Throw Game'), TX('한 명은 던지고, 한 명은 터트려요','One throws, the other pops. Then you swap.'));
-  await sleep(600);
-  await ev(`(()=>{ window.__nrg=setInterval(()=>{ try{ tEnergy=ENERGY_MAX; refreshThrowBar(); }catch(e){} },400);
-    return 1; })()`);
-  await capOff();
-  // 무기 네 가지를 차례로 — 일반 · 폭탄 · 유령 · 젤리비
-  const ARMS = [[0, TX('🍡 일반 젤리', '🍡 Plain jelly'), TX('누르는 대로 바로 나가요', 'Goes exactly where you tap')],
-                [2, TX('💣 폭탄', '💣 Bomb'), TX('터뜨리면 상대 목숨이 깎여요', 'Pop it and they lose a life')],
-                [1, TX('👻 유령 젤리', '👻 Ghost jelly'), TX('반투명해서 잘 안 보여요', 'See-through. Good luck spotting it.')],
-                [3, TX('🌧️ 젤리비', '🌧️ Jelly rain'), TX('한 번에 다섯 개!', 'Five at once!')]];
-  for (const [i, t, s] of ARMS) {
-    await tap('#throwBar .twbtn', i);
-    await cap(t, s);
-    for (const f of [0.3, 0.62, 0.45]) { await throwAtX(f); await sleep(430); }
-    await sleep(500);
-    await capOff();
-    await sleep(150);
-  }
-  // 낙하 속도도 던지는 사람이 돌린다
-  await cap(TX('속도도 내가 정해요','The thrower sets the speed'), TX('느리게 · 보통 · 빠르게 · 초고속','Slow · normal · fast · insane'));
-  await tap('#spdBar .spdbtn', 3);
-  for (const f of [0.35, 0.7, 0.5]) { await throwAtX(f); await sleep(430); }
-  await sleep(700);
-  await capOff();
-  await ev(`(()=>{ clearInterval(window.__nrg); return 1; })()`);
-  mark('던지기 게임');
 
   // ── ⑥ 이겼을 때 ──
   await ev(`(()=>{
     // 영상은 1분 남짓이라 실제 2분 판의 점수까지 못 쌓인다. 스토어 스크린샷과 같은
     // '시연용 점수'를 넣어 결과 화면이 실제 한 판처럼 보이게 한다.
-    throwScore=15200; score=15200; net.myScore=15200;
+    score=15200; net.myScore=15200;
     if(aiOn){ aiS.score=9800; }
-    if(throwerAlive) throwerFinish(); else gameOver();
+    gameOver();
     // 끝내는 함수가 화면 숫자를 자기 값으로 다시 쓴다. 몇 초 플레이한 점수(1,620점)가
     // 마지막 장면에 남으면 초라해서, 끝난 뒤에 시연용 값으로 한 번 더 고정한다.
     try{ $('finalScore').textContent='15200'; }catch(e){}
     return 1; })()`);
   await waitFor(`!$('overScreen').classList.contains('hide')`, 8000, '결과 화면');
   await hold(1800);
-  await cap(TX('이기면 춤추고 · 지면 분해요','Winner dances. Loser sulks.'), TX('표정 · 자세 · 말풍선이 판마다 달라요','Face, pose and speech bubble change every round'), true);
-  await sleep(1600);
-  await tap('#sayRow .minichip', 1);              // 말풍선 바꾸기 (메시지 보내듯)
-  await sleep(1500);
-  await tap('#sayRow .minichip', 2);
-  await sleep(1600);
+  await cap(TX('이기면 춤추고 · 지면 분해요','Winner dances. Loser sulks.'), TX('그 판의 표정이 그림으로 남아요','The round ends as a picture you can share'), true);
+  await hold(3200);                 // 그림을 볼 시간 — 여기가 이 게임에서 제일 잘 퍼지는 장면이다
   await capOff();
-  await sleep(300);
-  // 결과를 그림으로 공유 — 미리보기까지 보여준다
-  await cap(TX('결과는 그림으로 공유','Share the ending as a picture'), TX('이긴 표정과 진 표정이 그대로 담겨요','Both faces end up in the same frame'));
-  await ev(`(()=>{ try{ shareOpen(); }catch(e){} return 1; })()`);
-  await hold(2600);
-  await ev(`(()=>{ try{ shareClose(); }catch(e){} return 1; })()`);
-  await capOff();
-  await sleep(500);
-  mark('결과·공유');
+  await hold(500);
+  mark('결과');
 
   // ── ⑦ 마무리 표지 ──
   await ev(`__wipeOn()`); await hold(340);      // 결과 화면에서 카드로 부드럽게
@@ -665,11 +613,6 @@ const run = async () => {
                '소개 페이지용 작은 판'))
     console.log('🎬 ' + web + '  (430x932 · 용량만 줄인 판 · 소개 페이지·공유용)');
 
-  // 애플 '앱 미리보기'는 15~30초만 받고, 세로 크기는 886x1920 을 쓴다
-  const cut = join(OUT, `jellimo-promo-${LANG}-886x1920.webm`);
-  if (await ff(['-i', dst, '-t', '29.5', '-vf', 'scale=886:1920', '-c:v', 'libvpx', '-b:v', '2400k',
-                '-c:a', 'copy', cut], '앱 미리보기용 판'))
-    console.log('🎬 ' + cut + '  (886x1920 · 앞 29.5초 · 앱 미리보기용)');
   // ── 유튜브·인스타·itch 에 올릴 판 ──
   // webm 은 인스타가 안 받고, itch 설명란도 유튜브 링크를 받는다 → mp4(h264+aac)가 공용 화폐다
   if (CAN_ENCODE) {
@@ -679,11 +622,6 @@ const run = async () => {
                   '-c:a', 'aac', '-b:a', '160k', mp4], '유튜브용 mp4'))
       console.log('🎬 ' + mp4 + '  (860x1864 · 유튜브·인스타 릴스에 그대로 올리는 판)');
 
-    const mp4s = join(OUT, `jellimo-promo-${LANG}-30s.mp4`);
-    if (await ff(['-i', dst, '-t', '29.5', '-vf', 'scale=886:1920', '-c:v', 'libx264',
-                  '-preset', 'slow', '-crf', '21', '-r', String(FPS), '-pix_fmt', 'yuv420p',
-                  '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '160k', mp4s], '30초 mp4'))
-      console.log('🎬 ' + mp4s + '  (886x1920 · 앞 29.5초 · 스토리·앱미리보기용)');
 
     // itch 설명란 맨 위에 넣을 움직이는 그림 (소리 없이도 무슨 게임인지 보이게)
     const gif = join(OUT, `jellimo-play-${LANG}.gif`);
