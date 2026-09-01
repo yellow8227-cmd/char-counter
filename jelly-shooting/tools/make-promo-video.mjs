@@ -346,8 +346,11 @@ const run = async () => {
     window.__rush=setInterval(()=>{ try{ if(running&&lives<4){lives=4;updateHud();} }catch(e){} },600);
     return 1; })()`);
   await sleep(900);
-  await ev(`(()=>{ if(!boss) bossSpawn(); return 1; })()`);
-  await sleep(1500);
+  await ev(`(()=>{ if(!boss) bossSpawn();
+    if(boss){ boss.y = boss.r*1.28;            // 몸통이 다 보이는 자리로 바로
+              boss.hp = boss.hpMax = 30; }      // 5초 만에 안 죽게 (체력바가 줄어드는 걸 보여 준다)
+    return 1; })()`);
+  await sleep(1900);
   await capOff();
   // 보스를 실제로 때린다 (보스는 몸통을 누르면 맞는다)
   const hitBoss = async () => {
@@ -357,8 +360,8 @@ const run = async () => {
         clientX:r.left+boss.x/W*r.width, clientY:r.top+boss.y/H*r.height}));
       return 1; })()`).catch(() => 0);
   };
-  for (let i = 0; i < 26; i++) { await hitBoss(); await page.evaluate(POP).catch(() => 0); await sleep(190); }
-  await sleep(1200);
+  for (let i = 0; i < 34; i++) { await hitBoss(); await page.evaluate(POP).catch(() => 0); await sleep(190); }
+  await sleep(1400);
   await ev(`(()=>{ clearInterval(window.__rush); return 1; })()`);
   mark('거대 보스');
 
@@ -585,7 +588,7 @@ const run = async () => {
   });
   const at = f => (dur * f).toFixed(1);
   const STILLS = [['01-cover.png', at(0.030)], ['02-dress.png', at(0.115)], ['03-play.png', at(0.255)],
-                  ['04-item.png', at(0.345)], ['05-boss.png', at(0.435)], ['06-fire.png', at(0.520)],
+                  ['04-item.png', at(0.345)], ['05-boss.png', at(0.385)], ['06-fire.png', at(0.520)],
                   ['07-dungeon.png', at(0.640)], ['08-throw.png', at(0.790)],
                   ['09-win.png', at(0.910)], ['10-end.png', at(0.987)]];
   for (const [name, t] of STILLS) await ff(['-ss', t, '-i', dst, '-frames:v', '1', join(FRM, name)], name);

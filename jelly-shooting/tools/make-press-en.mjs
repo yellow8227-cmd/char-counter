@@ -314,6 +314,17 @@ R(`<p class="fine">🍡 젤리모 · Jellimo — 혼자 만든 웹 게임이에�
   `<p class="fine">🍡 Jellimo — a web game made by one person.<br>
     Screens and video were captured in a demo state (scores, coins) · Title face: Jua (SIL OFL 1.1)</p>`);
 
+/* ───────── 그림도 영어판으로 ─────────
+   화면 사진 안의 글자(문구·닉네임·말풍선)가 한국어면 영어 페이지가 반쪽이 된다.
+   press/shots/en/ 은  node tools/make-store-shots.mjs --en  으로 만든다. */
+const EN_SHOTS = ['appstore-1-play.png', 'appstore-2-dungeon.png', 'appstore-3-throw.png',
+                  'appstore-5-result.png', 'chars-row.png', 'faces-row.png', 'dress-row.png',
+                  'cover-1200x630.png'];
+for (const f of EN_SHOTS) {
+  if (!s.includes('shots/' + f)) { missed.push('그림 ' + f); continue; }
+  s = s.split('shots/' + f).join('shots/en/' + f);
+}
+
 /* ───────── 언어 바꾸는 단추 ───────── */
 /* ───────── 언어 바꾸는 단추 ─────────
    한국어판에 이미 단추가 박혀 있다. 그 단추의 '지금 이 언어' 표시만 영어 쪽으로 옮긴다.

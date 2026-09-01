@@ -4547,10 +4547,52 @@ const I18N_ROWS=[
   ["보스를 터트려요!","Pop the boss!","ボスをはじこう！"],
   ["⚡ 충전 완료!","⚡ Fully charged!","⚡ チャージ完了！"],
   ["유령이다! 👻","A ghost! 👻","ゆうれいだ！ 👻"],
+  ["명","","人"],
+  ["일반","Plain","ふつう"],
+  ["유령","Ghost","ゆうれい"],
+  ["폭탄","Bomb","ばくだん"],
+  ["젤리비","Jelly rain","ゼリーの雨"],
+  ["무료","Free","むりょう"],
+  ["기본 젤리 — 누르는 대로 나가요","Plain jelly — goes where you tap","ふつうのゼリー — 押したところへ"],
+  ["반투명해서 잘 안 보여요 (⚡26)","See-through and hard to spot (⚡26)","半透明で見えにくい (⚡26)"],
+  ["터뜨리면 목숨이 깎여요 (⚡18)","Pops and takes a life (⚡18)","割れると 目が1つ減る (⚡18)"],
+  ["한 번에 5개! (⚡35)","Five at once! (⚡35)","一度に5個！ (⚡35)"],
+  ["(나)","(you)","(じぶん)"],
+  ["💀탈락","💀out","💀脱落"],
+  ["✅생존","✅alive","✅生存"],
+  ["🏆 우승! 마지막까지 살아남았어요","🏆 You win! Last one standing","🏆 優勝！ 最後まで生きのこった"],
+  ["😢 %d등","😢 #%d","😢 %d位"],
+  ["%d명 중","of %d","%d人中"],
+  ["메롱~ 😝","Nyah~ 😝","べー！ 😝"],
+  ["내가 이겼다~!! 🏆","I win!! 🏆","勝った～！！ 🏆"],
+  ["한 판 더 해도 내가 이김~! 😎","Rematch? I'd win that too 😎","もう一回でも勝つよ～ 😎"],
+  ["잘했어 👏","Good game 👏","よくやった 👏"],
+  ["분하다… 😤","So close… 😤","くやしい… 😤"],
+  ["다시 해! 🔥","Again! 🔥","もう一回！ 🔥"],
+  ["한 판 더! 💪","One more! 💪","あと一回！ 💪"],
+  ["축하해 🎉","Congrats 🎉","おめでとう 🎉"],
+  ["빰빠라빰빰~ 🎺","Ta-daaa~ 🎺","パパパパーン～ 🎺"],
+  ["얏호! 신난다 🎉","Yesss! 🎉","やったー！ 🎉"],
+  ["이겼지~ ✌️","Told you ✌️","勝ったよ～ ✌️"],
+  ["좋았어! 😊","Nice one! 😊","よかった！ 😊"],
+  ["흥! 분하다 😤","Hmph! 😤","ふん！ くやしい 😤"],
+  ["아 진짜~ 😖","Oh come on~ 😖","もう～ 😖"],
+  ["으앙… 😭","Waaah… 😭","うわーん… 😭"],
+  ["✏️ 이름 바꾸기 (%d🪙)","✏️ Change name (%d🪙)","✏️ 名前を変える (%d🪙)"],
+  ["✅ 새 이름으로 정하기","✅ Use the new name","✅ 新しい名前にする"],
+  ["— 이 이름이 내 것이에요. 랭킹·채팅에 이 이름으로 올라가요.","— this name is yours. It shows on rankings and in chat.","— この名前があなたのものです。ランキングとチャットに出ます。"],
+  ["바꾸려면 %s이 들어요.","Changing it costs %s.","変えるには %s かかります。"],
+  ["나중에 바꾸려면 %s이 들어요.","Changing it later costs %s.","あとで変えるには %s かかります。"],
+  ["한 번 정하면 이 이름이 내 것이 돼요. 랭킹·채팅에 이 이름으로 올라가요.","Once you set it, this name is yours. It shows on rankings and in chat.","一度決めると この名前があなたのものになります。ランキングとチャットに出ます。"],
+  ["· 지금까지 %d개 만들었어요 (값은 계속 같아요)","· %d made so far (the price never changes)","· これまで%d個 作りました (値段は同じです)"],
+  ["— 몇 개를 만들어도 같은 값이에요","— the price is the same however many you make","— 何個作っても同じ値段です"],
   ["받았다! 🟣","Incoming! 🟣","もらった！ 🟣"],
 ];
 const I18N={en:{},ja:{}};
-I18N_ROWS.forEach(r=>{ I18N.en[r[0]]=r[1]; I18N.ja[r[0]]=r[2]; });
+I18N_ROWS.forEach(r=>{
+  // 같은 열쇠를 두 번 넣으면 뒤엣것이 앞엣것을 조용히 덮어쓴다 — 실제로 한 번 그랬다.
+  if(I18N.en[r[0]]!=null && I18N.en[r[0]]!==r[1]) console.warn('사전에 같은 말이 두 번:', r[0]);
+  I18N.en[r[0]]=r[1]; I18N.ja[r[0]]=r[2]; });
 function langGuess(){
   const n=(navigator.language||'ko').toLowerCase();
   if(n.startsWith('ko')) return 'ko';
@@ -6169,11 +6211,14 @@ function syncNickUI(){
     b.textContent=locked?('✏️ 이름 바꾸기 ('+NICK_FEE.toLocaleString()+'🪙)')
                         :(nickChanging?'✅ 새 이름으로 정하기':'✅ 이 이름으로 정하기');
     b.classList.toggle('gold',locked); }
-  const h=$('nickHint'); if(h) h.innerHTML=locked
-    ? '🙋 <b>'+escapeHtml(nick)+'</b> — 이 이름이 내 것이에요. 랭킹·채팅에 이 이름으로 올라가요.'
-      +'<br>바꾸려면 <b>🪙 '+NICK_FEE.toLocaleString()+'코인</b>이 들어요.'
-    : '한 번 정하면 <b>이 이름이 내 것</b>이 돼요. 랭킹·채팅에 이 이름으로 올라가요.'
-      +'<br>나중에 바꾸려면 <b>🪙 '+NICK_FEE.toLocaleString()+'코인</b>이 들어요.'; }
+  const h=$('nickHint'); if(h){
+    const fee='<b>'+escapeHtml(t('🪙 %d코인').replace('%d',NICK_FEE.toLocaleString()))+'</b>';
+    h.innerHTML=locked
+      ? '🙋 <b>'+escapeHtml(nick)+'</b>'
+        +escapeHtml(t(' — 이 이름이 내 것이에요. 랭킹·채팅에 이 이름으로 올라가요.'))
+        +'<br>'+escapeHtml(t('바꾸려면 %s이 들어요.')).replace('%s',fee)
+      : escapeHtml(t('한 번 정하면 이 이름이 내 것이 돼요. 랭킹·채팅에 이 이름으로 올라가요.'))
+        +'<br>'+escapeHtml(t('나중에 바꾸려면 %s이 들어요.')).replace('%s',fee); } }
 // 잠긴 칸을 눌렀을 때 — 왜 안 고쳐지는지 알려준다
 function nickTapLocked(){ if(nickLocked()) toast('🙋 이름은 내 프로필에서 바꿀 수 있어요 ('+NICK_FEE.toLocaleString()+'🪙)'); }
 // 초안을 확정한다. 값을 내는 경우(바꾸기)는 확인을 한 번 받는다.
@@ -7667,7 +7712,7 @@ function updateFoeHud(){
     const crown=o=>(lead&&lead.id===o&&lead.score>0)?'👑':'';
     $('foeHud').classList.add('mp');
     $('foeHud').innerHTML='<span class="fp mine">'+(net.target?'🎯':'🎲')+' '+alive.length
-      +'/'+playerCount()+'명'+crown(myId)+'</span>'
+      +'/'+playerCount()+t('명')+crown(myId)+'</span>'
       +ps.slice(0,3).map(p=>{
       const lv=Math.max(0,Math.min(max,p.lives|0)), out=(alive.indexOf(p.id)<0);
       return '<span class="fp'+(out?' out gone':'')+(foeJust(p.id)?' just':'')
@@ -7868,10 +7913,10 @@ function buildSpdBar(){
 function buildThrowBar(){
   const bar=$('throwBar'); bar.innerHTML=''; twEls={};
   TW_ORDER.forEach(k=>{ const w=TW[k];
-    const b=document.createElement('button'); b.className='twbtn'; b.title=w.name+' — '+w.desc;
-    b.innerHTML=`<span class="e">${w.emoji}</span><span class="n">${w.name}</span>`+
-      `<span class="c">${w.cost?('⚡'+w.cost):'무료'}</span>`;
-    b.onclick=()=>{ tKind=k; refreshThrowBar(); toast(w.emoji+' '+w.name+' — '+w.desc); };
+    const b=document.createElement('button'); b.className='twbtn'; b.title=t(w.name)+' — '+t(w.desc);
+    b.innerHTML=`<span class="e">${w.emoji}</span><span class="n">${escapeHtml(t(w.name))}</span>`+
+      `<span class="c">${w.cost?('⚡'+w.cost):escapeHtml(t('무료'))}</span>`;
+    b.onclick=()=>{ tKind=k; refreshThrowBar(); toast(w.emoji+' '+t(w.name)+' — '+t(w.desc)); };
     bar.appendChild(b); twEls[k]=b; });
   refreshThrowBar();
 }
@@ -8025,7 +8070,7 @@ function drawMyPad(){
   g.fillStyle='#5b3550'; g.textAlign='center';
   g.font="900 13px 'Donguri','Apple SD Gothic Neo',sans-serif";
   g.fillText(w.emoji+' '+w.name,172,118);
-  g.fillText(TSPD[tSpd].e+' '+TSPD[tSpd].n,172,136);
+  g.fillText(TSPD[tSpd].e+' '+t(TSPD[tSpd].n),172,136);
   g.textAlign='left';
   g.font="900 19px 'Donguri','Apple SD Gothic Neo',sans-serif";
   g.fillText('⭐ '+throwScore+(tCombo>1?('   🔥x'+tCombo):''),228,40);
@@ -8148,9 +8193,10 @@ function mpResolve(){
             (mine===1)?'win':'lose','⚔️ 실시간 던전 '+rank.length+'명');
   // 살아남은 사람이 점수와 무관하게 위다. 그래서 생존/탈락을 둘 다 적어야
   // "2등이 점수가 더 높은데?" 하고 헷갈리지 않는다.
-  let sub=rank.map((p,i)=>(medal[i]||((i+1)+'.'))+' '+p.name+(p.me?' (나)':'')+'  '+p.score+'점'
-    +(p.dead?' 💀탈락':' ✅생존')).join('\n');
-  const title=(mine===1)?'🏆 우승! 마지막까지 살아남았어요':('😢 '+mine+'등 · '+rank.length+'명 중');
+  let sub=rank.map((p,i)=>(medal[i]||((i+1)+'.'))+' '+p.name+(p.me?t(' (나)'):'')+'  '+p.score+' '+t('점')
+    +(p.dead?t(' 💀탈락'):t(' ✅생존'))).join('\n');
+  const title=(mine===1)?t('🏆 우승! 마지막까지 살아남았어요')
+                        :(t('😢 %d등').replace('%d',mine)+' · '+t('%d명 중').replace('%d',rank.length));
   showBattleResult(title,sub+aiPrizeLine(mine===1),null,false,null);
 }
 
@@ -8596,7 +8642,7 @@ function drawCeleb(g,w,h,t,c,still){
   if(!solo){ g.fillStyle='#8a6b7d'; g.fillText(c.lose.name+'  ⭐'+c.lose.score,lx,h*0.885); }
   // 말풍선 — 트로피·제목과 겹치지 않게 옆으로 비켜 세운다
   // 말풍선 — 사람이 고른 말을 쓴다(칩으로 바로 바꾼다). 트로피·제목과 안 겹치게 옆으로.
-  const wsay=(c.win&&c.win.say)||WIN_SAY0[c.wp||'cup'], lsay=(c.lose&&c.lose.say)||LOSE_SAY0[c.lp||'cross'];
+  const wsay=window.t((c.win&&c.win.say)||WIN_SAY0[c.wp||'cup']), lsay=window.t((c.lose&&c.lose.say)||LOSE_SAY0[c.lp||'cross']);
   bubble(g,Math.min(w-R*1.5,wx+R*1.90),gy-R*1.34,wsay,sm,'rgba(255,255,255,0.96)','#e63e72');
   if(!solo) bubble(g,Math.min(w-R*1.25,lx+R*0.60),gy-R*1.62,lsay,sm,'rgba(255,255,255,0.94)','#7c5c8e');
   if(still){

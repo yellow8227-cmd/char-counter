@@ -22,7 +22,10 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
-const OUT  = join(ROOT, 'press', 'shots');
+// 언어 — node tools/make-store-shots.mjs [--en]
+const LANG = process.argv.includes('--en') ? 'en' : 'ko';
+const TX = (ko, en) => (LANG === 'en' ? en : ko);
+const OUT  = LANG === 'en' ? join(ROOT, 'press', 'shots', 'en') : join(ROOT, 'press', 'shots');
 const GAME = 'file://' + join(ROOT, 'index.html');
 const CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 mkdirSync(OUT, { recursive: true });
@@ -39,9 +42,9 @@ const POSE_LOOP = (draw) => `(()=>{ if(window.__poseRAF) cancelAnimationFrame(wi
 // setup 은 게임 페이지 안에서 도는 코드다(게임의 함수를 그대로 부른다).
 // 인스타 카드(make-insta.mjs)도 같은 장면을 쓴다 — 두 벌로 갈라지지 않게 여기서 내보낸다
 export const SCENES = [
-  { id: '1-play', cap: ['톡 터트리면 콤보!', '딱 3분, 한 판이면 충분해요'], tint: '#ffe3f0',
+  { id: '1-play', cap: [TX('톡 터트리면 콤보!','Tap. It pops. Chain it.'), TX('딱 3분, 한 판이면 충분해요','Three minutes is a whole round')], tint: '#ffe3f0',
     setup: `(()=>{
-      saveNick('까미'); coins=1240; soundOn=false; bgmOn=false;
+      saveNick(${JSON.stringify(TX('까미','Kami'))}); coins=1240; soundOn=false; bgmOn=false;
       ['heart','slow','clear','x2','magnet'].forEach((id,i)=>{ if(!crafted.includes(id))crafted.push(id);
         bought[id]=[3,2,1,4,2][i]; inventory[id]=[2,1,3,1,2][i]; });
       character.kind='girl'; character.color='#ff9db2'; character.hair='braid';
@@ -61,14 +64,14 @@ export const SCENES = [
       running=false; paused=false; render();
       return 1; })()`,
     paint: POSE_LOOP('updateHud(); render();') },
-  { id: '2-dungeon', cap: ['친구랑 실시간 대전', '마지막까지 살아남으면 우승'], tint: '#e9e2ff',
+  { id: '2-dungeon', cap: [TX('친구랑 실시간 대전','Live match with friends'), TX('마지막까지 살아남으면 우승','Last one alive wins')], tint: '#e9e2ff',
     setup: `(()=>{
       soundOn=false; bgmOn=false; character.kind='cat'; character.color='#ffb3c9'; saveChar();
       netGame='dungeon'; netModeName='spicy'; mode='spicy'; net.timeLimit=120;
       netMode=true; net.mp=true; net.ch={}; net.peers={}; net.order=[];
-      peerUpsert('p1',{name:'젤리왕',char:{k:'bear',c:'#c9a27a',a:'crown',ac:'#ffce3d'},score:9100,lives:2});
-      peerUpsert('p2',{name:'하늘',char:{k:'dog',c:'#a3d5ff'},score:6400,lives:3});
-      peerUpsert('p3',{name:'초코',char:{k:'bunny',c:'#fff0a8'},score:3200,lives:0,over:true});
+      peerUpsert('p1',{name:${JSON.stringify(TX('젤리왕','JellyKing'))},char:{k:'bear',c:'#c9a27a',a:'crown',ac:'#ffce3d'},score:9100,lives:2});
+      peerUpsert('p2',{name:${JSON.stringify(TX('하늘','Sky'))},char:{k:'dog',c:'#a3d5ff'},score:6400,lives:3});
+      peerUpsert('p3',{name:${JSON.stringify(TX('초코','Choco'))},char:{k:'bunny',c:'#fff0a8'},score:3200,lives:0,over:true});
       net.order.push('p3');
       startGame(); netMode=true; net.mp=true;
       score=11250; combo=9; level=8; lives=3; throwGauge=HEX_MAX; bolt=BOLT_NEED;
@@ -81,18 +84,18 @@ export const SCENES = [
         jellies.push({x,y,r,vx:0,vy:3,color:c,face:'happy',shape:i%2?'bean':'round',
           bomb:false,gold:false,pts:20,wob:i,dead:false,foe:i<2}));
       hexT.zig=200; player.x=210; player.mood='wow'; player.moodTimer=999;
-      showCallout('🌀 지그재그!','#8a5cff');
+      showCallout(${JSON.stringify(TX('🌀 지그재그!','🌀 Zigzag!'))},'#8a5cff');
       running=false; render();
       return 1; })()`,
     paint: POSE_LOOP('render();') },
-  { id: '3-throw', cap: ['한 명은 던지고', '한 명은 터트려요'], tint: '#ffeede',
+  { id: '3-throw', cap: [TX('한 명은 던지고','One throws'), TX('한 명은 터트려요','the other pops')], tint: '#ffeede',
     setup: `(()=>{
       soundOn=false; bgmOn=false; character.kind='human'; character.color='#ffe36e';
       character.hair='crop'; character.acc='cap'; character.accColor='#4fa8ff'; saveChar();
       netGame='throw'; hostRole='thrower'; netModeName='normal'; mode='normal';
       net.host=true; computeRole(); net.timeLimit=90;
-      net.foe={id:'p1',name:'젤리왕',char:{k:'bear',c:'#c9a27a',a:'crown',ac:'#ffce3d'}};
-      net.peers={}; peerUpsert('p1',{name:'젤리왕',char:net.foe.char,score:4200,lives:3});
+      net.foe={id:'p1',name:${JSON.stringify(TX('젤리왕','JellyKing'))},char:{k:'bear',c:'#c9a27a',a:'crown',ac:'#ffce3d'}};
+      net.peers={}; peerUpsert('p1',{name:${JSON.stringify(TX('젤리왕','JellyKing'))},char:net.foe.char,score:4200,lives:3});
       netMode=true; startThrower();
       throwScore=7400; tCombo=3; tEnergy=88; tKind='bomb'; tSpd=2; elapsed=60*30;
       popStat={score:4200,lives:3,combo:2};
@@ -101,41 +104,41 @@ export const SCENES = [
        [150,420,29,'#ffce3d',false],[330,470,25,'#8fd94f',false]].forEach(([x,y,r,c,b],i)=>
         mirror.push({netId:i+1,x,y,vx:0,vy:3,r,color:c,face:'happy',shape:'round',
           bomb:b,ghost:false,gold:false,pts:20,wob:i,dead:false,foe:true,pay:1}));
-      tMsg={text:'🎯 뚫었다! +720  x3',color:'#8a5cff',life:1};
+      tMsg={text:${JSON.stringify(TX('🎯 뚫었다! +720  x3','🎯 Broke through! +720  x3'))},color:'#8a5cff',life:1};
       refreshThrowBar(); buildSpdBar();
       mirrorStep(); drawMirror(); drawMyPad(); updateTInfo();
       throwerAlive=false; if(mirrorRAF) cancelAnimationFrame(mirrorRAF);
       return 1; })()`,
     paint: POSE_LOOP('drawMirror(); drawMyPad();') },
-  { id: '4-dress', cap: ['내 캐릭터 꾸미기', '머리·악세서리·색깔 마음대로'], tint: '#ffe9f4',
+  { id: '4-dress', cap: [TX('내 캐릭터 꾸미기','Make your own jelly'), TX('머리·악세서리·색깔 마음대로','Hair, skin tone, colour, accessories')], tint: '#ffe9f4',
     setup: `(()=>{
-      soundOn=false; coins=12400; saveNick('까미');
+      soundOn=false; coins=12400; saveNick(${JSON.stringify(TX('까미','Kami'))});
       ownedKinds=['cat','dog','bunny','bear','human','girl'];
       ownedHairs=HAIRS.map(h=>h.id);
-      if(!customAccs.length){ const a={id:'ca_demo',label:'별하늘',emoji:'⭐',color:'#8a5cff'};
+      if(!customAccs.length){ const a={id:'ca_demo',label:${JSON.stringify(TX('별하늘','Starry'))},emoji:'⭐',color:'#8a5cff'};
         customAccs.push(a); ACCS.push({id:a.id,label:a.emoji+' '+a.label,custom:true}); }
       character.kind='girl'; character.color='#ff9db2'; character.hair='braid';
       character.acc='crown'; character.accColor='#ffce3d'; saveChar(); saveEconomy();
       openProfile('startScreen'); buildProfile();
       $('profileScreen').scrollTop=0;
       return 1; })()` },
-  { id: '5-result', cap: ['이기면 춤추고', '지면 분해해요 😤'], tint: '#f3e6ff',
+  { id: '5-result', cap: [TX('이기면 춤추고','Winner dances'), TX('지면 분해해요 😤','loser sulks 😤')], tint: '#f3e6ff',
     setup: `(()=>{
-      soundOn=false; saveNick('까미'); net.host=true;
+      soundOn=false; saveNick(${JSON.stringify(TX('까미','Kami'))}); net.host=true;
       character.kind='girl'; character.color='#ff9db2'; character.hair='braid';
       character.acc='bow'; character.accColor='#ff5c8a'; saveChar();
       lastPlay={kind:'online',game:'dungeon',role:'thrower'};
       lastRun={seed:1,mode:'normal',score:15200,net:true};
       net.myScore=15200; net.ch={}; net.mp=true; net.myOver=true;
       net.peers={}; net.order=[];
-      peerUpsert('p1',{name:'젤리왕',char:{k:'bear',c:'#c9a27a',a:'crown',ac:'#ffce3d'},score:12800,over:true});
+      peerUpsert('p1',{name:${JSON.stringify(TX('젤리왕','JellyKing'))},char:{k:'bear',c:'#c9a27a',a:'crown',ac:'#ffce3d'},score:12800,over:true});
       net.order.push('p1'); net.order.push(myId);
       showScreen('overScreen'); $('finalScore').textContent='15200';
       $('overCoins').textContent='🪙 +86';
-      $('overMsg').textContent='⚔️ 실시간 던전 · 🏆 마지막 생존!';
+      $('overMsg').textContent=${JSON.stringify(TX('⚔️ 실시간 던전 · 🏆 마지막 생존!','⚔️ Live Dungeon · 🏆 Last one alive!'))};
       mpResolve();
       lastBattle.wp='cup'; lastBattle.wf='wow'; lastBattle.lp='cross'; lastBattle.lf='mad';
-      lastBattle.win.say='내가 이겼다~!! 🏆'; lastBattle.lose.say='분하다… 😤';
+      lastBattle.win.say=${JSON.stringify(TX('내가 이겼다~!! 🏆','I win!! 🏆'))}; lastBattle.lose.say=${JSON.stringify(TX('분하다… 😤','No fair… 😤'))};
       celebT=96; celebShow(); celebStop();
       const cv=$('celebCanvas'), g=cv.getContext('2d');
       g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,cv.width,cv.height);
@@ -146,14 +149,14 @@ export const SCENES = [
     paint: POSE_LOOP(`const cv=$('celebCanvas'), g=cv.getContext('2d');
       g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,cv.width,cv.height);
       drawCeleb(g,cv.width,cv.height,96,lastBattle,false); $('overScreen').scrollTop=0;`) },
-  { id: '6-home', cap: ['설치 없이 웹에서 바로', '계정 하나로 폰·노트북 함께'], tint: '#e6f3ff',
+  { id: '6-home', cap: [TX('설치 없이 웹에서 바로','No install. Just a link.'), TX('계정 하나로 폰·노트북 함께','One account across phone and laptop')], tint: '#e6f3ff',
     setup: `(()=>{
-      soundOn=false; coins=12400; saveNick('까미');
+      soundOn=false; coins=12400; saveNick(${JSON.stringify(TX('까미','Kami'))});
       character.kind='cat'; character.color='#ffb3c9'; character.acc='bow';
       character.accColor='#ff5c8a'; saveChar(); saveEconomy();
       openStart(); $('startScreen').scrollTop=0;
       $('dailyBtn').style.display='';
-      $('dailyBtn').textContent='🎁 오늘의 보너스 받기 (+100🪙)';
+      $('dailyBtn').textContent=${JSON.stringify(TX('🎁 오늘의 보너스 받기 (+100🪙)','🎁 Claim today\'s bonus (+100🪙)'))};
       return 1; })()` },
 ];
 
@@ -175,7 +178,7 @@ function framePage({ shot, cap, tint, w, h }) {
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
   html,body{margin:0;width:${w}px;height:${h}px;overflow:hidden;
-    font-family:'Jua','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',system-ui,sans-serif;}
+    font-family:'Jua',${TX("'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',", '')}system-ui,sans-serif;}
   .bg{position:absolute;inset:0;background:
     radial-gradient(120% 90% at 15% 0%, #fff 0%, ${tint} 45%, ${tint} 100%);}
   .dots{position:absolute;inset:0;opacity:.5;
@@ -197,24 +200,49 @@ function framePage({ shot, cap, tint, w, h }) {
   .phone img{display:block;width:100%;}
   </style>
   <div class="bg"></div><div class="dots"></div>
-  <div class="cap"><i>🍡 젤리모 · Jellimo</i><b>${cap[0]}</b><span>${cap[1]}</span></div>
+  <div class="cap"><i>${TX('🍡 젤리모 · Jellimo', '🍡 Jellimo')}</i><b>${cap[0]}</b><span>${cap[1]}</span></div>
   <div class="phone"><img src="${shot}"></div>`;
 }
+
+const koLeaks = [];      // 영어판에 남은 한글
 
 const run = async () => {
   const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox', '--allow-file-access-from-files'] });
   const made = [];
   for (const size of SIZES) {
     const ctx = await browser.newContext({ viewport: { width: size.w, height: size.h },
-      deviceScaleFactor: size.scale, isMobile: true, hasTouch: true });
+      deviceScaleFactor: size.scale, isMobile: true, hasTouch: true,
+      locale: LANG === 'en' ? 'en-US' : 'ko-KR' });
+    // 게임은 첫 줄에서 저장된 언어를 읽는다 → 페이지가 뜨기 전에 정해 준다
+    await ctx.addInitScript(`try{ localStorage.setItem('jelly_lang', ${JSON.stringify(LANG)});
+      localStorage.setItem('jelly_tut','1'); }catch(e){}`);
     const page = await ctx.newPage();
     for (const sc of SCENES) {
       await page.goto(GAME);
       await page.waitForFunction("typeof openStart==='function'", null, { timeout: 20000 });
       await page.waitForTimeout(700);
-      await page.evaluate(`localStorage.clear()`);
+      await page.evaluate(`(()=>{ localStorage.clear();
+        try{ localStorage.setItem('jelly_lang', ${JSON.stringify(LANG)});
+             localStorage.setItem('jelly_tut','1'); }catch(e){} })()`);
       await page.evaluate(sc.setup);
       await page.waitForTimeout(600);
+      const shown = await page.evaluate('lang');
+      if (shown !== LANG) { console.error('❌ 화면 언어가 ' + shown + ' 입니다 (원한 건 ' + LANG + ')'); process.exit(1); }
+      // 영어판을 찍을 때 화면에 한글이 남아 있으면 알려 준다.
+      // (게임 안에 글자를 이어 붙여 만드는 자리가 많아서, 번역을 빠뜨린 곳이 여기서 걸린다)
+      if (LANG !== 'ko') {
+        const ko = await page.evaluate(`(()=>{
+          const out=new Set();
+          const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null);
+          for(let n=w.nextNode(); n; n=w.nextNode()){
+            const t=(n.nodeValue||'').trim();
+            if(!/[가-힣]/.test(t)) continue;
+            const e=n.parentElement; if(!e||!e.offsetParent) continue;
+            out.add(t.slice(0,50));
+          }
+          return [...out]; })()`);
+        if (ko.length) { koLeaks.push(size.id + '/' + sc.id + ': ' + ko.join(' | ')); }
+      }
       // 캔버스는 크기가 바뀌면 지워진다. 찍기 바로 전에 다시 그려야 판이 비지 않는다.
       if (sc.paint) { await page.evaluate(sc.paint); await page.waitForTimeout(250); }
       const raw = (await page.screenshot({ type: 'png' })).toString('base64');
@@ -274,6 +302,10 @@ const run = async () => {
   }
   await ctx2.close();
   await browser.close();
+  if (koLeaks.length) {
+    console.log('\n❌ 영어 화면에 한글이 남아 있습니다 (' + koLeaks.length + '군데):');
+    for (const l of koLeaks) console.log('   · ' + l);
+  } else if (LANG !== 'ko') console.log('\n✅ 영어 화면에 남은 한글 없음');
   console.log('\n총 ' + (made.length + 2) + '장 → press/shots/');
 };
 // 다른 파일이 SCENES 만 가져다 쓸 때는 찍지 않는다 (직접 실행할 때만 돈다)

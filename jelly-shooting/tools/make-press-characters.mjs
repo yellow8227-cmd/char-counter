@@ -16,9 +16,13 @@ const PW = '/opt/node22/lib/node_modules/playwright/index.js';
 const pwMod = await import(existsSync(PW) ? 'file://' + PW : 'playwright');
 const chromium = (pwMod.chromium || (pwMod.default && pwMod.default.chromium));
 
+// 언어 — node tools/make-press-characters.mjs [--en]
+const LANG = process.argv.includes('--en') ? 'en' : 'ko';
+const TX = (ko, en) => (LANG === 'en' ? en : ko);
+
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
-const OUT  = join(ROOT, 'press', 'shots');
+const OUT  = LANG === 'en' ? join(ROOT, 'press', 'shots', 'en') : join(ROOT, 'press', 'shots');
 const GAME = 'file://' + join(ROOT, 'index.html');
 const CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 mkdirSync(OUT, { recursive: true });
@@ -41,7 +45,7 @@ const strip = async (items, opts) => await page.evaluate(`(([items,o])=>{
     const cx=cw*i+cw/2, cy=(o.cell*0.66)*S;
     drawAvatar(g,cx,cy,R,charSafe(it[0]),it[1],(i*11)+3);
     if(o.labels&&it[2]){
-      g.font='700 '+(13*S)+'px "NanumGothic","Apple SD Gothic Neo",sans-serif';
+      g.font='700 '+(13*S)+'px system-ui,"NanumGothic","Apple SD Gothic Neo",sans-serif';
       g.fillStyle='#7a5f78';
       g.fillText(it[2],cx,c.height-13*S);
     }
@@ -57,22 +61,22 @@ const save = (name, b64) => {
 
 // ① 캐릭터 아홉 종 — 아홉이면 한 줄이 길어져 페이지에서 작아진다. 칸을 조금 줄인다.
 save('chars-row.png', await strip([
-  [{k:'cat',   c:'#ffb3c9', a:'bow',     ac:'#ff5c8a'}, 'happy', '고양이'],
-  [{k:'dog',   c:'#a3d5ff', a:'cap',     ac:'#4fa8ff'}, 'happy', '강아지'],   // 코·혀가 가장 예쁘게 나오는 표정
-  [{k:'bunny', c:'#fff0a8', a:'flower',  ac:'#ff8ab5'}, 'calm',  '토끼'],
-  [{k:'bear',  c:'#c9a27a', a:'crown',   ac:'#ffce3d'}, 'happy', '곰'],
-  [{k:'panda', c:'#f2e7dc', a:'none'},                  'happy', '판다'],
-  [{k:'fox',   c:'#ffb37a', a:'star',    ac:'#ffce3d'}, 'wink',  '여우'],
-  [{k:'hamster',c:'#ffd59e',a:'none'},                  'happy', '햄스터'],
-  [{k:'human', c:'#ffe36e', a:'glasses', ac:'#5a5566', h:'crop'},  'wink', '남자아이'],
-  [{k:'girl',  c:'#ff9db2', a:'bow',     ac:'#ff5c8a', h:'braid'}, 'proud','여자아이'],
+  [{k:'cat',   c:'#ffb3c9', a:'bow',     ac:'#ff5c8a'}, 'happy', TX('고양이','Cat')],
+  [{k:'dog',   c:'#a3d5ff', a:'cap',     ac:'#4fa8ff'}, 'happy', TX('강아지','Dog')],   // 코·혀가 가장 예쁘게 나오는 표정
+  [{k:'bunny', c:'#fff0a8', a:'flower',  ac:'#ff8ab5'}, 'calm',  TX('토끼','Bunny')],
+  [{k:'bear',  c:'#c9a27a', a:'crown',   ac:'#ffce3d'}, 'happy', TX('곰','Bear')],
+  [{k:'panda', c:'#f2e7dc', a:'none'},                  'happy', TX('판다','Panda')],
+  [{k:'fox',   c:'#ffb37a', a:'star',    ac:'#ffce3d'}, 'wink',  TX('여우','Fox')],
+  [{k:'hamster',c:'#ffd59e',a:'none'},                  'happy', TX('햄스터','Hamster')],
+  [{k:'human', c:'#ffe36e', a:'glasses', ac:'#5a5566', h:'crop'},  'wink', TX('남자아이','Boy')],
+  [{k:'girl',  c:'#ff9db2', a:'bow',     ac:'#ff5c8a', h:'braid'}, 'proud',TX('여자아이','Girl')],
 ], { cell: 96, r: 37, labels: true }));
 
 // ② 표정 여섯 가지 (같은 캐릭터로 — 표정만 다른 게 보이게)
 const F = {k:'girl', c:'#ff9db2', a:'bow', ac:'#ff5c8a', h:'braid'};
 save('faces-row.png', await strip([
-  [F,'calm','기본'], [F,'happy','신남'], [F,'wow','놀람'],
-  [F,'proud','으쓱'], [F,'mad','분함'], [F,'wail','눈물'],
+  [F,'calm',TX('기본','Neutral')], [F,'happy',TX('신남','Excited')], [F,'wow',TX('놀람','Surprised')],
+  [F,'proud',TX('으쓱','Smug')], [F,'mad',TX('분함','Annoyed')], [F,'wail',TX('눈물','In tears')],
 ], { cell: 110, r: 42, labels: true }));
 
 // ③ 꾸미기 조합 여덟 개 (머리·색·악세서리)
