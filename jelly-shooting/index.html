@@ -6049,6 +6049,7 @@ function rowAva(name,ch){
   if(ch){ try{ return avaTag(charSafe(typeof ch==='string'?JSON.parse(ch):ch)); }catch(e){} }
   const mem=seenGet(name);                          // DB 에 없으면 만난 적 있는 사람인지 본다
   return mem?avaTag(mem):''; }
+let durCol=null;    // scores 표에 dur·pop 칸이 있는가 (ch 와 같은 방식으로 한 번 써 보고 기억한다)
 async function scoreRows(board,limit){
   const sel=(chCol===false)?'name,score':'name,score,ch';
   const q=()=>getSupa().from('scores').select(sel)
@@ -6109,11 +6110,35 @@ async function renderOverOnline(m){
     box.innerHTML=h;
   }catch(e){ box.innerHTML='<div class="rrow">랭킹을 불러오지 못했어요 😢</div>'; }
 }
-async function submitScore(board,sc){
+// ── 말이 되는 점수인가 ─────────────────────────────────────────────
+// 브라우저 게임은 콘솔 한 줄로 score=999999 가 된다. 완벽히 막는 건 불가능하다
+// (anon 키가 HTML 안에 있어서 REST 로 바로 쏠 수도 있다). 진짜 관문은 서버(Postgres)이고,
+// 그 SQL 은 press/랭킹-지키기.md 에 적어 뒀다. 여기서는 '우리 게임이 만들 수 없는 값'을
+// 애초에 안 보낸다 — 콘솔로 장난친 값은 여기서 대부분 걸린다.
+//
+// 한 판에서 이론상 가능한 최대치를 코드의 값에서 뽑았다:
+//   젤리 하나 최대 26점(황금) × 콤보 상한 9 × 2배점수 최대 3배 = 702점
+//   가장 빠른 스폰이 11프레임(핵불닭 spawnMin) → 초당 5.45개
+//   → 초당 약 3,830점. 진짜 플레이어를 막으면 안 되니 1.5배(6,000)로 잡는다.
+const SCORE_PER_SEC=6000, SCORE_BASE=5000;
+const SCORE_CAP={endless:2000000, fire_time:3600};
+function scoreSane(board,sc,dur){
+  if(typeof sc!=='number'||!isFinite(sc)||sc<0||sc!==Math.floor(sc)) return false;
+  if(board==='fire_time') return sc>=1 && sc<=3600 && Math.abs(sc-dur)<=1;   // 값이 곧 시간이다
+  if(sc>(SCORE_CAP[board]||300000)) return false;
+  return sc <= SCORE_PER_SEC*Math.max(1,dur)+SCORE_BASE;
+}
+async function submitScore(board,sc,dur,pop){
   if(board==null) board=mode;
   if(sc==null) sc=score;
+  if(dur==null) dur=Math.round(elapsed/60);
+  if(pop==null) pop=(typeof pPopped==='number')?pPopped:0;
   if(!nick||!supaReady()||sc<=0) return;
-  const row={name:nick,score:sc,mode:board};
+  if(!scoreSane(board,sc,dur)){
+    // 사람에게는 아무 말도 안 한다 — 진짜 플레이어가 볼 일이 없는 자리다.
+    devHint('랭킹 전송을 건너뜀: '+board+' '+sc+'점 / '+dur+'초 — 이 판에서 나올 수 없는 값입니다.');
+    return; }
+  const row={name:nick,score:sc,mode:board,dur:dur,pop:pop};
   // 얼굴을 같이 올린다. ch 칸이 없는 DB 라면 넣기가 통째로 거절되므로(아무것도 안 써진다)
   // 한 번 더, 이번엔 이름·점수만 올린다. 점수를 잃는 일은 없다.
   if(chCol!==false){
@@ -6124,7 +6149,15 @@ async function submitScore(board,sc){
       chCol=false;
     }catch(e){ return; }
   }
-  try{ await getSupa().from('scores').insert(row); }catch(e){}
+  // dur·pop 칸도 없을 수 있다(SQL 을 아직 안 돌린 DB). 있으면 쓰고, 없으면 이름·점수만.
+  if(durCol!==false){
+    try{ const { error } = await getSupa().from('scores').insert(row);
+      if(!error){ durCol=true; return; }
+      if(!noChCol(error)) return;
+      durCol=false;
+    }catch(e){ return; }
+  }
+  try{ await getSupa().from('scores').insert({name:row.name,score:row.score,mode:row.mode}); }catch(e){}
 }
 // 이 판의 점수가 올라갈 랭킹 판. AI 대결은 어디에도 올리지 않는다(실력이 내 손이 아니다).
 function runBoard(wasNet,wasEndless){
