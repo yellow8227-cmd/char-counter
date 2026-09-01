@@ -27,7 +27,14 @@ const { SCENES } = await import('./make-store-shots.mjs');
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
 const SHOTS = join(ROOT, 'press', 'shots');
-const OUT = join(ROOT, 'press', 'insta');
+// ── 언어 ─────────────────────────────────────────────────────────
+// 한국어판과 영어판은 '같은 그림에 글만 다른 것'이다. 그림을 두 번 그리면
+// 하나를 고칠 때 다른 하나가 반드시 뒤처진다. 글만 갈라 둔다.
+//   node tools/make-insta.mjs        → press/insta/     (한국어)
+//   node tools/make-insta.mjs --en   → press/insta-en/  (영어 · 글로벌 계정용)
+const LANG = process.argv.includes('--en') ? 'en' : 'ko';
+const TX = (ko, en) => (LANG === 'en' ? en : ko);   // 글만 갈라 쓴다 (S 는 이미 다른 뜻으로 쓰이고 있다)
+const OUT = join(ROOT, 'press', LANG === 'en' ? 'insta-en' : 'insta');
 const SQ = join(OUT, 'square');
 const GAME = 'file://' + join(ROOT, 'index.html');
 const CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
@@ -278,8 +285,8 @@ const card = ({ w, h, bg, ink = '#1b1220', body }) => `<!doctype html><meta char
 <div class="bg"></div><div class="rays"></div><div class="polka"></div><div class="sheen"></div>
 <div class="glow"></div>${body}<div class="vign"></div>`;
 
-const lock = `<div class="lock"><img src="${dataURI(join(SHOTS, 'icon-1024.png'))}">젤리모</div>`;
-const note = `<div class="note">광고 없음 · 결제 없음 · 전 연령</div>`;
+const lock = `<div class="lock"><img src="${dataURI(join(SHOTS, 'icon-1024.png'))}">${TX('젤리모','Jellimo')}</div>`;
+const note = `<div class="note">${TX('광고 없음 · 결제 없음 · 전 연령','No ads · no payments · all ages')}</div>`;
 const corner = lock + note;
 
 // ── ⑤ 첫 9칸 ─────────────────────────────────────────────────────────
@@ -291,10 +298,10 @@ const POSTS = [
         [88, 33, 13, -18, J.green], [50, 11, 16, 6, POP.gold], [6, 52, 13, -8, J.blue],
         [95, 56, 12, 16, J.grape]]) + `
     <div class="in">
-      <div class="eyebrow">🍡 젤리모 · JELLIMO</div>
-      <h1>온 가족이<br>빠져드는<br><em>재미</em></h1>
-      <div class="band">3분이면 한 판 · 설치도 가입도 없이</div>
-      <div class="cta">지금 바로 시작 ▶</div>
+      <div class="eyebrow">${TX('🍡 젤리모 · JELLIMO','🍡 JELLIMO · TAP & SURVIVE')}</div>
+      <h1>${TX('온 가족이<br>빠져드는<br><em>재미</em>','Everyone<br>gets<br><em>hooked</em>')}</h1>
+      <div class="band">${TX('3분이면 한 판 · 설치도 가입도 없이','3-minute rounds · no install, no sign-up')}</div>
+      <div class="cta">${TX('지금 바로 시작 ▶','Play now ▶')}</div>
     </div>
     <img class="cut cutL" src="${CH.girl}"><img class="cut cutR" src="${CH.bear}">
     ${corner}` },
@@ -304,9 +311,9 @@ const POSTS = [
         [9, 36, 13, 18, J.blue], [92, 40, 14, -16, J.pink], [26, 52, 11, -22, J.green],
         [76, 55, 12, 20, J.gold]]) + `
     <div class="in">
-      <div class="eyebrow">이 게임의 손맛</div>
-      <h1>누르면<br><em>팡! 팡!</em></h1>
-      <div class="band">연달아 터트리면 콤보 — 점수가 튀어요</div>
+      <div class="eyebrow">${TX('이 게임의 손맛','How it feels')}</div>
+      <h1>${TX('누르면<br><em>팡! 팡!</em>','Tap it.<br><em>Pop! Pop!</em>')}</h1>
+      <div class="band">${TX('연달아 터트리면 콤보 — 점수가 튀어요','Chain them — the score jumps')}</div>
     </div>
     <img class="cut cutC" src="${CH.boy}">
     ${corner}` },
@@ -314,8 +321,8 @@ const POSTS = [
   { id: '3-던전', bg: 'linear-gradient(158deg,#b9a2ff 0%,#7d5cf6 52%,#5b39dc 100%)', body:
     fx([[9, 30, 14, -16, J.pink], [91, 34, 15, 14, J.mint], [12, 56, 12, 20, J.gold],
         [89, 60, 13, -20, POP.grape]]) + `
-    <div class="top"><h1>같은 판에서<br><em>실시간 대결</em></h1>
-      <div class="band">터트린 방해 젤리가 상대 화면으로</div></div>
+    <div class="top"><h1>${TX('같은 판에서<br><em>실시간 대결</em>','Same board.<br><em>Live battle.</em>')}</h1>
+      <div class="band">${TX('터트린 방해 젤리가 상대 화면으로','Your pops land on their screen')}</div></div>
     <div class="bleed"><img src="${shot['2-dungeon']}"></div>
     ${corner}` },
 
@@ -323,14 +330,14 @@ const POSTS = [
     fx([[10, 11, 15, -14, J.gold], [90, 14, 16, 12, J.pink], [16, 30, 11, 20, J.green],
         [86, 34, 12, -18, J.grape], [50, 6, 13, 8, J.mint]]) + `
     <div class="in">
-      <div class="eyebrow">시작 전에 확인하는 것들</div>
-      <h1>없어요,<br>하나도</h1>
+      <div class="eyebrow">${TX('시작 전에 확인하는 것들','Before you start')}</div>
+      <h1>${TX('없어요,<br>하나도','None.<br>Not one.')}</h1>
       <div class="chips">
-        <div class="chip">설치 <b>0</b></div><div class="chip">가입 <b>0</b></div>
-        <div class="chip">광고 <b>0</b></div><div class="chip">결제 <b>0</b></div>
-        <div class="chip"><b>전 연령</b></div>
+        <div class="chip">${TX('설치','Install')} <b>0</b></div><div class="chip">${TX('가입','Sign-up')} <b>0</b></div>
+        <div class="chip">${TX('광고','Ads')} <b>0</b></div><div class="chip">${TX('결제','Payments')} <b>0</b></div>
+        <div class="chip"><b>${TX('전 연령','All ages')}</b></div>
       </div>
-      <div class="band">아이 옆에서 켜도 마음이 편한 게임</div>
+      <div class="band">${TX('아이 옆에서 켜도 마음이 편한 게임','Safe to hand to a kid')}</div>
     </div>
     <img class="cut cutL" src="${CH.bunny}"><img class="cut cutR" src="${CH.cat}">
     ${corner}` },
@@ -338,17 +345,17 @@ const POSTS = [
   { id: '5-던지기', bg: 'linear-gradient(158deg,#ffc48f 0%,#ff8f57 52%,#f56a3c 100%)', body:
     fx([[8, 32, 15, -18, J.bearJ], [92, 36, 14, 16, J.blue], [11, 58, 13, 22, POP.pink],
         [90, 62, 12, -14, J.gold]]) + `
-    <div class="top"><h1>한 명은 던지고<br>한 명은 <em>터트려요</em></h1>
-      <div class="band">역할 바꿔 가며 — 누가 더 오래 버티나</div></div>
+    <div class="top"><h1>${TX('한 명은 던지고<br>한 명은 <em>터트려요</em>','One throws.<br>One <em>pops.</em>')}</h1>
+      <div class="band">${TX('역할 바꿔 가며 — 누가 더 오래 버티나','Swap roles — who lasts longer?')}</div></div>
     <div class="bleed"><img src="${shot['3-throw']}"></div>
     ${corner}` },
 
   { id: '6-꾸미기', bg: 'linear-gradient(158deg,#ffbde6 0%,#f871c7 52%,#e148ab 100%)', body:
     fx([[9, 12, 14, -12, J.gold], [91, 15, 15, 14, J.mint], [50, 6, 12, 6, J.green]]) + `
     <div class="in flat">
-      <div class="eyebrow">모은 코인으로</div>
-      <h1>내 캐릭터로<br>들어가요</h1>
-      <div class="band">아홉 종 · 머리 · 색깔 · 악세서리</div>
+      <div class="eyebrow">${TX('모은 코인으로','With coins you earn')}</div>
+      <h1>${TX('내 캐릭터로<br>들어가요','Bring your<br>own jelly')}</h1>
+      <div class="band">${TX('아홉 종 · 머리 · 색깔 · 악세서리','9 species · hair · skin tone · accessories')}</div>
       <div class="strip" style="margin-top:${Math.round(1080 * 0.06)}px">
         <img src="${dataURI(join(SHOTS, 'dress-row.png'))}"></div>
     </div>
@@ -359,10 +366,10 @@ const POSTS = [
     fx([[10, 11, 15, -14, J.pink], [90, 14, 16, 12, J.gold], [15, 31, 11, 20, J.grape],
         [87, 35, 12, -18, J.mint]]) + `
     <div class="in">
-      <div class="eyebrow">초대하는 방법</div>
-      <h1>네 글자만<br>보내면 끝</h1>
+      <div class="eyebrow">${TX('초대하는 방법','How to invite')}</div>
+      <h1>${TX('네 글자만<br>보내면 끝','Send 4 letters.<br>That\'s it.')}</h1>
       <div class="code"><span>A</span><span>7</span><span>K</span><span>2</span></div>
-      <div class="steps">방 만들기 → 코드 보내기 → 같이 시작</div>
+      <div class="steps">${TX('방 만들기 → 코드 보내기 → 같이 시작','Make a room → send the code → play')}</div>
     </div>
     <img class="cut cutR" src="${CH.dog}">
     ${corner}` },
@@ -370,9 +377,9 @@ const POSTS = [
   { id: '8-표정', bg: 'linear-gradient(158deg,#ffdc7a 0%,#ffa63f 52%,#f5822c 100%)', body:
     fx([[50, 12, 16, 6, POP.gold], [10, 26, 13, -16, J.pink], [90, 30, 14, 14, J.mint]]) + `
     <div class="in">
-      <div class="eyebrow">결과 화면이 제일 재밌어요</div>
-      <h1>이기면 춤추고<br>지면 <em>분해해요</em></h1>
-      <div class="band">표정도 자세도 판마다 달라요</div>
+      <div class="eyebrow">${TX('결과 화면이 제일 재밌어요','The ending is the best part')}</div>
+      <h1>${TX('이기면 춤추고<br>지면 <em>분해해요</em>','Winners dance.<br>Losers <em>sulk.</em>')}</h1>
+      <div class="band">${TX('표정도 자세도 판마다 달라요','New face and pose every round')}</div>
     </div>
     <img class="cut cutL" src="${CH.mad}"><img class="cut cutR" src="${CH.wail}">
     ${corner}` },
@@ -383,8 +390,8 @@ const POSTS = [
     <div class="in flat">
       <img class="icon" src="${dataURI(join(SHOTS, 'icon-1024.png'))}">
       <h1 style="margin-top:.3em">지금 바로<br>플레이</h1>
-      <div class="band">프로필 링크를 누르면 바로 열려요</div>
-      <div class="cta white">🎮 게임하기</div>
+      <div class="band">${TX('프로필 링크를 누르면 바로 열려요','Tap the link in bio — opens instantly')}</div>
+      <div class="cta white">${TX('🎮 게임하기','🎮 Play')}</div>
     </div>
     ${corner}` },
 ];
@@ -397,9 +404,9 @@ const STORIES = [
         [8, 26, 12, 20, J.mint], [92, 30, 13, -16, J.green], [14, 44, 11, 14, J.blue],
         [87, 47, 11, -12, J.grape]]) + `
     <div class="in">
-      <h1>딱 한 판만<br>하려고<br><em>했는데</em></h1>
-      <div class="band">3분이면 한 판 · 설치도 가입도 없이</div>
-      <div class="cta white">🎮 게임하기</div>
+      <h1>${TX('딱 한 판만<br>하려고<br><em>했는데</em>','Just one<br>round, I<br><em>said</em>')}</h1>
+      <div class="band">${TX('3분이면 한 판 · 설치도 가입도 없이','3-minute rounds · no install, no sign-up')}</div>
+      <div class="cta white">${TX('🎮 게임하기','🎮 Play')}</div>
     </div>
     <img class="cut cutL" src="${CH.girl}"><img class="cut cutR" src="${CH.boy}">
     ${corner}` },
@@ -407,11 +414,11 @@ const STORIES = [
   { id: 'story-2-외부브라우저', bg: 'linear-gradient(158deg,#8fe4ff 0%,#43a8f2 52%,#2a7fd8 100%)', body:
     fx([[10, 10, 13, -14, J.gold], [90, 13, 14, 12, J.pink]]) + `
     <div class="in">
-      <div class="eyebrow">처음 오셨다면 꼭 읽어 주세요</div>
-      <h1>브라우저로<br>열어 주세요</h1>
-      <div class="band">인스타 안에서 열면 코인·기록이 안 남아요</div>
-      <div class="steps">① 프로필 링크 누르기<br>② 오른쪽 위 ⋯ 누르기<br>③ ‘브라우저에서 열기’ 고르기</div>
-      <div class="band">한 번만 해 두면 다음부터는 그대로</div>
+      <div class="eyebrow">${TX('처음 오셨다면 꼭 읽어 주세요','First time here? Read this')}</div>
+      <h1>${TX('브라우저로<br>열어 주세요','Open it in<br>your browser')}</h1>
+      <div class="band">${TX('인스타 안에서 열면 코인·기록이 안 남아요','Inside Instagram, coins and records don\'t save')}</div>
+      <div class="steps">${TX('① 프로필 링크 누르기<br>② 오른쪽 위 ⋯ 누르기<br>③ ‘브라우저에서 열기’ 고르기','① Tap the link in bio<br>② Tap ⋯ at the top right<br>③ Choose “Open in browser”')}</div>
+      <div class="band">${TX('한 번만 해 두면 다음부터는 그대로','Do it once — it sticks after that')}</div>
     </div>
     <img class="cut cutR" src="${CH.dog}">
     ${corner}` },
@@ -420,18 +427,18 @@ const STORIES = [
     fx([[11, 10, 14, -14, J.pink], [89, 13, 15, 12, J.gold], [50, 9, 14, 6, POP.mint],
         [9, 30, 12, 18, J.grape], [91, 33, 12, -16, J.mint]]) + `
     <div class="in">
-      <h1>친구 부르는 데<br><em>10초</em></h1>
+      <h1>${TX('친구 부르는 데<br><em>10초</em>','Invite a friend<br>in <em>10 sec</em>')}</h1>
       <div class="code"><span>A</span><span>7</span><span>K</span><span>2</span></div>
-      <div class="steps">방 만들기 → 단톡방에 코드 → 같이 시작</div>
-      <div class="cta white">🎮 게임하기</div>
+      <div class="steps">${TX('방 만들기 → 단톡방에 코드 → 같이 시작','Make a room → drop the code → play')}</div>
+      <div class="cta white">${TX('🎮 게임하기','🎮 Play')}</div>
     </div>
     <img class="cut cutL" src="${CH.cat}"><img class="cut cutR" src="${CH.bear}">
     ${corner}` },
 
   { id: 'story-4-플레이화면', bg: 'linear-gradient(158deg,#b7a0ff 0%,#7150ee 52%,#5232d4 100%)', body:
     fx([[9, 24, 13, -16, J.pink], [91, 27, 14, 14, J.gold], [8, 44, 12, 20, POP.pink]]) + `
-    <div class="top"><h1>지금 이 화면이<br><em>전부예요</em></h1>
-      <div class="band">떨어지는 젤리를 톡 — 30초면 배워요</div></div>
+    <div class="top"><h1>${TX('지금 이 화면이<br><em>전부예요</em>','This screen<br>is <em>the whole game</em>')}</h1>
+      <div class="band">${TX('떨어지는 젤리를 톡 — 30초면 배워요','Tap the falling jellies — learn it in 30 sec')}</div></div>
     <div class="bleed" style="width:56%"><img src="${shot['1-play']}"></div>
     ${corner}` },
 ];
@@ -440,10 +447,10 @@ const STORIES = [
 // 인스타가 가운데를 동그랗게 자른다 → 얼굴을 가운데 크게.
 // 바탕색과 캐릭터 색이 겹치면 얼굴이 묻힌다 — 서로 반대색으로 짝지었다.
 const HL = [
-  { id: 'highlight-1-먼저읽기', bg: '#2aa8f2', ch: CH.bear, label: '먼저 읽기' },
-  { id: 'highlight-2-게임방법', bg: '#ff5c96', ch: CH.boy,  label: '게임 방법' },
-  { id: 'highlight-3-같이하기', bg: '#37bf6a', ch: CH.girl, label: '같이 하기' },
-  { id: 'highlight-4-업데이트', bg: '#ffab2e', ch: CH.dog,  label: '업데이트' },
+  { id: 'highlight-1-먼저읽기', bg: '#2aa8f2', ch: CH.bear, label: TX('먼저 읽기','READ ME') },
+  { id: 'highlight-2-게임방법', bg: '#ff5c96', ch: CH.boy,  label: TX('게임 방법','HOW TO') },
+  { id: 'highlight-3-같이하기', bg: '#37bf6a', ch: CH.girl, label: TX('같이 하기','PLAY W/ FRIENDS') },
+  { id: 'highlight-4-업데이트', bg: '#ffab2e', ch: CH.dog,  label: TX('업데이트','UPDATES') },
 ];
 
 // ── ⑧ 찍기 ───────────────────────────────────────────────────────────
@@ -492,4 +499,4 @@ await ictx.close();
 
 await browser.close();
 console.log('\n게시물 ' + POSTS.length + '장(4:5 + 1:1) · 스토리 ' + STORIES.length
-  + '장 · 하이라이트 ' + HL.length + '장 · 프로필 1장 → press/insta/');
+  + '장 · 하이라이트 ' + HL.length + '장 · 프로필 1장 → press/' + (LANG==='en'?'insta-en':'insta') + '/');
