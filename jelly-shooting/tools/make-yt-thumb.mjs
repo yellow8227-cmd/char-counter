@@ -1,4 +1,4 @@
-// 유튜브 세로 썸네일(쇼츠) 을 만든다.   node tools/make-yt-thumb.mjs
+// 유튜브 세로 썸네일(쇼츠) 을 만든다.   node tools/make-yt-thumb.mjs [--en]
 //   → press/upload/yt-thumb-A.png · B.png    (1080x1920)
 //   → press/upload/yt-thumb.png             (고른 안. 문서가 이 이름을 가리킨다)
 //   → press/upload/yt-thumb-feed.png        (쇼츠 목록에 끼워 본 미리보기)
@@ -19,6 +19,10 @@ const OUT=join(ROOT,'press','upload'); mkdirSync(OUT,{recursive:true});
 const GAME='file://'+join(ROOT,'index.html');
 const CHROME='/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const W=1080, H=1920;
+// 언어 — 파일 이름도 갈라 둔다(한 폴더에 같이 두고 골라 쓴다)
+const LANG = process.argv.includes('--en') ? 'en' : 'ko';
+const TX = (ko, en) => (LANG === 'en' ? en : ko);
+const SUF = LANG === 'en' ? '-en' : '';
 
 const browser=await chromium.launch({executablePath:CHROME,args:['--no-sandbox','--allow-file-access-from-files']});
 const gctx=await browser.newContext({viewport:{width:430,height:932},deviceScaleFactor:2,isMobile:true,hasTouch:true});
@@ -90,29 +94,30 @@ const shot=async(name,bg,inner)=>{
 };
 
 // A · 도발형 — 이 게임의 가장 센 문장. 빨강이라 목록에서 제일 튄다
-const A=await shot('yt-thumb-A.png','linear-gradient(160deg,#ff6b52 0%,#e2213f 45%,#8f0f2c 100%)',
+const A=await shot(`yt-thumb-A${SUF}.png`,'linear-gradient(160deg,#ff6b52 0%,#e2213f 45%,#8f0f2c 100%)',
   `<img class="j" src="${J.pink}"  style="left:4%;top:30%;width:15%;transform:rotate(-12deg)">
    <img class="j" src="${J.gold}"  style="right:5%;top:26%;width:14%;transform:rotate(10deg)">
    <img class="j" src="${J.mint}"  style="left:12%;top:47%;width:12%;transform:rotate(16deg)">
    <img class="j" src="${BOMB}"    style="right:12%;top:45%;width:13%;transform:rotate(-8deg)">
    <img class="cut" src="${BUNNY}" style="left:50%;transform:translateX(-50%);bottom:2%;width:62%">
    <div class="wrap z">
-     <div class="sub">귀엽다고 얕보지 마세요</div>
-     <h1 style="margin-top:34px">10초도<br><em>못 버팀</em></h1>
-     <div class="band" style="background:rgba(255,214,64,.95);color:#5a1010">🔥 핵불닭 · 목숨 2개 · 속도 3.2배</div>
+     <div class="sub">${TX('귀엽다고 얕보지 마세요','It looks cute.')}</div>
+     <h1 style="margin-top:34px">${TX('10초도<br><em>못 버팀</em>','You will<br>not last<br><em>10 sec</em>')}</h1>
+     <div class="band" style="background:rgba(255,214,64,.95);color:#5a1010">${
+       TX('🔥 핵불닭 · 목숨 2개 · 속도 3.2배','🔥 Nuclear · 2 lives · 3.2× speed')}</div>
    </div>`);
 
 // B · 귀여움 먼저 — 얼굴을 크게. 작아져도 뭔지 알아본다
-const B=await shot('yt-thumb-B.png','linear-gradient(160deg,#ff9ec7 0%,#ff5c9a 46%,#d62a7a 100%)',
+const B=await shot(`yt-thumb-B${SUF}.png`,'linear-gradient(160deg,#ff9ec7 0%,#ff5c9a 46%,#d62a7a 100%)',
   `<img class="j" src="${J.gold}"  style="left:6%;top:12%;width:14%;transform:rotate(-14deg)">
    <img class="j" src="${J.mint}"  style="right:6%;top:16%;width:13%;transform:rotate(12deg)">
    <img class="j" src="${J.blue}"  style="left:10%;top:52%;width:12%;transform:rotate(18deg)">
    <img class="j" src="${J.grape}" style="right:8%;top:50%;width:12%;transform:rotate(-16deg)">
    <img class="cut" src="${BUNNY2}" style="left:50%;transform:translateX(-50%);bottom:4%;width:70%">
    <div class="wrap z">
-     <h1 style="font-size:170px">젤리모</h1>
-     <div class="sub" style="margin-top:20px">톡 터트리면 콤보!</div>
-     <div class="band">설치 없이 · 3분이면 한 판</div>
+     <h1 style="font-size:170px">${TX('젤리모','Jellimo')}</h1>
+     <div class="sub" style="margin-top:20px">${TX('톡 터트리면 콤보!','Tap. It pops. Chain it.')}</div>
+     <div class="band">${TX('설치 없이 · 3분이면 한 판','No install · 3-minute rounds')}</div>
    </div>`);
 
 // C안(진짜 게임 화면을 배경으로)은 버렸다 — 낱장에 이미 자막이 박혀 있어 글자가 겹치고,
@@ -137,20 +142,20 @@ await feed.setContent(`<style>
  .v{font-size:12.5px;color:#606060;margin-top:3px}
  h2{font-size:17px;margin-bottom:14px;color:#0f0f0f}
 </style>
-<h2>▶ 쇼츠 — 다른 영상들 사이에서 이렇게 보입니다</h2>
+<h2>${TX('▶ 쇼츠 — 다른 영상들 사이에서 이렇게 보입니다','▶ Shorts — how it looks next to other videos')}</h2>
 <div class="row">
-  ${card('https://dummyimage.com/210x373/6b7cff/fff&text=+','다른 게임 영상')}
-  ${card(A,'귀엽다고 얕보지 마세요 10초도 못 버팀')}
-  ${card('https://dummyimage.com/210x373/2ecf8f/fff&text=+','다른 게임 영상')}
-  ${card(B,'젤리모 — 설치 없이 3분이면 한 판')}
-  ${card('https://dummyimage.com/210x373/ff9f43/fff&text=+','다른 게임 영상')}
+  ${card('https://dummyimage.com/210x373/6b7cff/fff&text=+',TX('다른 게임 영상','Another game'))}
+  ${card(A,TX('귀엽다고 얕보지 마세요 10초도 못 버팀','It looks cute. You will not last 10 seconds'))}
+  ${card('https://dummyimage.com/210x373/2ecf8f/fff&text=+',TX('다른 게임 영상','Another game'))}
+  ${card(B,TX('젤리모 — 설치 없이 3분이면 한 판','Jellimo — no install, 3-minute rounds'))}
+  ${card('https://dummyimage.com/210x373/ff9f43/fff&text=+',TX('다른 게임 영상','Another game'))}
 </div>`);
 await feed.waitForTimeout(500);
-writeFileSync(join(OUT,'yt-thumb-feed.png'), await feed.screenshot({type:'png'}));
-console.log('🖼  yt-thumb-feed.png  (쇼츠 목록에 끼워 본 모습)');
+writeFileSync(join(OUT,`yt-thumb-feed${SUF}.png`), await feed.screenshot({type:'png'}));
+console.log(`🖼  yt-thumb-feed${SUF}.png  (쇼츠 목록에 끼워 본 모습)`);
 
 // 고른 안 — 문서·안내가 이 이름을 가리킨다. 바꾸려면 PICK 만 고치면 된다.
-const PICK='yt-thumb-A.png';
-writeFileSync(join(OUT,'yt-thumb.png'), readFileSync(join(OUT,PICK)));
-console.log('⭐ yt-thumb.png ← '+PICK+' (실제로 쓸 썸네일)');
+const PICK=`yt-thumb-A${SUF}.png`;
+writeFileSync(join(OUT,`yt-thumb${SUF}.png`), readFileSync(join(OUT,PICK)));
+console.log(`⭐ yt-thumb${SUF}.png ← `+PICK+' (실제로 쓸 썸네일)');
 await browser.close();
