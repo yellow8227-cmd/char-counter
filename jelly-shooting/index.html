@@ -2154,35 +2154,50 @@ const THR_PAD=seq('D4 A3 F3 C4   D4 A3 G3 E3   F4 C4 Bb3 F3   A3 C4 D4 A3');
 const TRACKS={
   main   :{mel:MAIN_MEL,bass:MAIN_BASS,pad:MAIN_PAD,step:0.26,vol:0.15,
            melType:'triangle',bassType:'sine',   padType:'sine',
-           melVol:0.46,bassVol:0.55,padVol:0.10, hat:4,hatFrom:3,octFrom:7},
+           melVol:0.46,bassVol:0.55,padVol:0.10, hat:4,hatFrom:3,octFrom:7,
+           padLp:1400},
   fire   :{mel:FIRE_MEL,bass:FIRE_BASS,pad:FIRE_PAD,step:0.16,vol:0.14,
-           melType:'square',  bassType:'sawtooth',padType:'triangle',
-           melVol:0.26,bassVol:0.34,padVol:0.07, hat:2,hatFrom:1,octFrom:5},
+           melType:'triangle',bassType:'triangle',padType:'sine',
+           melVol:0.30,bassVol:0.40,padVol:0.08, hat:2,hatFrom:1,octFrom:5,
+           melLp:2600,bassLp:900,padLp:1100},
   endless:{mel:ENDL_MEL,bass:ENDL_BASS,pad:ENDL_PAD,step:0.24,vol:0.13,
            melType:'triangle',bassType:'sine',   padType:'sine',
-           melVol:0.40,bassVol:0.50,padVol:0.12, hat:4,hatFrom:4,octFrom:9},
+           melVol:0.40,bassVol:0.50,padVol:0.12, hat:4,hatFrom:4,octFrom:9,
+           padLp:1400},
   boss   :{mel:BOSS_MEL,bass:BOSS_BASS,pad:BOSS_PAD,step:0.22,vol:0.17,
-           melType:'square',  bassType:'sawtooth',padType:'triangle',
-           melVol:0.30,bassVol:0.40,padVol:0.09, hat:2,hatFrom:1,octFrom:0},
+           melType:'square',  bassType:'triangle',padType:'sine',
+           melVol:0.24,bassVol:0.42,padVol:0.09, hat:2,hatFrom:1,octFrom:0,
+           melLp:1500,bassLp:800,padLp:1000},
   dungeon:{mel:DUN_MEL, bass:DUN_BASS, pad:DUN_PAD, step:0.21,vol:0.15,
            melType:'triangle',bassType:'square', padType:'sine',
-           melVol:0.36,bassVol:0.32,padVol:0.09, hat:2,hatFrom:1,octFrom:8},
+           melVol:0.36,bassVol:0.30,padVol:0.09, hat:2,hatFrom:1,octFrom:8,
+           bassLp:850,padLp:1200},
   throw  :{mel:THR_MEL, bass:THR_BASS, pad:THR_PAD, step:0.15,vol:0.13,
            melType:'triangle',bassType:'square', padType:'sine',
-           melVol:0.34,bassVol:0.30,padVol:0.08, hat:2,hatFrom:1,octFrom:0},
+           melVol:0.34,bassVol:0.28,padVol:0.08, hat:2,hatFrom:1,octFrom:0,
+           bassLp:850,padLp:1200},
 };
 const PAD_EVERY=8;         // 패드는 여덟 스텝마다 한 번, 길게 깔린다
 
-function bgmNote(freq,t,type,vol,dur){ if(!freq)return; const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=freq;
-  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+0.03);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
-  o.connect(g);g.connect(bgmGain);o.start(t);o.stop(t+dur+0.02); }
+function bgmNote(freq,t,type,vol,dur,lp){
+  if(!freq)return;
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.type=type; o.frequency.value=freq;
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(vol,t+0.03);
+  g.gain.exponentialRampToValueAtTime(Math.max(0.0002,vol*0.02),t+dur);
+  g.gain.linearRampToValueAtTime(0,t+dur+0.012);   // 진짜 0 까지 — 여기서 안 내리면 '틱' 소리가 난다
+  let last=g;
+  if(lp){ const f=AC.createBiquadFilter(); f.type='lowpass'; f.frequency.value=lp; f.Q.value=0.7;
+          g.connect(f); last=f; }
+  o.connect(g); last.connect(bgmGain); o.start(t); o.stop(t+dur+0.03); }
 // 셰이커 — 아주 짧은 잡음. 리듬만 잡아 주면 되니 0.03초면 충분하다.
 function bgmHat(t,vol){
   const len=Math.max(1,Math.floor(AC.sampleRate*0.03));
   const buf=AC.createBuffer(1,len,AC.sampleRate), d=buf.getChannelData(0);
   for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*(1-i/len);
   const n=AC.createBufferSource(); n.buffer=buf;
-  const hp=AC.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=5200;
+  const hp=AC.createBiquadFilter(); hp.type='bandpass'; hp.frequency.value=4200; hp.Q.value=0.9;
   const g=AC.createGain(); g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.035);
   n.connect(hp); hp.connect(g); g.connect(bgmGain); n.start(t);
 }
@@ -2212,22 +2227,22 @@ function bgmTick(){
     const now=AC.currentTime, v=bgmVol(want);
     try{ bgmGain.gain.cancelScheduledValues(now);
       bgmGain.gain.setValueAtTime(Math.max(0.0001,bgmGain.gain.value),now);
-      bgmGain.gain.linearRampToValueAtTime(0.0001,now+0.06);
-      bgmGain.gain.linearRampToValueAtTime(v,now+0.20);
+      bgmGain.gain.setTargetAtTime(0.0001,now,0.05);      // 부드럽게 내린다
+      bgmGain.gain.setTargetAtTime(v,now+0.26,0.09);      // 부드럽게 올린다
     }catch(e){ bgmGain.gain.value=v; }
-    bgmCur=want; bgmStep=0; bgmNext=now+0.10;
+    bgmCur=want; bgmStep=0; bgmNext=now+0.30;             // 앞 곡이 잦아든 뒤에 새 곡을 놓는다
   }
   const tr=TRACKS[want];
   const lv=(typeof level==='number'&&level>0)?level:1;
   if(bgmNext<AC.currentTime) bgmNext=AC.currentTime+0.05;
   while(bgmNext<AC.currentTime+0.3){
     const i=bgmStep%tr.mel.length;
-    bgmNote(tr.mel[i], bgmNext, tr.melType, tr.melVol, tr.step*0.9);
-    bgmNote(tr.bass[i],bgmNext, tr.bassType,tr.bassVol, tr.step*0.9);
+    bgmNote(tr.mel[i], bgmNext, tr.melType, tr.melVol, tr.step*0.9, tr.melLp);
+    bgmNote(tr.bass[i],bgmNext, tr.bassType,tr.bassVol, tr.step*0.9, tr.bassLp);
     // 패드 — 여덟 스텝을 덮는 긴 음. 곡이 '반주가 있는 음악'처럼 들리게 하는 층이다
     if(tr.pad && bgmStep%PAD_EVERY===0){
       const pi=Math.floor(bgmStep/PAD_EVERY)%tr.pad.length;
-      bgmNote(tr.pad[pi], bgmNext, tr.padType, tr.padVol, tr.step*PAD_EVERY*0.95);
+      bgmNote(tr.pad[pi], bgmNext, tr.padType, tr.padVol, tr.step*PAD_EVERY*0.95, tr.padLp||1400);
     }
     // 레벨이 오르면 셰이커가 붙는다
     if(tr.hat && lv>=(tr.hatFrom||1) && bgmStep%tr.hat===0)

@@ -39,6 +39,9 @@ const chromium = (pwMod.chromium || (pwMod.default && pwMod.default.chromium));
 
 // 언어 — node tools/make-promo-video.mjs [--en]
 const LANG = process.argv.includes('--en') ? 'en' : 'ko';
+// 게임을 이 비율로 느리게 돌리고, 마지막에 그만큼 영상을 당긴다.
+// 0.5 면 초당 25장 녹화가 게임 시간 기준 초당 50장이 된다.
+const SLOW = 0.5;
 const TX = (ko, en) => (LANG === 'en' ? en : ko);
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -134,6 +137,24 @@ const OVERLAY = `(()=>{
   window.__cardOff=()=>card.classList.remove('on');
   return 1; })()`;
 
+// ── 세상을 절반 속도로 돌리는 장치 ──
+// 화면을 그리는 시계(rAF·performance.now)와 타이머를 모두 절반으로 늦춘다.
+// Date.now 는 건드리지 않는다 — 소리 기록은 '실제 시각'으로 남기고, 나중에 절반을
+// 곱해 영상 시간으로 옮긴다. (여기서 Date.now 까지 늦추면 두 번 늦춰진다)
+const SLOW_SHIM = `(()=>{
+  const S=${SLOW};
+  if(window.__slowed) return 1; window.__slowed=1;
+  const rAF=window.requestAnimationFrame.bind(window);
+  window.requestAnimationFrame=cb=>rAF(t=>cb(t*S));
+  const pn=performance.now.bind(performance);
+  window.__realNow=pn;
+  performance.now=()=>pn()*S;
+  const sI=window.setInterval.bind(window), sT=window.setTimeout.bind(window);
+  window.__realSetInterval=sI;
+  window.setInterval=(fn,ms,...a)=>sI(fn,(ms||0)/S,...a);
+  window.setTimeout =(fn,ms,...a)=>sT(fn,(ms||0)/S,...a);
+  return 1; })()`;
+
 // ── 소리 기록 장치 — 녹화하는 동안 '무슨 소리가 언제 났는지'만 적는다 ──
 const SFX_SHIM = `(()=>{
   window.__t0 = Date.now();
@@ -146,11 +167,12 @@ const SFX_SHIM = `(()=>{
   });
   // 초당 몇 프레임이 그려지는지 재 둔다 — 버벅임을 숫자로 확인하려고
   window.__fps=[]; let __fc=0, __fl=Date.now();
+  // 초당 몇 장이 '실제로' 그려지는가 (rAF 시각은 늦춰져 있으니 Date.now 로 잰다)
   (function fps(){ __fc++; const n=Date.now();
     if(n-__fl>=1000){ window.__fps.push(Math.round(__fc*1000/(n-__fl))); __fc=0; __fl=n; }
     requestAnimationFrame(fps); })();
-  window.__st = [];                      // 배경음악용 상태 [시각, 어떤 곡인가]
-  window.__stT = setInterval(()=>{
+  window.__st = [];                      // 배경음악용 상태 [시각(실제 ms), 어떤 곡인가]
+  window.__stT = (window.__realSetInterval||setInterval)(()=>{
     try{ __st.push([Date.now()-window.__t0, (typeof bgmWant==='function')?bgmWant():(running?'main':null)]); }catch(e){}
   }, 200);
   return window.__t0; })()`;
@@ -224,7 +246,9 @@ const run = async () => {
     return true;
   };
   // 판이 진짜로 시작될 때까지 기다린다 (카운트다운 길이가 상황마다 달라서 고정 대기는 위험하다)
+  // 게임이 절반 속도로 돌므로 실제로 기다려야 하는 시간도 그만큼 길다
   const waitFor = async (cond, ms = 9000, what = '') => {
+    ms = ms / SLOW;
     const t0 = Date.now();
     while (Date.now() - t0 < ms) {
       const ok = await page.evaluate(`(()=>{ try{ return !!(${cond}); }catch(e){ return false; } })()`)
@@ -261,6 +285,7 @@ const run = async () => {
   const shownLang = await page.evaluate('lang');
   if (shownLang !== LANG) { console.error('❌ 화면 언어가 ' + shownLang + ' 입니다 (원한 건 ' + LANG + ')'); process.exit(1); }
   console.log('   🗣  화면 언어 ' + shownLang);
+  await page.evaluate(SLOW_SHIM);          // 여기서부터 게임이 절반 속도로 돈다
   await page.evaluate(OVERLAY);
   const pageT0 = await page.evaluate(SFX_SHIM);
   const audioOffset = pageT0 - ctxAt;      // 녹화 시작 → 소리 기록 시작 사이의 간격(ms)
@@ -312,7 +337,7 @@ const run = async () => {
     window.__rush=setInterval(()=>{ try{ if(running){ if(lives<4){lives=4;updateHud();}
       if(dropTimer>90) dropTimer=45; } }catch(e){} },600); return 1; })()`);
   await cap(TX('톡 터트리면 콤보!','Tap. It pops. Chain it.'), TX('30초면 배우고, 3분이면 한 판','Learn it in 3 seconds. One round is 3 minutes.'));
-  await play(5200, 230);
+  await play(7200, 230);
   await capOff();
   await sleep(300);
 
@@ -360,8 +385,8 @@ const run = async () => {
         clientX:r.left+boss.x/W*r.width, clientY:r.top+boss.y/H*r.height}));
       return 1; })()`).catch(() => 0);
   };
-  for (let i = 0; i < 34; i++) { await hitBoss(); await page.evaluate(POP).catch(() => 0); await sleep(190); }
-  await sleep(1400);
+  for (let i = 0; i < 46; i++) { await hitBoss(); await page.evaluate(POP).catch(() => 0); await sleep(190); }
+  await sleep(1600);
   await ev(`(()=>{ clearInterval(window.__rush); return 1; })()`);
   mark('거대 보스');
 
@@ -373,11 +398,11 @@ const run = async () => {
   await sleep(400);
   await cap(TX('귀엽다고 얕보지 마세요', 'Cute? Sure. Merciful? No.'),
             TX('🔥 핵불닭 — 목숨 2개, 속도 3.2배', '🔥 Nuclear — 2 lives, 3.2× speed'));
-  await play(4200, 165);
+  await play(5600, 165);
   await capOff();
   await cap(TX('10초도 못 버틸걸요? 😏', 'You will not last 10 seconds 😏'),
             TX('버틴 시간으로 순위가 매겨져요', 'Ranked by how long you survived'), true);
-  await play(3600, 165);
+  await play(4800, 165);
   await capOff();
   await sleep(400);
   mark('핵불닭');
@@ -393,7 +418,7 @@ const run = async () => {
   await ev(`(()=>{ lives=6; updateHud();
     window.__rush=setInterval(()=>{ try{ if(running){ if(lives<4){lives=4;updateHud();}
       throwGauge=HEX_MAX; bolt=BOLT_NEED; updateGauge(); } }catch(e){} },500); return 1; })()`);
-  await play(3000, 230);
+  await play(4200, 230);
   await capOff();
   await sleep(200);
   await cap(TX('방해를 던져요','Throw junk at the others'), TX('지그재그 · 안개 · 폭탄 세트 · 스피드업','Zigzag · fog · bomb pack · speed-up'));
@@ -507,8 +532,8 @@ const run = async () => {
   const apage = await browser.newPage();
   await apage.goto(GAME);
   await apage.waitForFunction("typeof playSquish==='function'", null, { timeout: 20000 });
-  const audioDur = (sfx.end + audioOffset) / 1000 + 1.5;
-  const abuf = await apage.evaluate(`(async ([log, states, dur, off]) => {
+  const audioDur = ((sfx.end + audioOffset) * SLOW) / 1000 + 1.5;   // 영상을 당긴 뒤의 길이
+  const abuf = await apage.evaluate(`(async ([log, states, dur, off, slow]) => {
     const SR=48000;
     const oc=new OfflineAudioContext(2, Math.ceil(SR*dur), SR);
     // 소리가 겹쳐 찌그러지지 않게 리미터를 하나 물린다 (게임은 destination 에 바로 붙는다)
@@ -536,19 +561,20 @@ const run = async () => {
     const st2 = states.length ? states : [[0,'main']];
     const lastT = st2[st2.length-1][0];
     const seen = {};
+    // t 는 실제로 흐른 시간이다. 영상을 slow 배로 당길 거라 소리 시각도 그만큼 곱한다.
     for(let t=0; t<=lastT+1500; t+=200){
       const near = st2.reduce((a,b)=>Math.abs(b[0]-t)<Math.abs(a[0]-t)?b:a, st2[0]);
-      NOW=(t+off)/1000; if(NOW<0) continue;
+      NOW=(t+off)*slow/1000; if(NOW<0) continue;
       // 화면이 게임 밖(꾸미기·결과)일 때는 앞 곡을 이어 둔다 — 무음보다 낫다
       bgmForce = near[1] || bgmCur || 'main';
-      seen[bgmForce]=(seen[bgmForce]||0)+1;
+      seen[bgmForce]=(seen[bgmForce]||0)+slow;
       try{ bgmTick(); }catch(e){}
     }
     bgmForce=null;
     window.__bgmSeen=seen;
     // 효과음
     for(const [f,a,t] of log){
-      NOW=(t+off)/1000; if(NOW<0) continue;
+      NOW=(t+off)*slow/1000; if(NOW<0) continue;
       try{ (window['__real_'+f]||window[f]).apply(null,a); }catch(e){}
     }
     const buf=await oc.startRendering();
@@ -567,14 +593,14 @@ const run = async () => {
     const u=new Uint8Array(ab); let s='';
     for(let i=0;i<u.length;i+=0x8000) s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));
     return {b64:btoa(s), dur:buf.duration, bgm:window.__bgmSeen||{}};
-  })([${JSON.stringify(sfx.log)}, ${JSON.stringify(sfx.st)}, ${audioDur}, ${audioOffset}])`);
+  })([${JSON.stringify(sfx.log)}, ${JSON.stringify(sfx.st)}, ${audioDur}, ${audioOffset}, ${SLOW}])`);
   const audio = join(OUT, `__audio-${LANG}.webm`);
   writeFileSync(audio, Buffer.from(abuf.b64, 'base64'));
   console.log('   🎵 소리 ' + abuf.dur.toFixed(1) + '초 ('
     + Math.round(Buffer.from(abuf.b64, 'base64').length / 1024) + 'KB)');
   // 어떤 곡이 몇 번 나왔나 — 보스·핵불닭 곡이 0 이면 그 장면 음악이 안 들어간 것이다
   const bgm = abuf.bgm || {};
-  const bgmLine = Object.keys(bgm).map(k => k + ' ' + (bgm[k] * 0.2).toFixed(1) + '초').join(' · ');
+  const bgmLine = Object.keys(bgm).map(k => k + ' ' + (bgm[k] * 0.2).toFixed(1) + '초').join(' · ');   // 영상 시간 기준
   console.log('   🎶 곡: ' + (bgmLine || '(없음)'));
   for (const need of ['main', 'boss', 'fire']) if (!bgm[need]) console.log('   ⚠ ' + need + ' 곡이 한 번도 안 나왔습니다');
   await browser.close();
@@ -586,12 +612,19 @@ const run = async () => {
     p.on('error', () => { console.log('⚠ ffmpeg 를 못 찾았습니다'); res(false); });
   });
   const dst = join(OUT, `jellimo-promo-${LANG}.webm`);
-  // 영상은 그대로 복사하고 소리만 붙인다(다시 굽지 않는다 — 인코더도 없다)
-  const ok = await ff(['-i', silent, '-i', audio, '-map', '0:v:0', '-map', '1:a:0',
-                       '-c', 'copy', '-shortest', dst], '소리 붙이기');
+  // ⏩ 여기가 매끄러움의 핵심이다.
+  // 녹화는 초당 25장이 한계인데, 게임을 절반 속도로 돌려 놨으니 그 25장은
+  // '게임 시간 1초당 50장'이다. 영상을 2배로 당기면 원래 속도 · 초당 50장이 된다.
+  // (프레임을 지어내는 보간이 아니라, 실제로 그려진 그림들이다)
+  const FPS = Math.round(25 / SLOW);
+  const ok = await ff(['-i', silent, '-i', audio,
+                       '-filter_complex', `[0:v]setpts=${SLOW}*PTS,fps=${FPS}[v]`,
+                       '-map', '[v]', '-map', '1:a:0',
+                       '-c:v', 'libvpx', '-b:v', '2600k', '-cpu-used', '2',
+                       '-c:a', 'copy', '-shortest', dst], '2배로 당겨 합치기');
   if (!ok) { renameSync(silent, dst); console.log('⚠ 소리 없이 내보냅니다'); }
   else { rmSync(silent, { force: true }); rmSync(audio, { force: true }); }
-  console.log('🎬 ' + dst + '  [' + LANG + ']');
+  console.log('🎬 ' + dst + '  [' + LANG + ' · 초당 ' + FPS + '장]');
 
   // 낱장은 다 만든 영상에서 뽑는다 (녹화 중에 찍으면 영상이 깨진다)
   const dur = await new Promise(res => {
@@ -624,13 +657,13 @@ const run = async () => {
   if (CAN_ENCODE) {
     const mp4 = join(OUT, `jellimo-promo-${LANG}.mp4`);
     if (await ff(['-i', dst, '-c:v', 'libx264', '-preset', 'slow', '-crf', '20',
-                  '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
+                  '-r', String(FPS), '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
                   '-c:a', 'aac', '-b:a', '160k', mp4], '유튜브용 mp4'))
       console.log('🎬 ' + mp4 + '  (860x1864 · 유튜브·인스타 릴스에 그대로 올리는 판)');
 
     const mp4s = join(OUT, `jellimo-promo-${LANG}-30s.mp4`);
     if (await ff(['-i', dst, '-t', '29.5', '-vf', 'scale=886:1920', '-c:v', 'libx264',
-                  '-preset', 'slow', '-crf', '21', '-pix_fmt', 'yuv420p',
+                  '-preset', 'slow', '-crf', '21', '-r', String(FPS), '-pix_fmt', 'yuv420p',
                   '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '160k', mp4s], '30초 mp4'))
       console.log('🎬 ' + mp4s + '  (886x1920 · 앞 29.5초 · 스토리·앱미리보기용)');
 
