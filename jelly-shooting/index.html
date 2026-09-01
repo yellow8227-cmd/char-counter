@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Jellito: Tap &amp; Survive 🍡 | 터질 때마다 도파민 팡팡</title>
+<title>Jellimo: Tap &amp; Survive 🍡 | 터질 때마다 도파민 팡팡</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#ff5c8a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="젤리토">
+<meta name="apple-mobile-web-app-title" content="젤리모">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <!-- 링크를 보낼 때 뜨는 미리보기 카드(카톡·트위터·디스코드 등).
@@ -17,18 +17,18 @@
      배포 주소가 바뀌면 손으로 고치지 말고:
        node tools/set-site-url.mjs https://새주소     ← 세 곳을 한 번에 맞춘다 -->
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="젤리토">
+<meta property="og:site_name" content="젤리모">
 <meta property="og:locale" content="ko_KR">
-<meta property="og:title" content="젤리토 Jellito 🍡 톡 치고 살아남기">
+<meta property="og:title" content="젤리모 Jellimo 🍡 톡 치고 살아남기">
 <meta property="og:description" content="혼자 하기 · 던지기 대전 · 최대 4명 실시간 던전. 설치 없이 링크만 누르면 바로 시작!">
 <meta property="og:url" content="https://zingy-cupcake-98444a.netlify.app/">
 <meta property="og:image" content="https://zingy-cupcake-98444a.netlify.app/og.jpg?v=3">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="분홍 젤리 고양이가 웃고 있는 젤리토 게임 카드">
+<meta property="og:image:alt" content="분홍 젤리 고양이가 웃고 있는 젤리모 게임 카드">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="젤리토 Jellito 🍡 톡 치고 살아남기">
+<meta name="twitter:title" content="젤리모 Jellimo 🍡 톡 치고 살아남기">
 <meta name="twitter:description" content="혼자 하기 · 던지기 대전 · 최대 4명 실시간 던전. 설치 없이 링크만 누르면 바로 시작!">
 <meta name="twitter:image" content="https://zingy-cupcake-98444a.netlify.app/og.jpg?v=3">
 <meta name="description" content="혼자 하기 · 던지기 대전 · 최대 4명 실시간 던전. 설치 없이 링크만 누르면 바로 시작하는 귀여운 젤리 터트리기 게임.">
@@ -3852,10 +3852,10 @@ function toast(msg){ const el=$('toast'); el.textContent=t(msg);
 // 크롤러가 읽는 <meta> 와 manifest.json 은 정적이라 손으로 같이 고쳐야 한다:
 //   index.html 6·12·20·22·29·31행 · manifest.json 의 name/short_name
 const GAME={
-  mark1:'Jellito',        // 로고 첫 줄
+  mark1:'Jellimo',        // 로고 첫 줄
   mark2:'',               // 로고 둘째 줄 ('' 이면 한 줄 로고)
   sub:'TAP & SURVIVE',    // 로고 밑 작은 부제 — 여기가 특징을 말하는 자리다
-  ko:'젤리토',             // 글 안에서 부르는 이름 — 사전이 언어별로 옮긴다
+  ko:'젤리모',             // 글 안에서 부르는 이름 — 사전이 언어별로 옮긴다
 };
 function gameName(){ return t(GAME.ko); }
 function fullTitle(){ const m=(GAME.mark1+' '+GAME.mark2).trim();
@@ -4233,7 +4233,7 @@ const I18N_ROWS=[
   ["젤리 터트리기","Popping jellies","ゼリーを弾く"],
   ["젤리곰","Gummy bear","グミベア"],
   ["젤리슈팅","Jelly Shooting","ゼリーシューティング"],
-  ["젤리토","Jellito","ジェリト"],
+  ["젤리모","Jellimo","ジェリモ"],
   ["조금만 더! 다시 도전해봐요 ✨","So close! Give it another go ✨","もう少し！もう一回どうぞ ✨"],
   ["주근깨 ✨","Freckles ✨","そばかす ✨"],
   ["주소가 너무 길어요","The address is too long","アドレスが長すぎます"],

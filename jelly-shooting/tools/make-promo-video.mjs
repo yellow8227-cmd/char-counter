@@ -231,7 +231,7 @@ const run = async () => {
   mark('준비 끝 (소리 맞춤 간격 ' + audioOffset + 'ms)');
 
   // ── ① 표지 ──
-  await ev(`__card('젤리토','가족도, 연인도, 친구도 · 3분이면 한 판','앱도 가입도 없이 바로')`);
+  await ev(`__card('젤리모','가족도, 연인도, 친구도 · 3분이면 한 판','앱도 가입도 없이 바로')`);
   await sleep(2600);
   await ev(`__cardOff()`);
   await sleep(600);
