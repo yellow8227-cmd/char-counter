@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>씬덱 — 시나리오에서 컷 프롬프트까지</title>
+<meta name="description" content="영어를 못해도 됩니다. 한국어로 쓰면 미드저니·런웨이·Veo 프롬프트가 나옵니다. 영화 제작사 프리프로덕션 현장에서 쓰려고 직접 만든 도구.">
+<link rel="canonical" href="https://yellow8227-cmd.github.io/char-counter/scenedeck/about.html">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="icon-v9.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32-v9.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon-v9.png">
+<link rel="manifest" href="site.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SCENEDECK">
+<meta property="og:title" content="씬덱 — 시나리오에서 컷 프롬프트까지">
+<meta property="og:description" content="말로 열 번 오갈 걸, 레퍼런스 한 장으로. 한국어로 쓰면 프롬프트가 나옵니다.">
+<meta property="og:url" content="https://yellow8227-cmd.github.io/char-counter/scenedeck/about.html">
+<meta property="og:image" content="https://yellow8227-cmd.github.io/char-counter/scenedeck/og-about.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* ─────────────────────────────────────────────
+   포트폴리오와 같은 체계로 짠다.
+   Pretendard 한 벌, 인디고 #3A57CF 하나, 흰 바탕.
+   장식은 없다. 큰 숫자와 여백이 위계를 만든다.
+   ───────────────────────────────────────────── */
+:root{
+  --bg:#ffffff; --bg2:#f7f8fb; --bg3:#eef1fb;
+  --ink:#111214; --tx2:#4b5158; --tx3:#848a93;
+  --acc:#3a57cf; --acc-d:#2f47ab;
+  --line:#e8e9eb; --line2:#eeeff1; --line3:#c9cfda;
+  --shadow:0 1px 2px rgba(17,18,20,.04),0 12px 32px rgba(17,18,20,.07);
+  --sans:'Pretendard Variable',Pretendard,'IBM Plex Sans KR',-apple-system,
+    BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --disp:'Playfair Display','Times New Roman',Georgia,serif;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,'D2Coding',monospace;
+  --wrap:1120px;
+  color-scheme:light;
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1013; --bg2:#16181c; --bg3:#1a1f33;
+    --ink:#eceef1; --tx2:#a8aeb7; --tx3:#7b8189;
+    --acc:#7b93f5; --acc-d:#9aabf8;
+    --line:#24272c; --line2:#1d2025; --line3:#343a44;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px rgba(0,0,0,.45);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1013; --bg2:#16181c; --bg3:#1a1f33;
+  --ink:#eceef1; --tx2:#a8aeb7; --tx3:#7b8189;
+  --acc:#7b93f5; --acc-d:#9aabf8;
+  --line:#24272c; --line2:#1d2025; --line3:#343a44;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px rgba(0,0,0,.45);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-synthesis-weight:none;font-synthesis:none;
+  font-size:16px;line-height:1.78;letter-spacing:-.011em;font-weight:400;
+  -webkit-font-smoothing:antialiased;word-break:keep-all}
+img,video{max-width:100%}
+a{color:var(--acc);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--acc);outline-offset:3px;border-radius:3px}
+
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 28px}
+.narrow{max-width:700px}
+
+/* 머리 */
+.top{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);
+  backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid var(--line2)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .top{background:rgba(15,16,19,.86)}}
+:root[data-theme="dark"] .top{background:rgba(15,16,19,.86)}
+.top .wrap{display:flex;align-items:center;gap:20px;height:58px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--disp);font-size:17px;
+  font-weight:700;letter-spacing:.16em;color:var(--ink)}
+.mk{width:26px;height:26px;flex:none;display:block;color:var(--ink)}
+.brand:hover{text-decoration:none}
+.brand i{font-style:normal;color:var(--acc)}
+.top nav{margin-left:auto;display:flex;align-items:center;gap:22px;font-size:14px}
+.top nav a{color:var(--tx2);font-weight:500}
+.top nav a:hover{color:var(--ink);text-decoration:none}
+.top nav a.go{background:var(--acc);color:#fff;padding:8px 16px;border-radius:6px;font-weight:700}
+.top nav a.go:hover{background:var(--acc-d);color:#fff}
+@media(max-width:560px){.top nav a.hide{display:none}}
+
+/* 활자 */
+h1,h2,h3{margin:0;letter-spacing:-.035em;line-height:1.28;text-wrap:balance;font-weight:800}
+h1{font-size:clamp(32px,5.4vw,52px);line-height:1.2;letter-spacing:-.042em}
+h2{font-size:clamp(24px,3.4vw,34px);margin:0 0 16px}
+h3{font-size:18px;font-weight:700;margin:0 0 8px;letter-spacing:-.025em}
+p{margin:0 0 18px;color:var(--tx2)}
+b,strong{color:var(--ink);font-weight:700}
+.u{color:var(--acc);white-space:nowrap;
+  background:linear-gradient(color-mix(in srgb,var(--acc) 24%,transparent),
+    color-mix(in srgb,var(--acc) 24%,transparent)) 0 84%/100% .16em no-repeat}
+.acc{color:var(--acc)}
+
+/* 괄호 라벨 · 번호 배지 */
+.lab{display:inline-block;font-family:var(--disp);font-size:14px;font-weight:600;
+  letter-spacing:.15em;color:var(--acc);margin:0 0 14px}
+.lab.ko{font-family:var(--sans);font-size:12.5px;font-weight:800;letter-spacing:.1em}
+.num{display:flex;align-items:baseline;gap:12px;margin:0 0 18px}
+.num b{font-family:var(--disp);font-size:15px;font-weight:700;letter-spacing:.06em;color:#fff;
+  background:var(--acc);border-radius:5px;padding:2px 10px;line-height:1.5}
+.num span{font-size:13px;font-weight:700;letter-spacing:.14em;color:var(--tx3)}
+
+section{padding:92px 0;border-top:1px solid var(--line2)}
+@media(max-width:720px){section{padding:64px 0}}
+.tint{background:var(--bg2);border-top:1px solid var(--line2)}
+
+/* 히어로 */
+.hero{border-top:0;padding:76px 0 84px}
+.hero .grid{display:grid;gap:48px;align-items:center}
+@media(min-width:960px){.hero .grid{grid-template-columns:1fr 1.02fr;gap:56px}}
+.rig{position:relative;padding-bottom:22px}
+.rig .laptop{max-width:none}
+.rig .phone{position:absolute;right:-14px;bottom:-6px;width:23%;min-width:118px;max-width:168px;
+  border-radius:26px;padding:6px}
+.rig .phone .sc{border-radius:21px}
+.rig .phone .notch{width:46px;height:13px;top:6px;border-radius:8px}
+@media(max-width:640px){.rig .phone{right:-6px;width:27%;min-width:96px}}
+.hero p.lead{font-size:17.5px;line-height:1.82;margin:0 0 26px;max-width:520px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 30px;padding:0;list-style:none}
+.tags li{font-size:13px;font-weight:600;color:var(--tx2);background:var(--bg2);
+  border:1px solid var(--line);border-radius:999px;padding:5px 13px}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 38px}
+.btn{display:inline-block;font-size:15px;font-weight:700;padding:13px 24px;
+  border-radius:8px;transition:.15s;border:1px solid transparent}
+.btn.p{background:var(--acc);color:#fff}
+.btn.p:hover{background:var(--acc-d);text-decoration:none}
+.btn.s{border-color:var(--line3);color:var(--ink);background:var(--bg)}
+.btn.s:hover{background:var(--bg2);text-decoration:none}
+
+/* 숫자 지표 */
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:0;
+  border-top:1px solid var(--line);padding-top:24px}
+.kpi div{padding-right:16px}
+.kpi b{display:block;font-family:var(--disp);font-size:clamp(28px,3.8vw,36px);font-weight:700;
+  letter-spacing:-.02em;line-height:1.15;color:var(--ink)}
+.kpi span{display:block;font-size:12.5px;color:var(--tx3);margin-top:4px;line-height:1.55}
+@media(max-width:520px){.kpi{grid-template-columns:1fr 1fr;row-gap:20px}}
+
+/* 브라우저 목업 */
+.mock{border:1px solid var(--line);border-radius:11px;overflow:hidden;
+  background:var(--bg2);box-shadow:var(--shadow);margin:0}
+.mock .chrome{display:flex;align-items:center;gap:7px;padding:10px 13px;
+  background:var(--bg2);border-bottom:1px solid var(--line2)}
+.mock .chrome i{width:9px;height:9px;border-radius:50%;background:var(--line3);flex:none}
+.mock .chrome u{flex:1;margin-left:8px;text-decoration:none;font-family:var(--mono);
+  font-size:10.5px;color:var(--tx3);background:var(--bg);border:1px solid var(--line2);
+  border-radius:5px;padding:3px 10px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.mock img{width:100%;height:auto;display:block;background:var(--bg)}
+.mock.tilt{transform:perspective(1600px) rotateY(-3deg) rotateX(1.4deg)}
+@media(max-width:960px){.mock.tilt{transform:none}}
+@media(prefers-reduced-motion:reduce){.mock.tilt{transform:none}}
+
+/* 노트북 — 화면 베젤 + 힌지. 히어로에서 앱을 실물로 보이게 한다 */
+.laptop{margin:0}
+.laptop .lid{background:#1e2126;border-radius:15px;padding:13px 13px 14px;
+  box-shadow:0 2px 4px rgba(17,18,20,.1),0 26px 54px rgba(17,18,20,.2)}
+.laptop .cam{width:5px;height:5px;border-radius:50%;background:#3d424a;margin:0 auto 9px}
+.laptop .lid img{width:100%;height:auto;display:block;border-radius:4px;background:var(--bg)}
+.laptop .foot{height:12px;background:linear-gradient(180deg,#d6dae0,#a3a9b3);
+  border-radius:0 0 13px 13px;transform:scaleX(1.055);position:relative;
+  box-shadow:0 10px 20px rgba(17,18,20,.16)}
+.laptop .foot::after{content:"";position:absolute;left:50%;top:0;transform:translateX(-50%);
+  width:78px;height:5px;background:#8a919b;border-radius:0 0 6px 6px}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .laptop .foot{
+  background:linear-gradient(180deg,#4a4f57,#2c3037)}}
+:root[data-theme="dark"] .laptop .foot{background:linear-gradient(180deg,#4a4f57,#2c3037)}
+
+/* 폰 — 현장에서 꺼내 쓰는 화면 */
+.phone{width:100%;max-width:252px;margin:0 auto;background:#1e2126;border-radius:36px;
+  padding:9px;box-shadow:0 2px 4px rgba(17,18,20,.1),0 22px 46px rgba(17,18,20,.22)}
+.phone .sc{position:relative;background:var(--bg);border-radius:28px;overflow:hidden;line-height:0}
+.phone .notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);
+  width:70px;height:19px;background:#1e2126;border-radius:11px;z-index:2}
+.phone img{width:100%;height:auto;display:block}
+
+/* 뷰파인더 — 레퍼런스 사진에 모서리 표식 */
+.vf{position:relative}
+.vf .fr{position:absolute;inset:9px;pointer-events:none;z-index:2}
+.vf .fr::before,.vf .fr::after{content:"";position:absolute;width:15px;height:15px;
+  border:1.5px solid rgba(255,255,255,.9)}
+.vf .fr::before{top:0;left:0;border-right:0;border-bottom:0}
+.vf .fr::after{bottom:0;right:0;border-left:0;border-top:0}
+.vf .rec{position:absolute;top:11px;right:12px;z-index:3;display:flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:rgba(255,255,255,.92);
+  text-shadow:0 1px 3px rgba(0,0,0,.7)}
+.vf .rec::before{content:"";width:6px;height:6px;border-radius:50%;background:#e5484d}
+
+/* 강조 — 한 문장짜리 큰 판 */
+.shout{padding:78px 0;background:var(--ink);color:var(--bg);border-top:0}
+.shout p,.shout small{max-width:820px}
+.shout p{font-size:clamp(24px,4.2vw,42px);line-height:1.4;letter-spacing:-.04em;
+  font-weight:800;color:#fff;margin:0;text-wrap:balance}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .shout p{color:#0f1013}}
+:root[data-theme="dark"] .shout p{color:#0f1013}
+.shout em{font-style:normal;color:#8aa0ff;font-weight:800;letter-spacing:-.04em}
+:root[data-theme="dark"] .shout em{color:var(--acc)}
+.shout small{display:block;font-size:15px;font-weight:500;letter-spacing:-.01em;
+  margin-top:20px;color:rgba(255,255,255,.62);line-height:1.75}
+:root[data-theme="dark"] .shout small{color:rgba(15,16,19,.66)}
+
+/* 사진 */
+figure{margin:0}
+.ph{border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--bg2);line-height:0}
+.ph img{width:100%;height:auto;display:block}
+figcaption{font-size:13px;color:var(--tx3);margin-top:11px;line-height:1.7}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:860px){.g3,.g4{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.g4 .ph img{aspect-ratio:16/9;object-fit:cover}
+
+/* Thinking */
+.think{border-left:3px solid var(--acc);background:var(--bg3);border-radius:0 8px 8px 0;
+  padding:20px 24px;margin:0 0 26px}
+.think b{display:block;font-family:var(--disp);font-size:14px;font-weight:600;
+  letter-spacing:.15em;color:var(--acc);margin-bottom:7px}
+.think p{margin:0;color:var(--ink);font-size:16.5px;line-height:1.75}
+
+/* 고충 · 기능 카드 */
+.cards{display:grid;gap:14px;padding:0;margin:0 0 8px;list-style:none}
+@media(min-width:760px){.cards.c3{grid-template-columns:repeat(3,1fr)}
+  .cards.c2{grid-template-columns:1fr 1fr}}
+.cards li{border:1px solid var(--line);border-radius:10px;padding:22px 22px;background:var(--bg)}
+.cards .k{display:block;font-size:12.5px;font-weight:800;letter-spacing:.1em;
+  color:var(--acc);margin-bottom:9px}
+.cards p{margin:0;font-size:14.8px;line-height:1.78}
+
+/* 단계 */
+.step{display:grid;gap:24px;margin:0 0 54px}
+@media(min-width:900px){.step{grid-template-columns:290px 1fr;gap:46px;align-items:start}}
+.step .sn{font-family:var(--disp);font-size:14px;font-weight:600;letter-spacing:.14em;
+  color:var(--acc);margin:0 0 9px}
+.step p{margin:0;font-size:15px}
+
+/* 지문 → 프롬프트 */
+.flow{display:grid;gap:16px;align-items:stretch}
+@media(min-width:900px){.flow{grid-template-columns:minmax(230px,.62fr) 30px 1fr;gap:20px}}
+.ko{border:1px solid var(--line3);border-radius:10px;padding:22px;background:var(--bg);
+  display:flex;flex-direction:column;justify-content:center}
+.ko .t{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--tx3);margin-bottom:10px}
+.ko .v{font-size:17px;font-weight:700;color:var(--ink);line-height:1.7;letter-spacing:-.02em}
+.arw{display:flex;align-items:center;justify-content:center;color:var(--line3);font-size:22px}
+@media(max-width:900px){.arw{transform:rotate(90deg);height:24px}}
+.en{border:1px solid var(--acc);border-radius:10px;padding:20px 22px;background:var(--bg3)}
+.en .t{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--acc);margin-bottom:10px}
+.en pre{margin:0;font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--ink);
+  white-space:pre-wrap;word-break:break-word;letter-spacing:0}
+.en pre em{font-style:normal;background:color-mix(in srgb,var(--acc) 18%,transparent);
+  border-radius:3px;padding:0 3px}
+.notes{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:9px}
+.notes li{font-size:14px;color:var(--tx2);padding-left:22px;position:relative;line-height:1.7}
+.notes li::before{content:"";position:absolute;left:6px;top:11px;width:5px;height:5px;
+  border-radius:50%;background:var(--acc)}
+
+/* 영상 */
+.strip{display:grid;gap:12px}
+.strip.pv{grid-template-columns:1fr 1fr}
+.strip.lv{grid-template-columns:1fr 1fr}
+@media(max-width:600px){.strip.pv,.strip.lv{grid-template-columns:1fr}}
+.strip video{width:100%;height:auto;display:block;background:var(--bg2);
+  border:1px solid var(--line);border-radius:9px;object-fit:cover}
+.strip.pv video{aspect-ratio:4/5}
+.strip.lv video{aspect-ratio:16/9}
+
+/* 이력 */
+.cv{margin:0;border-top:1px solid var(--line)}
+.cv .row{display:grid;gap:4px 22px;padding:17px 0;border-bottom:1px solid var(--line2)}
+@media(min-width:720px){.cv .row{grid-template-columns:132px 1fr}}
+.cv dt{font-size:13px;color:var(--tx3);font-variant-numeric:tabular-nums;padding-top:3px}
+.cv dd{margin:0;font-size:15px;color:var(--tx2);line-height:1.72}
+.cv dd b{display:block;color:var(--ink);font-weight:700;margin-bottom:2px}
+
+/* 자주 묻는 것 */
+.faq{border-top:1px solid var(--line)}
+.faq details{border-bottom:1px solid var(--line2)}
+.faq summary{list-style:none;cursor:pointer;padding:20px 40px 20px 0;position:relative;
+  font-size:16.5px;font-weight:700;color:var(--ink);letter-spacing:-.025em}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"";position:absolute;right:10px;top:50%;width:9px;height:9px;
+  border-right:2px solid var(--tx3);border-bottom:2px solid var(--tx3);
+  transform:translateY(-70%) rotate(45deg);transition:transform .18s}
+.faq details[open] summary::after{transform:translateY(-30%) rotate(225deg)}
+.faq summary:hover{color:var(--acc)}
+.faq .a{padding:0 0 22px;margin:0;font-size:15.5px;color:var(--tx2);line-height:1.82}
+
+/* 다른 도구 */
+.sib{display:grid;gap:22px;align-items:center;border:1px solid var(--line);
+  border-radius:12px;padding:26px 28px;background:var(--bg)}
+@media(min-width:760px){.sib{grid-template-columns:1fr auto}}
+.sib h3{margin:0 0 6px}
+.sib p{margin:0;font-size:15px}
+.sib .k{display:block;font-size:12.5px;font-weight:800;letter-spacing:.1em;
+  color:var(--acc);margin-bottom:8px}
+
+/* 닫는 판 */
+.close{text-align:center;padding:100px 0 104px;background:var(--bg2);
+  border-top:1px solid var(--line2)}
+.close p{max-width:440px;margin:0 auto 28px}
+.close .btns{justify-content:center;margin-bottom:0}
+
+footer{padding:30px 0 52px;font-size:13px;color:var(--tx3);border-top:1px solid var(--line2)}
+footer .row{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center}
+footer a{color:var(--tx2)}
+footer b{font-family:var(--disp);font-size:15px;font-weight:700;letter-spacing:.16em;color:var(--tx2)}
+code{font-family:var(--mono);font-size:.85em;color:var(--acc);letter-spacing:0;
+  background:var(--bg3);border:1px solid var(--line);border-radius:4px;
+  padding:1px 5px;white-space:nowrap}
+
+/* 등장 */
+.rise{opacity:0;transform:translateY(12px);
+  transition:opacity .6s cubic-bezier(.22,.61,.36,1),transform .6s cubic-bezier(.22,.61,.36,1)}
+.rise.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.rise{opacity:1;transform:none;transition:none}}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="wrap">
+  <a class="brand" href="./"><svg class="mk" viewBox="0 0 64 64" aria-hidden="true"><rect x="14" y="6" width="46" height="46" rx="7" fill="currentColor" opacity=".28"/><rect x="4" y="14" width="46" height="46" rx="7" fill="currentColor"/><g fill="var(--bg)"><rect x="9" y="20" width="4.5" height="5.5" rx="1.2"/><rect x="9" y="31" width="4.5" height="5.5" rx="1.2"/><rect x="9" y="42" width="4.5" height="5.5" rx="1.2"/><rect x="40.5" y="20" width="4.5" height="5.5" rx="1.2"/><rect x="40.5" y="31" width="4.5" height="5.5" rx="1.2"/><rect x="40.5" y="42" width="4.5" height="5.5" rx="1.2"/><rect x="17" y="27" width="20" height="16" rx="2"/></g></svg>SCENE<i>DECK</i></a>
+  <nav>
+    <a class="hide" href="#why">왜 만들었나</a>
+    <a class="hide" href="#how">어떻게 쓰나</a>
+    <a class="hide" href="docs/">문서</a>
+    <a class="go" href="./">앱 열기</a>
+  </nav>
+</div></div>
+
+<!-- ══════════ 히어로 ══════════ -->
+<section class="hero"><div class="wrap"><div class="grid">
+  <div>
+    <span class="lab">(SCENEDECK)</span>
+    <h1>말로 열 번 오갈 걸,<br><span class="u">한 장으로.</span></h1>
+    <p class="lead">한국어로 쓰면 <b>미드저니 · 런웨이 · Veo 프롬프트</b>가 나옵니다.
+      대본을 통째로 넣으면 씬과 컷으로 알아서 나뉩니다.
+      번역기를 끼운 게 아니라, 지문에서 화면을 직접 조립합니다.</p>
+    <ul class="tags">
+      <li>웹툰</li><li>애니메이션</li><li>단편영화</li>
+      <li>드라마 기획</li><li>뮤직비디오</li><li>유튜브 시리즈</li>
+    </ul>
+    <div class="btns">
+      <a class="btn p" href="./">씬덱 열기</a>
+      <a class="btn s" href="#why">왜 만들었는지 보기</a>
+    </div>
+    <div class="kpi">
+      <div><b>1분</b><span>설치도 가입도 없이 바로 시작</span></div>
+      <div><b>3종</b><span>미드저니 · Veo · 범용 이미지</span></div>
+      <div><b>0원</b><span>내 브라우저에서만 돌아갑니다</span></div>
+    </div>
+  </div>
+  <div class="rig">
+    <figure class="laptop">
+      <div class="lid">
+        <div class="cam"></div>
+        <img src="img/app-prompt.jpg" alt="씬덱 프롬프트 빌더 화면 — 씬과 컷을 고르면 영문 프롬프트가 조립된다"
+          width="1600" height="1043" fetchpriority="high">
+      </div>
+      <div class="foot"></div>
+    </figure>
+    <figure class="phone">
+      <div class="sc">
+        <span class="notch"></span>
+        <img src="img/app-mobile.jpg" alt="폰에서 연 씬덱 프롬프트 화면" width="780" height="1688" loading="lazy">
+      </div>
+    </figure>
+  </div>
+</div></div></section>
+
+<!-- ══════════ 01 왜 ══════════ -->
+<section id="why" class="tint"><div class="wrap">
+  <div class="narrow rise">
+    <div class="num"><b>01</b><span>왜 만들었나</span></div>
+    <h2>감독님과 같은 화면을 보려고<br>직접 만들었습니다.</h2>
+    <p>영화 제작사와 얼굴을 맞대는 건 <b>주 1회</b>입니다. 그 한 번에 결론이 나야 해서
+      대본 검토와 씬 브레이크다운, 장소 후보를 미리 만들어 갑니다.
+      씬마다 AI 레퍼런스도 직접 뽑습니다.</p>
+    <p>말로 설명하면 열 번을 오갑니다. <b>레퍼런스 한 장이면 한 번에 끝납니다.</b>
+      그런데 그 한 장을 뽑는 데 매번 창을 두 개 띄우고 있었습니다.
+      쓸 만한 도구가 없어서 만들었고, 지금은 회의할 때 같이 띄워놓고 씁니다.</p>
+  </div>
+  <div class="think narrow rise">
+    <b>THINKING</b>
+    <p>혼자 쓸 땐 제 머릿속에서 끝났는데,<br>여기선 열 명이 같은 그림을 봐야 움직였습니다.</p>
+  </div>
+  <div class="g4 rise">
+    <figure class="ph vf"><span class="fr"></span><span class="rec">REF</span><img src="img/ref-hall-alone.jpg" alt="대칭으로 도열한 홀 한가운데 홀로 선 인물" loading="lazy" width="482" height="270"></figure>
+    <figure class="ph vf"><span class="fr"></span><span class="rec">REF</span><img src="img/ref-hall-formation.jpg" alt="대강당에 길게 도열한 제복 인물들" loading="lazy" width="482" height="270"></figure>
+    <figure class="ph vf"><span class="fr"></span><span class="rec">REF</span><img src="img/ref-cell.jpg" alt="물이 고인 빈 방, 초록 철문과 세면대" loading="lazy" width="482" height="270"></figure>
+    <figure class="ph vf"><span class="fr"></span><span class="rec">REF</span><img src="img/ref-kitchen.jpg" alt="제복과 겉옷이 걸린 벽 앞에 차려진 밥상" loading="lazy" width="482" height="270"></figure>
+  </div>
+  <figcaption class="rise">영화 제작사 〈왈라프로젝트〉 한일합작 장편 프리프로덕션에 가져간 씬 레퍼런스 — 2026.06 – 현재</figcaption>
+</div></section>
+
+<!-- ══════════ 02 고충 ══════════ -->
+<section><div class="wrap">
+  <div class="narrow rise">
+    <div class="num"><b>02</b><span>지금은 이렇게 합니다</span></div>
+    <h2>창을 두 개 띄우는 게<br>표준 작업 방식입니다.</h2>
+    <p>한국어를 넣으면 원하는 그림이 나오지 않습니다. 그래서 챗GPT를 하나 더 켜고,
+      한국어를 영어로 옮기고, 그걸 복사해 다시 붙입니다.
+      컷 하나에 창을 두 번 오갑니다. <b>컷이 백 개면 이백 번</b>입니다.</p>
+  </div>
+  <ul class="cards c3 rise">
+    <li><span class="k">영어</span>
+      <p>완성도 있는 결과는 아직도 영어 프롬프트라야 나옵니다. 한국어로 쓴 문장은 결이 무너집니다.</p></li>
+    <li><span class="k">파라미터</span>
+      <p><code>--ar</code> <code>--style</code> <code>--no</code> — 형식을 외워야 하고, 하나 틀리면 통째로 다시 넣어야 합니다.</p></li>
+    <li><span class="k">일관성</span>
+      <p>컷마다 얼굴이 달라집니다. 의상이 바뀌고, 시대가 어긋나고, 두 명만 나와야 할 화면에 넷이 섭니다.</p></li>
+  </ul>
+</div></section>
+
+<div class="shout"><div class="wrap rise">
+  <p>컷이 백 개면,<br>창을 <em>이백 번</em> 오갑니다.</p>
+  <small>씬덱은 그 이백 번을 없앱니다. 대본을 한 번 넣고, 컷마다 복사만 하면 됩니다.</small>
+</div></div>
+
+<!-- ══════════ 03 딸깍 ══════════ -->
+<section id="how" class="tint"><div class="wrap">
+  <div class="narrow rise">
+    <div class="num"><b>03</b><span>어떻게 쓰나</span></div>
+    <h2>딸깍 세 번.</h2>
+  </div>
+
+  <div class="step rise">
+    <div>
+      <p class="sn">STEP 1</p>
+      <h3>대본을 넣습니다</h3>
+      <p>docx · pdf · txt 를 그대로 올리거나 붙여넣습니다. 씬 번호와 지문을 알아서 읽습니다.</p>
+    </div>
+    <figure class="mock">
+      <span class="chrome"><i></i><i></i><i></i><u>대본 · 컷</u></span>
+      <img src="img/app-script.jpg" alt="대본 파일을 끌어다 놓는 화면" loading="lazy" width="1600" height="1043">
+    </figure>
+  </div>
+
+  <div class="step rise">
+    <div>
+      <p class="sn">STEP 2</p>
+      <h3>씬과 컷으로 나뉩니다</h3>
+      <p>지문 한 덩어리가 컷 여러 개로 쪼개집니다. 샷 크기와 앵글이 붙고, 길이가 계산됩니다.</p>
+    </div>
+    <figure class="mock">
+      <span class="chrome"><i></i><i></i><i></i><u>대본 · 컷</u></span>
+      <img src="img/app-cuts.jpg" alt="씬과 컷으로 나뉜 목록" loading="lazy" width="1600" height="1043">
+    </figure>
+  </div>
+
+  <div class="step rise">
+    <div>
+      <p class="sn">STEP 3</p>
+      <h3>프롬프트가 나옵니다</h3>
+      <p>복사해서 바로 붙이면 됩니다. 영문 프롬프트 옆에 <b>한글 되짚기</b>가 같이 나오니,
+        무엇이 들어갔는지 눈으로 확인하고 고칠 수 있습니다.</p>
+    </div>
+    <figure class="mock">
+      <span class="chrome"><i></i><i></i><i></i><u>프롬프트</u></span>
+      <img src="img/app-prompt.jpg" alt="한국어 지문에서 만들어진 영문 프롬프트" loading="lazy" width="1600" height="1043">
+    </figure>
+  </div>
+</div></section>
+
+<!-- ══════════ 04 지문 → 프롬프트 ══════════ -->
+<section><div class="wrap">
+  <div class="narrow rise">
+    <div class="num"><b>04</b><span>실제 출력</span></div>
+    <h2>지문 한 줄을 넣으면<br>이만큼이 채워집니다.</h2>
+    <p>아래는 씬덱이 실제로 뱉은 프롬프트를 그대로 옮긴 것입니다. 손대지 않았습니다.</p>
+  </div>
+  <div class="flow rise">
+    <div class="ko">
+      <div class="t">내가 쓴 지문</div>
+      <div class="v">○○ 병원 복도 —<br>인물이 없는 빈 공간, 배경만</div>
+    </div>
+    <div class="arw">→</div>
+    <div class="en">
+      <div class="t">씬덱이 만든 프롬프트</div>
+<pre>cinematic, film still, <em>establishing shot</em>, eye-level angle,
+<em>empty location, no people, no characters</em>, the space itself,
+empty old stone corridor, oil lamps, the location itself,
+old stone corridor, <em>24mm wide-angle lens</em>, soft diffused light,
+hyper-realistic <em>--ar 16:9 --style raw --v 7</em>
+<em>--no</em> person, people, crowd, figure, silhouette, human, text, watermark</pre>
+    </div>
+  </div>
+  <ul class="notes narrow rise">
+    <li><b>「인물이 없는」</b> 한마디에 <code>no people</code> 과 <code>--no person, people, crowd…</code> 가 양쪽으로 붙습니다. 한쪽만 쓰면 사람이 들어옵니다.</li>
+    <li><b>「설정샷」</b>을 고르면 렌즈가 <code>24mm</code> 로 따라옵니다. 화각을 외울 필요가 없습니다.</li>
+    <li><b>장소를 한 번</b> 적어두면 그 씬의 모든 컷에 같은 문장으로 들어갑니다.</li>
+  </ul>
+</div></section>
+
+<!-- ══════════ 05 번역기가 아니다 ══════════ -->
+<section class="tint"><div class="wrap">
+  <div class="narrow rise">
+    <div class="num"><b>05</b><span>번역기가 아닙니다</span></div>
+    <h2>번역기는 문장을 옮깁니다.<br>씬덱은 화면을 짭니다.</h2>
+  </div>
+  <ul class="cards c2 rise">
+    <li><span class="k">시대 잠금</span>
+      <p>1944년이면 청바지도 손목시계도 나오지 않습니다. 「재킷」이라고 쓰면 데님이 나오니, 저고리를 저고리로 씁니다.</p></li>
+    <li><span class="k">인원 못 박기</span>
+      <p>두 명만 나와야 하는 화면에 넷이 서지 않도록, 숫자를 문장과 <code>--no</code> 양쪽에 박습니다.</p></li>
+    <li><span class="k">인물 고정</span>
+      <p>한 번 정한 얼굴 · 의상 · 나이를 그 인물이 나오는 모든 컷에 같은 문장으로 넣습니다.</p></li>
+    <li><span class="k">관계와 공기</span>
+      <p>취조 장면이 따뜻하게 나오지 않도록, 두 사람 사이의 힘 관계를 화면 언어로 씁니다.</p></li>
+    <li><span class="k">막힐 때 우회</span>
+      <p>실루엣 · 그림자 · 프레임 밖 · 직후 · 사물 인서트. 잘라내지 않고 담을 것을 바꿉니다.</p></li>
+    <li><span class="k">위험어 검사</span>
+      <p>넣기 전에 막힐 만한 것을 미리 짚어줍니다. <code>--no</code> 안에 쓴 단어까지 봅니다.</p></li>
+  </ul>
+  <p class="narrow rise" style="margin-top:26px"><b>그리고 아무것도 밖으로 나가지 않습니다.</b>
+    서버가 없고 계정도 없습니다. 설치도 없습니다. 쓴 내용은 이 브라우저 안에만 저장됩니다.</p>
+</div></section>
+
+<!-- ══════════ 06 막힐 때 ══════════ -->
+<section><div class="wrap">
+  <div class="g2 rise" style="align-items:center;gap:46px">
+    <figure class="ph"><img src="img/silhouette-door.jpg" alt="열린 문틀 안에 제복 차림 인물이 역광으로 서 있는 실루엣" loading="lazy" width="928" height="1232"></figure>
+    <div>
+      <div class="num"><b>06</b><span>막힐 때</span></div>
+      <h2>지우는 게 아니라<br>담을 것을 바꿉니다.</h2>
+      <p>AI 도구는 어떤 장면을 거부합니다. 그때 대부분은 문장을 지우다가 장면을 잃습니다.
+        씬덱은 대신 <b>화면에 무엇을 담을지를 바꿉니다</b> —
+        실루엣으로, 그림자로, 프레임 밖으로, 그 직후로, 사물 인서트로.</p>
+      <p>검열을 속이는 요령이 아니라 <b>실제 영화 문법</b>입니다.
+        보여주지 않는 편이 더 무섭다는 건 히치콕 때부터 알려진 것이고, 결과물이 오히려 좋아집니다.</p>
+      <p>왼쪽 컷이 그렇게 나온 것입니다. 사람은 보이지만, 얼굴은 없습니다.</p>
+    </div>
+  </div>
+</div></section>
+
+<!-- ══════════ 07 장르 ══════════ -->
+<section class="tint"><div class="wrap">
+  <div class="narrow rise">
+    <div class="num"><b>07</b><span>장르를 가리지 않습니다</span></div>
+    <h2>인물을 고정하고, 시대를 못 박고,<br>컷을 나누는 일은 어디서나 같습니다.</h2>
+    <p>같은 도구로 만든 세 갈래입니다. 결이 다른 건 작품이 다르기 때문이지, 도구를 바꿔서가 아닙니다.</p>
+  </div>
+
+  <span class="lab ko rise">(1) 시대극 — 1944년 조선</span>
+  <div class="g3 rise" style="margin-bottom:44px">
+    <figure class="ph"><img src="img/hanok-night.jpg" alt="밤의 기와집 마당, 창에서 불빛이 새어 나온다" loading="lazy" width="1600" height="893"></figure>
+    <figure class="ph"><img src="img/village-officer.jpg" alt="짚단을 인 제복 차림 인물이 마을 골목을 지나간다" loading="lazy" width="1600" height="890"></figure>
+    <figure class="ph"><img src="img/scarecrow.jpg" alt="안개 낀 들판에 선 허수아비" loading="lazy" width="1456" height="816"></figure>
+    <figure class="ph"><img src="img/crows.jpg" alt="초가집 앞 장대에 앉은 까마귀 떼" loading="lazy" width="1600" height="893"></figure>
+    <figure class="ph"><img src="img/kitchen-ledger.jpg" alt="어두운 부엌에서 장부를 들여다보는 제복 차림 인물" loading="lazy" width="1456" height="816"></figure>
+    <figure class="ph"><img src="img/corridor.jpg" alt="등불이 늘어선 어두운 목조 복도" loading="lazy" width="1600" height="1195"></figure>
+  </div>
+
+  <span class="lab ko rise">(2) 현대물 — 인물 시트와 로케이션</span>
+  <div class="g2 rise">
+    <figure class="ph"><img src="img/sheet-seorin.jpg" alt="인물 시트 — 정면·후면 전신과 얼굴, 키와 성격이 적혀 있다" loading="lazy" width="1168" height="784"></figure>
+    <figure class="ph"><img src="img/sheet-chadoha.jpg" alt="인물 시트 — 정면·후면 전신과 얼굴, 키와 성격이 적혀 있다" loading="lazy" width="1168" height="784"></figure>
+  </div>
+  <figcaption class="rise" style="margin-bottom:16px">인물 시트 — 키 · 성격 · 목소리까지 한 장에 묶어두면,
+    그 인물이 나오는 모든 컷에 같은 문장이 들어갑니다</figcaption>
+  <div class="g2 rise" style="margin-bottom:14px">
+    <figure class="ph"><img src="img/street-day.jpg" alt="평범한 낮의 도시 대로" loading="lazy" width="1456" height="816"></figure>
+    <figure class="ph"><img src="img/street-troops.jpg" alt="도시 대로에 군용 차량이 줄지어 선 모습" loading="lazy" width="1456" height="816"></figure>
+  </div>
+  <figcaption class="rise" style="margin-bottom:44px">같은 도시, 다른 하루 — 지문에서 바뀐 건 몇 마디뿐입니다</figcaption>
+
+  <span class="lab ko rise">(3) 영상 — 스틸에서 멈추지 않습니다</span>
+  <div class="strip lv rise">
+    <video src="vid/cut-front.mp4" poster="img/poster-cut-front.jpg"
+      muted loop playsinline preload="none" width="1280" height="720"
+      aria-label="인물의 정면 클로즈업 영상"></video>
+    <video src="vid/cut-ots.mp4" poster="img/poster-cut-ots.jpg"
+      muted loop playsinline preload="none" width="1280" height="720"
+      aria-label="같은 인물이 화면 앞에 선 어깨 너머 영상"></video>
+  </div>
+  <figcaption class="rise" style="margin-bottom:22px"><b>같은 인물, 샷만 바뀝니다</b> —
+    정면 클로즈업에서 어깨 너머로. 씬덱이 컷을 나눌 때 하는 일이 정확히 이것입니다.</figcaption>
+  <div class="strip pv rise">
+    <video src="vid/cut-portrait.mp4" poster="img/poster-cut-portrait.jpg"
+      muted loop playsinline preload="none" width="560" height="704"
+      aria-label="정장 차림 인물의 세로 클로즈업 영상"></video>
+    <video src="vid/cut-man-close.mp4" poster="img/poster-cut-man-close.jpg"
+      muted loop playsinline preload="none" width="832" height="464"
+      aria-label="땀에 젖은 남자 인물의 클로즈업 영상"></video>
+  </div>
+  <figcaption class="rise">이미지든 영상이든 넣는 문장은 같습니다 —
+    미드저니에 넣어도, 런웨이나 Veo에 넣어도.</figcaption>
+
+  <div style="margin-top:44px" class="rise">
+    <span class="lab ko">(4) 웹툰</span>
+    <div class="g2">
+      <figure class="ph"><img src="img/work-warrior.jpg" alt="비 오는 밤, 검은 한복 차림 인물의 웹툰풍 일러스트" loading="lazy" width="900" height="1350"></figure>
+      <figure class="ph"><img src="img/work-hanbok-wide.jpg" alt="금박 장신구를 한 인물의 웹툰풍 일러스트" loading="lazy" width="1400" height="785"></figure>
+    </div>
+  </div>
+</div></section>
+
+<div class="shout"><div class="wrap rise">
+  <p>말로 열 번 오갈 걸,<br><em>레퍼런스 한 장</em>으로.</p>
+  <small>제작사와 얼굴을 맞대는 건 주 1회입니다. 그 한 번에 결론이 나야 합니다.</small>
+</div></div>
+
+<!-- ══════════ 08 만든 사람 ══════════ -->
+<section><div class="wrap narrow">
+  <div class="rise">
+    <div class="num"><b>08</b><span>만든 사람</span></div>
+    <h2>쓰던 사람이 만들었습니다.</h2>
+    <p><b>정주원.</b> 숭실대 문예창작 · 언론홍보 복수전공.
+      방송 구성작가로 일했고, 지금은 영화 제작사에서 장편 프리프로덕션을 합니다.
+      씬덱과 촬영 배치도 두 개 다 직접 코딩했습니다.</p>
+  </div>
+  <dl class="cv rise">
+    <div class="row"><dt>2026.06 – 현재</dt>
+      <dd><b>왈라프로젝트 (영화 제작사)</b>한일합작 장편 프리프로덕션 · 주 1회 —
+        대본 검토 · 씬 브레이크다운 · 로케이션 헌팅 · AI 레퍼런스 제작 / 현재 촬영 확정 단계</dd></div>
+    <div class="row"><dt>2024.09 – 2025.06</dt>
+      <dd><b>채널A 〈요즘 육아 금쪽같은 내새끼〉</b>방송작가 — 아이템 발굴 · 취재 · 섭외 · 보도자료</dd></div>
+    <div class="row"><dt>2024.03 – 2024.06</dt>
+      <dd><b>MBC 〈라디오스타〉</b>자료조사 · 프리뷰 — 출연자 1인당 300장 이상 자료집</dd></div>
+    <div class="row"><dt>2026.07 – 2026.08</dt>
+      <dd><b>패스트캠퍼스</b>「Midjourney &amp; Runway 일관성 있는 AI 영상 제작」 수료 (19시간)</dd></div>
+    <div class="row"><dt>2026.04 – 2026.06</dt>
+      <dd><b>MBC 아카데미 96기</b>영화홍보마케팅 &amp; 프로듀서 과정 수료 — 과대표 · 공로상 · 최종 프로젝트 3위</dd></div>
+    <div class="row"><dt>2023.05 – 2024.04</dt>
+      <dd><b>한국방송작가협회 교육원</b>드라마 67기 · 68기 연수반 수료</dd></div>
+    <div class="row"><dt>2026.07.16</dt>
+      <dd><b>Google Analytics Certification</b>Google Skillshop</dd></div>
+  </dl>
+  <div class="think rise" style="margin-top:30px">
+    <b>THINKING</b>
+    <p>여기 들어 있는 규칙은 문서를 읽고 만든 게 아니라,<br>막히고 고치기를 반복하면서 하나씩 확인한 것입니다.</p>
+  </div>
+  <p class="rise">무엇이 통과하고 무엇이 막히는지, 어떤 단어를 무엇으로 바꿨더니 통과했는지 —
+    실측한 내용을 전부 <a href="docs/">문서</a>에 공개해 두었습니다.</p>
+</div></section>
+
+<!-- ══════════ 09 자주 묻는 것 ══════════ -->
+<section class="tint"><div class="wrap narrow">
+  <div class="rise">
+    <div class="num"><b>09</b><span>자주 묻는 것</span></div>
+    <h2>먼저 답해 둡니다.</h2>
+  </div>
+  <div class="faq rise">
+    <details open><summary>미드저니 계정이 있어야 하나요?</summary>
+      <p class="a">씬덱은 <b>프롬프트를 만들어 주는 곳</b>이라 그것만 쓰는 데는 아무 계정도 필요 없습니다.
+        만든 문장을 실제로 그림으로 바꾸려면 미드저니 · 런웨이 · Veo 같은 도구가 따로 있어야 합니다.
+        무료로 되는 것도 있어서, 앱 안에 어디가 무료인지 표시해 두었습니다.</p></details>
+    <details><summary>제 대본이 어디로 넘어가나요?</summary>
+      <p class="a"><b>아무 데도 가지 않습니다.</b> 서버가 없습니다.
+        올린 대본도 만든 프롬프트도 전부 이 브라우저 안에만 저장됩니다.
+        그래서 <b>브라우저 데이터를 지우면 같이 지워집니다</b> — 중요한 작업은 JSON으로 백업해 두세요.
+        백업과 복원은 잠그지 않습니다.</p></details>
+    <details><summary>얼마인가요?</summary>
+      <p class="a">지금은 전부 무료입니다. 설치도 로그인도 없습니다.
+        나중에 유료판을 낸다 해도 <b>지금 있는 기능을 뒤에서 잠그지는 않습니다.</b></p></details>
+    <details><summary>영어를 아예 못해도 되나요?</summary>
+      <p class="a">됩니다. 한국어로 지문을 쓰면 영문 프롬프트가 나오고,
+        그 옆에 <b>한글 되짚기</b>가 같이 나옵니다. 무엇이 들어갔는지 한국어로 확인하고
+        마음에 안 드는 부분만 고치면 됩니다.</p></details>
+    <details><summary>대본이 아직 없는데요?</summary>
+      <p class="a">한 줄만 있어도 됩니다. 로그라인 한 줄을 적고
+        「한 줄만 적고 프롬프트만」으로 들어가면 씬·컷 없이 바로 프롬프트를 뽑을 수 있습니다.</p></details>
+    <details><summary>설치하거나 가입해야 하나요?</summary>
+      <p class="a">아니요. 웹페이지 한 장이라 링크를 누르면 그게 끝입니다.
+        인터넷이 끊겨도 이미 열어둔 창에서는 계속 쓸 수 있습니다.</p></details>
+  </div>
+</div></section>
+
+<!-- ══════════ 같이 쓰는 것 ══════════ -->
+<section><div class="wrap">
+  <div class="sib rise">
+    <div>
+      <span class="k">같이 만든 도구</span>
+      <h3>촬영 배치도 — 내일 찍을 것을, 오늘 밤에</h3>
+      <p>배우와 카메라를 놓고 조명을 세웁니다. 도면 · 카메라 뷰 · 조감도가 한 화면에 같이 뜨고,
+        렌즈와 카메라 높이까지 시트로 뽑아 현장에 가져갑니다. 이것도 설치 없이 브라우저에서 바로 됩니다.</p>
+    </div>
+    <a class="btn s" href="../">배치도 열기</a>
+  </div>
+</div></section>
+
+<!-- ══════════ 닫는 판 ══════════ -->
+<div class="close"><div class="wrap rise">
+  <span class="lab">(SCENEDECK)</span>
+  <h2>대본만 있으면 됩니다.</h2>
+  <p>설치 없음 · 로그인 없음 · 브라우저에서 바로.</p>
+  <div class="btns">
+    <a class="btn p" href="./">씬덱 열기</a>
+    <a class="btn s" href="docs/">문서 읽기</a>
+  </div>
+</div></div>
+
+<footer><div class="wrap row">
+  <b>SCENEDECK</b>
+  <a href="./">앱</a><a href="docs/">문서</a><a href="../">촬영 배치도</a>
+  <span style="margin-left:auto">브라우저 안에서만 동작합니다</span>
+</div></footer>
+
+<script>
+(function(){
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hasIO='IntersectionObserver' in window;
+
+  var rises=[].slice.call(document.querySelectorAll('.rise'));
+  if(reduce||!hasIO){ rises.forEach(function(e){e.classList.add('in')}); }
+  else{
+    var ro=new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); ro.unobserve(e.target); } });
+    },{rootMargin:'0px 0px -6% 0px',threshold:.05});
+    rises.forEach(function(e){ ro.observe(e) });
+  }
+
+  var vs=[].slice.call(document.querySelectorAll('.strip video'));
+  if(vs.length){
+    if(reduce||!hasIO){ vs.forEach(function(v){ v.setAttribute('controls',''); v.preload='metadata'; }); }
+    else{
+      var vo=new IntersectionObserver(function(es){
+        es.forEach(function(e){
+          var v=e.target;
+          if(e.isIntersecting){ v.muted=true; var p=v.play(); if(p&&p.catch)p.catch(function(){}); }
+          else if(!v.paused){ v.pause(); }
+        });
+      },{rootMargin:'160px 0px',threshold:.2});
+      vs.forEach(function(v){ v.muted=true; vo.observe(v) });
+    }
+  }
+})();
+</script>
+</body>
+</html>

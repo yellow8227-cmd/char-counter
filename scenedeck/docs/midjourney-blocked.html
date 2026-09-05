@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>미드저니가 막을 때 — 잘라내지 말고 연출로 피하는 여덟 가지 · 씬덱 문서</title>
+<meta name="description" content="막히는 것은 낱말이 아니라 화면에 담으라는 지시입니다. --no 에 금지어를 적으면 안 되는 이유부터, 실루엣·그림자·프레임 밖·직후까지 실제 영화 문법으로 푸는 법.">
+<link rel="canonical" href="https://yellow8227-cmd.github.io/char-counter/scenedeck/docs/midjourney-blocked.html">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="../icon-v9.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon-32-v9.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../apple-touch-icon-v9.png">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=IBM+Plex+Sans+KR:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="doc.css">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="씬덱 문서">
+<meta property="og:title" content="미드저니가 막을 때 — 잘라내지 말고 연출로 피하는 여덟 가지">
+<meta property="og:description" content="막히는 것은 낱말이 아니라 화면에 담으라는 지시입니다. --no 에 금지어를 적으면 안 되는 이유부터, 실루엣·그림자·프레임 밖·직후까지 실제 영화 문법으로 푸는 법.">
+<meta property="og:url" content="https://yellow8227-cmd.github.io/char-counter/scenedeck/docs/midjourney-blocked.html">
+<meta property="og:image" content="https://yellow8227-cmd.github.io/char-counter/scenedeck/og-docs.png">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div class="top"><div class="wrap">
+  <a class="home" href="./"><svg class="mk" viewBox="0 0 64 64" aria-hidden="true"><rect x="14" y="6" width="46" height="46" rx="7" fill="currentColor" opacity=".28"/><rect x="4" y="14" width="46" height="46" rx="7" fill="currentColor"/><g fill="var(--bg)"><rect x="9" y="20" width="4.5" height="5.5" rx="1.2"/><rect x="9" y="31" width="4.5" height="5.5" rx="1.2"/><rect x="9" y="42" width="4.5" height="5.5" rx="1.2"/><rect x="40.5" y="20" width="4.5" height="5.5" rx="1.2"/><rect x="40.5" y="31" width="4.5" height="5.5" rx="1.2"/><rect x="40.5" y="42" width="4.5" height="5.5" rx="1.2"/><rect x="17" y="27" width="20" height="16" rx="2"/></g></svg>SCENEDECK<span>DOCS</span></a>
+  <a href="../about.html">씬덱이란</a>
+  <a class="go" href="../">앱 열기</a>
+</div></div>
+
+<div class="wrap">
+<article>
+<h1>미드저니가 막을 때 — 잘라내지 말고 연출로 피하는 여덟 가지</h1>
+<p class="sub">막히는 것은 낱말이 아니라 화면에 담으라는 지시입니다. --no 에 금지어를 적으면 안 되는 이유부터, 실루엣·그림자·프레임 밖·직후까지 실제 영화 문법으로 푸는 법.</p>
+<p class="meta">2026-08-31 · 씬덱 문서</p>
+
+<p>고문실, 처형장, 폭력. 시대극이나 장르물을 만들다 보면
+<b>「사용 정책 위반」</b> 문구를 만나게 됩니다. 그때 대부분 낱말을 하나씩 지우다가
+장면 자체를 포기합니다.</p>
+
+<p>그런데 <b>막히는 것은 낱말이 아니라 「화면에 담으라는 지시」</b>입니다.
+그리고 화면에 담는 것을 바꾸는 건 검열 회피가 아니라 <b>원래 영화가 하던 일</b>입니다.</p>
+
+<h2>먼저 — <code>--no</code>도 검사 대상입니다</h2>
+
+<p>가장 많이 하는 실수입니다.</p>
+
+<pre><code>--no blood, gore, wound, violence</code></pre>
+
+<p>이렇게 쓰면 <b>내가 금지어를 직접 심는 셈</b>입니다.
+이미지 생성기는 프롬프트 <b>텍스트 전체</b>를 검사하고 <code>--no</code>도 그 텍스트의 일부입니다.
+빼려고 적은 낱말 때문에 막힙니다.</p>
+
+<p>배제 목록에는 <b>무해한 낱말만</b> 넣으세요. 지워야 할 것은 배제가 아니라
+<b>긍정 묘사를 바꿔서</b> 없애는 것입니다.</p>
+
+<h2>여덟 가지 — 전부 실제 영화 문법입니다</h2>
+
+<h3>1. 말만 바꾸기</h3>
+<p>샷도 구도도 그대로 두고 걸리는 낱말만 바꿉니다. 화면에 보이는 건 똑같습니다.
+<code>torture chamber</code> → <code>bare stone room with water-stained walls</code>.
+방 이름 대신 <b>방 안에 뭐가 있는지</b>를 적는 것입니다.</p>
+<p>이게 더 잘 나오기도 합니다. 「torture chamber」라고 하면 과장된 영화 세트가 나오지만,
+「창 없는 방, 의자 하나, 바닥 배수구」라고 하면 <b>그 방이 실제로 무엇이었는지</b>가 나옵니다.</p>
+
+<h3>2. 재료 바꾸기</h3>
+<p>색이 문제입니다. <code>red</code> 계열 낱말은 막히지만
+<b><code>deep burgundy</code> · <code>maroon</code> · <code>wine-dark</code></b>는 통과하면서
+색은 제대로 나옵니다.</p>
+<p>주의할 것이 하나 있습니다. 재료 이름은 <b>명사만</b> 적어야 합니다.
+「떨어진다」 같은 동작을 같이 적으면 문장이 깨집니다.
+그리고 액체가 떨어진다고만 하면 모델이 <b>그걸 따르는 병과 손</b>을 만들어 넣습니다 —
+<code>--no bottle, glass, jar, cup, pouring vessel, hand pouring</code>가 필요합니다.</p>
+
+<h3>3. 무대 티내기</h3>
+<p>촬영 현장을 그대로 보여줍니다. 특수분장과 조명 장비가 보이면 실제가 아니게 됩니다.
+<code>behind the scenes of a film set, practical stage effects and prosthetics,
+studio lighting rigs and crew visible at the edge of frame</code>.</p>
+
+<h3>4. 실루엣</h3>
+<p>역광으로 인물을 통째로 검게 만듭니다. <b>몸의 세부가 안 보이면 잔혹함도 안 보입니다.</b>
+샷을 미디엄 롱으로 빼고 조명을 역광으로 놓습니다.</p>
+
+<h3>5. 그림자</h3>
+<p>벽에 비친 그림자만 찍습니다. <b>행위는 그림자가 하고 화면엔 벽만 있습니다.</b>
+<code>two shadows cast on a bare wall, one figure leaning toward the other,
+the bare wall fills the frame, the figures themselves are outside the shot</code>.</p>
+
+<h3>6. 프레임 밖</h3>
+<p>행위는 화면 밖에서 일어나고, 카메라는 <b>지켜보는 사람의 얼굴만</b> 잡습니다.
+<code>a face in close-up, watching something just outside the frame, jaw tight,
+eyes fixed. the event itself happens entirely off-screen</code>.</p>
+
+<h3>7. 직후</h3>
+<p>사건이 끝난 뒤의 빈 공간. 넘어진 의자, 흐트러진 바닥, 열린 문.
+<b>사람이 없어서 판정이 붙을 자리가 없습니다.</b> 그리고 관객이 스스로 채웁니다.</p>
+
+<h3>8. 사물 인서트</h3>
+<p>사물 하나로 말합니다. 떨어진 신발, 젖은 바닥, 놓인 도구.
+마크로 렌즈로 붙여 잡습니다.</p>
+
+<h2>두 가지를 더 — 실제로 통과한 것</h2>
+
+<h3>상대 빼기</h3>
+<p>한 사람만 화면에 남기고 상대는 통째로 프레임 밖으로 보냅니다. <b>동작은 그대로 둡니다.</b>
+두 사람이 한 프레임에 있는 것 자체가 판정을 부릅니다.</p>
+
+<h3>결과만</h3>
+<p>동작이 아니라 <b>그 뒤에 남은 것</b>을 찍습니다.
+「뱉는다」를 순화하면 「어두운 액체를 뱉는다」가 되는데,
+<b>동사와 대상이 그대로 남아</b> 여전히 「누가 누구에게 무엇을 한다」입니다.</p>
+
+<blockquote>
+<p>맞은 사람의 얼굴과 옷깃을 붙여 잡는다. 한쪽 뺨과 흰 깃에 짙은 포도주색 점이 흩어져 있고,
+<b>표정은 조금도 변하지 않았다.</b></p>
+</blockquote>
+
+<p>「누가 무엇을 한다」가 사라지므로 판정이 붙을 자리가 없고,
+<b>연출로도 이쪽이 셉니다</b> — 뱉는 순간보다 맞은 뒤에 표정이 안 변하는 얼굴이 무섭습니다.</p>
+
+<h2>그래도 다 막힐 때 — 계정이 조여진 것일 수 있습니다</h2>
+
+<p>폭력과 무관한 프롬프트까지 갑자기 다 막히면, 프롬프트 문제가 아닙니다.
+<b>차단이 반복되면 그 계정에 한동안 훨씬 빡빡한 필터가 걸립니다.</b></p>
+
+<p>확인 방법은 간단합니다. <b>작품과 아무 상관 없는 것</b>을 하나 던져보세요 —
+「나무 탁자 위의 흰 사기 그릇, 아침 빛」 같은 것. 이것까지 막히면 계정 쪽입니다.</p>
+
+<ul>
+<li>차단이 <b>두 번 연속</b>이면 그 자리에서 멈추세요. 세 번째부터 조여지기 시작합니다.</li>
+<li>위험한 컷을 <b>몰아 찍지 마세요.</b> 위험한 컷 하나 → 안전한 컷 두세 개 → 다시 하나.</li>
+<li><b>성공한 프롬프트는 전부 저장하세요.</b> 다음에 비슷한 컷은 그걸 변형하는 것이
+새로 짜는 것보다 훨씬 안전합니다.</li>
+</ul>
+
+<hr>
+
+<p>여덟 가지 모두 <b>더 잔인한 것을 몰래 통과시키는 방법이 아닙니다.</b>
+실제로 덜 자극적인 이미지를 만드는 방법이고, 동시에 더 잘 만든 장면이기도 합니다.
+관객의 머리가 채워 넣는 것이 어떤 묘사보다 무섭기 때문입니다.</p>
+
+</article>
+
+<div class="cta">
+  <b>씬덱</b>
+  <p>여기 적은 것들이 그대로 들어가 있는 도구입니다. 시나리오를 씬과 컷으로 나누고
+  이미지·영상 프롬프트까지 만듭니다. 설치도 로그인도 없고, 쓴 내용은 브라우저 밖으로 나가지 않습니다.</p>
+  <a href="https://yellow8227-cmd.github.io/char-counter/scenedeck/">씬덱 열기</a>
+</div>
+
+<div class="more">
+  <h2>다른 글</h2>
+  <ul><li><a href="1940s-korea-costume.html">1940년대 조선의 옷과 색 — AI 시대극에서 가장 많이 틀리는 것</a></li><li><a href="prompt-length.html">프롬프트가 길면 왜 안 나오나</a></li><li><a href="mood-words.html">분위기 낱말과 분위기 묘사는 다릅니다</a></li></ul>
+</div>
+</div>
+
+<footer><div class="wrap">
+  씬덱 문서 · <a href="https://yellow8227-cmd.github.io/char-counter/scenedeck/">씬덱</a> · <a href="https://yellow8227-cmd.github.io/char-counter/">촬영 배치도</a>
+</div></footer>
+</body>
+</html>
