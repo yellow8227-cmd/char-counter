@@ -4507,6 +4507,25 @@ const I18N_ROWS=[
   ["준비 중…","Getting ready…","じゅんび中…"],
   ["준비하기 ✨","Get ready ✨","じゅんび ✨"],
   ["지그재그 — %d초간 젤리가 좌우로 크게 흔들려요 (게이지 %d)","Zigzag — jellies swing side to side for %ds (gauge %d)","ジグザグ — %d秒間ゼリーが左右に大きく揺れます（ゲージ%d）"],
+  // 던지기 무기 — 이름과 설명이 사전에 아예 없어서 영어·일본어로 해도 한글이 나왔다.
+  // 판 위 문구·설명서·단추 도움말이 다 이 값을 쓴다.
+  ["게이지","Gauge","ゲージ"],
+  ["젤리 3개","3 jellies","ゼリー3個"],
+  ["유령 젤리","Ghost jellies","おばけゼリー"],
+  ["지그재그","Zigzag","ジグザグ"],
+  ["안개","Fog","霧"],
+  ["폭탄 세트","Bomb set","爆弾セット"],
+  ["스피드업","Speed up","スピードアップ"],
+  ["실드","Shield","シールド"],
+  ["정화","Cleanse","浄化"],
+  ["젤리 3개를 떨어뜨려요. 세 번 쓰면 ⚡가 한 발 충전!","Drops 3 jellies. Use it three times to charge one ⚡","ゼリーを3個落とします。3回使うと⚡が1発チャージ！"],
+  ["거의 안 보이는 젤리 4개","4 jellies that are nearly invisible","ほとんど見えないゼリー4個"],
+  ["6초간 젤리가 좌우로 크게 흔들려요","Jellies swing side to side for 6s","6秒間ゼリーが左右に大きく揺れます"],
+  ["4초간 상대 화면이 흐려져요","Blurs their screen for 4s","4秒間相手の画面がぼやけます"],
+  ["폭탄 1개 + 젤리 5개","1 bomb + 5 jellies","爆弾1個＋ゼリー5個"],
+  ["6초간 젤리가 1.7배 빨라져요 (🍡 3번으로 충전)","Jellies fall 1.7× faster for 6s (charge with 🍡 ×3)","6秒間ゼリーが1.7倍速く（🍡3回でチャージ）"],
+  ["3초간 놓쳐도, 폭탄을 터뜨려도 목숨이 안 깎여요","For 3s you lose no life — even on a miss or a bomb","3秒間、落としても爆弾を割っても命が減りません"],
+  ["걸린 방해를 지우고 4초간 유령 젤리가 보여요","Clears junk on you and reveals ghost jellies for 4s","かかった妨害を消し、4秒間おばけゼリーが見えます"],
   ["지옥의 속도","Hell speed","地獄の速さ"],
   ["지옥의 속도 · 목숨 %d개","Hell speed · %d lives","地獄の速さ · ライフ%d"],
   ["직접 입력할 사람용 방 코드","Room code for typing it in","手で入力する人用のルームコード"],
@@ -8076,7 +8095,7 @@ function buildHexBar(){
   g.style.gridTemplateColumns='repeat('+Math.min(4,ks.length)+',43px)';
   ks.forEach(id=>{ const h=HEX[id], b=document.createElement('button');
     b.className='throwbtn'; b.id='hex_'+id;
-    b.title=h.n+' — '+h.d+(h.bolt?'':' (게이지 '+h.cost+')');
+    b.title=t(h.n)+' — '+t(h.d)+(h.bolt?'':' ('+t('게이지')+' '+h.cost+')');
     b.innerHTML='<span>'+h.e+'</span><span class="c">'+(h.bolt?('0/'+BOLT_NEED):h.cost)+'</span>';
     b.onclick=()=>doHex(id); g.appendChild(b); });
   updateGauge();
@@ -8143,7 +8162,7 @@ function recvHex(kind){
   if(!h||!sec) return;
   hexT[kind]=Math.max(hexT[kind],sec*60);
   flash=0.8; shake=Math.max(shake,8); playBomb();
-  showCallout(h.e+' '+h.n+'!','#8a5cff');
+  showCallout(h.e+' '+t(h.n)+'!','#8a5cff');
   // 설명 토스트는 한 판에 종류별로 한 번만. 매번 띄우면 가운데가 가려져 젤리를 놓친다.
   if(!hexSeen[kind]){ hexSeen[kind]=1; toast(h.e+' '+h.n+' — '+h.d); }
 }
@@ -8162,7 +8181,7 @@ function doHex(id){
     else { hexT={zig:0,fog:0,rush:0}; revealT=REVEAL_SEC*60; }
     throwGauge-=h.cost;
     flash=Math.max(flash,0.5);
-    floater(W/2,H*0.52,h.e+' '+h.n+'!','#4fc65f'); showCallout(h.e+' '+h.n+'!','#3aa84f');
+    floater(W/2,H*0.52,h.e+' '+t(h.n)+'!','#4fc65f'); showCallout(h.e+' '+t(h.n)+'!','#3aa84f');
     if(!hexSeen[id]){ hexSeen[id]=1; toast(h.e+' '+h.n+' — '+h.d); }
     playLevelUp(); updateGauge(); return;
   }
@@ -8177,7 +8196,7 @@ function doHex(id){
   else                  netSend({t:'hex',kind:id,to:to});
   if(h.bolt) bolt=0; else throwGauge-=h.cost;
   const aim=to?(' → '+mpTargetName(to)):'';
-  floater(W/2,H*0.52,h.e+' '+h.n+'!'+aim,'#8a5cff'); showCallout('THROW! '+h.e+aim,'#8a5cff');
+  floater(W/2,H*0.52,h.e+' '+t(h.n)+'!'+aim,'#8a5cff'); showCallout('THROW! '+h.e+aim,'#8a5cff');
   playLevelUp(); updateGauge();
 }
 
