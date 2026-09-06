@@ -82,12 +82,16 @@ if (await ff(['-i', SRC, '-vf', FIT, '-c:v', 'libx264', '-preset', 'slow', '-crf
 // 백지가 있다). 그래서 언어별로 재서 따로 적어 둔다.
 const TABLE = {
   // 한국어 56.4초 — 백지 19.0·28.0·35.5~38.0·52.0
+  // 판에 뭐가 있는지(busy) 재서 다시 잡은 값이다. '끊긴다' 는 소리를 들었는데
+  // 재 보니 끊긴 게 아니라 빈 화면을 잘라 붙인 것이었다.
+  //   판이 텅 빈 구간: 21.5~22.0 · 30.5~31.5 · 38.0~41.0 · 54.5
+  //   꽉 찬 구간: 보스 22.5~26.0 · 핵불닭 32.0~35.5 · 던전 43.0~47.0 · 마무리 51.0~54.0
+  // 예전 훅(21.2 부터 3.2초)은 그 3.2초 중 1초가 빈 화면이었다.
   ko: [
-    // 20.6 에서 시작하면 '보스를 터트려요' 안내와 '거대 젤리 등장!' 배너가 겹쳐 보인다.
-    { name: '거대 보스',   from: 21.2, len: 3.2 },   // 훅
-    { name: '핵불닭',      from: 30.5, len: 4.5 },
-    { name: '실시간 던전', from: 43.5, len: 4.0 },
-    { name: '마무리 카드', from: -3.8, len: 3.8 },   // 음수면 끝에서부터
+    { name: '거대 보스',   from: 22.6, len: 3.4 },   // 훅 — 23~25초가 제일 꽉 찬다
+    { name: '핵불닭',      from: 32.0, len: 3.5 },
+    { name: '실시간 던전', from: 43.0, len: 4.0 },
+    { name: '마무리 카드', from: 51.2, len: 3.2 },   // 54.5 에 전환막이 하나 끼어 있다
   ],
   // 영어 58.9초 (앞니·캐릭터·한글 새는 것 고친 뒤 다시 구운 판. 전에는 55.3초였다 —
   // 다시 구우면 길이가 바뀌므로 숫자를 그대로 물려 쓰면 안 된다)
@@ -129,6 +133,33 @@ for (const c of CUTS) {
 }
 if (blankHit) console.log('   ⚠ 위 컷의 시각을 옮겨야 합니다 — 흰 전환막이 화면을 덮는 구간입니다');
 else console.log('   ✅ 네 컷 모두 백지 없음');
+
+// 색폭 검사는 '흰 전환막' 만 잡는다. 판이 텅 비어도 배경색은 알록달록해서 색폭이
+// 높게 나오고, 그래서 빈 화면이 조용히 통과했다 — 그게 '끊긴다' 로 보였다.
+// 판 안쪽만 잘라 '배경과 다른 화소' 수를 따로 센다.
+const busyAt = t => new Promise(res => {
+  const p = spawn(FFMPEG, ['-hide_banner', '-loglevel', 'error', '-ss', String(t), '-i', SRC,
+    '-frames:v', '1', '-vf', 'crop=iw*0.93:ih*0.60:iw*0.035:ih*0.247,scale=80:112,format=gray',
+    '-f', 'rawvideo', '-']);
+  const bufs = []; p.stdout.on('data', d => bufs.push(d));
+  p.on('error', () => res(9999));
+  p.on('close', () => { const b = Buffer.concat(bufs); if (!b.length) return res(9999);
+    let sum = 0; for (const v of b) sum += v;
+    const mean = sum / b.length;
+    let n = 0; for (const v of b) if (Math.abs(v - mean) > 28) n++;
+    res(n); });
+});
+let emptyHit = 0;
+for (const c of CUTS) {
+  const lows = [];
+  for (let t = c.from; t < c.from + c.len; t += 0.5) {
+    const v = await busyAt(t);
+    if (v < 60) lows.push(t.toFixed(1) + '초(' + v + ')');
+  }
+  if (lows.length) { emptyHit++; console.log('   ⚠ ' + c.name + ' 컷에 빈 판이 섞였습니다: ' + lows.join(', ')); }
+}
+if (emptyHit) console.log('   ⚠ 빈 화면은 끊긴 것처럼 보입니다 — 컷 시각을 옮기세요');
+else console.log('   ✅ 네 컷 모두 판에 젤리가 있음');
 
 // 자른 자리에서 소리가 뚝 끊기면 귀에 걸린다 — 조각마다 앞뒤 0.12초를 여닫는다.
 const parts = [];
