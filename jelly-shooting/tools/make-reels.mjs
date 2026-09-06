@@ -159,3 +159,29 @@ if (ok) {
   parts.forEach(f => rmSync(f, { force: true }));
   rmSync(list, { force: true });
 }
+
+// ── ③ 인스타 게시물(피드) 크기 ──
+// 릴스가 아니라 피드에 영상으로 올릴 때 쓴다.
+//
+// 우리 화면은 1:2.167 이고 피드 4:5 는 1:1.25 다. 잘라서 맞추면 높이의 42% 가
+// 날아가는데 그게 위쪽 HUD 나 아래쪽 아이템 줄이다 — 그래서 자르지 않고 채운다.
+// 다만 좌우 여백이 42% 나 되어서 검은 띠로 두면 흉하다. 영상 자신을 크게 늘려
+// 흐리게 깐 뒤 그 위에 원본을 얹는다(피드에서 흔히 쓰는 방식이고, 여백이 배경처럼
+// 읽혀서 의도한 것으로 보인다).
+const feed = async (srcFile, name, fw, fh) => {
+  const out = join(OUT, name);
+  const vf = `[0:v]scale=${fh}*2:-2,crop=${fw}:${fh},gblur=sigma=42,eq=brightness=-0.06[bg];`
+           + `[0:v]scale=-2:${fh}:flags=lanczos[fg];[bg][fg]overlay=(W-w)/2:0`;
+  if (await ff(['-i', srcFile, '-filter_complex', vf,
+                '-c:v', 'libx264', '-preset', 'slow', '-crf', '19', '-pix_fmt', 'yuv420p',
+                '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '160k', out], name)) {
+    const p = await probe(out);
+    console.log(`🖼 ${out}\n   ${p.w}x${p.h} · ${p.dur.toFixed(1)}초 · ${(statSync(out).size/1048576).toFixed(1)}MB`);
+    if (p.w !== fw || p.h !== fh) console.log(`   ⚠ 크기가 ${fw}x${fh} 가 아닙니다`);
+  }
+};
+const shortFile = join(OUT, `jellimo-reels-short-${LANG}.mp4`);
+if (existsSync(shortFile)) {
+  await feed(shortFile, `jellimo-post-4x5-${LANG}.mp4`, 1080, 1350);  // 피드 기본 — 화면을 제일 많이 먹는다
+  await feed(shortFile, `jellimo-post-1x1-${LANG}.mp4`, 1080, 1080);  // 정사각이 필요할 때
+}

@@ -8152,8 +8152,11 @@ function recvThrow(items){
   showCallout(gh?t('유령이다! 👻'):t('받았다! 🟣'),'#8a5cff');
   const who=(net.foe&&net.foe.name)||t('친구');
   toast((gh?'👻 ':'🟣 ')
+    // 영어는 1개일 때 'threw 1 jellies' 가 되어 틀린다. 낱말을 개수에 맞춰 넣는다.
+    // (한국어·일본어는 셈숫말이 있어서 그냥 %n 이면 된다)
     +(gh?t('%s님이 유령 젤리 %n개를 던졌어요!'):t('%s님이 젤리 %n개를 던졌어요!'))
-      .replace('%s',who).replace('%n',items.length));
+      .replace('%s',who).replace('%n',items.length)
+      .replace(/\b1 (ghost )?jellies\b/,(m,g)=>'1 '+(g||'')+'jelly'));
 }
 // 효과형 방해 아이템이 도착했다 — 남은 시간은 프레임으로 센다(일시정지에도 안 흐른다)
 function recvHex(kind){
