@@ -307,12 +307,12 @@ const POSTS = [
         [88, 33, 13, -18, J.green], [50, 11, 16, 6, POP.gold], [6, 52, 13, -8, J.blue],
         [95, 56, 12, 16, J.grape]]) + `
     <div class="in">
-      <div class="eyebrow">${TX('🍡 젤리모 · JELLIMO','🍡 JELLIMO · TAP & SURVIVE')}</div>
-      <h1>${TX('온 가족이<br>빠져드는<br><em>재미</em>','Everyone<br>gets<br><em>hooked</em>')}</h1>
-      <div class="band">${TX('3분이면 한 판 · 설치도 가입도 없이','3-minute rounds · no install, no sign-up')}</div>
+      <div class="eyebrow">${TX('🍡 젤리모 · 커플 게임','🍡 JELLIMO · TAP & SURVIVE')}</div>
+      <h1>${TX('커플끼리<br>하면 안 되는<br><em>게임</em>','It looks cute.<br><em>It is not.</em>')}</h1>
+      <div class="band">${TX('둘이 붙으면 진짜 싸움 남 · 3분이면 한 판','3-minute rounds · no install, no sign-up')}</div>
       <div class="cta">${TX('지금 바로 시작 ▶','Play now ▶')}</div>
     </div>
-    <img class="cut cutL" src="${CH.girl}"><img class="cut cutR" src="${CH.bear}">
+    <img class="cut cutL" src="${CH.girl}"><img class="cut cutR" src="${CH.boy}">
     ${corner}` },
 
   { id: '2-팡팡', bg: 'linear-gradient(158deg,#ffe887 0%,#ffb84d 55%,#ff8f3d 100%)', body:
@@ -330,8 +330,8 @@ const POSTS = [
   { id: '3-던전', bg: 'linear-gradient(158deg,#b9a2ff 0%,#7d5cf6 52%,#5b39dc 100%)', body:
     fx([[9, 30, 14, -16, J.pink], [91, 34, 15, 14, J.mint], [12, 56, 12, 20, J.gold],
         [89, 60, 13, -20, POP.grape]]) + `
-    <div class="top"><h1>${TX('같은 판에서<br><em>실시간 대결</em>','Same board.<br><em>Live battle.</em>')}</h1>
-      <div class="band">${TX('터트린 방해 젤리가 상대 화면으로','Your pops land on their screen')}</div></div>
+    <div class="top"><h1>${TX('둘이서<br><em>실시간 대결</em>','Same board.<br><em>Live battle.</em>')}</h1>
+      <div class="band">${TX('내가 터트린 게 상대 화면으로 · 2~4명','Your pops land on their screen')}</div></div>
     <div class="bleed"><img src="${shot['2-dungeon']}"></div>
     ${corner}` },
 
@@ -363,8 +363,8 @@ const POSTS = [
     fx([[9, 12, 14, -12, J.gold], [91, 15, 15, 14, J.mint], [50, 6, 12, 6, J.green]]) + `
     <div class="in flat">
       <div class="eyebrow">${TX('모은 코인으로','With coins you earn')}</div>
-      <h1>${TX('내 캐릭터로<br>들어가요','Bring your<br>own jelly')}</h1>
-      <div class="band">${TX('아홉 종 · 머리 · 색깔 · 악세서리','9 species · hair · skin tone · accessories')}</div>
+      <h1>${TX('커플룩도<br>맞출 수 있음','Bring your<br>own jelly')}</h1>
+      <div class="band">${TX('아홉 종 · 머리 12가지 · 파는 건 없음','9 species · hair · skin tone · accessories')}</div>
       <div class="strip" style="margin-top:${Math.round(1080 * 0.06)}px">
         <img src="${dataURI(join(SHOTS, 'dress-row.png'))}"></div>
     </div>
