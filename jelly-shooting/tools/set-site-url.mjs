@@ -20,7 +20,12 @@ import { fileURLToPath } from 'node:url';
 // 소개 페이지는 게임과 다른 사이트에 올릴 수 있어서 따로 둔다.
 const PRESS = process.argv.includes('--press');
 const ROOT_DIR = join(dirname(fileURLToPath(import.meta.url)), '..');
-const HTML = PRESS ? join(ROOT_DIR, 'press', 'index.html') : join(ROOT_DIR, 'index.html');
+// 소개 페이지는 한국어·영어 두 장이고, 둘 다 og 태그와 hreflang 대체 링크를 갖는다.
+// 예전에는 press/index.html 하나만 고쳐서, en.html 과 hreflang 은 죽은 주소를 그대로
+// 들고 있었다 (실제로 두 주소가 섞인 채 배포됐다).
+const HTMLS = PRESS
+  ? [join(ROOT_DIR, 'press', 'index.html'), join(ROOT_DIR, 'press', 'en.html')]
+  : [join(ROOT_DIR, 'index.html')];
 // og:image 뒤에 붙는 판 번호. 그림을 바꿨는데도 예전 미리보기가 뜨면 이 숫자를 올린다.
 // 카카오·페이스북은 '같은 주소면 같은 그림'으로 보고 캐시한다. 링크에 ?v= 를 붙여
 // 페이지를 새로 읽게 해도, 그림 주소가 그대로면 그림은 예전 것을 그냥 다시 쓴다.
@@ -33,15 +38,22 @@ const TAGS = [
   { re: /(<meta property="og:url" content=")([^"]*)(")/,        path: '' },
   { re: /(<meta property="og:image" content=")([^"]*)(")/,      path: IMG },
   { re: /(<meta name="twitter:image" content=")([^"]*)(")/,     path: IMG },
+  // 검색엔진에게 '같은 글의 다른 언어판' 을 알려주는 링크. 여기도 절대 주소다.
+  { re: /(<link rel="alternate" hreflang="ko" href=")([^"]*)(")/,        path: '' },
+  { re: /(<link rel="alternate" hreflang="en" href=")([^"]*)(")/,        path: 'en' },
+  { re: /(<link rel="alternate" hreflang="x-default" href=")([^"]*)(")/, path: 'en' },
 ];
 
-let html = readFileSync(HTML, 'utf8');
 // 깃발(--press)을 빼고 남은 첫 번째 값이 주소다
 const raw = process.argv.slice(2).find(a => !a.startsWith('--'));
 
 if (!raw) {
   console.log('지금 박혀 있는 주소:');
-  TAGS.forEach(t => { const m = html.match(t.re); console.log('  ' + (m ? m[2] : '(없음)')); });
+  for (const f of HTMLS) {
+    const html = readFileSync(f, 'utf8');
+    console.log('  [' + f.replace(ROOT_DIR + '/', '') + ']');
+    TAGS.forEach(t => { const m = html.match(t.re); if (m) console.log('    ' + m[2]); });
+  }
   console.log('\n바꾸려면: node ' + resolve(process.argv[1]) + ' https://내주소.netlify.app');
   process.exit(0);
 }
@@ -55,14 +67,32 @@ if (!/^https:\/\//.test(base)) {
 // index.html 을 직접 가리켰다면 폴더로 되돌린다 (og:url 은 폴더가 자연스럽다)
 base = base.replace(/\/index\.html$/, '');
 
-let changed = 0;
-for (const t of TAGS) {
-  const want = base + '/' + t.path;
-  if (!t.re.test(html)) { console.error('❌ 태그를 못 찾았습니다: ' + t.re); process.exit(1); }
-  html = html.replace(t.re, (_, a, old, c) => { if (old !== want) changed++; return a + want + c; });
+// 영어판의 og:url 은 /en 이어야 한다 — 한국어판 주소를 넣으면 공유했을 때
+// 영어 글이 한국어 페이지로 간다.
+const ogUrlFor = f => /en\.html$/.test(f) ? 'en' : '';
+
+let changed = 0, leftovers = [];
+for (const f of HTMLS) {
+  let html = readFileSync(f, 'utf8');
+  for (const t of TAGS) {
+    if (!t.re.test(html)) continue;          // 파일마다 있는 태그가 다르다
+    const want = base + '/' + (t.re.source.includes('og:url') ? ogUrlFor(f) : t.path);
+    html = html.replace(t.re, (_, a, oldv, c) => { if (oldv !== want) changed++; return a + want + c; });
+  }
+  writeFileSync(f, html);
+  // 바꾸고도 다른 주소가 남아 있으면 알린다 — 예전에 두 주소가 섞인 채 배포됐다.
+  for (const m of html.matchAll(/https:\/\/[a-z0-9-]+\.netlify\.app/g))
+    if (m[0] !== base) leftovers.push(f.replace(ROOT_DIR + '/', '') + ' → ' + m[0]);
 }
-writeFileSync(HTML, html);
 console.log((changed ? '✅ ' + changed + '곳 바꿨습니다' : '이미 그 주소였습니다') + ' → ' + base);
-TAGS.forEach(t => console.log('  ' + html.match(t.re)[2]));
+for (const f of HTMLS) {
+  const html = readFileSync(f, 'utf8');
+  console.log('  [' + f.replace(ROOT_DIR + '/', '') + ']');
+  TAGS.forEach(t => { const m = html.match(t.re); if (m) console.log('    ' + m[2]); });
+}
+if (leftovers.length) {
+  console.log('\n⚠ 다른 주소가 아직 남아 있습니다:');
+  [...new Set(leftovers)].forEach(x => console.log('   ' + x));
+}
 console.log('\n올린 뒤 카톡에서 미리보기가 예전 그림으로 남아 있으면 캐시입니다.');
 console.log('주소 끝에 ?v=2 처럼 아무 값이나 붙여 한 번 보내면 새로 읽어옵니다.');

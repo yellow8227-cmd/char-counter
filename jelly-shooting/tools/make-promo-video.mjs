@@ -36,6 +36,9 @@ const pwMod = await import(existsSync(PW) ? 'file://' + PW : 'playwright');
 const chromium = (pwMod.chromium || (pwMod.default && pwMod.default.chromium));
 
 // 언어 — node tools/make-promo-video.mjs [--en]
+// 마무리 카드에 찍히는 주소. 여기 한 줄만 고치면 된다 —
+// 전에는 마무리 카드 만드는 코드 한가운데에 박혀 있어서 찾기 어려웠다.
+const SITE = 'zingy-cupcake-98444a.netlify.app';
 const LANG = process.argv.includes('--en') ? 'en' : 'ko';
 // 게임을 이 비율로 느리게 돌리고, 마지막에 그만큼 영상을 당긴다.
 // 0.5 면 초당 25장 녹화가 게임 시간 기준 초당 50장이 된다.
@@ -482,7 +485,7 @@ const run = async () => {
   await ev(`__wipeOn()`); await hold(340);      // 결과 화면에서 카드로 부드럽게
   await ev(`__card(${JSON.stringify(TX('지금 한 판 해요', 'Play a round right now'))},`
     + `${JSON.stringify(TX('방 코드 네 자리만 보내면 끝', 'Send four letters. That is the whole invite.'))},`
-    + `${JSON.stringify('zingy-cupcake-98444a.netlify.app')})`);
+    + `${JSON.stringify(SITE)})`);
   await ev(`__wipeOff()`);
   await hold(3600);                 // 닫는 카드 — 주소를 읽고 손으로 옮겨 적을 시간
   mark('마지막 장면');
