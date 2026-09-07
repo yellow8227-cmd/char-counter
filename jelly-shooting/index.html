@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Jelly Shooting 🍡 | 터질 때마다 도파민 팡팡</title>
+<title>젤리모 Jellimo 🍡 | 3분이면 한 판</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#ff5c8a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="젤리슈팅">
+<meta name="apple-mobile-web-app-title" content="젤리모">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <!-- 링크를 보낼 때 뜨는 미리보기 카드(카톡·트위터·디스코드 등).
@@ -17,18 +17,18 @@
      배포 주소가 바뀌면 손으로 고치지 말고:
        node tools/set-site-url.mjs https://새주소     ← 세 곳을 한 번에 맞춘다 -->
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="젤리슈팅">
+<meta property="og:site_name" content="젤리모">
 <meta property="og:locale" content="ko_KR">
-<meta property="og:title" content="젤리슈팅 🍡 터질 때마다 도파민 팡팡">
+<meta property="og:title" content="젤리모 🍡 3분이면 한 판">
 <meta property="og:description" content="혼자 하기 · 던지기 대전 · 최대 4명 실시간 던전. 설치 없이 링크만 누르면 바로 시작!">
 <meta property="og:url" content="https://zingy-cupcake-98444a.netlify.app/">
 <meta property="og:image" content="https://zingy-cupcake-98444a.netlify.app/og.jpg?v=3">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="분홍 젤리 고양이가 웃고 있는 젤리슈팅 게임 카드">
+<meta property="og:image:alt" content="분홍 젤리 고양이가 웃고 있는 젤리모 게임 카드">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="젤리슈팅 🍡 터질 때마다 도파민 팡팡">
+<meta name="twitter:title" content="젤리모 🍡 3분이면 한 판">
 <meta name="twitter:description" content="혼자 하기 · 던지기 대전 · 최대 4명 실시간 던전. 설치 없이 링크만 누르면 바로 시작!">
 <meta name="twitter:image" content="https://zingy-cupcake-98444a.netlify.app/og.jpg?v=3">
 <meta name="description" content="혼자 하기 · 던지기 대전 · 최대 4명 실시간 던전. 설치 없이 링크만 누르면 바로 시작하는 귀여운 젤리 터트리기 게임.">
@@ -825,7 +825,7 @@
       <button class="setbtn" id="resetScores">🗑️ 최고기록만 초기화</button>
       <button class="setbtn danger" id="resetAll">💥 전체 초기화 (코인·아이템·스킨·기록)</button>
     </div>
-    <div class="tag2">Jelly Shooting · 만든이 kami 🩷</div>
+    <div class="tag2">젤리모 Jellimo · 만든이 kami 🩷</div>
     <button class="btn ghost" id="setBackBtn">← 홈으로</button>
   </div>
 
@@ -4962,8 +4962,8 @@ function shareResult(){
   const url=location.origin+location.pathname;
   const what=(lastPlay.kind==='solo')?(m.emoji+m.name)
     : ((lastPlay.game==='throw'?'🎯 던지기 게임 '+roleLabel(lastPlay.role):'⚔️ 실시간 던전'));
-  const text='🍡 젤리슈팅 '+what+' '+r.score+'점! 이겨볼래? 😎';
-  if(navigator.share){ navigator.share({title:'Jelly Shooting',text:text,url:url}).catch(()=>{}); return; }
+  const text='🍡 젤리모 '+what+' '+r.score+'점! 이겨볼래? 😎';
+  if(navigator.share){ navigator.share({title:'젤리모 Jellimo',text:text,url:url}).catch(()=>{}); return; }
   copyText(text+'\n'+url,'📋 결과를 복사했어요! 붙여넣어 자랑하세요');
 }
 // ---- 결과 화면에서 바로 도전장 보내기 (따로 만드는 화면 없음) ----
@@ -5121,7 +5121,7 @@ $('netCreateBtn').onclick=netCreate;
 $('netJoinBtn').onclick=netJoinByCode;
 $('lobbyReadyBtn').onclick=lobbyReady;
 $('lobbyCopyBtn').onclick=()=>copyText(
-  '🍡 젤리슈팅 같이 하자!\n'+location.origin+location.pathname+'?r='+net.room+
+  '🍡 젤리모 같이 하자!\n'+location.origin+location.pathname+'?r='+net.room+
   '\n(안 열리면 방 코드 '+net.room+' 직접 입력)','🔗 복사됨! 붙여넣어 보내세요');
 $('lobbyRetryBtn').onclick=()=>{ sdkT0=0; sdkAltIdx=-1; netConnect(); };
 // 방장이 대기실을 나갈 때: 방을 닫을지, 열어둔 채로 딴 걸 할지 고른다.

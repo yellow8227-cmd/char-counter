@@ -1,7 +1,7 @@
 {
-  "name": "Jelly Shooting",
-  "short_name": "젤리슈팅",
-  "description": "터질 때마다 도파민 팡팡! 귀여운 젤리 슈팅 게임",
+  "name": "젤리모 Jellimo",
+  "short_name": "젤리모",
+  "description": "3분이면 한 판. 혼자도, 최대 4명 실시간 대전도. 설치 없이 바로 시작",
   "lang": "ko",
   "start_url": "./index.html",
   "scope": "./",
