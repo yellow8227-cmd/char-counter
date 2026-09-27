@@ -1589,7 +1589,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
   <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.
     <a class="sib" href="docs/">문서 — 시대 고증 · 막힐 때 · 프롬프트 길이 ↗</a>
     <a class="sib" href="about.html">씬덱은 무엇을 하는가 ↗</a>
-    <a class="sib" href="../">촬영 배치도 — 화각과 180° 선을 먼저 재 보기 ↗</a><span class="ver">화면 v43 · 2026-08-31</span></div>
+    <a class="sib" href="../">촬영 배치도 — 화각과 180° 선을 먼저 재 보기 ↗</a><span class="ver">화면 v44 · 2026-09-27</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -3396,7 +3396,42 @@ function captionBits(t){
   return {text:keep.join(' ').trim(), cap:hit.join(' ')};
 }
 
-/* 지문은 읽는 글이다. 두 사람이 나오고, 「~하며」로 이어지고, 길다.
+/* 컷 하나가 맞아도 앞 컷과 안 붙으면 이어지지 않는다.
+   차가 가라앉는 걸 밖에서 본 다음 컷에서 물이 턱까지 차 있으면, 그 사이가 비어 있다.
+   차는 이미 내려앉아 있어야 하고 카메라는 물속에 있어야 한다.
+   불도 마찬가지다 — 헤드라이트가 켜져 있다는 건 전기가 살아 있다는 뜻이고,
+   그게 폰 화면과 계기판 불로 이어진다. 한 번 죽은 불은 다시 켜지지 않는다. */
+function stateOf(c){
+  const t=[(c&&c.inframe)||'',(c&&c.desc)||'',(c&&c.inframeEn)||'',(c&&c.descEn)||''].join(' ');
+  const st={};
+  if(/물속|수중|잠긴|침수|가라앉은|underwater|submerged/i.test(t)) st.water='under';
+  else if(/물\s*밖|수면\s*위|물가|둑|제방|기슭|둔치|above water|on the bank/i.test(t)) st.water='above';
+  if(/가라앉는다|가라앉으며|떨어진다|추락|빠진다|sinking|falling/i.test(t)) st.move='falling';
+  else if(/내려앉|멈춰|정지|가라앉은|settled|at rest/i.test(t)) st.move='settled';
+  if(/꺼진다|꺼졌|불이\s*나간|암전|goes dark|going dark|cuts out/i.test(t)) st.power='off';
+  else if(/헤드라이트|전조등|켜진|불빛|빛난다|화면이\s*켜|glow|headlight|lit/i.test(t)) st.power='on';
+  return st;
+}
+function contWarn(s,c){
+  if(!s||!c||c.bg||c.cast) return '';
+  const i=(s.cuts||[]).indexOf(c);
+  if(i<1) return '';
+  const now=stateOf(c), out=[];
+  // 불은 한 번 죽으면 되살아나지 않는다 — 이 씬 안에서 앞쪽 전부를 본다
+  for(let k=i-1;k>=0;k--){
+    const p=stateOf(s.cuts[k]);
+    if(p.power){ if(p.power==='off'&&now.power==='on')
+      out.push('앞 컷에서 불이 꺼졌는데 이 컷에 다시 켜져 있습니다'); break; }
+  }
+  const pv=stateOf(s.cuts[i-1]);
+  if(pv.water&&now.water&&pv.water!==now.water)
+    out.push('앞 컷은 '+(pv.water==='under'?'물속':'물 밖')+'인데 이 컷은 '+
+             (now.water==='under'?'물속':'물 밖')+'입니다 — 사이가 비어 있습니다');
+  if(pv.move==='falling'&&now.water==='under')
+    out.push('앞 컷에서 아직 가라앉는 중인데 이 컷은 이미 안에 들어와 있습니다 — 앞 컷을 「내려앉은 뒤」로 바꾸면 붙습니다');
+  return out.join(' · ');
+}
+/* 지문은 읽는 글이다. 두 사람이 나오고, 「~하며」로 이어지고, 길다./* 지문은 읽는 글이다. 두 사람이 나오고, 「~하며」로 이어지고, 길다.
    그대로 프롬프트에 실으면 컷이 아니라 줄거리가 된다. */
 function proseWarn(c){
   if(!c || c.bg) return '';
@@ -3444,6 +3479,13 @@ function proseWarnHTML(c){
     말이 깨진 채 실리느니 빼는 쪽이 낫다고 보아 프롬프트에 넣지 않았습니다.
     위 <b>화면에 담을 것</b> 칸에 영어로 적으면 그대로 실립니다.</p>`;
   return out;
+}
+function contWarnHTML(s,c){
+  const w=contWarn(s,c);
+  if(!w) return '';
+  return `<p class="mini" style="margin:-8px 0 12px;color:var(--tx3)">
+    <b>앞 컷과 안 붙습니다</b> — ${esc(w)}.
+    컷 하나가 맞아도 앞뒤가 어긋나면 이어 붙일 수 없습니다.</p>`;
 }
 function staleWarnHTML(s,c){
   const w=staleWarn(s,c);
@@ -3576,7 +3618,7 @@ function cutBodyHTML(s,c){
         <label class="f enfield"><span>화면에 담을 것</span>
           <input type="text" data-kf="inframeEn" value="${esc(c.inframeEn)}" placeholder="stops mid-chew, a mouthful held in one cheek, eyes lifted off-frame"></label>
       </div>
-      ${proseWarnHTML(c)}
+      ${proseWarnHTML(c)}${contWarnHTML(s,c)}
       <div class="row" style="margin:-6px 0 12px">
         <button class="btn sm" data-ktrans="${c.id}">한글 → 영문</button>
         <button class="btn sm gh" data-kimg="${c.id}">${c.hasImg?'이미지 교체':'이미지 넣기'}</button>
@@ -5171,6 +5213,26 @@ function stripMeta(t){
    그래서 sentences() 로 자른 뒤 어미로 한 번 더 자른다. */
 const JA_NOUN='의혼모여남상과감사왕전학기교표숫양탁주박부';   // 「의자 」를 「-자」로 오인하지 않게
 const GO_NOUN='사최참광경원창중냉리무보';                       // 「그리고 」 「창고 」
+/* 「물속.」 「운전석.」 「조수석 바닥.」은 동작이 아니라 그 다음 동작이 벌어지는 자리다.
+   따로 떼면 그릴 것이 없는 컷이 된다 — 뒤 조각에 붙인다.
+   「쿵」 「또각—」 같은 소리와는 다르다. 소리는 앞 컷에 붙고, 자리는 뒤 컷에 붙는다. */
+const PLACE_TAIL=/(속|안|앞|뒤|위|아래|밖|옆|석|실|장|판|바닥|쪽|편|곳|집|방|길|문|앞마당|마당|계단|복도|차)[.!?…]?["'”’)\]]*$/;
+function placeFrag(x){
+  const t=String(x).trim();
+  const bare=t.replace(/[^가-힣A-Za-z]/g,'');
+  if(!bare || bare.length>8) return false;
+  if(/(다|요|까|죠|네|군|자|라|마)[.!?…]?["'”’)\]]*$/.test(t)) return false;   // 동사로 끝나면 동작이다
+  return PLACE_TAIL.test(t);
+}
+function mergePlaces(list){
+  const out=[]; let hold='';
+  list.forEach(x=>{
+    if(placeFrag(x)){ hold=hold?hold+' '+x:x; return; }
+    out.push(hold?hold+' '+x:x); hold='';
+  });
+  if(hold){ if(out.length) out[out.length-1]+=' '+hold; else out.push(hold); }
+  return out;
+}
 function actionsOf(ko){
   const v=stripMeta(ko);
   if(!v) return [];
@@ -5188,7 +5250,9 @@ function actionsOf(ko){
       if(x.replace(/[^가-힣A-Za-z]/g,'').length>=2) out.push(x);
     });
   });
-  return out;
+  // 「물속.」 「운전석.」처럼 짧고 동사가 없는 조각은 동작이 아니라 그 다음 동작이 벌어지는 자리다.
+  // 따로 떼면 그릴 것이 없는 컷이 된다 — 뒤에 붙인다.
+  return mergePlaces(out);
 }
 function beatsOf(text){
   const parts=sentences(text);
@@ -5200,10 +5264,10 @@ function beatsOf(text){
     // 글자가 하나도 없는 조각(숫자·기호뿐)은 의성어가 아니라 대본 표기다.
     const wordy = /[가-힣A-Za-z]/.test(bare);
     const soundy = wordy && bare.length<=6 && !/(다|요|까|죠|네|군|는다|은다|자|라|마)$/.test(bare);
-    if(soundy && out.length) out[out.length-1]+=' '+p;
+    if(soundy && out.length && !placeFrag(p)) out[out.length-1]+=' '+p;
     else out.push(p);
   });
-  return out;
+  return mergePlaces(out);
 }
 /* 대본 끝에 붙는 역주·해설을 컷으로 만들지 않는다.
      ▶ 생간(센가리) — 한국에서는 소를 도축한 날 … 식문화가 있습니다.
@@ -6431,6 +6495,9 @@ const DRAWN_NO=['cartoon','anime','illustration'];
 function lockBits(c){
   let soft = c && c.soft ? SOFT_NO.slice() : [];
   try{ if(medium().kind==='photo') soft=soft.concat(DRAWN_NO); }catch(e){}
+  // 컷마다 틀릴 수 있는 방향이 다르다. 물속 컷은 맑은 물이, 잠긴 차는 떨어지는 차가,
+  // 안 풀리는 버클은 풀린 버클이 나온다 — 그 컷에만 필요한 금지어를 지문에서 뽑는다.
+  soft=soft.concat(descNo(c).slice(0,10));
   const sm=c&&c.soft?SOFTEN[c.soft]:null;
   if(sm && sm.people==='none') soft=soft.concat(['person','people','figure','crowd']);
   // 배경 판은 락 설정과 무관하게 사람이 나오면 안 된다 — 그게 이 컷의 존재 이유다
@@ -6564,7 +6631,8 @@ const KO_LEX=[
   [/(한|두|세|네|\d+)\s*(줄기|가닥)\s*(의)?\s*(빛|광선)/g,(m,n)=>numOf(n)+' beams of light'],
   [/헤드라이트|전조등/g,'headlight beams'],
   // ── 안전벨트 · 버클 (풀다를 solve 로 옮긴다) ──
-  [/(안전벨트|시트벨트|벨트)?\s*버클(이|을|은)?\s*안\s*(풀린다|풀려|열린다|열려)/g,'the seatbelt buckle not releasing'],
+  [/(안전벨트|시트벨트|벨트)?\s*버클(이|을|은)?\s*안\s*(풀린다|풀려|열린다|열려)/g,'the seatbelt buckle not releasing',
+     ['belt released','buckle opening','unfastened seatbelt','loose strap']],
   [/(안전벨트|시트벨트|벨트)(이|가|은)?\s*안\s*(풀린다|풀려|열린다|열려)/g,'the seatbelt not releasing'],
   [/(안전벨트|시트벨트|벨트)\s*버클/g,'the seatbelt buckle'],
   [/버클/g,'the seatbelt buckle'],
@@ -6574,19 +6642,22 @@ const KO_LEX=[
   [/잠긴다|잠겨\s*있다/g,'locked'],
   // ── 물 ──
   [/물이\s*(턱|목|가슴|허리)까지\s*차오른다/g,(m,p)=>'water risen to '+
-      ({'턱':'his chin','목':'his neck','가슴':'his chest','허리':'his waist'}[p]||'his chin')],
+      ({'턱':'his chin','목':'his neck','가슴':'his chest','허리':'his waist'}[p]||'his chin'),
+     ['screaming','wide open mouth','water gushing','broken window','splashing']],
   [/차오른다|차오르고|차오르는/g,'rising water'],
   [/수면|물\s*표면/g,'the water surface'],
   [/기포|공기\s*방울/g,'bubbles rising'],
-  [/물속|수중/g,'underwater'],
-  [/탁한\s*물|흙탕물/g,'murky water'],
+  [/물속|수중/g,'underwater',
+     ['clear water','blue water','swimming pool','coral','fish','diver','swimmer','surface visible']],
+  [/탁한\s*물|흙탕물/g,'murky water',['clear water','blue water','swimming pool']],
   // ── 차 안 ──
   [/운전석/g,"the driver's seat"],
   [/조수석/g,'the passenger seat'],
   [/계기판|대시보드/g,'the dashboard'],
   [/핸들|운전대/g,'the steering wheel'],
-  [/(잠긴|가라앉은|침수된)\s*(차|승용차|세단|자동차)/g,'a submerged sedan'],
-  [/저수지/g,'a reservoir'],
+  [/(잠긴|가라앉은|침수된)\s*(차|승용차|세단|자동차)/g,'a submerged sedan',
+     ['car falling','car sinking','splash','car above water','car driving']],
+  [/저수지/g,'a reservoir',['beach','sea','ocean','waves','sand','mudflat','boat']],
   // ── 사람 (나이 표기가 없을 때) ──
   [/(중년|중년의)\s*(남자|남성|사내)/g,'a middle-aged man'],
   [/(중년|중년의)\s*(여자|여성)/g,'a middle-aged woman'],
@@ -6595,11 +6666,13 @@ const KO_LEX=[
   [/노인/g,'an elderly person'],
   // ── 몸 · 상태 ──
   [/젖은\s*머리|머리가\s*젖어/g,'wet hair'],
-  [/숨을\s*(참는다|참고)/g,'holding his breath'],
+  [/숨을\s*(참는다|참고)/g,'holding his breath',['screaming','wide open mouth','shouting']],
   [/눈을\s*(감는다|감고)/g,'eyes closed'],
-  [/미동도\s*없다|꼼짝\s*(도)?\s*(않는다|안\s*한다)/g,'completely still'],
+  [/미동도\s*없다|꼼짝\s*(도)?\s*(않는다|안\s*한다)/g,'completely still',['motion blur','running','flailing']],
   // ── 사물 동작 ──
-  [/(화면|액정)이?\s*꺼진다/g,'the screen going dark'],
+  [/(휴대폰|핸드폰|스마트폰)/g,'a modern black smartphone',
+     ['flip phone','old cellphone','antenna','keypad','2000s phone','readable text','app icons','notification badge']],
+  [/(화면|액정)이?\s*꺼진다/g,'the screen going dark',['bright screen','readable text','app icons']],
   [/울린다|울리는/g,'ringing'],
   [/떨어진다|떨어져\s*있다/g,'fallen'],
   [/(손|손가락)이?\s*(누른다|누르는|더듬는다)/g,'a hand pressing'],
@@ -6635,8 +6708,10 @@ function koToEn(text){
   const put=en=>{ if(!en) return ' '; slot.push(en); return '\u0002'+(slot.length-1)+'\u0002'; };
   v=v.replace(AGE_RE,(m,d,ko,noun)=>put(agePhrase(d?+d:koYears(ko),noun,her)));
   v=v.replace(DEC_RE,(m,d,noun)=>put(agePhrase(+d+5,noun,her).replace(/(early|mid|late) /,'')));
-  KO_LEX.forEach(([re,to])=>{
-    v=v.replace(re,(...a)=>put(typeof to==='function'?to(...a):to));
+  // 말한 것의 반대를 막는다 — 「안 풀린다」고 적었는데 풀린 버클이 나오면 그 컷은 버린 컷이다
+  const no=[];
+  KO_LEX.forEach(([re,to,nope])=>{
+    v=v.replace(re,(...a)=>{ if(nope) no.push.apply(no,nope); return put(typeof to==='function'?to(...a):to); });
   });
   const got=[], re=/\u0002(\d+)\u0002/g; let m;
   while((m=re.exec(v))) got.push(slot[+m[1]]);
@@ -6644,10 +6719,18 @@ function koToEn(text){
   const rest=v.replace(/\u0002\d+\u0002/g,' ');
   const bare=rest.replace(/[\s.,·…!?~"'”’()\[\]]/g,'')
                  .replace(/^(은|는|이|가|을|를|의|에|에서|와|과|도|만|으로|로)+$/,'');
-  return {en:got.filter(Boolean).join(', '),
+  return {en:got.filter(Boolean).join(', '), no:dedupe(no),
           left:/[가-힣]/.test(bare)?rest.replace(/\s{2,}/g,' ').trim():''};
 }
 
+/* 이 컷의 지문이 부르는 반대 그림을 막는다 */
+function descNo(c){
+  if(!c || c.bg) return [];
+  // 자막으로 빠진 문장은 그림에 없다 — 그 금지어까지 붙이면 --no 만 길어진다
+  const t=captionBits((c.inframe||'').trim()||(c.desc||'').trim()).text;
+  if(!t||!/[가-힣]/.test(t)) return [];
+  try{ return koToEn(t).no||[]; }catch(e){ return []; }
+}
 /* 지문 한 줄 → 프롬프트에 실을 영어.
    ① 화면에 글자를 그리라는 말은 먼저 떼어 낸다 — 생성기가 반드시 깨뜨린다
    ② 이미 영어면 대본 표기(00:04 · S#12)만 걷어내고 그대로
@@ -6870,7 +6953,7 @@ function buildVEO(s,c){
   const pi=s.cuts?s.cuts.indexOf(c):-1;
   if(pi>0){
     const pv=s.cuts[pi-1];
-    const pd=(pv.descEn||pv.desc||'').trim();
+    const pd=descOf(pv).trim();
     if(pd) L.push('Context: this shot follows — '+pd.slice(0,110)+'.');
   }
   const rw0=chs.length>1?relOf(c,chs):null;
