@@ -1313,6 +1313,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
       <label class="chip on" data-tgset="mj">미드저니 <em class="pay">유료</em></label>
       <label class="chip" data-tgset="rw">런웨이 · 클링 <em class="pay">유료</em></label>
       <label class="chip" data-tgset="veo">Veo / Flow <em class="pay">유료</em></label>
+      <label class="chip" data-tgset="one">크레아 <em class="free">무료 있음</em></label>
       <label class="chip" data-tgset="gen">그 외 이미지 AI <em class="free">무료 있음</em></label>
     </div>
 
@@ -1449,6 +1450,21 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
           <a class="btn" href="https://labs.google/fx/tools/flow" target="_blank" rel="noopener" data-open="flow">복사하고 Flow 열기</a>
           <span class="mini" style="margin:0">Flow에선 캐릭터 이미지를 <b>Ingredients</b>로 함께 넣으세요</span>
         </div>
+      </div>
+    </div>
+
+    <div class="card pcard fold" data-tg="one">
+      <div class="outhd tgbar"><b>크레아</b><span class="k">한 문장 · 뒤에 --no 만</span></div>
+      <div class="tgbody">
+        <div class="out empty2" id="o-one">컷을 선택하세요</div>
+        <div class="rback" id="k-one"></div>
+        <div class="row" style="margin-top:13px">
+          <button class="btn pri" data-copy="o-one">복사만</button>
+          <a class="btn" href="https://www.krea.ai" target="_blank" rel="noopener" data-open="krea">복사하고 크레아 열기</a>
+        </div>
+        <p class="mini">줄을 <b>Camera: / Motion: / Audio:</b> 로 나눈 블록은 크레아에서 잘 안 먹습니다.
+        한 문장으로 쭉 이어지고 뒤에 <code>--no</code> 만 붙는 형식이 통합니다.
+        <b>--ar 도 --v 도 붙지 않으니</b> 화면비는 크레아에서 고르세요.</p>
       </div>
     </div>
 
@@ -1589,7 +1605,7 @@ keeping the subject centered in frame, ending on a close-up of the face.</div>
   <div class="fbot">SCENEDECK · 작업 내용은 이 브라우저에만 저장됩니다 — 중요한 작업은 JSON으로 백업하세요.
     <a class="sib" href="docs/">문서 — 시대 고증 · 막힐 때 · 프롬프트 길이 ↗</a>
     <a class="sib" href="about.html">씬덱은 무엇을 하는가 ↗</a>
-    <a class="sib" href="../">촬영 배치도 — 화각과 180° 선을 먼저 재 보기 ↗</a><span class="ver">화면 v44 · 2026-09-27</span></div>
+    <a class="sib" href="../">촬영 배치도 — 화각과 180° 선을 먼저 재 보기 ↗</a><span class="ver">화면 v45 · 2026-09-27</span></div>
 </footer>
 
 <!-- ===== 번역 모달 ===== -->
@@ -1864,6 +1880,33 @@ const LENS = {
   '135mm 망원':'135mm telephoto, compressed background','마크로':'macro lens, extreme detail',
   '아나모픽':'anamorphic lens, horizontal flares, oval bokeh'
 };
+/* 빛은 두 가지다 — 「무엇이 비추는가」와 「어느 쪽에서 오는가」.
+   LIGHT 는 빛의 성질(로우키·소프트)이고 컷마다 다르다.
+   광원은 씬의 것이다. 한 씬 안에서 계기판 불이 어느 컷은 왼쪽 위, 어느 컷은
+   오른쪽에서 오면 그 컷들은 이어 붙지 않는다. 그래서 씬에 한 번 적고 모든 컷에 싣는다. */
+const LSRC = {
+  '':'',
+  '달빛':'moonlight','가로등':'a cold streetlight','네온 간판':'neon signage light',
+  '헤드라이트':'car headlight beams','계기판 불':'dim green dashboard glow',
+  '휴대폰 화면':'pale blue phone-screen light','TV 빛':'flickering television light',
+  '형광등':'flat fluorescent ceiling light','백열전구':'a bare incandescent bulb',
+  '촛불':'candlelight','모닥불':'firelight','손전등':'a handheld flashlight beam',
+  '창문 빛':'daylight through a window','천창':'overhead skylight',
+  '햇빛':'direct sunlight','노을빛':'low golden sunlight','흐린 하늘':'flat overcast daylight',
+  '수면 위 빛':'light filtering down from the water surface'
+};
+const LDIR = {
+  '':'',
+  '왼쪽 위':'from the upper left','오른쪽 위':'from the upper right',
+  '왼쪽':'from the left','오른쪽':'from the right',
+  '정면':'from the front','뒤 (역광)':'from behind',
+  '위 (직부감)':'from directly above','아래 (밑에서)':'from below'
+};
+/* 자연광은 오른쪽 위, 화면 안 조명은 왼쪽 위 — 어느 쪽이든 상관없지만
+   씬 안에서 하나로 정해져 있는 것이 중요하다. 고르지 않으면 이쪽으로 간다. */
+const LDIR_AUTO={'달빛':'오른쪽 위','햇빛':'오른쪽 위','노을빛':'오른쪽 위',
+  '창문 빛':'오른쪽 위','천창':'위 (직부감)','흐린 하늘':'위 (직부감)',
+  '수면 위 빛':'위 (직부감)','가로등':'오른쪽 위','헤드라이트':'정면'};
 const LIGHT = {
   '':'', '자연광':'natural daylight','앰비언트':'ambient light filling the space',
   '필라이트':'fill light softening the shadows','사이드라이트':'side light, texture and drama',
@@ -3273,7 +3316,7 @@ $('charlist').addEventListener('click',e=>{
 });
 
 /* ---------- 씬 · 컷 ---------- */
-function newScene(){ return {id:nid('s'),heading:'',loc:'',locEn:'',time:'',summary:'',script:'',cuts:[]}; }
+function newScene(){ return {id:nid('s'),heading:'',loc:'',locEn:'',time:'',lsrc:'',ldir:'',summary:'',script:'',cuts:[]}; }
 function newCut(){
   return {id:nid('k'),desc:'',descEn:'',shot:'',angle:'',move:'',lens:'',light:'',mood:'',
     speed:'',fx:'',trig:'',emo:'',keep:'',endp:'',use:'',bg:false,cast:'',soft:'',intent:'',pos:'',
@@ -3529,9 +3572,20 @@ function renderScenes(){
       </div>
       <div class="grid g3">
         <label class="f"><span>장소 (한글)</span><input type="text" data-sf="loc" value="${esc(s.loc)}" placeholder="비 내리는 뒷골목"></label>
-        <label class="f enfield"><span>장소</span><input type="text" data-sf="locEn" value="${esc(s.locEn)}" placeholder="rain-soaked back alley"></label>
-        <label class="f"><span>시간대</span><select data-sf="time">${opts(TIME,s.time)}</select></label>
+        <label class="f enfield" style="grid-column:span 2"><span>장소 <span class="k">눈에 보이는 것을 쉼표로 이어서 — 길수록 잘 나옵니다</span></span>
+          <textarea data-sf="locEn" rows="2" placeholder="a concrete embankment slope running down into still black water, a low dark treeline ridge on the far bank, a bent steel guardrail">${esc(s.locEn)}</textarea></label>
       </div>
+      <div class="grid g3">
+        <label class="f"><span>시간대</span><select data-sf="time">${opts(TIME,s.time)}</select></label>
+        <label class="f"><span>광원 <span class="k">이 씬을 비추는 것</span></span>
+          <select data-sf="lsrc">${opts(LSRC,s.lsrc)}</select></label>
+        <label class="f"><span>빛이 오는 쪽</span>
+          <select data-sf="ldir">${opts(LDIR,s.ldir)}</select></label>
+      </div>
+      <p class="mini" style="margin:-6px 0 12px">
+        프롬프트에 실리는 말 → <code>${esc(lsrcPhrase(s)||'—')}</code>
+        <span style="color:var(--tx3)">· 광원과 방향은 <b>이 씬의 모든 컷</b>에 같이 실립니다.
+        컷마다 빛이 오는 쪽이 다르면 이어 붙지 않습니다.${s.lsrc?'':' 비워 두면 장소와 시간을 보고 알아서 고릅니다.'}</span></p>
       <div class="row" style="margin:-6px 0 12px"><button class="btn sm" data-strans="${s.id}">장소 한글 → 영문</button></div>
       ${locWarnHTML(s)}
       <label class="f reffld"><span>이 장소 참조 <b>--sref</b> — 배경 판을 뽑고 나온 코드나 이미지 주소를 넣으세요.
@@ -3727,7 +3781,12 @@ function onSceneEdit(e){
   }
   const card=e.target.closest('[data-sid]'); if(!card) return;
   const s=S.scenes.find(x=>x.id===card.dataset.sid); if(!s) return;
-  if(e.target.dataset.sf){ s[e.target.dataset.sf]=e.target.value; save(); return; }
+  if(e.target.dataset.sf){
+    const k=e.target.dataset.sf;
+    s[k]=e.target.value; save();
+    if(k==='lsrc'||k==='ldir'||k==='time'){ renderScenes(); renderPrompt(); }
+    return;
+  }
   if(e.target.dataset.kf){
     const cc=e.target.closest('[data-kid]'); if(!cc) return;
     const c=s.cuts.find(x=>x.id===cc.dataset.kid); if(!c) return;
@@ -6798,6 +6857,52 @@ function timeOf(s){
   if(s.time) return s.time;
   return grabTime([s.heading,s.loc].filter(Boolean).join(' '))||'';
 }
+/* 장소 영문에 이미 「at night」을 적어 두었으면 시간을 또 적지 않는다.
+   「a reservoir at night, at night」은 밤을 두 번 그리라는 말이 아니다. */
+function timePhrase(s){
+  const t=TIME[timeOf(s)]||''; if(!t) return '';
+  const loc=String((s&&(s.locEn||s.loc))||'').toLowerCase();
+  if(!loc) return t;
+  const key=t.replace(/^(at|in|during)\s+/i,'').toLowerCase();
+  return (loc.indexOf(t.toLowerCase())>=0 || (key&&loc.indexOf(key)>=0)) ? '' : t;
+}
+/* 광원을 안 고르면 씬이 아는 것에서 알아서 고른다 —
+   물속이면 헤드라이트, 차 안이면 계기판, 밤 바깥이면 달빛.
+   고른 값이 있으면 그쪽이 언제나 이긴다. */
+function lsrcAuto(s){
+  if(!s) return '';
+  const hay=[s.loc,s.locEn,s.heading].filter(Boolean).join(' ');
+  const t=timeOf(s), io=ioOf(s), night=/심야|밤|새벽/.test(t);
+  // 차 안이 먼저다 — 물에 잠긴 차라도 운전석에서 얼굴을 비추는 건 계기판이지 헤드라이트가 아니다
+  if(/차\s*안|운전석|조수석|차\s*내부|택시\s*안|버스\s*안|car interior|interior of a (car|sedan|taxi)|driver's seat/i.test(hay))
+    return night?'계기판 불':'창문 빛';
+  if(/물속|수중|underwater|submerged/i.test(hay)) return night?'헤드라이트':'수면 위 빛';
+  if(io==='ext'){
+    if(night) return /도심|거리|골목|시내|역앞|번화가|street|alley|downtown/i.test(hay)?'가로등':'달빛';
+    if(/해질|노을|황혼/.test(t)) return '노을빛';
+    return t?'햇빛':'';
+  }
+  if(io==='int'||/실내|방|집|사무실|교실|병원|복도|room|office|interior/i.test(hay)){
+    if(night) return '백열전구';
+    if(/사무실|교실|병원|편의점|지하|취조|office|classroom|hospital|convenience/i.test(hay)) return '형광등';
+    return t?'창문 빛':'';
+  }
+  return '';
+}
+function lsrcKey(s){ return (s&&s.lsrc)||lsrcAuto(s)||''; }
+function ldirKey(s){
+  if(s&&s.ldir) return s.ldir;
+  const k=lsrcKey(s);
+  if(!k) return '';
+  // 정하지 않은 화면 안 조명은 왼쪽 위 — 어느 쪽이든 좋으나 씬 안에서 하나여야 한다
+  return LDIR_AUTO[k]||'왼쪽 위';
+}
+/* 「dim green dashboard glow from the upper left」 — 이 한 조각이 컷들을 묶는다 */
+function lsrcPhrase(s){
+  const k=lsrcKey(s); if(!k||!LSRC[k]) return '';
+  const d=LDIR[ldirKey(s)]||'';
+  return d?LSRC[k]+' '+d:LSRC[k];
+}
 /* 빛 칸이 비었으면 씬 시간에서 채운다. lightFor 는 이미 있는데 컷 만들 때만 쓰였다. */
 function lightOf(s,c){
   if(c && c.light) return c.light;
@@ -6822,7 +6927,7 @@ function buildMJ(s,c){
   toolBits(c).forEach(x=>p.push(x));
   [ERA[S.style.era]].forEach(x=>{ if(x) p.push(x); });
   const eg=eraGuard(); if(eg) eg.bits.forEach(x=>p.push(x));
-  [TIME[timeOf(s)],LIGHT[lightOf(s,c)],FX[c.fx]].forEach(x=>{ if(x) p.push(x); });
+  [timePhrase(s),lsrcPhrase(s),LIGHT[lightOf(s,c)],FX[c.fx]].forEach(x=>{ if(x) p.push(x); });
   if(MOOD[c.mood]) p.push(MOOD[c.mood]);
   const tn=toneOf(c); if(tn) p.push(tn.tone.en);
   styleBits().forEach(x=>p.push(x));
@@ -6896,7 +7001,7 @@ function buildMJTerse(s,c){
   const loc=stripMeta(s.locEn||s.loc); if(loc) L.push(cap(firstClauses(loc,2)));
   const io2=ioOf(s); if(io2) L.push(io2==='int'?'Interior':'Exterior');
   if(ERA[S.style.era]) L.push(cap(firstClauses(ERA[S.style.era],1)));
-  const li=[TIME[timeOf(s)],LIGHT[lightOf(s,c)]].filter(Boolean).join(', ');
+  const li=[timePhrase(s),lsrcPhrase(s),LIGHT[lightOf(s,c)]].filter(Boolean).join(', ');
   if(li) L.push(cap(firstClauses(li,2)));
   const tn=toneOf(c);
   if(tn) L.push(cap(firstClauses(tn.tone.en,2)));
@@ -6929,7 +7034,7 @@ function buildVEO(s,c){
   }
   const subj=descOf(c);
   if(subj) L.push('Action: '+subj+'.');
-  const setting=[stripMeta(s.locEn||s.loc),TIME[timeOf(s)]].filter(Boolean).join(' ');
+  const setting=[stripMeta(s.locEn||s.loc),timePhrase(s)].filter(Boolean).join(' ');
   if(setting) L.push('Setting: '+setting+'.');
   if(TRIGGER[c.trig]) L.push('Event: mid-shot, the subject '+TRIGGER[c.trig]+'.');
   const cam=[SHOT[c.shot],ANGLE[c.angle],COMP[S.style.comp]].concat(toolBits(c)).filter(Boolean).join(', ');
@@ -6938,7 +7043,8 @@ function buildVEO(s,c){
     const eg2=eraGuard();
     L.push('Era: '+ERA[S.style.era]+(eg2?'. '+eg2.bits.join('. '):'')+'.');
   }
-  if([LIGHT[lightOf(s,c)],FX[c.fx]].filter(Boolean).length) L.push('Lighting: '+[LIGHT[lightOf(s,c)],FX[c.fx]].filter(Boolean).join(', ')+'.');
+  if([lsrcPhrase(s),LIGHT[lightOf(s,c)],FX[c.fx]].filter(Boolean).length)
+    L.push('Lighting: '+[lsrcPhrase(s),LIGHT[lightOf(s,c)],FX[c.fx]].filter(Boolean).join(', ')+'.');
   if(MOOD[c.mood]) L.push('Mood: '+MOOD[c.mood]+'.');
   const tn0=toneOf(c); if(tn0) L.push('Atmosphere: '+cap(tn0.tone.en)+'.');
   const st=dedupe(styleBits()).join(', ');
@@ -6979,10 +7085,10 @@ function buildGEN(s,c){
   charBits(c).forEach(x=>p.push(x));
   if(s.locEn||s.loc) p.push(s.locEn||s.loc);
   if(ERA[S.style.era]) p.push(ERA[S.style.era]);
-  if(TIME[timeOf(s)]) p.push(TIME[timeOf(s)]);
+  if(timePhrase(s)) p.push(timePhrase(s));
   [SHOT[c.shot],ANGLE[c.angle],COMP[S.style.comp]].forEach(x=>{ if(x) p.push(x); });
   toolBits(c).forEach(x=>p.push(x));
-  [LIGHT[lightOf(s,c)],FX[c.fx],MOOD[c.mood]].forEach(x=>{ if(x) p.push(x); });
+  [lsrcPhrase(s),LIGHT[lightOf(s,c)],FX[c.fx],MOOD[c.mood]].forEach(x=>{ if(x) p.push(x); });
   styleBits().forEach(x=>p.push(x));
   if(m.tail) p.push(m.tail);
   const lk=lockBits(c);
@@ -6993,13 +7099,75 @@ function buildGEN(s,c){
   if(neg) out+='\n[네거티브] '+neg;
   return scrub(out,!!(c&&c.soft),c);
 }
+/* =========================================================
+   크레아 — 한 문장으로 쭉 이어지고 뒤에 --no 만 붙는다.
+   Camera: / Motion: / Audio: 로 줄을 나눈 블록은 크레아에서 잘 안 먹는다.
+   --ar 도 --v 도 안 받는다. 화면비는 그 사이트에서 고른다.
+
+   실제로 통과한 프롬프트의 차례 —
+     ① 무엇인가(관사까지) → ② 어디·언제 → ③ 프레임 안에 있는 것
+     → ④ 화면에 없는 것 → ⑤ 광원과 방향 → ⑥ 움직임 → ⑦ 카메라
+     → ⑧ 실사 선언 → ⑨ 렌즈·포맷 → ⑩ 그레이드 → ⑪ 조명 → ⑫ 공기 → --no
+   ========================================================= */
+function artHead(h){
+  if(!h) return '';
+  const t=String(h).replace(/,\s*/g,' ').replace(/\s{2,}/g,' ').trim();
+  if(!t) return '';
+  return (/^[aeiou]/i.test(t)?'An ':'A ')+t;
+}
+function buildONE(s,c){
+  if(c && String(c.final||'').trim()) return String(c.final).trim();
+  const m=medium(), p=[], lk=lockBits(c);
+  // ① 무엇인가
+  p.push(artHead(m.head)||'A cinematic film still');
+  // ② 어디 · 언제 — 장소가 길면 시간을 따로 떼어야 「…damp concrete at night」이 안 된다
+  const loc=stripMeta(s.locEn||s.loc);
+  const when=timePhrase(s)||'';
+  if(loc) p.push(when && loc.length<=40 ? loc+' '+when : loc);
+  if(when && !(loc && loc.length<=40)) p.push(when);
+  const io=ioOf(s); if(io) p.push(io==='int'?'interior':'exterior');
+  // ③ 프레임 안
+  [SHOT[c.shot],ANGLE[c.angle],COMP[S.style.comp]].forEach(x=>{ if(x) p.push(x); });
+  if(c.bg){
+    // 배경 판은 장소를 이미 위에서 말했다 — 「empty <장소 전체>」로 다시 쓰지 않는다
+    p.push('no people, the location itself');
+  }else{
+    charBits(c).forEach(x=>p.push(x));
+    p.push(descOf(c));
+    softBits(c).forEach(x=>p.push(x));
+    // ④ 화면에 없는 것 — 「no people」은 --no 보다 본문에서 더 잘 듣는다
+    lk.body.forEach(x=>p.push(x));
+  }
+  // ⑤ 광원과 방향 — 이 한 조각이 컷들을 서로 묶는다
+  const ls=lsrcPhrase(s); if(ls) p.push(ls);
+  // ⑥ 움직임 · ⑦ 카메라
+  if(SPEED[c.speed]) p.push(SPEED[c.speed]);
+  if(c.move&&MOVE_RW[c.move]&&c.move!=='고정') p.push(MOVE_RW[c.move]);
+  else if(c.move==='고정') p.push('static frame');
+  // ⑧ 실사 선언 · ⑨ 도구 · ⑩ 시대
+  if(m.kind==='photo') p.push('live action');
+  toolBits(c).forEach(x=>p.push(x));
+  if(ERA[S.style.era]) p.push(ERA[S.style.era]);
+  const eg=eraGuard(); if(eg) eg.bits.forEach(x=>p.push(x));
+  // ⑪ 조명 · ⑫ 공기
+  [LIGHT[lightOf(s,c)],FX[c.fx]].forEach(x=>{ if(x) p.push(x); });
+  const tn=toneOf(c);
+  if(tn) p.push(tn.tone.en); else if(MOOD[c.mood]) p.push(MOOD[c.mood]);
+  styleBits().forEach(x=>p.push(x));
+  if(m.tail) p.push(m.tail);
+  let out=dedupe(p.filter(Boolean)).join(', ');
+  // --ar 도 --v 도 안 붙는다. --no 만 붙는다.
+  const no=dedupe(lk.no.concat(String(S.style.neg||'').split(/\s*,\s*/))).filter(Boolean);
+  if(no.length) out+=' --no '+no.join(', ');
+  return scrub(out,!!(c&&c.soft),c);
+}
 /* 런웨이 · 클링 — 한 문장. 카메라 동작을 맨 앞에 두는 게 잘 먹힌다.
    「A cinematic pull back of a medieval warrior standing exhausted …」 (필기 Part 4) */
 function buildRW(s,c){
   const m=medium();
   const subj=[charBits(c).join(', '), descOf(c)].filter(Boolean).join(', ');
   let out='A cinematic '+(MOVE_RW[c.move]||'shot')+' of '+(subj||'the scene');
-  const tail=[stripMeta(s.locEn||s.loc), TIME[timeOf(s)], SPEED[c.speed], LIGHT[lightOf(s,c)], FX[c.fx],
+  const tail=[stripMeta(s.locEn||s.loc), timePhrase(s), SPEED[c.speed], lsrcPhrase(s), LIGHT[lightOf(s,c)], FX[c.fx],
               ERA[S.style.era], MOOD[c.mood]].concat(styleBits()).filter(Boolean);
   if(m.kind!=='photo'&&m.head) tail.push('in the style of '+m.head);
   softBits(c).forEach(x=>tail.push(x));
@@ -7120,6 +7288,7 @@ const SITES={
   flow   :{url:'https://labs.google/fx/tools/flow',       out:'o-veo', name:'Flow'},
   runway :{url:'https://runwayml.com',                    out:'o-rw',  name:'런웨이'},
   kling  :{url:'https://klingai.com',                     out:'o-rw',  name:'클링'},
+  krea   :{url:'https://www.krea.ai',                     out:'o-one', name:'크레아'},
   imagefx:{url:'https://labs.google/fx/tools/image-fx',   out:'o-gen', name:'ImageFX'},
   bing   :{url:'https://www.bing.com/images/create',      out:'o-gen', name:'Bing 이미지 크리에이터'}
 };
@@ -7348,7 +7517,7 @@ function readbackKO(s,c,kind){
 }
 function paintReadback(){
   const pair=activePair(), s=pair&&pair.s, c=pair&&pair.c;
-  [['k-mj','img'],['k-gen','img'],['k-veo','vid'],['k-rw','vid']].forEach(([id,kind])=>{
+  [['k-mj','img'],['k-one','img'],['k-gen','img'],['k-veo','vid'],['k-rw','vid']].forEach(([id,kind])=>{
     const el=$(id); if(!el) return;
     const html=(s&&c)?readbackKO(s,c,kind):'';
     el.innerHTML=html; el.classList.toggle('on',!!html);
@@ -7469,6 +7638,7 @@ function renderPrompt(){
     set('o-mj', ok?buildMJ(s,c):'', hint);
     set('o-rw', ok?buildRW(s,c):'', hint);
     set('o-veo',ok?buildVEO(s,c):'',hint);
+    set('o-one',ok?buildONE(s,c):'',hint);
     set('o-gen',ok?buildGEN(s,c):'',hint);
     paintAfter();
     return;
@@ -7480,6 +7650,7 @@ function renderPrompt(){
     set('o-mj',buildMJ(hit.s,hit.c),hint);
     set('o-rw',buildRW(hit.s,hit.c),hint);
     set('o-veo',buildVEO(hit.s,hit.c),hint);
+    set('o-one',buildONE(hit.s,hit.c),hint);
     set('o-gen',buildGEN(hit.s,hit.c),hint);
   }else{
     set('o-mj','',hint); set('o-rw','',hint); set('o-veo','',hint); set('o-gen','',hint);
@@ -8032,7 +8203,7 @@ $('d-txt').addEventListener('click',()=>{
     s.cuts.forEach((c,ci)=>{
       out+=`\n──── 컷 ${ci+1} (${c.dur||0}초) ────\n[지문] ${c.desc||'-'}\n`;
       if(c.dialogue) out+=`[대사] ${c.dialogue}\n`;
-      out+=`\n[미드저니]\n${buildMJ(s,c)}\n\n[Veo / Flow]\n${buildVEO(s,c)}\n\n[범용 이미지]\n${buildGEN(s,c)}\n`;
+      out+=`\n[미드저니]\n${buildMJ(s,c)}\n\n[크레아]\n${buildONE(s,c)}\n\n[Veo / Flow]\n${buildVEO(s,c)}\n\n[범용 이미지]\n${buildGEN(s,c)}\n`;
     });
   });
   dl(fileName('prompts','txt'),out);
