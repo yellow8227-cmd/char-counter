@@ -1,0 +1,32 @@
+{
+ "name": "스튜디오S 상식 트레이닝",
+ "short_name": "상식 트레이닝",
+ "description": "스튜디오S 필기 공통상식 대비",
+ "lang": "ko",
+ "start_url": "./index.html",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#f5f7fb",
+ "theme_color": "#1b2440",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}
