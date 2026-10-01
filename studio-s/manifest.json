@@ -1,6 +1,6 @@
 {
- "name": "스튜디오S 상식 트레이닝",
- "short_name": "상식 트레이닝",
+ "name": "깡깡이를 위한 상식",
+ "short_name": "깡깡이 상식",
  "description": "스튜디오S 필기 공통상식 대비",
  "lang": "ko",
  "start_url": "./index.html",
@@ -23,7 +23,7 @@
    "purpose": "any"
   },
   {
-   "src": "icon-512.png",
+   "src": "icon-maskable-512.png",
    "sizes": "512x512",
    "type": "image/png",
    "purpose": "maskable"
