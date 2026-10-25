@@ -38,6 +38,10 @@ python counter.py
   GitHub Pages를 켜면 `https://<계정>.github.io/char-counter/scenedeck/` 주소로도 열립니다.
   자세한 설명은 [`scenedeck/README.md`](scenedeck/README.md)에 있습니다.
 
+- [`english/`](english/) — 🗣 **바로 튀어나오는 영어**.
+  회화 문법 8단원, 한국식↔영어식 사고 말하기 카드, 다른 반복, 퀴즈, AI 영영 풀이를 담은 단일 HTML.
+  `src/`의 조각을 고친 뒤 `english/build.sh`로 `index.html`을 다시 만듭니다.
+
 ## 라이선스
 
 MIT

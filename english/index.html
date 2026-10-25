@@ -1,0 +1,1099 @@
+<title>바로 튀어나오는 영어</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Do+Hyeon&family=IBM+Plex+Mono:wght@500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: 말풍선 수험표 — 위에 응시표 헤더와 과목 탭, 가운데 한 장씩 집중하는 카드. 상식·CAT 앱과 같은 잉크/OMR 빨강에 영어용 파랑 말풍선을 더함 */
+:root{
+  --paper:#f1f3f9; --sheet:#ffffff; --ink:#1b2440; --muted:#5b6582; --line:#d8deeb;
+  --red:#dc3550; --red-soft:#fde7eb; --blue:#2f56d9; --blue-soft:#e5ebff; --mark:#ffe46b;
+  --ok:#1d8556; --ok-soft:#e0f3e9; --warn:#a96800; --warn-soft:#fff2d4; --bub:#eef1f8;
+  --kd:"Do Hyeon","Noto Sans KR",sans-serif;
+  --body:"Noto Sans KR","Apple SD Gothic Neo",system-ui,sans-serif;
+  --en:"Bricolage Grotesque","Noto Sans KR",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --shadow:0 10px 30px rgba(27,36,64,.14);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#10141e; --sheet:#181f2e; --ink:#e7ebf5; --muted:#9aa4bf; --line:#2c3447;
+  --red:#ff6b82; --red-soft:#3a1d26; --blue:#8ea8ff; --blue-soft:#1d2a4f; --mark:#6b5a12;
+  --ok:#4fd197; --ok-soft:#163327; --warn:#f0b44c; --warn-soft:#3a2c12; --bub:#202a3d;
+  --shadow:0 12px 34px rgba(0,0,0,.5); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#10141e; --sheet:#181f2e; --ink:#e7ebf5; --muted:#9aa4bf; --line:#2c3447;
+  --red:#ff6b82; --red-soft:#3a1d26; --blue:#8ea8ff; --blue-soft:#1d2a4f; --mark:#6b5a12;
+  --ok:#4fd197; --ok-soft:#163327; --warn:#f0b44c; --warn-soft:#3a2c12; --bub:#202a3d;
+  --shadow:0 12px 34px rgba(0,0,0,.5); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.65;padding-block:18px 90px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));-webkit-text-size-adjust:100%}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+h1,h2,h3{text-wrap:balance;margin:0}
+.wrap{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.en{font-family:var(--en);letter-spacing:-.005em}
+.muted{color:var(--muted)}
+mark.hl{background:linear-gradient(transparent 58%,var(--mark) 58%);color:inherit;padding:0 1px;border-radius:2px}
+
+/* header */
+header{display:flex;flex-direction:column;gap:8px;border-bottom:2px solid var(--ink);padding-bottom:12px}
+.ticket{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--red);text-transform:uppercase}
+.ticket span:last-child{color:var(--muted)}
+.title{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--kd);font-weight:400;font-size:clamp(30px,7vw,44px);line-height:1.1}
+.h1bub{font-family:var(--en);font-weight:700;font-size:15px;background:var(--blue);color:var(--sheet);border-radius:14px 14px 14px 3px;padding:4px 11px;margin-bottom:6px;white-space:nowrap}
+.statline{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);align-items:center}
+.statline b{color:var(--ink);font-variant-numeric:tabular-nums}
+.sync{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:1px 9px}
+.sync.on{color:var(--ok);border-color:var(--ok)}
+
+/* tabs */
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:1.5px;background:var(--ink);border:1.5px solid var(--ink);border-radius:10px;overflow:hidden;position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:21;background:var(--paper)}
+.tabs button{border:0;background:var(--sheet);padding:9px 2px 8px;font-weight:700;font-size:14px;display:flex;flex-direction:column;align-items:center;gap:0;line-height:1.25}
+.tabs button small{font-family:var(--en);font-weight:600;font-size:10.5px;color:var(--muted);letter-spacing:.02em}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--sheet)}
+.tabs button[aria-pressed="true"] small{color:var(--mark)}
+
+/* common pieces */
+.card{background:var(--sheet);border:1px solid var(--line);border-radius:14px;padding:20px 18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.sec-h h2{font-family:var(--kd);font-weight:400;font-size:24px;line-height:1.2}
+.lbl{font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--red)}
+.lbl.b{color:var(--blue)}.lbl.g{color:var(--ok)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:700;font-size:15px;border:1.5px solid var(--ink);background:var(--sheet);color:var(--ink);border-radius:11px;padding:10px 16px;min-height:46px;text-align:center;line-height:1.3}
+.btn.pri{background:var(--ink);color:var(--sheet)}
+.btn.blue{background:var(--blue);border-color:var(--blue);color:var(--sheet)}
+.btn.ghost{border-color:var(--line)}
+.btn.sm{min-height:36px;padding:5px 12px;font-size:13.5px;border-radius:9px}
+.btn.grow{flex:1 1 140px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--sheet);border-radius:999px;padding:6px 13px;min-height:38px;font-size:14px}
+.chip small{font-family:var(--mono);color:var(--muted);margin-left:4px;font-size:11.5px}
+.chip[aria-pressed="true"]{border-color:var(--red);background:var(--red-soft);color:var(--red);font-weight:700}
+.chip[aria-pressed="true"] small{color:var(--red)}
+.say{border:0;background:var(--blue-soft);color:var(--blue);border-radius:999px;min-width:38px;height:38px;padding:0 10px;font-size:15px;flex:none;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-weight:700}
+.say small{font-size:11px}
+.meter{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--blue);border-radius:99px;transition:width .4s}
+.meter.ok i{background:var(--ok)}.meter.red i{background:var(--red)}
+.empty{color:var(--muted);text-align:center;padding:24px 8px}
+.note{font-size:13px;color:var(--muted)}
+textarea,input[type=text]{font:inherit;font-size:16px;width:100%;border:1.5px solid var(--line);border-radius:11px;padding:11px 13px;background:var(--sheet);color:var(--ink);resize:vertical}
+textarea:focus,input[type=text]:focus{border-color:var(--blue);outline:none}
+
+/* home */
+.hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:14px}
+@media (max-width:640px){.hero{grid-template-columns:1fr}}
+.today{border:1.5px solid var(--ink)}
+.today .big{font-family:var(--kd);font-size:44px;line-height:1}
+.today .big small{font-size:18px;color:var(--muted);margin-left:4px}
+.goalpick{display:flex;gap:4px;align-items:center;font-size:12.5px;color:var(--muted)}
+.goalpick button{border:1px solid var(--line);background:var(--sheet);border-radius:7px;padding:2px 8px;min-height:30px;font-size:12.5px}
+.goalpick button[aria-pressed="true"]{background:var(--ink);color:var(--sheet);border-color:var(--ink)}
+.week{display:flex;gap:6px;align-items:flex-end;height:46px}
+.week div{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;color:var(--muted);height:100%;justify-content:flex-end}
+.week i{display:block;width:100%;max-width:22px;min-height:3px;background:var(--line);border-radius:4px}
+.week .hit i{background:var(--ok)}
+.week .now span{color:var(--ink);font-weight:700}
+.ladder{display:flex;flex-direction:column;gap:8px}
+.rungs{display:grid;grid-template-columns:repeat(9,1fr);gap:3px}
+.rung{height:30px;border-radius:6px;background:var(--bub);display:grid;place-items:center;font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--muted)}
+.rung.got{background:var(--blue-soft);color:var(--blue)}
+.rung.cur{background:var(--blue);color:var(--sheet);box-shadow:0 0 0 2px var(--sheet),0 0 0 4px var(--blue)}
+.lvname{font-family:var(--en);font-weight:800;font-size:30px;line-height:1;color:var(--blue)}
+.mission{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:640px){.mission{grid-template-columns:1fr}}
+.mis{text-align:left;border:1.5px solid var(--line);background:var(--sheet);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px;min-height:112px}
+.mis:hover{border-color:var(--ink)}
+.mis b{font-size:17px}
+.mis span{font-size:13px;color:var(--muted)}
+.mis .n{font-family:var(--kd);font-size:30px;line-height:1;color:var(--red)}
+.mis.blue .n{color:var(--blue)}.mis.green .n{color:var(--ok)}
+.weak{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+@media (max-width:640px){.weak{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.wk{text-align:left;border:1px solid var(--line);background:var(--sheet);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:92px}
+.wk:hover{border-color:var(--ink)}
+.wk .no{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.wk b{font-size:14.5px;line-height:1.35;word-break:keep-all}
+.wk .pct{font-family:var(--mono);font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.wk.hot{border-color:var(--red);background:var(--red-soft)}
+.wk.hot .pct{color:var(--red);font-weight:600}
+.method{border-left:4px solid var(--blue);border-radius:0 14px 14px 0}
+.steps3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0;padding:0;list-style:none}
+@media (max-width:640px){.steps3{grid-template-columns:1fr}}
+.steps3 li{background:var(--bub);border-radius:12px;padding:12px;font-size:14px;line-height:1.55}
+.steps3 b{display:block;font-size:15px;margin-bottom:2px}
+
+/* grammar */
+.unitlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:640px){.unitlist{grid-template-columns:1fr}}
+.utile{text-align:left;background:var(--sheet);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;align-items:start}
+.utile:hover{border-color:var(--ink)}
+.utile .num{grid-row:span 3;font-family:var(--kd);font-size:34px;line-height:1;color:var(--red)}
+.utile b{font-size:17px}
+.utile .en{font-size:13.5px;color:var(--muted);line-height:1.45}
+.utile .meta{display:flex;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.tag{display:inline-block;font-size:11.5px;font-weight:700;border-radius:999px;padding:1px 8px;background:var(--bub);color:var(--muted)}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}.tag.red{background:var(--red-soft);color:var(--red)}.tag.blue{background:var(--blue-soft);color:var(--blue)}
+.crumb{font-family:var(--mono);font-size:12px;color:var(--red);letter-spacing:.06em}
+.utitle{font-family:var(--kd);font-weight:400;font-size:clamp(28px,6vw,38px);line-height:1.15}
+.bigidea{font-family:var(--en);font-size:clamp(19px,4.4vw,23px);font-weight:600;line-height:1.45;text-wrap:pretty}
+.pic{background:var(--bub);border-radius:12px;padding:10px;overflow-x:auto}
+.pic svg{display:block;width:100%;min-width:300px;max-width:620px;height:auto;margin:0 auto}
+.pic text{font-family:var(--en);fill:var(--ink);font-size:13px}
+.pic .t-m{fill:var(--muted);font-size:11.5px}
+.pic .t-b{font-weight:700}
+.pic .t-acc{fill:var(--blue);font-weight:700}
+.pic .t-red{fill:var(--red);font-weight:700}
+.sv-axis{stroke:var(--ink);stroke-width:2.5;fill:none;stroke-linecap:round}
+.sv-now{stroke:var(--red);stroke-width:2.5;stroke-dasharray:4 4}
+.sv-acc{stroke:var(--blue);stroke-width:5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.sv-accf{fill:var(--blue)}
+.sv-soft{fill:var(--blue-soft);stroke:var(--blue);stroke-width:2}
+.sv-inkf{fill:var(--ink)}
+.sv-paper{fill:var(--sheet);stroke:var(--ink);stroke-width:2}
+.sv-mark{fill:var(--mark)}
+.sv-faint{fill:none;stroke:var(--muted);stroke-width:2;stroke-dasharray:3 4}
+.sv-redf{fill:var(--red)}
+.point{border-top:1px dashed var(--line);padding-top:14px;display:flex;flex-direction:column;gap:6px}
+.point:first-of-type{border-top:0;padding-top:0}
+.point h3{font-family:var(--en);font-size:18px;font-weight:700;display:flex;gap:8px;align-items:baseline}
+.point h3 .pn{font-family:var(--mono);font-size:12px;color:var(--red);font-weight:500;flex:none}
+.point p{margin:0;color:var(--muted);font-family:var(--en);font-size:15.5px;line-height:1.6}
+.exs{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.exs li{display:flex;gap:8px;align-items:center;background:var(--bub);border-radius:10px;padding:7px 8px 7px 12px}
+.exs li .en{flex:1;min-width:0;font-size:16.5px;line-height:1.5}
+.chat{display:flex;flex-direction:column;gap:8px}
+.bub{max-width:86%;display:flex;gap:6px;align-items:flex-end}
+.bub .txt{font-family:var(--en);font-size:16.5px;line-height:1.5;padding:9px 13px;border-radius:16px 16px 16px 4px;background:var(--bub)}
+.bub.B{align-self:flex-end;flex-direction:row-reverse}
+.bub.B .txt{background:var(--blue-soft);border-radius:16px 16px 4px 16px}
+.bub .who{font-family:var(--mono);font-size:11px;color:var(--muted);flex:none;padding-bottom:6px}
+.mist{display:flex;flex-direction:column;gap:10px}
+.mi{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;font-family:var(--en);font-size:16px;line-height:1.5}
+.mi .x{color:var(--red);font-weight:700}.mi .o{color:var(--ok);font-weight:700}
+.mi .bad{text-decoration:line-through;text-decoration-color:var(--red);color:var(--muted)}
+.mi .why{grid-column:2;font-size:14px;color:var(--muted)}
+.opic{background:var(--warn-soft);border-radius:12px;padding:12px 14px;font-family:var(--en);font-size:15.5px;line-height:1.6}
+.opic b{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;color:var(--warn);display:block}
+
+/* AI box */
+.ai{border:1.5px dashed var(--blue);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;background:color-mix(in srgb,var(--blue-soft) 45%,var(--sheet))}
+.ai .h{display:flex;gap:8px;align-items:center;font-weight:700}
+.ai .h .dot{width:22px;height:22px;border-radius:50%;background:var(--blue);color:var(--sheet);display:grid;place-items:center;font-size:12px;font-family:var(--en);font-weight:800;flex:none}
+.aiout{font-family:var(--en);font-size:16px;line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.aiout:empty{display:none}
+.think{font-family:var(--en);background:var(--bub);border-radius:12px;padding:12px 14px;font-size:16px;line-height:1.6}
+.think .lbl{display:block;margin-bottom:2px}
+.res{display:flex;flex-direction:column;gap:10px}
+.res .main{font-family:var(--en);font-size:22px;font-weight:700;line-height:1.35}
+.res ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-family:var(--en)}
+.res .k{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.chunk{display:flex;gap:6px;flex-wrap:wrap}
+.chunk span{background:var(--sheet);border:1px solid var(--line);border-radius:9px;padding:4px 10px;font-family:var(--en);font-size:14.5px}
+.chunk span b{color:var(--blue)}
+.verdict{align-self:flex-start;font-weight:800;border-radius:999px;padding:4px 12px;font-size:14px;font-family:var(--en)}
+.verdict.natural{background:var(--ok-soft);color:var(--ok)}.verdict.ok{background:var(--blue-soft);color:var(--blue)}
+.verdict.unnatural,.verdict.wrong-meaning{background:var(--red-soft);color:var(--red)}
+
+/* speak */
+.deck{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (max-width:640px){.deck{grid-template-columns:1fr}}
+.modebtn{text-align:left;border:1.5px solid var(--line);background:var(--sheet);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px}
+.modebtn[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.modebtn b{font-size:16px}.modebtn span{font-size:13px;color:var(--muted);line-height:1.5}
+.toggle{display:inline-flex;align-items:center;gap:8px;font-size:14px}
+.toggle input{width:20px;height:20px;accent-color:var(--blue)}
+.flash{min-height:360px;position:relative}
+.prog{display:flex;justify-content:space-between;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.prompt-ko{font-family:var(--kd);font-size:clamp(28px,7vw,40px);line-height:1.3;word-break:keep-all;text-wrap:balance;padding:10px 0}
+.prompt-en{font-family:var(--en);font-size:clamp(19px,4.6vw,23px);font-weight:600;line-height:1.5}
+.ring{width:54px;height:54px;flex:none}
+.ring circle{fill:none;stroke-width:6}
+.ring .bg{stroke:var(--line)}.ring .fg{stroke:var(--red);stroke-linecap:round;transition:stroke-dashoffset .1s linear}
+.ring text{font-family:var(--mono);font-size:18px;fill:var(--ink);font-weight:600}
+.answer{font-family:var(--en);font-size:clamp(24px,6vw,32px);font-weight:800;line-height:1.3;color:var(--blue);text-wrap:balance}
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:520px){.vs{grid-template-columns:1fr}}
+.vs div{border-radius:12px;padding:10px 12px;font-family:var(--en);font-size:15.5px;line-height:1.45}
+.vs .kr{background:var(--red-soft)}.vs .kr .lbl{color:var(--red)}
+.vs .kr p{text-decoration:line-through;text-decoration-color:var(--red);margin:2px 0 0}
+.vs .eng{background:var(--ok-soft)}.vs .eng .lbl{color:var(--ok)}
+.vs p{margin:2px 0 0;font-weight:700}
+.rate{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rate button{border:1.5px solid var(--line);background:var(--sheet);border-radius:12px;padding:10px 4px;min-height:58px;font-weight:700;font-size:14.5px;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.25}
+.rate button small{font-weight:400;font-size:11.5px;color:var(--muted)}
+.rate .r0{border-color:var(--red);color:var(--red)}.rate .r1{border-color:var(--warn);color:var(--warn)}.rate .r2{border-color:var(--ok);color:var(--ok)}
+.reps{display:flex;flex-direction:column;gap:12px}
+.stepper{display:flex;gap:4px}
+.stepper i{flex:1;height:5px;border-radius:9px;background:var(--line)}
+.stepper i.on{background:var(--blue)}
+.para{font-family:var(--en);font-size:17px;line-height:1.75;background:var(--bub);border-radius:12px;padding:14px 16px}
+.situ{font-family:var(--en);font-size:18px;line-height:1.6;border:1.5px solid var(--ink);border-radius:12px;padding:14px 16px;position:relative}
+.situ::before{content:"Imagine…";display:block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:2px}
+.more{display:flex;flex-direction:column;gap:6px}
+
+/* quiz */
+.qcard{min-height:380px}
+.qtype{font-size:12px;font-weight:700;border-radius:6px;padding:1px 8px;background:var(--bub);color:var(--muted)}
+.qtxt{font-family:var(--en);font-size:clamp(19px,4.6vw,22px);font-weight:600;line-height:1.55;white-space:pre-line}
+.qtxt.quote{border-left:4px solid var(--mark);padding-left:12px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{text-align:left;display:flex;gap:12px;align-items:center;border:1.5px solid var(--line);background:var(--sheet);border-radius:12px;padding:12px 14px;min-height:54px;font-family:var(--en);font-size:16.5px;line-height:1.45}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt .dot{flex:none;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--red);display:grid;place-items:center;font-family:var(--mono);font-size:12px;color:var(--red)}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.right .dot{background:var(--ok);border-color:var(--ok);color:var(--sheet)}
+.opt.wrong{border-color:var(--red);background:var(--red-soft)}
+.opt.wrong .dot{background:var(--red);border-color:var(--red);color:var(--sheet)}
+.why{border-top:1px dashed var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
+.why .v{font-weight:800;font-size:17px}
+.why .v.ok{color:var(--ok)}.why .v.ng{color:var(--red)}
+.why .en{font-size:16px;line-height:1.6}
+.score{font-family:var(--kd);font-size:60px;line-height:1}
+.score small{font-size:22px;color:var(--muted)}
+.wlist{display:flex;flex-direction:column;gap:8px}
+.wli{border:1px solid var(--line);border-left:4px solid var(--red);border-radius:0 10px 10px 0;padding:8px 12px;font-family:var(--en);font-size:15px;line-height:1.5;white-space:pre-line}
+.wli .a{color:var(--ok);font-weight:700}
+
+/* boss */
+.boss{display:flex;gap:14px;align-items:center;border:2px solid var(--ink);border-radius:14px;padding:12px;background:linear-gradient(135deg,var(--blue-soft),var(--sheet))}
+.bossface{flex:none;width:68px;height:68px;border-radius:50%;display:grid;place-items:center;font-family:var(--en);font-weight:800;font-size:22px;color:#fff;background:radial-gradient(circle at 35% 30%,#6f8dff,#1c2f8f);box-shadow:0 6px 18px rgba(47,86,217,.45);animation:breathe 1.8s ease-in-out infinite}
+.bossface.dead{filter:grayscale(1);animation:none;transform:rotate(-14deg)}
+.bossinfo{flex:1;display:flex;flex-direction:column;gap:5px;min-width:0}
+.bossinfo .nm{font-family:var(--en);font-weight:800}
+.bhp{height:14px;border-radius:8px;background:var(--line);overflow:hidden;border:1.5px solid var(--ink)}
+.bhp i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),#9b6bff);transition:width .35s ease}
+.hearts{color:var(--red);font-size:18px;letter-spacing:2px}.hearts s{opacity:.22;text-decoration:none}
+.combo{font-family:var(--mono);font-size:12px;color:var(--red);font-weight:600}
+@keyframes breathe{50%{transform:scale(1.06)}}
+.shake{animation:shake .35s}
+@keyframes shake{20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.pop{position:fixed;left:50%;top:22%;transform:translateX(-50%);font-family:var(--kd);font-size:34px;pointer-events:none;z-index:80;animation:floatup .9s ease-out forwards;white-space:nowrap;text-shadow:0 2px 0 var(--sheet)}
+.pop.g{color:var(--ok)}.pop.r{color:var(--red)}.pop.b{color:var(--blue)}
+@keyframes floatup{to{transform:translate(-50%,-50px);opacity:0}}
+
+/* coach */
+.mylist{display:flex;flex-direction:column;gap:8px}
+.my{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start}
+.my .body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.my .en{font-size:16.5px;font-weight:700;line-height:1.4}
+.my .ko{font-size:13px;color:var(--muted)}
+.my .tk{font-family:var(--en);font-size:13.5px;color:var(--muted);line-height:1.5}
+.x-del{border:0;background:none;color:var(--muted);font-size:13px;padding:6px;min-height:36px}
+
+/* selection explain + sheet */
+.selbtn{position:absolute;z-index:70;background:var(--ink);color:var(--sheet);border:0;border-radius:999px;padding:7px 13px;font-size:13.5px;font-weight:700;box-shadow:var(--shadow);min-height:36px}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:75;background:var(--sheet);border-top:1.5px solid var(--ink);border-radius:18px 18px 0 0;box-shadow:var(--shadow);max-height:78vh;overflow:auto;padding:16px max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.sheet .in{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:90;background:var(--ink);color:var(--sheet);font-weight:700;font-size:14px;border-radius:12px;padding:10px 16px;box-shadow:var(--shadow);max-width:calc(100% - 32px);text-align:center}
+footer{font-size:12px;color:var(--muted);line-height:1.6}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<div class="wrap">
+  <header>
+    <div class="ticket"><span>Speaking drill · OPIc 대비</span><span>Think in English</span></div>
+    <div class="title"><h1>바로 튀어나오는 영어</h1><span class="h1bub">Say it, don't translate it.</span></div>
+    <div class="statline" id="statline"></div>
+  </header>
+  <nav class="tabs" id="tabs" aria-label="학습 메뉴"></nav>
+  <main id="stage" class="wrap" style="gap:14px;max-width:none"></main>
+  <footer>설명은 영영사전처럼 쉬운 영어로 씁니다. 🔊는 기기의 영어 음성으로 읽어 주고, 사전 링크(Cambridge · Oxford · Longman · YouGlish)에서 실제 원어민 녹음을 들을 수 있어요. 진도는 계정에 저장돼 휴대폰과 PC에서 이어집니다.</footer>
+</div>
+<script>
+/* ───────── 문법 단원 ─────────
+   [[...]] = 형광펜으로 칠할 부분. 설명은 모두 쉬운 영어. */
+const UNITS=[
+{id:"u1",no:1,ko:"현재 vs 현재진행",en:"Simple vs -ing",pic:"now",
+ big:"Simple present is the normal setting of your life. Present continuous is what's on the screen right now.",
+ points:[
+  {h:"Simple present = your profile",p:"Use it for habits, facts, and things that are generally true about you. It doesn't matter what you're doing at this second.",
+   ex:["I [[work]] at a bank.","I [[drink]] coffee every morning.","My sister [[lives]] in Busan."]},
+  {h:"-ing = happening now, or around now",p:"Use it for something in progress right now, or a temporary situation these days.",
+   ex:["Sorry, I[['m driving]]. Can I call you back?","I[['m working]] from home this week.","I[['m reading]] a really good book these days."]},
+  {h:"Same verb, different picture",p:"Simple feels permanent. -ing feels temporary.",
+   ex:["I [[live]] in Seoul. (my home)","I[['m living]] with my sister for now. (not forever)","He's rude. → He[['s being]] rude today. (not his normal self)"]},
+  {h:"-ing for plans you already set",p:"If the time and people are already decided, -ing works for the future. You'll need this a lot in OPIc role-plays.",
+   ex:["I[['m meeting]] Jisoo tomorrow.","What [[are]] you [[doing]] this weekend?"]},
+  {h:"State words usually stay simple",p:"know, like, want, need, believe, understand, own, belong, seem, mean are states, not actions. Nothing is 'in progress', so no -ing.",
+   ex:["I [[know]] what you mean.","I [[think]] it's good. (my opinion) / I[['m thinking]] about quitting. (my mind is working on it)","I [[have]] a car. (own it) / I[['m having]] lunch. (eating = an action)"]},
+  {h:"always + -ing = a complaint",p:"It means 'this happens too often, and it annoys me.'",
+   ex:["He[['s always losing]] his keys!","You[['re always checking]] your phone."]}
+ ],
+ dialog:[["A","What [[do]] you [[do]]?"],["B","I [[work]] in marketing. But I[['m not working]] this week. I'm on vacation."],["A","Nice! So what [[are]] you [[doing]] these days?"],["B","I[['m taking]] a pottery class. I usually [[go]] on Tuesdays."],["A","[[Do]] you [[like]] it?"],["B","I [[love]] it. I[['m making]] a mug right now, actually. Well, I[['m trying]] to."]],
+ mistakes:[
+  ["I am go to school every day.","I go to school every day.","Habit → just 'I go'. Don't add 'am'."],
+  ["What do you do now? — I watch TV.","What are you doing? — I'm watching TV.","'What do you do?' asks about your job. 'What are you doing?' asks about this moment."],
+  ["I'm knowing him.","I know him.","know = a state. No -ing."],
+  ["I'm usually going to the gym.","I usually go to the gym.","usually / always / every day = routine → simple."]
+ ],
+ opic:"'Tell me about your typical day' → simple present (I wake up at 7, I usually…). Then add 'These days, I'm…' to sound current and real."
+},
+{id:"u2",no:2,ko:"have p.p. 계속 용법",en:"From then until now",pic:"line",
+ big:"have + p.p. connects the past to NOW. It started before, and it's still true today.",
+ points:[
+  {h:"Started in the past, still true now",p:"One line from a past point to now. The line is not finished.",
+   ex:["I[['ve lived]] in Seoul for five years. (I still live there.)","I [[lived]] in Seoul for five years. (I don't live there now.)"]},
+  {h:"for + length / since + starting point",p:"for two years, for a long time, for ages · since 2020, since high school, since I was a kid.",
+   ex:["We[['ve been]] friends [[for]] ten years.","I[['ve had]] this phone [[since]] 2022.","She[['s worked]] here [[since]] she graduated."]},
+  {h:"How long have you…?",p:"This is the natural way to ask about a time line up to now.",
+   ex:["[[How long have you worked]] there?","[[How long have you known]] each other?","[[How long have you been]] married?"]},
+  {h:"Great with state words",p:"know, have, be, like can't take -ing, so this is how you say how long.",
+   ex:["I[['ve known]] her since middle school.","I[['ve always liked]] spicy food."]},
+  {h:"Negative = a gap until now",p:"Nothing has happened from that point until now.",
+   ex:["I [[haven't seen]] him for ages.","I [[haven't eaten]] since breakfast."]},
+  {h:"Other jobs of have p.p. — same core",p:"Experience and fresh results also connect the past to now.",
+   ex:["I[['ve been]] to Japan twice. (my experience up to now)","I[['ve lost]] my wallet. (it's still lost now)"]}
+ ],
+ dialog:[["A","[[How long have you lived]] in this neighborhood?"],["B","[[Since]] 2019. So about seven years."],["A","Then you must know all the good places."],["B","Ha, I[['ve known]] the owner of that noodle place for years."],["A","I [[haven't had]] good noodles since I moved here."],["B","Let's go, then. I [[haven't been]] there for a while either."]],
+ mistakes:[
+  ["I live here for 3 years.","I've lived here for 3 years.","'live' alone talks only about now. 'for 3 years' needs a line from the past."],
+  ["I've lived here since 3 years.","I've lived here for 3 years.","Length → for. Starting point → since."],
+  ["I know him since high school.","I've known him since high school.","since + now → have p.p."],
+  ["I've lived in Busan when I was a kid.","I lived in Busan when I was a kid.","A finished time (when I was a kid, last year, in 2015) → simple past."]
+ ],
+ opic:"Background answers sound stronger with a time line: 'I've lived in my apartment for about four years.' 'I've worked at my company since 2021.'"
+},
+{id:"u3",no:3,ko:"have been ~ing",en:"Been doing",pic:"zigzag",
+ big:"An activity started before and has been going on until now. The focus is on the doing, and on how long.",
+ points:[
+  {h:"Going on up to now",p:"The action started in the past and is probably still going.",
+   ex:["I[['ve been studying]] English for six months.","It[['s been raining]] all day."]},
+  {h:"Just stopped — you can see the result",p:"The activity just finished, and there's evidence now.",
+   ex:["Sorry I'm sweaty. I[['ve been running]].","Your eyes are red. [[Have]] you [[been crying]]?"]},
+  {h:"Doing vs done",p:"have been -ing = the activity (maybe not finished). have p.p. = the result or the number.",
+   ex:["I[['ve been reading]] this book. (still reading)","I[['ve read]] this book. (finished)","I[['ve been writing]] emails all morning. / I[['ve written]] 20 emails."]},
+  {h:"Lately / recently",p:"Perfect for talking about what's been going on in your life.",
+   ex:["I[['ve been feeling]] tired lately.","What [[have]] you [[been up to]]? (= What have you been doing lately?)"]},
+  {h:"Not with state words",p:"know, own, believe, belong don't take -ing.",
+   ex:["I[['ve known]] him for years. (✗ been knowing)","But: I[['ve been having]] trouble sleeping. (having = experiencing, OK)"]},
+  {h:"live / work: both OK",p:"I've lived here for 5 years ≈ I've been living here for 5 years. The -ing version feels a little more active or temporary.",
+   ex:["I[['ve been working]] here since March."]}
+ ],
+ dialog:[["A","Hey! Long time no see. What [[have]] you [[been up to]]?"],["B","I[['ve been working]] a lot. And I[['ve been learning]] to swim."],["A","Swimming? How long [[have]] you [[been doing]] that?"],["B","About three months. I[['ve been going]] every morning before work."],["A","No wonder you look so healthy."],["B","Thanks! But I[['ve been sleeping]] badly. I'm so tired."]],
+ mistakes:[
+  ["I'm studying English for 2 years.","I've been studying English for 2 years.","for + up to now → have been -ing."],
+  ["I've been knowing her for years.","I've known her for years.","know = a state."],
+  ["I've been drinking three cups of coffee today.","I've had three cups of coffee today.","A number of finished things → have p.p."],
+  ["I've been working here since 3 years.","I've been working here for 3 years.","Length → for."]
+ ],
+ opic:"'Recently, I've been getting into…' or 'I've been trying to…' is a great way to start answers about hobbies or changes in your life."
+},
+{id:"u4",no:4,ko:"수동태 be + p.p.",en:"The passive",pic:"spot",
+ big:"Put the thing that receives the action in the spotlight. Who did it is unknown, not important, or obvious.",
+ points:[
+  {h:"Spotlight on the receiver",p:"Say what happened to it. The doer can stay hidden.",
+   ex:["My bike [[was stolen]]. (I don't know who did it.)","This bridge [[was built]] in 1990."]},
+  {h:"Everyday phrases you already need",p:"Many common phrases are really this pattern.",
+   ex:["I [[was born]] in Daegu.","It's [[made]] in Korea.","The store [[is closed]].","Is this seat [[taken]]?"]},
+  {h:"get + p.p. = the casual 'it happened' version",p:"In speech, get is very common, especially for sudden or unexpected changes.",
+   ex:["My flight [[got canceled]].","We [[got lost]].","I [[got paid]] today!","He [[got fired]]."]},
+  {h:"The time lives in 'be'",p:"Change be, keep the p.p.",
+   ex:["My car [[is being fixed]], so I took the bus. (now)","The meeting [[has been moved]] to Friday.","It'll [[be done]] by tomorrow."]},
+  {h:"by + doer, only when it matters",p:"Add 'by' only if the doer is new or interesting information.",
+   ex:["This song [[was written by]] my favorite singer."]},
+  {h:"Feelings and rules",p:"Lots of feelings and rules use be + p.p.",
+   ex:["I'm [[interested]] in photography.","I'm [[worried]] about my exam.","I [[was told]] to wait here.","We're [[supposed to]] meet at seven."]}
+ ],
+ dialog:[["A","Why are you taking the bus? Where's your car?"],["B","It[['s being fixed]]. It [[got hit]] in the parking lot last week."],["A","Oh no! [[Was]] anyone [[hurt]]?"],["B","No, nobody was in it. But the back door [[was]] totally [[smashed]]."],["A","Will it [[be]] ready soon?"],["B","I [[was told]] it'll [[be done]] by Friday."]],
+ mistakes:[
+  ["I was borned in Seoul.","I was born in Seoul.","born is already the p.p."],
+  ["It was happened yesterday.","It happened yesterday.","happen, arrive, die, sleep have no receiver, so no passive."],
+  ["The package delivered yesterday.","The package was delivered yesterday.","The package didn't deliver anything. Someone delivered it."],
+  ["I'm interesting in music.","I'm interested in music.","-ed = how you feel. -ing = what makes you feel it."]
+ ],
+ opic:"Use it for places and problems: 'My apartment was built about ten years ago.' 'The concert got canceled because of the rain.'"
+},
+{id:"u5",no:5,ko:"p.p.의 뜻",en:"What p.p. feels like",pic:"done",
+ big:"A p.p. word carries one feeling: done. The action is finished, or someone or something received it.",
+ points:[
+  {h:"p.p. = done / received",p:"broken = someone broke it, so now it's in a broken state. closed, finished, used, lost work the same way.",
+   ex:["My phone is [[broken]].","The shop is [[closed]].","I'm [[done]]!"]},
+  {h:"p.p. before a noun = a description",p:"It describes the state of the thing.",
+   ex:["a [[used]] car","[[frozen]] food","a [[locked]] door","I'm [[lost]]."]},
+  {h:"-ed feeling vs -ing cause",p:"-ed = what you feel. -ing = what makes people feel it.",
+   ex:["I'm [[bored]]. / This movie is [[boring]].","I'm [[confused]]. / The map is [[confusing]].","I was so [[embarrassed]]. / It was [[embarrassing]]."]},
+  {h:"noun + p.p. = 'that was ~ed'",p:"Add a p.p. after a noun to say what was done to it.",
+   ex:["a car [[made]] in Germany (= a car that was made in Germany)","the photos [[taken]] last night","a language [[spoken]] in many countries"]},
+  {h:"One p.p., many frames",p:"The 'done' feeling stays the same. The frame around it changes.",
+   ex:["I [[have finished]]. (done up to now)","It [[is finished]]. (it's in a finished state)","the work [[finished]] today (description)"]},
+  {h:"get/have something done = someone does it for you",p:"You didn't do it yourself. Someone did it for you.",
+   ex:["I [[got]] my hair [[cut]].","I [[had]] my phone [[fixed]]."]}
+ ],
+ dialog:[["A","Did you get a haircut?"],["B","Yeah, I [[got]] it [[cut]] yesterday. Do you like it?"],["A","Love it. You look so [[relaxed]]."],["B","I'm so [[relieved]]. My last haircut was a disaster. I was so [[embarrassed]]."],["A","Haha, that was a really [[embarrassing]] story."],["B","Don't remind me. Anyway, I'm [[done]] with that salon."]],
+ mistakes:[
+  ["I'm boring.","I'm bored.","'I'm boring' means you make other people bored!"],
+  ["I cut my hair at a salon.","I got my hair cut at a salon.","Unless you cut it yourself."],
+  ["a car making in Korea","a car made in Korea","The car received the action → p.p."],
+  ["I'm so exciting about the trip.","I'm so excited about the trip.","You feel it → -ed."]
+ ],
+ opic:"Feeling words make your stories vivid: 'I was so surprised.' 'It was a little disappointing.' 'I felt really relieved.'"
+},
+{id:"u6",no:6,ko:"would 다시 보기",en:"The feeling of would",pic:"would",
+ big:"would = will, but one step away: away from reality (imagining), away in time (the past), or a polite step back.",
+ points:[
+  {h:"Imagining (not real now)",p:"Use it for situations that aren't true right now. After 'if', use the past form.",
+   ex:["I[['d travel]] more if I [[had]] more time.","If I were you, I[['d take]] the job.","I [[would never]] do that."]},
+  {h:"Polite and soft",p:"would sounds gentler than will or want.",
+   ex:["[[Would]] you like some coffee?","I[['d like]] a latte, please.","[[Would]] you mind closing the window?","That [[would be]] great."]},
+  {h:"I'd love to / I'd rather",p:"I'd love to = yes, happily. I'd rather = I prefer to.",
+   ex:["I[['d love to]] come!","I[['d rather]] stay home tonight."]},
+  {h:"Past habits (repeated actions)",p:"For things you did again and again in the past. For past states (be, have, live, like), use 'used to'.",
+   ex:["When I was a kid, I [[would]] play outside until dark.","I [[used to]] have long hair. (✗ I would have long hair)"]},
+  {h:"will, seen from the past",p:"When you report what someone said or thought before.",
+   ex:["He said he[['d call]] me. (He said, 'I'll call you.')","I knew you[['d like]] it."]},
+  {h:"would have p.p. = imagining the past",p:"It didn't happen. You're imagining another past.",
+   ex:["I [[would have come]] if you'd told me. (I didn't come.)","That [[would have been]] fun."]},
+  {h:"wouldn't = refused",p:"Something or someone refused to work or act.",
+   ex:["My car [[wouldn't]] start this morning.","The kid [[wouldn't]] stop crying."]}
+ ],
+ dialog:[["A","[[Would]] you like to grab dinner on Friday?"],["B","I[['d love to]]! Where [[would]] you want to go?"],["A","How about that Thai place? I think you[['d like]] it."],["B","Perfect. When I lived in Bangkok, I [[would]] eat pad thai every day."],["A","Then this [[would be]] a good test, haha."],["B","Honestly, if I had time, I[['d move]] back there."]],
+ mistakes:[
+  ["If I have money, I would buy a house.","If I had money, I would buy a house.","Imagining → past form after if (had), would in the other part."],
+  ["I would like go.","I'd like to go.","would like + to + verb."],
+  ["When I was young, I would be shy.","I used to be shy.","A past state → used to."],
+  ["If I would know, I would tell you.","If I knew, I would tell you.","No would after if (in imagining)."]
+ ],
+ opic:"Role-play questions: 'Would it be possible to…?', 'Would you mind…?'. Imagining questions: 'If you could…, what would you do?' → 'I would…'."
+},
+{id:"u7",no:7,ko:"문장의 절 구조",en:"Building with clauses",pic:"blocks",
+ big:"A clause is one 'someone + does/is something' unit. A long sentence is just small clauses connected. Say one, then add the next.",
+ points:[
+  {h:"One clause = subject + verb",p:"Count the subject-verb pairs.",
+   ex:["[[I was]] tired. (1)","[[I was]] tired, so [[I went]] home early. (2)"]},
+  {h:"Add a reason, a time, or a condition",p:"because, when, if, before, after, while, although, until, as soon as. Talking about the future after when/if? Use the present.",
+   ex:["I stayed home [[because it was raining]].","[[When I get home]], I usually take a shower.","[[If it's sunny tomorrow]], let's go hiking. (✗ If it will be)"]},
+  {h:"A clause can be a 'thing'",p:"that / what / if + clause works like one big noun.",
+   ex:["I think [[(that) he's right]].","I don't know [[what he wants]].","I'm not sure [[if it's open]].","[[What I need]] is a break."]},
+  {h:"Question inside a sentence = normal order",p:"Once a question goes inside a sentence, it becomes subject + verb again.",
+   ex:["Where is the station? → Do you know [[where the station is]]?","What time does it start? → Can you tell me [[what time it starts]]?"]},
+  {h:"A clause can describe a noun",p:"This is the relative clause (see unit 8).",
+   ex:["the guy [[who lives next door]]","the place [[where we met]]"]},
+  {h:"How natives build long answers",p:"Main idea first. Then add: because…, so…, which…, but…, and then…",
+   ex:["I love my neighborhood [[because it's quiet]], [[which is rare in Seoul]]."]}
+ ],
+ dialog:[["A","Do you know [[what time the store closes]]?"],["B","I'm not sure, but I think [[it closes at nine]]."],["A","[[If it's still open when we get there]], let's buy some snacks."],["B","Okay. [[Although I already ate]], I could eat again."],["A","Ha. [[What I really want]] is ice cream."],["B","Same. I'll text my sister to ask [[if she wants some]]."]],
+ mistakes:[
+  ["Do you know where is the bathroom?","Do you know where the bathroom is?","Inside a sentence → normal order."],
+  ["When I will finish work, I'll call you.","When I finish work, I'll call you.","Future after when / if → present."],
+  ["Although it was raining, but we went out.","Although it was raining, we went out.","Use one connector, not two."],
+  ["I don't know what does he want.","I don't know what he wants.","No 'does' inside the sentence."]
+ ],
+ opic:"OPIc raters listen for connected speech (paragraphs = IH/AL). Practice: one clause → add because → add so → add which."
+},
+{id:"u8",no:8,ko:"관계사",en:"Name tags for nouns",pic:"tag",
+ big:"A relative clause is a name tag on a noun. It tells you WHICH one, or adds extra information about it.",
+ points:[
+  {h:"who / that → people",p:"The clause tells you which person.",
+   ex:["I have a friend [[who lives in Canada]].","The woman [[that helped me]] was so kind."]},
+  {h:"which / that → things",p:"The clause tells you which thing.",
+   ex:["The phone [[that I bought last week]] is already broken.","It's a song [[that always makes me cry]]."]},
+  {h:"Drop it when a new subject follows",p:"If the next word is a new subject (I, you, he…), you can drop who/that. Natives usually do.",
+   ex:["the movie [[(that) I watched]] yesterday","the person [[(who) I talked to]]","Everything [[I said]] was true."]},
+  {h:"where / when → places and times",p:"For places use where. For times, natives often just drop when.",
+   ex:["the café [[where we first met]]","the day [[(when) I got my license]]"]},
+  {h:"whose = his / her / their",p:"Shows that something belongs to that person.",
+   ex:["I have a friend [[whose dad is a pilot]]."]},
+  {h:"what = the thing(s) that",p:"what already contains the noun. Don't say 'the thing what'.",
+   ex:["[[What I want]] is some sleep.","That's not [[what I meant]].","Do [[what you love]]."]},
+  {h:", which… = your comment on the whole sentence",p:"Super common in speech for adding your reaction at the end.",
+   ex:["He didn't show up, [[which was really annoying]].","We got a free upgrade, [[which was nice]]."]},
+  {h:"Preposition at the end (casual)",p:"In speech, the little word goes to the end.",
+   ex:["the person [[I live with]]","the city [[I grew up in]]","something [[I'm interested in]]"]}
+ ],
+ dialog:[["A","Who's the guy [[you were talking to]]?"],["B","That's Minho. He's the friend [[I told you about]], the one [[who works at the airport]]."],["A","The one [[whose sister is a singer]]?"],["B","Yes! And the café [[where we were sitting]] is his. He just opened it, [[which is amazing]]."],["A","Is that [[what he always wanted to do]]?"],["B","Exactly. It's something [[he's been dreaming about]] for years."]],
+ mistakes:[
+  ["I have a friend who she lives in Canada.","I have a friend who lives in Canada.","'who' already takes the place of 'she'."],
+  ["the thing what I want","the thing (that) I want / what I want","'what' already includes 'the thing'."],
+  ["the city where I grew up in","the city where I grew up / the city I grew up in","where already includes 'in'."],
+  ["He was late, that was annoying.","He was late, which was annoying.","Commenting on a whole sentence → , which"]
+ ],
+ opic:"Describing places and people: 'It's a small café that has big windows, which makes it really bright.'"
+}
+];
+
+/* ───────── 퀴즈 ─────────
+   t: pick(빈칸) · mean(뜻 고르기) · fix(자연스러운 문장) · situ(영어 상황)
+   o[0]이 정답 (화면에서 섞음) */
+const Q=(u,t,q,o,x)=>({u,t,q,o,x});
+const QUIZ=[
+Q("u1","pick","A: Can I call you later?\nB: Sure. Right now I ___ dinner.",["'m having","have","had","have had"],"Right now = in progress → -ing. 'have' here means eating (an action), so -ing is fine."),
+Q("u1","pick","A: What do you do?\nB: I ___ at a hospital. I'm a nurse.",["work","'m working","worked","have work"],"'What do you do?' asks about your job, your normal life → simple present."),
+Q("u1","mean","I'm living with my parents these days.",["It's a temporary situation right now.","I have always lived with my parents.","I lived with my parents in the past.","I will move in with my parents soon."],"these days + -ing = temporary, around now."),
+Q("u1","fix","Which one sounds natural?",["I know what you mean.","I'm knowing what you mean.","I am know what you mean.","I knowing what you mean."],"know is a state, not an action → no -ing."),
+Q("u1","pick","A: Any plans for Saturday?\nB: Yeah, I ___ my cousin. We already booked a table.",["'m meeting","meet","met","have met"],"A plan that's already arranged → -ing for the future."),
+Q("u1","mean","He's being really quiet today.",["He's not usually quiet, but today he is.","He is always a quiet person.","Someone made him quiet.","He was quiet yesterday."],"be being + adjective = acting this way now, not his normal self."),
+Q("u1","pick","I never ___ coffee after 3 p.m. It keeps me awake.",["drink","'m drinking","drank","have drunk"],"never = a routine → simple present."),
+Q("u1","pick","Shh! The baby ___.",["is sleeping","sleeps","slept","has slept"],"Shh! = it's happening right now."),
+Q("u1","mean","I'm thinking about changing jobs.",["I'm considering it. I haven't decided yet.","My opinion is that jobs should change.","I already changed jobs.","I change jobs often."],"I'm thinking about… = my mind is working on it. I think… = my opinion."),
+Q("u1","situ","Your friend calls. You're in the car with both hands on the wheel. What do you say?",["Sorry, I'm driving. Can I call you back?","Sorry, I drive. Can I call you back?","Sorry, I drove. Can I call you back?","Sorry, I've driven. Can I call you back?"],"It's happening at this moment → I'm driving."),
+
+Q("u2","pick","I ___ in this apartment since 2021.",["'ve lived","live","'m living","lived"],"since 2021 and still now → have p.p."),
+Q("u2","pick","A: How long ___ each other?\nB: Since college.",["have you known","do you know","are you knowing","did you know"],"A time line up to now + know (a state) → have known."),
+Q("u2","mean","I've worked here for three years.",["I started three years ago, and I still work here.","I worked here before, but I quit.","I will work here for three years.","I worked here three years ago."],"have p.p. + for = the line reaches now."),
+Q("u2","mean","I worked there for three years.",["I don't work there anymore.","I still work there.","I'm going to work there.","I work there sometimes."],"Simple past = the story is finished."),
+Q("u2","pick","I haven't seen her ___ ages.",["for","since","from","during"],"ages = a length of time → for."),
+Q("u2","pick","We've been friends ___ we were six.",["since","for","from","when"],"since + a starting point (a whole clause works too)."),
+Q("u2","fix","Which one sounds natural?",["I've had this phone for four years.","I have this phone for four years.","I'm having this phone for four years.","I had this phone since four years."],"have (own) is a state → have had + for."),
+Q("u2","pick","I ___ in Busan when I was a kid.",["lived","'ve lived","have been living","live"],"when I was a kid = a finished time → simple past."),
+Q("u2","fix","Which one sounds natural?",["How long have you been married?","How long are you married?","How long do you married?","How long you have been married?"],"How long + have you been…?"),
+Q("u2","situ","You meet someone at a party. You want to know when they started living in Seoul and how long it has lasted. What do you ask?",["How long have you lived in Seoul?","How long do you live in Seoul?","How long did you live in Seoul?","How long are you living in Seoul?"],"They still live there → the line reaches now → have p.p."),
+
+Q("u3","pick","I'm so tired. I ___ all day.",["'ve been working","work","'m work","was worked"],"An activity from this morning until now → have been -ing."),
+Q("u3","mean","You're all wet! Have you been swimming?",["I can see the result, so I guess you were swimming until just now.","Have you ever swum in your life?","Are you going to swim later?","Do you usually swim?"],"have been -ing + a visible result now."),
+Q("u3","pick","A: What have you been ___ lately?\nB: Not much. Just working.",["up to","up","doing to","making"],"What have you been up to? = What have you been doing lately? A very common greeting."),
+Q("u3","pick","She ___ three books this month.",["has read","has been reading","is reading","reads"],"A number of finished things → have p.p."),
+Q("u3","pick","I ___ English for two years, and I'm still learning.",["'ve been studying","study","studied","was studying"],"Still going + for → have been -ing."),
+Q("u3","fix","Which one sounds natural?",["I've known him for ten years.","I've been knowing him for ten years.","I'm knowing him for ten years.","I know him since ten years."],"know = a state → have known."),
+Q("u3","mean","I've been reading that book.",["I started it, and I'm not finished yet.","I finished the whole book.","I'm planning to read it.","I read it a long time ago."],"-ing = the activity, not the finished result."),
+Q("u3","pick","It ___ since this morning. Take an umbrella.",["'s been raining","rains","rained","is rain"],"Started this morning, still going → has been raining."),
+Q("u3","fix","Which one sounds natural?",["I've been feeling really stressed lately.","I'm feeling stressed since last month.","I feel stressed since last month.","I've been feel stressed lately."],"lately + up to now → have been -ing."),
+Q("u3","situ","Your coworker looks exhausted. You think they have been doing too much work recently. What do you say?",["You've been working too hard.","You work too hard yesterday.","You're worked too hard.","You've worked too hard since."],"A recent activity with a visible result → have been -ing."),
+
+Q("u4","pick","My phone ___ on the subway yesterday!",["got stolen","stole","was stealing","has stole"],"The phone received the action. Casual and sudden → got + p.p."),
+Q("u4","pick","I ___ in Gwangju, but I grew up in Seoul.",["was born","born","am born","borned"],"Always 'I was born'."),
+Q("u4","fix","Which one sounds natural?",["What happened?","What was happened?","What is happened?","What has been happened?"],"happen has no receiver → never passive."),
+Q("u4","pick","The meeting ___ to Friday. Did you get the email?",["has been moved","has been moving","is move","moved by"],"Someone moved it, the result matters now → has been + p.p."),
+Q("u4","mean","This song was written by my brother.",["My brother is the person who wrote it.","My brother sang it.","The song is about my brother.","My brother is writing it now."],"by + the doer."),
+Q("u4","pick","Sorry, you can't use this room. It ___ right now.",["'s being cleaned","cleans","is cleaning","cleaned"],"The room isn't cleaning anything. Someone is cleaning it now → is being + p.p."),
+Q("u4","fix","Which one sounds natural?",["I'm really interested in photography.","I'm really interesting in photography.","I really interest in photography.","I'm really interest in photography."],"How you feel → interested."),
+Q("u4","pick","We ___ lost on the way, so we were late.",["got","were getting","have","made"],"got lost = it happened to us."),
+Q("u4","mean","Is this seat taken?",["Is someone already using this seat?","Did someone take this seat to another place?","Can I take this seat home?","Do you want to sit down?"],"taken = someone already has it."),
+Q("u4","situ","You were waiting at the airport, and then the screen said your flight is not going to fly today. How do you tell your friend?",["My flight got canceled.","My flight canceled me.","My flight was canceling.","I got cancel my flight."],"The flight received the action → got canceled."),
+
+Q("u5","pick","This movie is so ___. Let's watch something else.",["boring","bored","bore","to bore"],"The movie causes the feeling → -ing."),
+Q("u5","pick","I'm so ___. I don't understand this map at all.",["confused","confusing","confuse","to confuse"],"You feel it → -ed."),
+Q("u5","mean","I got my hair cut.",["Someone, like a hairdresser, cut my hair.","I cut my own hair.","My hair is cutting.","I will cut my hair."],"get + thing + p.p. = someone did it for me."),
+Q("u5","pick","I bought a ___ car. It's only two years old.",["used","using","use","uses"],"used = someone already used it."),
+Q("u5","pick","Kimchi is a food ___ all over the world now.",["loved","loving","love","is loved"],"noun + p.p. = which is loved."),
+Q("u5","fix","Which one sounds natural?",["I was so embarrassed when I fell.","I was so embarrassing when I fell.","I embarrassed so much when I fell.","I was so embarrass when I fell."],"Your feeling → embarrassed."),
+Q("u5","mean","The door is locked.",["Someone locked it, and it's in that state now.","The door is locking itself.","The door can lock things.","You should lock the door."],"p.p. = a done state."),
+Q("u5","pick","I'm ___ with my homework. Let's go out!",["done","doing","do","did"],"I'm done = I finished."),
+Q("u5","fix","Which one sounds natural?",["Look at these photos taken in Jeju.","Look at these photos taking in Jeju.","Look at these photos took in Jeju.","Look at these photos are taken in Jeju."],"photos + taken = photos that were taken."),
+Q("u5","situ","You told a joke in a meeting and nobody laughed. Your face turned red. How did you feel?",["I was so embarrassed.","I was so embarrassing.","It was so embarrassed.","I embarrassed."],"Your feeling → -ed."),
+
+Q("u6","pick","A: ___ like something to drink?\nB: Just water, please.",["Would you","Will you","Do you","Are you"],"Would you like…? = the polite offer."),
+Q("u6","pick","If I ___ more time, I would learn the guitar.",["had","have","will have","would have"],"Imagining now → past form after if."),
+Q("u6","mean","I would help you if I could.",["I can't help you right now, sadly.","I will definitely help you.","I helped you before.","I always help you."],"would + if I could = it's not possible now."),
+Q("u6","mean","When I was little, my grandma would tell me stories every night.",["It was a repeated habit in the past.","She is going to tell me stories.","She wanted to tell stories but didn't.","She told me a story only once."],"would + past time + every night = a past habit."),
+Q("u6","pick","My car ___ start this morning, so I took a taxi.",["wouldn't","won't","don't","didn't would"],"wouldn't = it refused to work."),
+Q("u6","pick","He said he ___ call me, but he didn't.",["would","will","is going","does"],"will, seen from the past → would."),
+Q("u6","fix","Which one sounds natural?",["I'd rather stay home tonight.","I'd rather to stay home tonight.","I would rather staying home tonight.","I'd rather stayed home tonight."],"would rather + base verb."),
+Q("u6","mean","I would have called you, but my phone died.",["I didn't call you because my phone died.","I called you after my phone died.","I will call you when my phone is charged.","I usually call you."],"would have p.p. = it didn't happen."),
+Q("u6","pick","If I ___ you, I'd talk to her first.",["were","am","will be","would be"],"'If I were you' is the standard advice phrase. ('If I was you' is common in casual speech too.)"),
+Q("u6","fix","Which one sounds natural?",["I used to have long hair.","I would have long hair when I was a kid.","I would had long hair.","I use to having long hair."],"A past state → used to, not would."),
+Q("u6","situ","A friend invites you to a party. You really want to go. What's a warm way to say yes?",["I'd love to!","I would love.","I will love it to.","I love to go would."],"I'd love to! = yes, happily."),
+
+Q("u7","fix","Which one sounds natural?",["Do you know where the bathroom is?","Do you know where is the bathroom?","Do you know where does the bathroom is?","Do you know where is bathroom?"],"A question inside a sentence → normal order."),
+Q("u7","pick","Call me when you ___ home.",["get","will get","would get","are get"],"Future after when → present."),
+Q("u7","pick","I'm not sure ___ the store is open on Sundays.",["if","what","that","which"],"A yes/no question inside a sentence → if / whether."),
+Q("u7","pick","___ I need right now is a long vacation.",["What","That","Which","It"],"What I need = the thing that I need."),
+Q("u7","mean","Although it was expensive, I bought it.",["It was expensive, but I bought it anyway.","I bought it because it was expensive.","It was expensive, so I didn't buy it.","I bought it before it got expensive."],"although = even so, it still happened."),
+Q("u7","fix","Which one sounds natural?",["I don't know what he wants.","I don't know what does he want.","I don't know what he does want?","I don't know what wants he."],"Inside a sentence → he wants."),
+Q("u7","pick","I stayed home ___ I had a cold.",["because","so","although","but"],"A reason → because."),
+Q("u7","pick","Can you tell me what time ___?",["the movie starts","does the movie start","the movie does start","starts the movie"],"Normal order inside a sentence."),
+Q("u7","fix","Which one sounds natural?",["It was raining, but we went hiking.","Although it was raining, but we went hiking.","Although raining, but we went hiking.","It was raining, although but we went hiking."],"One connector is enough."),
+Q("u7","situ","You're on the street and need the subway. You stop a stranger politely. What do you say?",["Excuse me, do you know where the subway station is?","Excuse me, do you know where is the subway station?","Excuse me, where the subway station is?","Excuse me, you know where is subway?"],"Polite question inside a sentence → normal order."),
+
+Q("u8","pick","I have a friend ___ lives in Canada.",["who","which","what","whose"],"A person → who."),
+Q("u8","pick","That's the café ___ we first met.",["where","which","who","what"],"A place + a full clause → where."),
+Q("u8","pick","I have a coworker ___ husband is a chef.",["whose","who","who's","which"],"her husband → whose husband."),
+Q("u8","fix","Which one sounds natural?",["The movie I watched yesterday was amazing.","The movie I watched it yesterday was amazing.","The movie what I watched yesterday was amazing.","The movie who I watched yesterday was amazing."],"The name tag already points to the movie. No 'it'."),
+Q("u8","mean","He forgot my birthday, which made me sad.",["The fact that he forgot made me sad.","His birthday made me sad.","Something he forgot was sad.","I forgot his birthday."],", which = a comment on the whole sentence."),
+Q("u8","pick","That's not ___ I meant.",["what","which","that","who"],"what = the thing that."),
+Q("u8","fix","Which one sounds natural?",["This is the town I grew up in.","This is the town where I grew up in.","This is the town which I grew up.","This is the town what I grew up in."],"where already includes 'in'."),
+Q("u8","mean","The guy who called you is my boss.",["The man that phoned you is my boss.","My boss called the guy.","You called my boss.","The guy is calling my boss."],"who called you = the name tag on 'the guy'."),
+Q("u8","fix","Which one sounds natural?",["I need someone who can help me.","I need someone who he can help me.","I need someone which can help me.","I need someone can who help me."],"who takes the place of 'he'."),
+Q("u8","situ","You and your partner walk past the restaurant of your very first date. What do you say?",["This is the restaurant where we had our first date.","This is the restaurant which we had our first date.","This is the restaurant we had our first date in it.","This is where the restaurant we had our first date."],"A place + a full clause → where.")
+];
+
+/* ───────── 말하기 카드 ─────────
+   ko: 하고 싶은 말 · en: 원어민이 떠올릴 문장 · think: Think in English(영영 풀이)
+   trap: 한국식 사고로 만들기 쉬운 문장 · alt: 다른 표현
+   dlg/para/situ: 다른 반복(대화 · 단락 · 영어 상황퀴즈) */
+const CATS=[["home","집·아침"],["food","밥·카페"],["work","일·공부"],["feel","감정"],["plan","약속·계획"],["trouble","문제 생김"],["people","사람·장소"],["opic","오픽 단골"]];
+const SC=(id,cat,tag,ko,en,think,x={})=>Object.assign({id,cat,tag,ko,en,think},x);
+const CARDS=[
+SC("h01","home",null,"집이 좀 지저분하지? 미안.","Sorry for the mess.","A mess is a messy, untidy state. When people visit and your place isn't clean, this is the natural thing to say.",{trap:"My house is a little dirty.",
+  dlg:[["A","Come on in!"],["B","Thanks for having me."],["A","Sorry for the mess. I didn't have time to clean."]],
+  para:"My friend came over last night. My apartment was full of boxes because I just moved. The first thing I said was, \"Sorry for the mess.\"",
+  situ:"A friend visits your home, but there are clothes and dishes everywhere. What do you say when they walk in?",
+  more:["Sorry for the noise. (construction at your place)","Sorry for the wait. (you were late to reply)"]}),
+SC("h02","home",null,"나 방금 일어났어.","I just woke up.","just = a very short time ago. Natives use it a lot to say something happened a moment ago."),
+SC("h03","home","u1","나는 보통 7시에 일어나.","I usually get up at seven.","get up = leave your bed. usually = most days. It's a routine, so simple present.",{trap:"I am usually wake up at 7."}),
+SC("h04","home","u1","지금 씻는 중이야. 10분만!","I'm in the shower. Give me ten minutes!","in the shower = taking a shower right now. 'Give me + time' = please wait that long.",{alt:"I'm taking a shower right now."}),
+SC("h05","home",null,"오늘 늦잠 잤어.","I overslept today.","oversleep = sleep too long by mistake. If you sleep late on purpose to relax, say 'I slept in.'",{alt:"I slept in. (on purpose)"}),
+SC("h06","home","u7","폰 어디 뒀는지 모르겠네.","I don't know where I put my phone.","A question inside a sentence uses normal order: where I put, not where did I put.",{trap:"I don't know where did I put my phone."}),
+SC("h07","home","u3","요즘 잠을 잘 못 자.","I haven't been sleeping well lately.","This shows a situation that started a while ago and is still going on.",{alt:"I've been having trouble sleeping."}),
+SC("h08","home",null,"설거지는 내가 할게.","I'll do the dishes.","do the dishes = wash the plates, cups, and pans. 'I'll' = I decide now to do it."),
+SC("h09","home","u2","이 집 산 지 5년 됐어.","I've lived here for five years.","The line starts five years ago and reaches today. I still live here.",{alt:"I've been living here for five years.",trap:"I live here for five years."}),
+SC("h10","home",null,"나 그냥 집에 있을래.","I think I'll just stay in.","stay in = stay at home and not go out. 'I think I'll just…' sounds soft and relaxed.",{trap:"I will stay in my house."}),
+
+SC("f01","food",null,"물이면 돼요.","I'm good with water.","If you're good with something, you're happy with what you have. People say it when someone offers them more.",{trap:"Water is okay to me.",
+  dlg:[["A","Can I get you anything to drink?"],["B","I'm good with water, thanks."]],
+  para:"At the restaurant, the server asked if I wanted juice or soda. I don't drink soda, so I said I was good with water.",
+  situ:"A server asks what you'd like to drink. You only want the water already on the table. What do you say?",
+  more:["I'm good, thanks. (I don't need anything.)","I'm good with anything. (Anything is fine.)"]}),
+SC("f02","food",null,"배고파 죽겠어.","I'm starving.","starving = extremely hungry. People use it as a fun exaggeration.",{trap:"I'm hungry to die."}),
+SC("f03","food","u6","아이스 아메리카노 한 잔 주세요.","Can I get an iced Americano, please?","'Can I get…?' is the most common way to order in a café. 'I'd like…' is a bit more formal.",{alt:"I'd like an iced Americano, please.",trap:"Give me iced Americano."}),
+SC("f04","food","u4","여기 자리 있어요?","Is this seat taken?","taken = someone already has it. Use it before you sit next to a stranger.",{trap:"Is there a person here?"}),
+SC("f05","food",null,"뭐 먹고 싶어?","What do you feel like eating?","feel like + -ing = want to, right now. It's softer and more casual than 'want'."),
+SC("f06","food",null,"난 아무거나 좋아.","I'm good with anything.","= Anything is fine with me. You're happy with any choice.",{alt:"Anything works for me.",trap:"I like anything."}),
+SC("f07","food",null,"이거 진짜 맛있다.","This is so good.","'Delicious' is correct, but 'so good' is what people really say at the table."),
+SC("f08","food","u2","아침 이후로 아무것도 안 먹었어.","I haven't eaten anything since breakfast.","A gap from breakfast until now. Nothing has happened in that time."),
+SC("f09","food","u8","여기 내가 진짜 좋아하는 데야.","This is a place I really love.","'a place I really love' = a name tag on 'place'. No 'that' needed.",{alt:"This is one of my favorite places."}),
+SC("f10","food",null,"따로 계산할게요.","Can we pay separately?","separately = each person pays for their own food.",{alt:"Could we split the bill?"}),
+SC("f11","food",null,"커피 마시면 잠이 안 와.","Coffee keeps me awake.","English often makes the thing the subject: X keeps me awake. Think: what is doing the action?",{trap:"If I drink coffee, I can't sleep.",
+  dlg:[["A","Want a coffee?"],["B","No thanks. It's 9 p.m. Coffee keeps me awake."]],
+  para:"I love coffee, but I never drink it after lunch. Coffee keeps me awake until 2 a.m.",
+  situ:"Someone offers you coffee late in the evening. You don't want it because of your sleep. Explain why in four words.",
+  more:["Exercise keeps me healthy.","This job keeps me busy."]}),
+SC("f12","food",null,"저녁 먹으면서 얘기할까요?","Should we talk about it over dinner?","over = during. 'over dinner / over coffee / over lunch' means while eating or drinking.",{trap:"Can we talk about it while we are eating dinner?",
+  dlg:[["A","I want to hear about your trip."],["B","Should we talk about it over dinner?"]],
+  para:"My coworker and I had a lot to discuss. We were both hungry, so we talked about it over dinner.",
+  situ:"You and a friend need to plan a trip, and it's almost 7 p.m. Suggest discussing it while eating.",
+  more:["Let's catch up over coffee.","We talked over lunch."]}),
+
+SC("w01","work","u1","저 마케팅 일 해요.","I work in marketing.","work in + a field = your area of work. 'work at + a company' = where you work.",{trap:"My job is marketing work."}),
+SC("w02","work","u1","이번 주는 재택근무해.","I'm working from home this week.","this week + -ing = temporary. It's not your normal routine."),
+SC("w03","work","u2","거기서 일한 지 3년 됐어.","I've worked there for three years.","Started three years ago, still true now.",{trap:"It's been 3 years that I work there."}),
+SC("w04","work","u3","영어 공부한 지 6개월 됐어.","I've been studying English for six months.","An activity that started six months ago and is still going.",{trap:"I'm studying English for six months."}),
+SC("w05","work","u4","회의가 금요일로 옮겨졌대.","The meeting got moved to Friday.","Someone moved it. 'got moved' is the casual version of 'was moved'.",{alt:"The meeting has been moved to Friday."}),
+SC("w06","work",null,"마감이 내일이라 정신없어.","My deadline is tomorrow, so I'm swamped.","swamped = you have too much work to do.",{alt:"I'm super busy."}),
+SC("w07","work","u7","무슨 말인지 잘 모르겠어요.","I'm not sure what you mean.","what you mean = the meaning you want to say. It's polite and soft.",{trap:"I don't understand your word."}),
+SC("w08","work","u6","다시 한 번 말해 주시겠어요?","Could you say that again?","Could you…? = a polite request.",{alt:"Sorry, could you repeat that?"}),
+SC("w09","work","u1","이직할까 생각 중이야.","I'm thinking about changing jobs.","I'm thinking about… = my mind is working on it, but I haven't decided.",{trap:"I think change my job."}),
+SC("w10","work","u8","제가 말씀드렸던 그 프로젝트예요.","This is the project I told you about.","'the project I told you about' = the name tag tells you which project. 'about' goes to the end."),
+SC("w11","work",null,"오늘은 여기까지 하죠.","Let's call it a day.","call it a day = stop working for today.",{trap:"Let's finish here today."}),
+SC("w12","work",null,"요즘 젊은 사람들은 결혼을 미루고 있어.","A lot of young people are putting off getting married.","put off = do it later, not now. 'are putting off' = it's a trend these days.",{
+  dlg:[["A","My cousin is 35 and still single."],["B","That's normal now. A lot of young people are putting off getting married."]],
+  para:"Housing prices keep going up, and jobs are not stable. That's why a lot of young people are putting off getting married.",
+  situ:"You're talking with a coworker about how people now wait longer before having a wedding. What might you say?",
+  more:["I keep putting off my homework.","Don't put it off any longer."]}),
+
+SC("e01","feel","u5","완전 심심해.","I'm so bored.","bored = how you feel. Don't say 'I'm boring' (that means you make others bored!).",{trap:"I'm so boring."}),
+SC("e02","feel","u5","그 영화 진짜 지루했어.","That movie was so boring.","boring = the thing that causes the feeling."),
+SC("e03","feel","u5","너무 창피했어.","I was so embarrassed.","embarrassed = you feel shy and uncomfortable because people saw something.",{trap:"I was so shame."}),
+SC("e04","feel",null,"다행이다.","That's a relief.","relief = the good feeling when a worry goes away.",{alt:"Thank goodness."}),
+SC("e05","feel","u3","요즘 스트레스 엄청 받고 있어.","I've been really stressed out lately.","lately + have been = something that's been going on recently.",{trap:"I receive a lot of stress."}),
+SC("e06","feel",null,"기분이 좀 별로야.","I'm not in a good mood.","in a good mood = feeling happy. Simple and natural.",{alt:"I'm not feeling great."}),
+SC("e07","feel","u5","그 얘기 듣고 깜짝 놀랐어.","I was really surprised to hear that.","surprised = how you felt. 'to hear that' = the reason."),
+SC("e08","feel","u6","너라면 어떻게 할 거야?","What would you do if you were me?","would + if = imagining. You're asking them to imagine your situation.",{alt:"What would you do in my shoes?"}),
+SC("e09","feel","u6","그러면 정말 좋겠다.","That would be great.","would = imagining it happens. Polite and warm."),
+SC("e10","feel",null,"신경 쓰지 마.","Don't worry about it.","= It's not a problem. You don't need to feel bad.",{alt:"Never mind."}),
+SC("e11","feel",null,"너 때문에 웃었잖아.","You made me laugh.","make + someone + verb = cause them to do it. English starts with the person who caused it.",{trap:"I laughed because of you.",
+  dlg:[["A","Why are you smiling?"],["B","You made me laugh with that video."]],
+  para:"I had a terrible day at work. Then my little brother did a silly dance in the kitchen. He really made me laugh.",
+  situ:"Your friend tells a funny story, and you can't stop laughing. Tell them who is responsible, starting with 'You'.",
+  more:["You made me cry.","That movie made me think."]}),
+SC("e12","feel",null,"나 원래 걷는 거 별로 안 좋아해.","I'm not really a walker.","English often says what kind of person you are: a walker, a morning person, a coffee person.",{trap:"I don't tend to walk.",
+  dlg:[["A","Let's walk there. It's only 20 minutes."],["B","Can we take a taxi? I'm not really a walker."]],
+  para:"My friends love hiking, but I'm not really a walker. I'd rather sit in a café and talk.",
+  situ:"Your friend wants to walk to the store, but you don't enjoy walking. Describe yourself as a type of person.",
+  more:["I'm not a morning person.","I'm a coffee person."]}),
+
+SC("p01","plan","u1","이번 주말에 뭐 해?","What are you doing this weekend?","-ing for plans. You're asking what is already planned.",{trap:"What do you do this weekend?"}),
+SC("p02","plan","u1","내일 친구 만나기로 했어.","I'm meeting a friend tomorrow.","-ing = a plan that's already set.",{trap:"I decided to meet my friend tomorrow."}),
+SC("p03","plan","u7","시간 되면 같이 가자.","If you're free, let's go together.","If + present = a real possibility.",{alt:"Let's go together if you have time."}),
+SC("p04","plan","u6","가고 싶은데 못 갈 것 같아.","I'd love to, but I don't think I can make it.","make it = be able to come. 'I'd love to' keeps it warm."),
+SC("p05","plan","u6","차라리 집에 있을래.","I'd rather stay home.","I'd rather = I prefer to."),
+SC("p06","plan","u7","도착하면 연락해.","Text me when you get there.","when + present for the future. 'get there' = arrive.",{trap:"When you will arrive, contact me."}),
+SC("p07","plan","u1","좀 늦을 것 같아. 미안!","I'm running a little late. Sorry!","running late = you're on your way but late. It's happening now → -ing.",{trap:"I think I will be late a little."}),
+SC("p08","plan","u8","우리 처음 만났던 카페 기억나?","Do you remember the café where we first met?","where we first met = the name tag on 'the café'."),
+SC("p09","plan","u6","시간 있었으면 갔을 텐데.","I would have gone if I'd had time.","would have p.p. = imagining a different past. I didn't go."),
+SC("p10","plan",null,"몇 시가 괜찮아?","What time works for you?","work for you = is good or possible for you.",{trap:"What time is okay to you?"}),
+SC("p11","plan","u6","잠깐 들렀다 가는 건 괜찮겠지.","I guess a quick visit wouldn't hurt.","If something wouldn't hurt, it's not a bad idea. It might even help.",{trap:"Is it okay to stay a short time?",
+  dlg:[["A","Do you want to stop by your grandma's on the way?"],["B","I guess a quick visit wouldn't hurt."]],
+  para:"I was tired, but my aunt lives near the station. I thought a quick visit wouldn't hurt, so I stopped by for tea.",
+  situ:"You're not sure about visiting someone, but you decide a short visit is probably fine. What do you say?",
+  more:["It wouldn't hurt to ask.","A little rest wouldn't hurt."]}),
+
+SC("t01","trouble",null,"지하철에서 폰 잃어버렸어.","I lost my phone on the subway.","on the subway = inside the train."),
+SC("t02","trouble","u4","내 자전거 도둑맞았어.","My bike got stolen.","The bike received the action. 'got stolen' sounds sudden and casual.",{trap:"I was stolen my bike."}),
+SC("t03","trouble","u4","비행기 취소됐어.","My flight got canceled.","The flight received the action. Something happened to it."),
+SC("t04","trouble","u6","아침에 차 시동이 안 걸렸어.","My car wouldn't start this morning.","wouldn't = it refused to work."),
+SC("t05","trouble","u4","길 잃었어.","I got lost.","got lost = it happened to me. 'I'm lost' = I'm in that state now."),
+SC("t06","trouble",null,"폰 배터리 다 됐어.","My phone died.","die = stop working because the battery is empty.",{trap:"My phone battery is finished."}),
+SC("t07","trouble","u5","폰 고쳤어. (수리점에서)","I got my phone fixed.","get + thing + p.p. = someone did it for me."),
+SC("t08","trouble","u3","아까부터 계속 비 와.","It's been raining for a while.","It started a while ago, and it's still going."),
+SC("t09","trouble","u4","그거 어제 일어난 일이야.","That happened yesterday.","happen never takes 'was'.",{trap:"That was happened yesterday."}),
+SC("t10","trouble","u5","머리 잘랐어. (미용실에서)","I got my hair cut.","Someone cut it for you.",{alt:"I got a haircut."}),
+
+SC("r01","people","u8","캐나다 사는 친구가 있어.","I have a friend who lives in Canada.","who lives in Canada = the name tag on 'a friend'.",{trap:"I have a Canada-living friend."}),
+SC("r02","people","u8","아빠가 파일럿인 친구 알지?","You know my friend whose dad is a pilot?","whose = his/her. 'whose dad' = her dad."),
+SC("r03","people","u8","여기가 내가 자란 동네야.","This is the neighborhood I grew up in.","Preposition at the end: 'grew up in'."),
+SC("r04","people","u1","걔 원래 조용한데 오늘 좀 이상하게 굴어.","He's usually quiet, but he's being weird today.","be being = acting that way now, not his normal self."),
+SC("r05","people","u2","걔랑은 고등학교 때부터 알았어.","I've known her since high school.","know = a state, so have known + since."),
+SC("r06","people","u4","우리 아파트는 10년 전에 지어졌어.","My apartment was built about ten years ago.","The apartment received the action → was built."),
+SC("r07","people","u8","창이 커서 밝은 카페야.","It's a café with big windows, which makes it really bright.",", which = your comment on what you just said."),
+SC("r08","people","u7","내가 제일 좋아하는 건 거기 분위기야.","What I like most is the vibe there.","What I like most = the thing that I like most. vibe = the feeling of a place.",{alt:"What I like most is the atmosphere."}),
+SC("r09","people","u1","걔는 맨날 지각해. 짜증나.","He's always showing up late.","always + -ing = it happens too much, and it annoys me."),
+SC("r10","people","u4","저 서울에서 태어났어요.","I was born in Seoul.","Always 'I was born'.",{trap:"I born in Seoul."}),
+
+SC("o01","opic","u1","저는 IT 회사에 다녀요.","I work at an IT company.","work at + a company. Simple present = your normal life.",{alt:"I'm currently working at an IT company."}),
+SC("o02","opic","u1","가족이랑 아파트에 살아요.","I live in an apartment with my family.","Simple present = a fact about your life."),
+SC("o03","opic","u2","거기 산 지 꽤 됐어요.","I've lived there for quite a while.","for quite a while = for a fairly long time, until now."),
+SC("o04","opic","u3","요즘 운동에 빠져 있어요.","I've been really into working out lately.","be into = really like. have been + lately = it's been going on recently.",{trap:"Recently I'm falling into exercise."}),
+SC("o05","opic","u6","어렸을 땐 매일 밖에서 놀곤 했어요.","When I was a kid, I would play outside every day.","would + a past time = a repeated habit."),
+SC("o06","opic","u6","예전엔 머리가 길었어요.","I used to have long hair.","used to = it was true in the past, not now. For states, not would."),
+SC("o07","opic","u7","그래서 제가 그 공원을 좋아해요.","That's why I love that park.","That's why… = a great way to finish an answer."),
+SC("o08","opic",null,"솔직히 잘 기억이 안 나요.","To be honest, I don't really remember.","To be honest = I'm telling you the truth. A natural way to buy time."),
+SC("o09","opic","u8","절대 못 잊을 일이 하나 있어요.","There's one thing I'll never forget.","the name tag 'I'll never forget' describes 'one thing'.",{alt:"One thing really stands out."}),
+SC("o10","opic","u6","시간이 더 있다면 여행을 더 할 거예요.","If I had more time, I would travel more.","Imagining → had + would."),
+SC("o11","opic","u4","그 공연 비 때문에 취소됐어요.","The concert got canceled because of the rain.","The concert received the action → got canceled."),
+SC("o12","opic","u6","질문 몇 개 드려도 될까요?","Would it be okay if I asked you a few questions?","Would it be okay if I + past = very polite. Good for OPIc role-plays.",{alt:"Can I ask you a few questions?"}),
+SC("o13","opic",null,"음, 뭐라고 해야 하지…","Hmm, how should I put it…","A filler to buy time. 'put' here means say or express. Much better than silence!",{alt:"Let me think…"}),
+SC("o14","opic","u7","제가 이 동네를 좋아하는 이유는 조용해서예요.","The reason I like this neighborhood is that it's quiet.","The reason (why) I… is that… = a clear way to give a reason."),
+];
+/* ───────── 저장 ───────── */
+const LS="ttyEnglish.v1";
+const today=()=>new Date().toLocaleDateString("sv-SE");
+const addDays=(d,n)=>{const t=new Date(d+"T12:00:00");t.setDate(t.getDate()+n);return t.toLocaleDateString("sv-SE")};
+const blank=()=>({v:1,updatedAt:0,xp:0,goal:100,days:{},read:{},qs:{},wrong:[],srs:{},mine:[]});
+let S=blank();
+try{const raw=localStorage.getItem(LS);if(raw)S=Object.assign(blank(),JSON.parse(raw))}catch(e){}
+let remote=null,saveT=null,syncState="local";
+function save(){S.updatedAt=Date.now();try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}
+  if(remote){clearTimeout(saveT);saveT=setTimeout(pushRemote,1500)}}
+let pushing=false,again=false;
+async function pushRemote(){if(!remote)return;if(pushing){again=true;return}pushing=true;
+  try{await remote.set(JSON.parse(JSON.stringify(S)));setSync("on")}catch(e){setSync("err")}
+  pushing=false;if(again){again=false;pushRemote()}}
+function setSync(s){syncState=s;const el=document.getElementById("sync");if(!el)return;
+  el.className="sync"+(s==="on"?" on":"");el.textContent=s==="on"?"☁ 계정에 저장 중":s==="err"?"이 기기에만 저장됨":"이 기기에 저장"}
+(async()=>{try{if(!window.claude?.use)return;const [user,db]=await Promise.all([claude.use("user"),claude.use("db")]);
+  if(!user||!db)return;const id=await user.id();if(!id)return;
+  const ref=db.doc("data/users/"+id+"/state");const snap=await ref.get();remote=ref;
+  if(snap.exists){const r=snap.data();if((r.updatedAt||0)>(S.updatedAt||0)){S=Object.assign(blank(),JSON.parse(JSON.stringify(r)));try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}render()}else if(S.updatedAt>(r.updatedAt||0))pushRemote()}
+  else if(S.updatedAt)pushRemote();setSync("on")}catch(e){setSync("err")}})();
+
+/* ───────── 도우미 ───────── */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const hl=s=>esc(s).replace(/\[\[(.+?)\]\]/g,'<mark class="hl">$1</mark>');
+const plain=s=>String(s).replace(/\[\[|\]\]/g,"");
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const unitOf=id=>UNITS.find(u=>u.id===id);
+function toast(t){const d=document.createElement("div");d.className="toast";d.textContent=t;document.body.append(d);setTimeout(()=>d.remove(),2200)}
+function pop(t,c){const d=document.createElement("div");d.className="pop "+c;d.textContent=t;document.body.append(d);setTimeout(()=>d.remove(),950)}
+function gain(n,why){S.xp+=n;const d=today();S.days[d]=(S.days[d]||0)+n;save();refreshTop();if(why)pop("+"+n+" XP","b")}
+function streak(){let n=0,d=today();if(!S.days[d])d=addDays(d,-1);while(S.days[d]){n++;d=addDays(d,-1)}return n}
+const LEVELS=[["NL",0],["NM",100],["NH",300],["IL",600],["IM1",1000],["IM2",1600],["IM3",2400],["IH",3500],["AL",5000]];
+function level(){let i=0;LEVELS.forEach((l,k)=>{if(S.xp>=l[1])i=k});return i}
+
+/* 발음 듣기 (브라우저 음성) */
+let VO=null;
+const clean=t=>plain(t).replace(/[→✗✓]/g,". ").replace(/ \/ /g,". ");
+function pickVoice(){const vs=speechSynthesis.getVoices();VO=vs.find(v=>/en[-_]US/i.test(v.lang)&&/Samantha|Google US|Aria|Jenny|Natural/i.test(v.name))||vs.find(v=>/en[-_]US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null}
+const hasTTS="speechSynthesis" in window;
+if(hasTTS){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+function speak(t,slow){if(!hasTTS){toast("이 브라우저는 읽어주기를 지원하지 않아요. 사전 링크로 들어 보세요.");return}
+  speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(clean(t));u.lang="en-US";if(VO)u.voice=VO;u.rate=slow?.72:.95;speechSynthesis.speak(u)}
+const sayBtn=(t,slow=true)=>`<button class="say" data-say="${esc(plain(t))}" aria-label="원어민 발음 듣기">🔊</button>`+(slow?`<button class="say" data-say="${esc(plain(t))}" data-slow="1" aria-label="천천히 듣기">🐢</button>`:"");
+
+/* 영영사전 · 실제 발음 링크 */
+function dictLinks(t){const p=plain(t).trim();const w=p.split(/\s+/).length;const q=encodeURIComponent(p.toLowerCase().replace(/[.?!,]+$/,""));
+  const L=[];if(w<=3){L.push(["Cambridge",`https://dictionary.cambridge.org/dictionary/english/${q.replace(/%20/g,"-")}`],["Oxford",`https://www.oxfordlearnersdictionaries.com/search/english/?q=${q}`],["Longman",`https://www.ldoceonline.com/search/english/direct/?q=${q}`])}
+  L.push(["YouGlish 원어민 영상",`https://youglish.com/pronounce/${encodeURIComponent(p.replace(/[.?!]+$/,""))}/english/us`]);
+  return `<div class="row">${L.map(([n,u])=>`<a class="btn sm ghost" href="${u}" target="_blank" rel="noopener">${n} ↗</a>`).join("")}</div>`}
+
+/* 내 목소리 녹음 → 원어민과 비교 */
+function recBox(t){return `<div class="rec card" style="padding:12px 14px;gap:8px;background:var(--bub);border:0">
+  <div class="row" style="justify-content:space-between"><span class="lbl b">Shadowing · 따라 말하기</span>${sayBtn(t)}</div>
+  <div class="row"><button class="btn sm" data-act="rec">🎙 녹음하기</button><label class="btn sm ghost">📱 녹음 앱으로<input type="file" accept="audio/*" data-act="recfile" hidden></label></div>
+  <div class="recout row"></div>
+  <p class="note" style="margin:0">원어민 → 내 목소리 → 원어민 순서로 번갈아 들어 보세요. 녹음은 이 화면에만 있고 저장되지 않아요.</p></div>`}
+let mrec=null;
+async function startRec(btn){const box=btn.closest(".rec"),out=box.querySelector(".recout");
+  if(mrec&&mrec.state==="recording"){mrec.stop();return}
+  try{const st=await navigator.mediaDevices.getUserMedia({audio:true});const ch=[];mrec=new MediaRecorder(st);
+    mrec.ondataavailable=e=>ch.push(e.data);
+    mrec.onstop=()=>{st.getTracks().forEach(t=>t.stop());showRec(out,new Blob(ch,{type:mrec.mimeType}));btn.textContent="🎙 다시 녹음"};
+    mrec.start();btn.textContent="⏹ 녹음 멈추기"}
+  catch(e){out.innerHTML=`<p class="note" style="margin:0">이 화면에선 마이크를 바로 켤 수 없어요. 옆의 <b>📱 녹음 앱으로</b>를 누르면 휴대폰 녹음기가 열리고, 녹음을 마치면 여기서 바로 들을 수 있어요.</p>`}}
+function showRec(out,blob){out.innerHTML="";const a=document.createElement("audio");a.controls=true;a.src=URL.createObjectURL(blob);a.style.width="100%";a.style.maxWidth="420px";out.append(a)}
+
+/* ───────── Claude에게 묻기 ───────── */
+let sampleP=null;
+const getSample=()=>sampleP||(sampleP=(window.claude?.use?claude.use("sample"):Promise.resolve(null)).catch(()=>null));
+let aiOff=false;
+function aiErr(e){const c=e?.code;if(["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed"].includes(c)){aiOff=true;return "이 화면에서는 AI를 쓸 수 없어요. 아티팩트 메뉴의 권한에서 Claude 사용을 허용하면 켜집니다."}
+  if(c==="rate_limited")return "AI 사용량이 잠깐 찼어요. 조금 뒤에 다시 눌러 주세요.";if(c==="session_expired")return "다시 로그인한 뒤 눌러 주세요.";if(c==="invalid_json")return "답이 깨져서 왔어요. 한 번 더 눌러 주세요.";if(c==="cancelled")return "";return "AI가 답을 못 했어요. 한 번 더 눌러 주세요."}
+const RULE="Rules: Explain ONLY in simple English (CEFR A2-B1 words). Never write Korean, never translate into Korean. Focus on meaning, feeling, and when people really say it, not grammar terms. Use natural, spoken, American English.";
+async function aiJSON(prompt,el){const s=await getSample();if(!s){el.innerHTML=`<p class="note">AI는 Claude 앱이나 claude.ai에서 열었을 때 켜져요.</p>`;return null}
+  el.innerHTML=`<p class="note">Thinking… (보통 10~30초)</p>`;try{const r=await s.json(prompt,{modelTier:"default"});return r}catch(e){el.innerHTML=`<p class="note">${esc(aiErr(e))}</p>`;return null}}
+async function aiText(prompt,el){const s=await getSample();if(!s){el.textContent="AI는 Claude 앱이나 claude.ai에서 열었을 때 켜져요.";return}
+  el.textContent="Thinking…";try{await s(prompt,{onText:({text})=>{el.textContent=text}})}catch(e){el.textContent=(e.text||"")+"\n"+aiErr(e)}}
+
+const P={
+ say:t=>`You are a friendly English speaking coach for a Korean adult preparing for the OPIc test (goal: IH to AL). The learner wants to say this in everyday spoken English:\n"""${t}"""\nGive what a native speaker would really say in that situation (not word-for-word translation). ${RULE}\nReply with only JSON: {"main":"the best natural sentence","others":[{"en":"another natural way","feel":"when you'd use it, max 12 words"}],"think":"Think in English: what the main sentence really means and when people say it, 2 simple sentences","trap":"a word-for-word sentence a Korean learner might make by mistake, or empty","chunks":[{"chunk":"key phrase","meaning":"simple English meaning"}],"examples":["2 other situations using the key phrase"],"idea":"which grammar feeling it uses in one short line, or empty"}`,
+ explain:t=>`Explain this English word, phrase, or sentence like a learner's dictionary for a Korean learner of English:\n"""${t}"""\nIf it's a sentence, explain what the speaker means and the feeling behind it. ${RULE}\nReply with only JSON: {"term":"the word/phrase/sentence","kind":"word|phrase|sentence","simple":"one-line simple meaning","more":"2-3 sentences on how and when people use it, and the nuance","examples":["3 natural spoken examples in different situations"],"similar":["up to 3 similar words or phrases"],"careful":"one common confusion or mistake, or empty"}`,
+ check:(mine,ko,en)=>`A Korean learner is practicing speaking English.${ko?` They wanted to say this (written in Korean): "${ko}".`:""}${en?` A model answer is: "${en}".`:""}\nThey said:\n"""${mine}"""\nJudge it like a kind native-speaker friend: does the meaning come across, and does it sound natural? ${RULE}\nReply with only JSON: {"verdict":"natural|ok|unnatural|wrong-meaning","comment":"1-2 encouraging, honest sentences","better":"a more natural version (same as theirs if already natural)","fixes":[{"from":"part they said","to":"better part","why":"short simple reason"}]}`,
+ examples:(u,topic)=>`Make 5 natural spoken English sentences a Korean adult could really use in daily conversation or the OPIc test.\nIdea to practice: ${u.en} — ${u.big}\nTopic or situation: ${topic||"everyday life"}\nEach sentence max 16 words, casual and real. ${RULE}\nReply with only JSON: {"items":[{"en":"sentence","point":"which part shows the idea and what it means, max 15 words"}]}`,
+ reps:(en,think)=>`Help a learner repeat one English expression in different situations, so they learn when to use it.\nExpression: "${en}"${think?`\nMeaning: ${think}`:""}\n${RULE}\nReply with only JSON: {"dlg":[["A","line"],["B","line"],["A","line"],["B","line that uses the expression"]],"para":"a short 3-sentence story in natural spoken English that uses the expression","situ":"an English description of a situation (start with 'You…') where you'd say it, without giving the expression","more":["2 short variations of the expression for other situations"]}`,
+ ask:(u,q)=>`You are a kind English tutor. The learner is studying "${u.en}": ${u.big}\nAnswer their question in simple English with 2-3 short natural spoken examples. Keep it under 130 words. ${RULE}\nQuestion: ${q}`
+};
+
+/* ───────── 상단 ───────── */
+let MODE="home";
+const TABS=[["home","오늘","Today"],["grammar","문법","Grammar"],["speak","말하기","Speak"],["quiz","퀴즈","Quiz"],["coach","AI 코치","Coach"]];
+function refreshTop(){const el=$("#statline");if(!el)return;const lv=LEVELS[level()][0];
+  el.innerHTML=`<span>🔥 연속 <b>${streak()}</b>일</span><span>오늘 <b>${S.days[today()]||0}</b>/${S.goal} XP</span><span>레벨 <b>${lv}</b></span><span>총 <b>${S.xp.toLocaleString()}</b> XP</span><span class="sync" id="sync"></span>`;setSync(syncState)}
+function tabs(){$("#tabs").innerHTML=TABS.map(([k,a,b])=>`<button data-tab="${k}" aria-pressed="${MODE===k}">${a}<small>${b}</small></button>`).join("")}
+function go(m,arg){MODE=m;tabs();VIEWS[m](arg);window.scrollTo({top:0})}
+function render(){refreshTop();tabs();VIEWS[MODE]()}
+
+/* ───────── 오늘 ───────── */
+function dueCards(){const d=today();return allCards().filter(c=>S.srs[c.id]&&S.srs[c.id].d<=d)}
+function newCards(){return allCards().filter(c=>!S.srs[c.id])}
+function unitAcc(id){const ids=QUIZ.map((q,i)=>[q,i]).filter(([q])=>q.u===id).map(([,i])=>i);let c=0,t=0;ids.forEach(i=>{const s=S.qs[i];if(s){c+=s.c;t+=s.c+s.w}});return t?{p:Math.round(c/t*100),t}:null}
+function weakest(){let best=null;UNITS.forEach(u=>{const a=unitAcc(u.id);const v=a?a.p:-1;if(best===null||v<best.v)best={u,v}});return best.u}
+const VIEWS={};
+VIEWS.home=()=>{const td=S.days[today()]||0,pct=Math.min(100,Math.round(td/S.goal*100)),li=level(),lv=LEVELS[li],nx=LEVELS[li+1];
+  const wk=[...Array(7)].map((_,i)=>{const d=addDays(today(),i-6);const v=S.days[d]||0;return{d,v}});const mx=Math.max(S.goal,...wk.map(w=>w.v));
+  const due=dueCards().length,wu=weakest();
+  $("#stage").innerHTML=`
+  <div class="hero">
+   <section class="card today"><div class="sec-h"><span class="lbl">오늘의 목표</span><div class="goalpick">하루 ${[50,100,150].map(g=>`<button data-goal="${g}" aria-pressed="${S.goal===g}">${g}</button>`).join("")} XP</div></div>
+    <div class="big">${td}<small>/ ${S.goal} XP</small></div>
+    <div class="meter ok"><i style="width:${pct}%"></i></div>
+    <p class="note" style="margin:0">${pct>=100?"오늘 목표 달성! 남은 시간은 보너스예요.":td?`목표까지 ${S.goal-td} XP. 카드 몇 장이면 돼요.`:"작게 시작해요. 말하기 카드 10장이면 대략 60 XP예요."}</p>
+    <div class="week">${wk.map(w=>`<div class="${w.v>=S.goal?"hit":""} ${w.d===today()?"now":""}"><i style="height:${Math.max(3,Math.round(w.v/mx*34))}px"></i><span>${"일월화수목금토"[new Date(w.d+"T12:00").getDay()]}</span></div>`).join("")}</div></section>
+   <section class="card ladder"><span class="lbl b">말하기 레벨</span>
+    <div class="row" style="align-items:baseline;gap:10px"><span class="lvname">${lv[0]}</span><span class="note">${nx?`${nx[0]}까지 ${nx[1]-S.xp} XP`:"최고 단계!"}</span></div>
+    <div class="rungs">${LEVELS.map((l,i)=>`<div class="rung ${i<li?"got":""} ${i===li?"cur":""}">${l[0]}</div>`).join("")}</div>
+    <p class="note" style="margin:0">오픽 등급 이름을 빌린 게임 레벨이에요. 실제 점수는 아니에요.</p></section>
+  </div>
+  <section class="card"><div class="sec-h"><h2>오늘 할 일</h2><span class="note">위에서부터 하나씩</span></div>
+   <div class="mission">
+    <button class="mis" data-go="speak" data-arg="due"><span class="n">${due||Math.min(10,newCards().length)}</span><b>말하기 ${due?"복습":"새 카드"}</b><span>${due?"오늘 다시 볼 차례인 문장":"한국말을 보고 바로 영어로"}</span></button>
+    <button class="mis blue" data-go="unit" data-arg="${wu.id}"><span class="n">${wu.no}</span><b>${esc(wu.ko)}</b><span>${unitAcc(wu.id)?`정답률 ${unitAcc(wu.id).p}%. 지금 가장 약한 단원`:"아직 안 풀어 본 단원"}</span></button>
+    <button class="mis green" data-go="quiz" data-arg="${wu.id}"><span class="n">10</span><b>퀴즈 10문제</b><span>방금 본 단원으로 확인하기</span></button>
+   </div></section>
+  <section class="card"><div class="sec-h"><h2>약한 곳 지도</h2><span class="note">퀴즈 정답률 · 60% 미만은 빨강</span></div>
+   <div class="weak">${UNITS.map(u=>{const a=unitAcc(u.id);return `<button class="wk ${a&&a.p<60?"hot":""}" data-go="unit" data-arg="${u.id}"><span class="no">UNIT ${u.no}${S.read[u.id]?" · 읽음":""}</span><b>${esc(u.ko)}</b><div class="meter ${a&&a.p<60?"red":"ok"}"><i style="width:${a?a.p:0}%"></i></div><span class="pct">${a?a.p+"% · "+a.t+"문제":"아직 안 풂"}</span></button>`}).join("")}</div></section>
+  <section class="card method"><span class="lbl b">영어식 사고를 기르는 3단계</span>
+   <ol class="steps3"><li><b>① 통째로 받아들이기</b>한국어로 쪼개지 말고 문장 하나를 그대로. 뜻은 Think in English 풀이로.</li><li><b>② 다른 반복</b>같은 표현을 대화 → 짧은 글 → 영어 상황 퀴즈로 다시 만나기. 말하기 탭의 ‘다른 반복’.</li><li><b>③ 매일, 내 속도로</b>하루 목표는 작게. 10분이라도 매일 하는 게 이겨요.</li></ol>
+   <p class="note" style="margin:0">참고: 러너블 「영어식 사고를 기르는 3단계」</p></section>`};
+
+/* ───────── 문법 ───────── */
+function pic(k){const W=600,H=150;const ax=`<line class="sv-axis" x1="30" y1="96" x2="570" y2="96"/><text x="30" y="124" class="t-m">past</text><text x="540" y="124" class="t-m">future</text><line class="sv-now" x1="380" y1="30" x2="380" y2="110"/><text x="364" y="24" class="t-red">NOW</text>`;
+ const svg=b=>`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="개념 그림">${b}</svg>`;
+ if(k==="now")return svg(ax+[80,150,220,290,460,530].map(x=>`<circle cx="${x}" cy="96" r="7" class="sv-inkf"/>`).join("")+`<text x="80" y="70" class="t-b">I drink coffee every day.</text><text x="80" y="86" class="t-m">(dots all along the line = habit)</text><path class="sv-acc" d="M340 60 q10 -12 20 0 t20 0 t20 0 t20 0"/><text x="330" y="48" class="t-acc">I'm drinking it now.</text>`);
+ if(k==="line")return svg(ax+`<circle cx="140" cy="96" r="8" class="sv-accf"/><line class="sv-acc" x1="140" y1="96" x2="380" y2="96"/><polygon points="380,86 396,96 380,106" class="sv-accf"/><text x="110" y="74" class="t-acc">since 2019</text><text x="210" y="74" class="t-b">I've lived here (and still do)</text><text x="200" y="140" class="t-m">for seven years ←——→</text>`);
+ if(k==="zigzag")return svg(ax+`<polyline class="sv-acc" points="140,96 160,70 180,96 200,70 220,96 240,70 260,96 280,70 300,96 320,70 340,96 360,70 380,96"/><text x="140" y="50" class="t-acc">I've been running…</text><text x="396" y="70" class="t-b">→ I'm sweaty now</text><text x="140" y="140" class="t-m">the activity itself, up to now</text>`);
+ if(k==="spot")return svg(`<circle cx="120" cy="80" r="30" class="sv-faint"/><text x="86" y="84" class="t-m">someone?</text><line class="sv-acc" x1="160" y1="80" x2="330" y2="80"/><polygon points="330,70 346,80 330,90" class="sv-accf"/><text x="190" y="66" class="t-m">stole</text><ellipse cx="450" cy="80" rx="110" ry="46" class="sv-mark"/><text x="390" y="78" class="t-b">My bike</text><text x="390" y="98" class="t-acc">was stolen.</text><text x="370" y="142" class="t-m">spotlight on the receiver</text>`);
+ if(k==="done")return svg(`<rect x="40" y="40" width="150" height="70" rx="12" class="sv-paper"/><text x="58" y="70" class="t-b">break</text><text x="58" y="92" class="t-m">(an action)</text><line class="sv-acc" x1="200" y1="75" x2="300" y2="75"/><polygon points="300,65 316,75 300,85" class="sv-accf"/><rect x="330" y="30" width="230" height="90" rx="12" class="sv-soft"/><text x="350" y="62" class="t-acc">broken ✓</text><text x="350" y="84" class="t-b">done / received</text><text x="350" y="104" class="t-m">a state that stays</text>`);
+ if(k==="would")return svg(`<rect x="30" y="30" width="230" height="90" rx="14" class="sv-paper"/><text x="50" y="58" class="t-m">REAL</text><text x="50" y="84" class="t-b">will · can · is</text><text x="50" y="104" class="t-m">I will call you.</text><line class="sv-acc" x1="270" y1="75" x2="330" y2="75"/><polygon points="330,65 346,75 330,85" class="sv-accf"/><text x="262" y="60" class="t-m">one step away</text><rect x="352" y="22" width="220" height="106" rx="30" class="sv-soft" stroke-dasharray="6 5"/><text x="372" y="52" class="t-acc">WOULD</text><text x="372" y="76" class="t-b">imagined · past · polite</text><text x="372" y="100" class="t-m">I'd call you (if…)</text>`);
+ if(k==="blocks")return svg(`<rect x="20" y="45" width="190" height="56" rx="10" class="sv-inkf"/><text x="36" y="79" style="fill:var(--sheet)" class="t-b">I stayed home</text><rect x="220" y="45" width="110" height="56" rx="10" class="sv-mark"/><text x="236" y="79" class="t-b">because</text><rect x="340" y="45" width="230" height="56" rx="10" class="sv-soft"/><text x="356" y="79" class="t-acc">it was raining.</text><text x="20" y="130" class="t-m">clause 1 (main idea)</text><text x="340" y="130" class="t-m">clause 2 (the reason)</text><text x="20" y="30" class="t-m">subject + verb = one block</text>`);
+ if(k==="tag")return svg(`<rect x="30" y="50" width="170" height="54" rx="10" class="sv-inkf"/><text x="52" y="83" style="fill:var(--sheet)" class="t-b">the café</text><line class="sv-faint" x1="200" y1="77" x2="250" y2="77"/><path d="M250 50 h300 a10 10 0 0 1 10 10 v34 a10 10 0 0 1 -10 10 h-300 l-18 -27 z" class="sv-mark"/><circle cx="262" cy="77" r="5" class="sv-paper"/><text x="280" y="83" class="t-b">where we first met</text><text x="250" y="132" class="t-m">a name tag: WHICH café?</text>`);
+ return ""}
+VIEWS.grammar=()=>{$("#stage").innerHTML=`<section class="card" style="gap:8px"><div class="sec-h"><h2>회화용 문법 8단원</h2><span class="note">약하다고 한 것만 골랐어요</span></div>
+  <p class="note" style="margin:0">설명은 모두 쉬운 영어예요. 모르는 단어는 드래그(길게 누르기)해서 <b>영영 풀이</b> 버튼을 누르세요.</p></section>
+  <div class="unitlist">${UNITS.map(u=>{const a=unitAcc(u.id);return `<button class="utile" data-go="unit" data-arg="${u.id}"><span class="num">${u.no}</span><b>${esc(u.ko)}</b><span class="en">${esc(u.big)}</span><span class="meta">${S.read[u.id]?'<span class="tag ok">읽음</span>':'<span class="tag">안 읽음</span>'}${a?`<span class="tag ${a.p<60?"red":"blue"}">정답률 ${a.p}%</span>`:""}</span></button>`}).join("")}</div>`};
+VIEWS.unit=id=>{const u=unitOf(id)||UNITS[0];MODE="grammar";tabs();
+ $("#stage").innerHTML=`<section class="card">
+   <span class="crumb">UNIT ${u.no} · ${esc(u.en.toUpperCase())}</span><h2 class="utitle">${esc(u.ko)}</h2>
+   <p class="bigidea" style="margin:0">${esc(u.big)} ${sayBtn(u.big,false)}</p>
+   <div class="pic">${pic(u.pic)}</div></section>
+  <section class="card"><span class="lbl">The picture in your head</span>
+   ${u.points.map((p,i)=>`<div class="point"><h3><span class="pn">${String(i+1).padStart(2,"0")}</span>${esc(p.h)}</h3><p>${esc(p.p)}</p><ul class="exs">${p.ex.map(e=>`<li><span class="en">${hl(e)}</span>${sayBtn(e.replace(/\(.*?\)/g,""),false)}</li>`).join("")}</ul></div>`).join("")}</section>
+  <section class="card"><div class="sec-h"><span class="lbl b">Real talk · 실제 대화</span><button class="btn sm ghost" data-act="playdlg" data-u="${u.id}">🔊 전체 듣기</button></div>
+   <div class="chat">${u.dialog.map(([w,t])=>`<div class="bub ${w}"><span class="who">${w}</span><span class="txt">${hl(t)}</span>${sayBtn(t,false)}</div>`).join("")}</div></section>
+  <section class="card"><span class="lbl">Common mistakes · 자주 하는 실수</span>
+   <div class="mist">${u.mistakes.map(m=>`<div class="mi"><span class="x">✗</span><span class="bad">${esc(m[0])}</span><span class="o">✓</span><span>${esc(m[1])} ${sayBtn(m[1].split(" / ")[0],false)}</span><span class="why">${esc(m[2])}</span></div>`).join("")}</div>
+   <div class="opic"><b>OPIC TIP</b>${esc(u.opic)}</div></section>
+  <section class="ai"><div class="h"><span class="dot">C</span>내 이야기로 예문 만들기</div>
+   <p class="note" style="margin:0">내 상황을 적으면(한국어도 괜찮아요) 이 단원 문법으로 실제 쓸 문장 5개를 만들어 줘요.</p>
+   <input type="text" id="extopic" placeholder="예: 회사, 고양이, 요즘 다이어트, 여행 계획">
+   <div class="row"><button class="btn blue sm" data-act="mkex" data-u="${u.id}">예문 5개 만들기</button></div><div id="exout" class="res"></div></section>
+  <section class="ai"><div class="h"><span class="dot">C</span>이 단원에 대해 질문하기</div>
+   <textarea id="askq" rows="2" placeholder="예: I've lived랑 I've been living은 느낌이 얼마나 달라?"></textarea>
+   <div class="row"><button class="btn blue sm" data-act="ask" data-u="${u.id}">영어로 설명 듣기</button></div><div id="askout" class="aiout"></div></section>
+  <div class="row"><button class="btn grow ${S.read[u.id]?"ghost":"pri"}" data-act="read" data-u="${u.id}">${S.read[u.id]?"✓ 읽음":"다 읽었어요 +20 XP"}</button><button class="btn grow blue" data-go="quiz" data-arg="${u.id}">이 단원 퀴즈</button>${u.no<8?`<button class="btn grow ghost" data-go="unit" data-arg="${UNITS[u.no].id}">다음 단원 →</button>`:""}</div>`};
+
+/* ───────── 말하기 ───────── */
+function allCards(){return CARDS.concat(S.mine.map(m=>Object.assign({cat:"mine",tag:null},m)))}
+let SP={mode:"ko",cat:"due",flash:false,queue:[],i:0,shown:false,step:0};
+VIEWS.speak=arg=>{if(arg)SP.cat=arg;const all=allCards();const cnt=c=>c==="due"?dueCards().length:c==="all"?all.length:c==="mine"?S.mine.length:c==="rep"?all.filter(x=>x.dlg).length:all.filter(x=>x.cat===c).length;
+ const chips=[["due","오늘 복습"],["all","전체"],["mine","내 문장"],...CATS];
+ $("#stage").innerHTML=`<section class="card"><div class="sec-h"><h2>말하기 연습</h2><span class="note">소리 내서 먼저 말하고, 그다음 확인</span></div>
+  <div class="deck">
+   <button class="modebtn" data-sp="ko" aria-pressed="${SP.mode==="ko"}"><b>🇰🇷 → 🗣 바로 말하기</b><span>하고 싶은 말(한국어)을 보고 영어로 바로. 한국식 사고 ✗ vs 영어식 사고 ✓ 비교</span></button>
+   <button class="modebtn" data-sp="situ" aria-pressed="${SP.mode==="situ"}"><b>🌎 영어 상황 퀴즈</b><span>한국어 없이 영어 상황 설명만 보고 떠올리기</span></button>
+   <button class="modebtn" data-sp="rep" aria-pressed="${SP.mode==="rep"}"><b>🔁 다른 반복</b><span>한 표현을 문장 → 대화 → 짧은 글 → 상황 퀴즈로 4번 만나기</span></button>
+  </div>
+  ${SP.mode==="ko"?`<div class="chips">${chips.map(([k,n])=>`<button class="chip" data-cat="${k}" aria-pressed="${SP.cat===k}">${n}<small>${cnt(k)}</small></button>`).join("")}</div>
+   <label class="toggle"><input type="checkbox" id="flash" ${SP.flash?"checked":""}> ⏱ 5초 순발력 모드 (5초 안에 입 밖으로!)</label>`:""}
+  <button class="btn pri" data-act="spstart">시작하기</button>
+  <p class="note" style="margin:0">카드 평가에 따라 다시 나오는 날이 정해져요: 못함 → 오늘 또, 생각함 → 내일, 바로 나옴 → 3일·7일·16일 뒤.</p></section>`};
+function buildQueue(){const all=allCards();let pool;
+ if(SP.mode==="situ"){pool=shuffle(all.filter(c=>c.situ)).concat(shuffle(QUIZ.filter(q=>q.t==="situ").map((q,i)=>({id:"qs"+i,situ:q.q,en:q.o[0],think:q.x,tag:q.u}))))}
+ else if(SP.mode==="rep"){pool=shuffle(all.filter(c=>c.dlg)).concat(shuffle(all.filter(c=>!c.dlg)).slice(0,6))}
+ else if(SP.cat==="due"){pool=shuffle(dueCards());if(pool.length<10)pool=pool.concat(shuffle(newCards()).slice(0,10-pool.length))}
+ else if(SP.cat==="all")pool=shuffle(all);else if(SP.cat==="mine")pool=shuffle(all.filter(c=>c.cat==="mine"));else pool=shuffle(all.filter(c=>c.cat===SP.cat));
+ SP.queue=pool.slice(0,SP.mode==="rep"?5:10);SP.i=0;SP.shown=false;SP.step=0}
+let flashT=null;
+function spCard(){clearInterval(flashT);const c=SP.queue[SP.i];if(!c){spDone();return}
+ const head=`<div class="prog"><span>${SP.i+1} / ${SP.queue.length}</span><span>${c.tag?esc(unitOf(c.tag)?.ko||""):c.cat==="mine"?"내 문장":""}</span></div><div class="meter"><i style="width:${SP.i/SP.queue.length*100}%"></i></div>`;
+ if(SP.mode==="rep"){spRep(c,head);return}
+ const q=SP.mode==="situ"?`<div class="situ">${esc(c.situ)} ${sayBtn(c.situ,false)}</div>`:`<div class="row" style="justify-content:space-between;flex-wrap:nowrap;gap:12px"><div class="prompt-ko">${esc(c.ko)}</div>${SP.flash&&!SP.shown?`<svg class="ring" viewBox="0 0 54 54"><circle class="bg" cx="27" cy="27" r="22"/><circle class="fg" id="ringfg" cx="27" cy="27" r="22" stroke-dasharray="138.2" stroke-dashoffset="0" transform="rotate(-90 27 27)"/><text id="ringt" x="27" y="33" text-anchor="middle">5</text></svg>`:""}</div>`;
+ $("#stage").innerHTML=`<section class="card flash">${head}${q}
+  ${SP.shown?spReveal(c):`<textarea id="mine" rows="2" placeholder="소리 내서 말한 다음, 원하면 여기 적어 보세요 (안 적어도 돼요)"></textarea>
+   <div class="row"><button class="btn pri grow" data-act="reveal">정답 보기</button><button class="btn ghost" data-act="skip">건너뛰기</button></div>`}</section>`;
+ if(SP.flash&&!SP.shown&&SP.mode==="ko"){const t0=Date.now();flashT=setInterval(()=>{const e=(Date.now()-t0)/1000,l=Math.max(0,5-e);const fg=$("#ringfg"),tt=$("#ringt");if(!fg){clearInterval(flashT);return}fg.setAttribute("stroke-dashoffset",(138.2*(1-l/5)).toFixed(1));tt.textContent=Math.ceil(l);if(l<=0){clearInterval(flashT);SP.mineTxt=$("#mine")?.value||"";SP.shown=true;spCard()}},100)}}
+function spReveal(c){const mine=SP.mineTxt||"";
+ return `<div class="answer">${esc(c.en)}</div><div class="row">${sayBtn(c.en)}<button class="btn sm ghost" data-act="explain" data-t="${esc(c.en)}">영영 풀이</button></div>
+  ${c.trap?`<div class="vs"><div class="kr"><span class="lbl">한국식 사고</span><p>${esc(c.trap)}</p></div><div class="eng"><span class="lbl g">영어식 사고</span><p>${esc(c.en)}</p></div></div>`:""}
+  <div class="think"><span class="lbl b">Think in English</span>${esc(c.think)}</div>
+  ${c.alt?`<p class="note en" style="margin:0;font-size:15px">Also: <b>${esc(c.alt)}</b> ${sayBtn(c.alt.replace(/\(.*?\)/g,""),false)}</p>`:""}
+  ${mine?`<div class="ai" style="padding:12px"><div class="row" style="justify-content:space-between"><span class="note">내가 쓴 답: <b class="en" style="color:var(--ink)">${esc(mine)}</b></span><button class="btn blue sm" data-act="checkmine">AI로 검사</button></div><div id="chkout" class="res"></div></div>`:""}
+  ${recBox(c.en)}
+  ${dictLinks(c.en)}
+  ${SP.mode==="ko"||SP.mode==="situ"?`<div class="rate"><button class="r0" data-rate="0">못 했어요<small>오늘 또</small></button><button class="r1" data-rate="1">생각했어요<small>내일 다시</small></button><button class="r2" data-rate="2">바로 나왔어요<small>나중에</small></button></div>`:""}`}
+const BOX=[0,1,3,7,16,35];
+function rate(r){const c=SP.queue[SP.i];const cur=S.srs[c.id]||{b:0};let b=r===2?Math.min(5,(cur.b||0)+1):r===1?Math.max(1,cur.b||0):0;
+ if(!String(c.id).startsWith("qs"))S.srs[c.id]={b,d:addDays(today(),r===0?0:r===1?1:BOX[b])};
+ if(r===0)SP.queue.push(c);gain([2,5,8][r],true);SP.i++;SP.shown=false;SP.mineTxt="";spCard()}
+function spDone(){$("#stage").innerHTML=`<section class="card" style="align-items:flex-start"><span class="lbl g">끝!</span><div class="score">${SP.queue.length}<small> 장 완료</small></div><p class="muted" style="margin:0">오늘 ${S.days[today()]||0} XP. 방금 본 문장 중 하나를 오늘 실제로 써 보세요.</p><div class="row"><button class="btn pri" data-act="spagain">한 번 더</button><button class="btn ghost" data-go="home">오늘 화면</button></div></section>`}
+async function spRep(c,head){const st=SP.step;const steps=["① 문장 통째로","② 대화 속에서","③ 짧은 글 속에서","④ 영어 상황 퀴즈"];
+ let body="";
+ if(!c.dlg&&st>0&&!c._ai){body=`<div class="ai"><div class="h"><span class="dot">C</span>이 문장은 아직 반복 자료가 없어요</div><button class="btn blue sm" data-act="mkreps">AI로 대화·글·상황 만들기</button><div id="repout"></div></div>`}
+ else if(st===0)body=`<div class="answer">${esc(c.en)}</div><div class="row">${sayBtn(c.en)}</div><div class="think"><span class="lbl b">Think in English</span>${esc(c.think)}</div>${c.trap?`<div class="vs"><div class="kr"><span class="lbl">한국식 사고</span><p>${esc(c.trap)}</p></div><div class="eng"><span class="lbl g">영어식 사고</span><p>${esc(c.en)}</p></div></div>`:""}`;
+ else if(st===1)body=`<div class="chat">${c.dlg.map(([w,t])=>`<div class="bub ${w}"><span class="who">${w}</span><span class="txt">${esc(t).replace(esc(c.en.replace(/[.?!]$/,"")),m=>`<mark class="hl">${m}</mark>`)}</span>${sayBtn(t,false)}</div>`).join("")}</div>`;
+ else if(st===2)body=`<div class="para">${esc(c.para).replace(esc(c.en.replace(/[.?!]$/,"")),m=>`<mark class="hl">${m}</mark>`)}</div><div class="row">${sayBtn(c.para)}</div>${c.more?`<div class="more"><span class="lbl b">Same shape, other situations</span>${c.more.map(m=>`<div class="row"><span class="en" style="flex:1">${esc(m)}</span>${sayBtn(m.replace(/\(.*?\)/g,""),false)}</div>`).join("")}</div>`:""}`;
+ else body=`<div class="situ">${esc(c.situ)} ${sayBtn(c.situ,false)}</div>${SP.shown?`<div class="answer">${esc(c.en)}</div>${recBox(c.en)}`:`<p class="note" style="margin:0">소리 내서 말해 본 다음 정답을 확인하세요.</p>`}`;
+ const nextLbl=st<3?"다음 →":SP.shown?"이 표현 완료 ✓":"정답 보기";
+ $("#stage").innerHTML=`<section class="card flash">${head}<div class="stepper">${steps.map((s,i)=>`<i class="${i<=st?"on":""}"></i>`).join("")}</div><span class="lbl b">${steps[st]}</span>${body}
+  <div class="row">${st>0?`<button class="btn ghost" data-act="repprev">← 이전</button>`:""}${(c.dlg||st===0)?`<button class="btn pri grow" data-act="repnext">${nextLbl}</button>`:""}<button class="btn ghost" data-act="repskip">건너뛰기</button></div></section>`}
+
+/* ───────── 퀴즈 ───────── */
+let QZ={u:"all",kind:"normal",list:[],i:0,ans:null,right:0,hp:100,hearts:3,combo:0,wrongs:[]};
+const TL={pick:"빈칸",mean:"무슨 뜻?",fix:"자연스러운 문장",situ:"영어 상황"};
+VIEWS.quiz=arg=>{if(arg&&arg!=="wrong")QZ.u=arg;const cnt=u=>u==="all"?QUIZ.length:QUIZ.filter(q=>q.u===u).length;
+ $("#stage").innerHTML=`<section class="card"><div class="sec-h"><h2>문법 퀴즈</h2><span class="note">뜻에 집중한 문제예요</span></div>
+  <div class="chips"><button class="chip" data-qu="all" aria-pressed="${QZ.u==="all"}">전체 섞기<small>${cnt("all")}</small></button>${UNITS.map(u=>`<button class="chip" data-qu="${u.id}" aria-pressed="${QZ.u===u.id}">${u.no}. ${esc(u.ko)}<small>${cnt(u.id)}</small></button>`).join("")}</div>
+  <div class="deck">
+   <button class="modebtn" data-qk="normal" aria-pressed="${QZ.kind==="normal"}"><b>📝 10문제</b><span>천천히 풀고 영어 해설 읽기</span></button>
+   <button class="modebtn" data-qk="boss" aria-pressed="${QZ.kind==="boss"}"><b>👾 보스전</b><span>원어민 보스의 HP를 깎아라. 하트 3개, 연속 정답 콤보</span></button>
+   <button class="modebtn" data-qk="wrong" aria-pressed="${QZ.kind==="wrong"}"><b>📕 오답노트</b><span>틀린 문제만 다시 · ${S.wrong.length}문제</span></button>
+  </div><button class="btn pri" data-act="qstart">시작하기</button></section>
+  ${S.wrong.length?`<section class="card"><span class="lbl">오답노트 미리보기</span><div class="wlist">${S.wrong.slice(-4).reverse().map(i=>`<div class="wli">${esc(QUIZ[i].q)}\n<span class="a">→ ${esc(QUIZ[i].o[0])}</span></div>`).join("")}</div></section>`:""}`};
+function qStart(){let pool=QUIZ.map((q,i)=>i);if(QZ.kind==="wrong"){pool=S.wrong.slice();if(!pool.length){toast("오답노트가 비어 있어요. 멋져요!");return}}else if(QZ.u!=="all")pool=pool.filter(i=>QUIZ[i].u===QZ.u);
+ pool=shuffle(pool);QZ.list=QZ.kind==="boss"?pool.concat(shuffle(pool)):pool.slice(0,10);Object.assign(QZ,{i:0,ans:null,right:0,hp:100,hearts:3,combo:0,wrongs:[],opts:null});qCard()}
+function qCard(){const qi=QZ.list[QZ.i];if(qi===undefined||(QZ.kind==="boss"&&(QZ.hp<=0||QZ.hearts<=0))){qDone();return}
+ const q=QUIZ[qi];if(!QZ.opts)QZ.opts=shuffle(q.o.map((t,k)=>({t,k})));const a=QZ.ans;
+ const boss=QZ.kind==="boss"?`<div class="boss" id="boss"><div class="bossface ${QZ.hp<=0?"dead":""}">N</div><div class="bossinfo"><span class="nm">The Native Speaker</span><div class="bhp"><i style="width:${QZ.hp}%"></i></div><div class="row" style="justify-content:space-between"><span class="hearts">${"♥".repeat(QZ.hearts)}<s>${"♥".repeat(3-QZ.hearts)}</s></span><span class="combo">${QZ.combo>1?QZ.combo+" COMBO!":""}</span></div></div></div>`:"";
+ const quote=q.t==="mean";
+ $("#stage").innerHTML=`${boss}<section class="card qcard"><div class="prog"><span>${QZ.kind==="boss"?"보스전":QZ.kind==="wrong"?"오답노트":"퀴즈"} · ${QZ.i+1}${QZ.kind==="boss"?"":" / "+QZ.list.length}</span><span><span class="qtype">${TL[q.t]}</span> ${esc(unitOf(q.u).ko)}</span></div>
+  ${QZ.kind!=="boss"?`<div class="meter"><i style="width:${QZ.i/QZ.list.length*100}%"></i></div>`:""}
+  ${quote?`<p class="note" style="margin:0">What does this mean?</p>`:""}<div class="qtxt ${quote?"quote":""}">${esc(q.q)}</div>
+  <div class="opts">${QZ.opts.map((o,n)=>`<button class="opt ${a!==null?(o.k===0?"right":n===a?"wrong":""):""}" data-opt="${n}" ${a!==null?"disabled":""}><span class="dot">${"ABCD"[n]}</span><span>${esc(o.t)}</span></button>`).join("")}</div>
+  ${a!==null?`<div class="why"><span class="v ${QZ.opts[a].k===0?"ok":"ng"}">${QZ.opts[a].k===0?"정답!":"아쉬워요"}</span><div class="think"><span class="lbl b">Why</span>${esc(q.x)}</div>
+   <div class="row">${sayBtn(q.t==="pick"?q.q.replace("___",q.o[0]).replace(/^[AB]: /gm,""):q.t==="mean"?q.q:q.o[0])}<button class="btn sm ghost" data-act="explain" data-t="${esc(q.t==="mean"?q.q:q.o[0])}">영영 풀이</button></div>
+   <button class="btn pri" data-act="qnext">${QZ.kind!=="boss"&&QZ.i+1>=QZ.list.length?"결과 보기":"다음 문제 →"}</button></div>`:""}</section>`}
+function qAnswer(n){if(QZ.ans!==null)return;QZ.ans=n;const qi=QZ.list[QZ.i];const ok=QZ.opts[n].k===0;const s=S.qs[qi]||{c:0,w:0};
+ if(ok){s.c++;QZ.right++;QZ.combo++;S.wrong=S.wrong.filter(x=>x!==qi);if(QZ.kind==="boss")QZ.hp=Math.max(0,QZ.hp-(8+Math.min(QZ.combo,5)*2));gain(10,true)}
+ else{s.w++;QZ.combo=0;QZ.wrongs.push(qi);if(!S.wrong.includes(qi))S.wrong.push(qi);if(QZ.kind==="boss")QZ.hearts--;pop("✗","r")}
+ S.qs[qi]=s;save();qCard();if(!ok)$(".qcard")?.classList.add("shake")}
+function qDone(){const boss=QZ.kind==="boss",win=boss&&QZ.hp<=0;if(win)gain(50,true);
+ $("#stage").innerHTML=`<section class="card" style="align-items:flex-start"><span class="lbl ${win||!boss?"g":""}">${boss?(win?"보스 격파!":"보스 승리… 다시 도전!"):"결과"}</span>
+  <div class="score">${QZ.right}<small> / ${boss?QZ.i:QZ.list.length} 정답</small></div>${win?`<p class="muted" style="margin:0">보너스 +50 XP</p>`:""}
+  ${QZ.wrongs.length?`<span class="lbl">틀린 문제 (오답노트에 들어갔어요)</span><div class="wlist" style="align-self:stretch">${QZ.wrongs.map(i=>`<div class="wli">${esc(QUIZ[i].q)}\n<span class="a">→ ${esc(QUIZ[i].o[0])}</span>\n<span class="muted">${esc(QUIZ[i].x)}</span></div>`).join("")}</div>`:`<p class="muted" style="margin:0">하나도 안 틀렸어요!</p>`}
+  <div class="row"><button class="btn pri" data-act="qstart">다시 하기</button><button class="btn ghost" data-go="quiz">퀴즈 목록</button></div></section>`}
+
+/* ───────── AI 코치 ───────── */
+let CM="say";
+const CMODES=[["say","이 말 영어로","하고 싶은 말을 한국어(또는 엉터리 영어)로 쓰면 원어민 문장 + 영어 풀이"],["explain","영영 뜻풀이","단어·표현·문장을 영어로만 설명"],["check","내 영어 검사","내가 만든 문장이 자연스러운지"],["examples","예문 만들기","문법 단원 + 내 상황으로 예문 5개"]];
+VIEWS.coach=()=>{const m=CMODES.find(x=>x[0]===CM);
+ $("#stage").innerHTML=`<section class="card"><div class="sec-h"><h2>AI 코치</h2><span class="note">설명은 늘 영어로</span></div>
+  <div class="chips">${CMODES.map(([k,n])=>`<button class="chip" data-cm="${k}" aria-pressed="${CM===k}">${n}</button>`).join("")}</div>
+  <p class="note" style="margin:0">${esc(m[2])}</p>
+  ${CM==="examples"?`<div class="chips">${UNITS.map(u=>`<button class="chip" data-exu="${u.id}" aria-pressed="${(window._exu||"u1")===u.id}">${u.no}. ${esc(u.ko)}</button>`).join("")}</div>`:""}
+  <textarea id="cin" rows="3" placeholder="${{say:"예: 집이 좀 누추하지? / 나 요즘 운동에 꽂혔어",explain:"예: swamped / I'm good with water / wouldn't hurt",check:"예: I'm studying English since last year.",examples:"내 상황: 예) 우리 강아지, 회사 회식, 제주 여행"}[CM]}"></textarea>
+  <div class="row"><button class="btn blue" data-act="coachgo">Claude에게 묻기</button></div><div id="cout" class="res"></div></section>
+  <section class="card"><div class="sec-h"><h2>내 문장 <span class="muted" style="font-size:16px">${S.mine.length}</span></h2><button class="btn sm ghost" data-go="speak" data-arg="mine">말하기로 연습</button></div>
+   ${S.mine.length?`<div class="mylist">${S.mine.slice().reverse().map(p=>`<div class="my"><div class="body"><span class="en">${esc(p.en)}</span>${p.ko?`<span class="ko">${esc(p.ko)}</span>`:""}<span class="tk">${esc(p.think||"")}</span></div>${sayBtn(p.en,false)}<button class="x-del" data-del="${p.id}" aria-label="삭제">삭제</button></div>`).join("")}</div>`:`<p class="empty">‘이 말 영어로’에서 저장한 문장이 여기 모여요. 하고 싶은 말을 전부 영어로 만들어 쌓아 보세요.</p>`}</section>`};
+function renderSay(r,src,el){if(!r||!r.main){if(r)el.innerHTML=`<p class="note">답이 비었어요. 다시 눌러 주세요.</p>`;return}
+ window._lastSay={ko:src,en:r.main,think:r.think||"",alt:(r.others||[])[0]?.en||"",trap:r.trap||""};
+ el.innerHTML=`<span class="k">Natives would say</span><div class="main en">${esc(r.main)}</div><div class="row">${sayBtn(r.main)}<button class="btn sm blue" data-act="savesay">＋ 내 문장에 저장</button></div>
+  ${r.trap?`<div class="vs"><div class="kr"><span class="lbl">한국식 사고</span><p>${esc(r.trap)}</p></div><div class="eng"><span class="lbl g">영어식 사고</span><p>${esc(r.main)}</p></div></div>`:""}
+  ${r.think?`<div class="think"><span class="lbl b">Think in English</span>${esc(r.think)}</div>`:""}
+  ${(r.chunks||[]).length?`<span class="k">Key chunks</span><div class="chunk">${r.chunks.map(c=>`<span><b>${esc(c.chunk)}</b> = ${esc(c.meaning)}</span>`).join("")}</div>`:""}
+  ${(r.others||[]).length?`<span class="k">Other ways</span><ul>${r.others.map(o=>`<li><b>${esc(o.en)}</b> — ${esc(o.feel||"")} ${sayBtn(o.en,false)}</li>`).join("")}</ul>`:""}
+  ${(r.examples||[]).length?`<span class="k">Same chunk, other situations</span><ul>${r.examples.map(e=>`<li>${esc(e)} ${sayBtn(e,false)}</li>`).join("")}</ul>`:""}
+  ${r.idea?`<p class="note en" style="margin:0">💡 ${esc(r.idea)}</p>`:""}${recBox(r.main)}${dictLinks(r.main)}`}
+function renderExplain(r,el){if(!r)return;el.innerHTML=`<div class="main en">${esc(r.term||"")}</div><div class="row">${sayBtn(r.term||"")}<span class="tag blue">${esc(r.kind||"")}</span></div>
+  <div class="think"><span class="lbl b">Simple meaning</span>${esc(r.simple||"")}</div>${r.more?`<p class="en" style="margin:0;font-size:16px;line-height:1.65">${esc(r.more)}</p>`:""}
+  ${(r.examples||[]).length?`<span class="k">Examples</span><ul>${r.examples.map(e=>`<li>${esc(e)} ${sayBtn(e,false)}</li>`).join("")}</ul>`:""}
+  ${(r.similar||[]).length?`<span class="k">Similar</span><div class="chunk">${r.similar.map(s=>`<span>${esc(s)}</span>`).join("")}</div>`:""}
+  ${r.careful?`<div class="opic"><b>BE CAREFUL</b>${esc(r.careful)}</div>`:""}${dictLinks(r.term||"")}`}
+function renderCheck(r,el){if(!r)return;el.innerHTML=`<span class="verdict ${esc(r.verdict)}">${{natural:"Natural! 👍",ok:"Understandable",unnatural:"A bit unnatural","wrong-meaning":"Different meaning"}[r.verdict]||esc(r.verdict)}</span>
+  <p class="en" style="margin:0;font-size:16px">${esc(r.comment||"")}</p>${r.better?`<span class="k">Try this</span><div class="main en" style="font-size:19px">${esc(r.better)}</div><div class="row">${sayBtn(r.better)}</div>`:""}
+  ${(r.fixes||[]).length?`<ul>${r.fixes.map(f=>`<li><s class="muted">${esc(f.from)}</s> → <b>${esc(f.to)}</b> · ${esc(f.why)}</li>`).join("")}</ul>`:""}`}
+function renderExamples(r,el){if(!r||!Array.isArray(r.items))return;el.innerHTML=`<ul class="exs">${r.items.map(it=>`<li style="flex-wrap:wrap"><span class="en">${esc(it.en)}<br><span class="note">${esc(it.point||"")}</span></span>${sayBtn(it.en,false)}</li>`).join("")}</ul>`}
+
+/* 드래그해서 영영 풀이 */
+let selBtn=null;
+document.addEventListener("selectionchange",()=>{clearTimeout(window._selT);window._selT=setTimeout(()=>{const s=getSelection();const t=s&&String(s).trim();
+ if(!t||t.length>160||!/[a-z]/i.test(t)||/[가-힣]/.test(t)||s.anchorNode?.parentElement?.closest("textarea,input,.sheet")){selBtn?.remove();selBtn=null;return}
+ const r=s.getRangeAt(0).getBoundingClientRect();if(!selBtn){selBtn=document.createElement("button");selBtn.className="selbtn";selBtn.textContent="📖 영영 풀이";selBtn.addEventListener("mousedown",e=>e.preventDefault());document.body.append(selBtn)}
+ selBtn.dataset.t=t;selBtn.dataset.act="explain";selBtn.style.top=(window.scrollY+r.bottom+8)+"px";selBtn.style.left=Math.max(8,Math.min(window.scrollX+r.left,window.scrollX+innerWidth-150))+"px"},250)});
+function openSheet(t){closeSheet();const d=document.createElement("div");d.className="sheet";d.id="sheet";d.innerHTML=`<div class="in"><div class="row" style="justify-content:space-between"><span class="lbl b">Think in English · 영영 풀이</span><button class="btn sm ghost" data-act="closesheet">닫기 ✕</button></div><div id="sout" class="res"></div></div>`;document.body.append(d);
+ aiJSON(P.explain(t),$("#sout")).then(r=>{if(r)renderExplain(r,$("#sout"));else $("#sout").insertAdjacentHTML("beforeend",`<div class="main en">${esc(t)}</div><div class="row">${sayBtn(t)}</div>${dictLinks(t)}`)})}
+function closeSheet(){$("#sheet")?.remove()}
+
+/* ───────── 클릭 처리 ───────── */
+document.addEventListener("click",e=>{const b=e.target.closest("button,[data-act]");if(!b)return;const d=b.dataset;
+ if(d.say!==undefined){speak(d.say,d.slow);return}
+ if(d.tab){go(d.tab);return}
+ if(d.go){if(d.go==="unit")go("unit",d.arg);else go(d.go,d.arg);return}
+ if(d.goal){S.goal=+d.goal;save();render();return}
+ if(d.sp){SP.mode=d.sp;VIEWS.speak();return}
+ if(d.cat){SP.cat=d.cat;VIEWS.speak();return}
+ if(d.qu){QZ.u=d.qu;VIEWS.quiz();return}
+ if(d.qk){QZ.kind=d.qk;VIEWS.quiz();return}
+ if(d.opt!==undefined){qAnswer(+d.opt);return}
+ if(d.rate!==undefined){rate(+d.rate);return}
+ if(d.cm){CM=d.cm;VIEWS.coach();return}
+ if(d.exu){window._exu=d.exu;document.querySelectorAll("[data-exu]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.exu===d.exu));return}
+ if(d.del){S.mine=S.mine.filter(m=>m.id!==d.del);delete S.srs[d.del];save();VIEWS.coach();return}
+ const A=d.act;if(!A)return;
+ if(A==="explain"){selBtn?.remove();selBtn=null;openSheet(d.t);return}
+ if(A==="closesheet"){closeSheet();return}
+ if(A==="rec"){startRec(b);return}
+ if(A==="read"){if(!S.read[d.u]){S.read[d.u]=today();gain(20,true)}VIEWS.unit(d.u);return}
+ if(A==="playdlg"){const u=unitOf(d.u);if(!u||!hasTTS)return;speechSynthesis.cancel();u.dialog.forEach(([w,t],i)=>{const x=new SpeechSynthesisUtterance(clean(t));x.lang="en-US";const vs=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));x.voice=(w==="B"&&vs[1])?vs[1]:VO;x.rate=.95;speechSynthesis.speak(x)});return}
+ if(A==="mkex"){const u=unitOf(d.u);aiJSON(P.examples(u,$("#extopic").value.trim()),$("#exout")).then(r=>renderExamples(r,$("#exout")));return}
+ if(A==="ask"){const q=$("#askq").value.trim();if(!q){$("#askq").focus();return}aiText(P.ask(unitOf(d.u),q),$("#askout"));return}
+ if(A==="spstart"){SP.flash=!!$("#flash")?.checked;buildQueue();if(!SP.queue.length){toast(SP.cat==="mine"?"아직 저장한 내 문장이 없어요. AI 코치에서 만들어 보세요.":"이 묶음은 오늘 볼 카드가 없어요.");return}spCard();return}
+ if(A==="reveal"){SP.mineTxt=$("#mine")?.value.trim()||"";SP.shown=true;spCard();return}
+ if(A==="skip"){SP.i++;SP.shown=false;spCard();return}
+ if(A==="spagain"){buildQueue();spCard();return}
+ if(A==="checkmine"){const c=SP.queue[SP.i];aiJSON(P.check(SP.mineTxt,c.ko,c.en),$("#chkout")).then(r=>renderCheck(r,$("#chkout")));return}
+ if(A==="repnext"){const c=SP.queue[SP.i];if(SP.step<3){SP.step++;SP.shown=false;spCard()}else if(!SP.shown){SP.shown=true;spCard()}else{gain(15,true);SP.i++;SP.step=0;SP.shown=false;spCard()}return}
+ if(A==="repskip"){SP.i++;SP.step=0;SP.shown=false;spCard();return}
+ if(A==="repprev"){SP.step=Math.max(0,SP.step-1);SP.shown=false;spCard();return}
+ if(A==="mkreps"){const c=SP.queue[SP.i];aiJSON(P.reps(c.en,c.think),$("#repout")).then(r=>{if(r&&Array.isArray(r.dlg)&&r.para&&r.situ){Object.assign(c,{dlg:r.dlg,para:r.para,situ:r.situ,more:r.more||[],_ai:true});spCard()}});return}
+ if(A==="qstart"){qStart();return}
+ if(A==="qnext"){QZ.i++;QZ.ans=null;QZ.opts=null;qCard();return}
+ if(A==="coachgo"){const t=$("#cin").value.trim(),el=$("#cout");if(!t){$("#cin").focus();return}
+  if(CM==="say")aiJSON(P.say(t),el).then(r=>renderSay(r,t,el));
+  else if(CM==="explain")aiJSON(P.explain(t),el).then(r=>renderExplain(r,el));
+  else if(CM==="check")aiJSON(P.check(t),el).then(r=>renderCheck(r,el));
+  else aiJSON(P.examples(unitOf(window._exu||"u1"),t),el).then(r=>renderExamples(r,el));return}
+ if(A==="savesay"){const l=window._lastSay;if(!l)return;if(S.mine.some(m=>m.en===l.en)){toast("이미 저장했어요");return}
+  S.mine.push(Object.assign({id:"m"+Date.now().toString(36)},l));if(S.mine.length>400)S.mine.shift();gain(5,true);toast("내 문장에 저장했어요. 말하기 ‘내 문장’에서 연습할 수 있어요.");b.disabled=true;b.textContent="✓ 저장됨";
+  const list=document.querySelector(".mylist");if(!list)VIEWS.coach();return}
+});
+document.addEventListener("change",e=>{const f=e.target;if(f.dataset?.act==="recfile"&&f.files[0]){showRec(f.closest(".rec").querySelector(".recout"),f.files[0]);f.value=""}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
+
+/* 시작 */
+const H=(location.hash||"").slice(1);if(TABS.some(t=>t[0]===H))MODE=H;
+render();
+</script>
