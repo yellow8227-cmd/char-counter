@@ -84,6 +84,7 @@ const P={
  check:(mine,ko,en)=>`A Korean learner is practicing speaking English.${ko?` They wanted to say this (written in Korean): "${ko}".`:""}${en?` A model answer is: "${en}".`:""}\nThey said:\n"""${mine}"""\nJudge it like a kind native-speaker friend: does the meaning come across, and does it sound natural? ${RULE}\nReply with only JSON: {"verdict":"natural|ok|unnatural|wrong-meaning","comment":"1-2 encouraging, honest sentences","better":"a more natural version (same as theirs if already natural)","fixes":[{"from":"part they said","to":"better part","why":"short simple reason"}]}`,
  examples:(u,topic)=>`Make 5 natural spoken English sentences a Korean adult could really use in daily conversation or the OPIc test.\nIdea to practice: ${u.en} — ${u.big}\nTopic or situation: ${topic||"everyday life"}\nEach sentence max 16 words, casual and real. ${RULE}\nReply with only JSON: {"items":[{"en":"sentence","point":"which part shows the idea and what it means, max 15 words"}]}`,
  reps:(en,think)=>`Help a learner repeat one English expression in different situations, so they learn when to use it.\nExpression: "${en}"${think?`\nMeaning: ${think}`:""}\n${RULE}\nReply with only JSON: {"dlg":[["A","line"],["B","line"],["A","line"],["B","line that uses the expression"]],"para":"a short 3-sentence story in natural spoken English that uses the expression","situ":"an English description of a situation (start with 'You…') where you'd say it, without giving the expression","more":["2 short variations of the expression for other situations"]}`,
+ al:(q,mine)=>`You are an experienced OPIc rater and speaking coach. A Korean learner who wants the AL (Advanced Low) grade answered this OPIc question (their answer is typed from what they said):\nQuestion: "${q}"\nAnswer:\n"""${mine}"""\nRate it honestly against AL: paragraph-length connected speech, control of past/present/perfect tenses, storytelling with detail, connectors (because, so, which, when, although), natural chunks, and handling the whole task. If it's short, say so. ${RULE}\nReply with only JSON: {"level":"IL|IM1|IM2|IM3|IH|AL","why":"2 sentences on why that level","strengths":["2-3 short points"],"fixes":[{"from":"part they said","to":"better version","why":"short reason"}],"upgrade":"their answer rewritten at AL level, keeping their content and ideas, 130-170 words","next":"the one thing to practice next, 1 sentence"}`,
  ask:(u,q)=>`You are a kind English tutor. The learner is studying "${u.en}": ${u.big}\nAnswer their question in simple English with 2-3 short natural spoken examples. Keep it under 130 words. ${RULE}\nQuestion: ${q}`
 };
 
@@ -122,6 +123,7 @@ VIEWS.home=()=>{const td=S.days[today()]||0,pct=Math.min(100,Math.round(td/S.goa
     <button class="mis" data-go="speak" data-arg="due"><span class="n">${due||Math.min(10,newCards().length)}</span><b>말하기 ${due?"복습":"새 카드"}</b><span>${due?"오늘 다시 볼 차례인 문장":"한국말을 보고 바로 영어로"}</span></button>
     <button class="mis blue" data-go="unit" data-arg="${wu.id}"><span class="n">${wu.no}</span><b>${esc(wu.ko)}</b><span>${unitAcc(wu.id)?`정답률 ${unitAcc(wu.id).p}%. 지금 가장 약한 단원`:"아직 안 풀어 본 단원"}</span></button>
     <button class="mis green" data-go="quiz" data-arg="${wu.id}"><span class="n">10</span><b>퀴즈 10문제</b><span>방금 본 단원으로 확인하기</span></button>
+    <button class="mis" data-act="gotoal"><span class="n">${AL.filter(a=>!(S.al||{})[a.tp]).length}</span><b>AL 답변 1편</b><span>오픽 주제 하나를 2분 동안 말하고 AI 채점 받기</span></button>
    </div></section>
   <section class="card"><div class="sec-h"><h2>약한 곳 지도</h2><span class="note">퀴즈 정답률 · 60% 미만은 빨강</span></div>
    <div class="weak">${UNITS.map(u=>{const a=unitAcc(u.id);return `<button class="wk ${a&&a.p<60?"hot":""}" data-go="unit" data-arg="${u.id}"><span class="no">UNIT ${u.no}${S.read[u.id]?" · 읽음":""}</span><b>${esc(u.ko)}</b><div class="meter ${a&&a.p<60?"red":"ok"}"><i style="width:${a?a.p:0}%"></i></div><span class="pct">${a?a.p+"% · "+a.t+"문제":"아직 안 풂"}</span></button>`}).join("")}</div></section>
@@ -175,10 +177,13 @@ VIEWS.speak=arg=>{if(arg)SP.cat=arg;const all=allCards();const cnt=c=>c==="due"?
    <button class="modebtn" data-sp="ko" aria-pressed="${SP.mode==="ko"}"><b>🇰🇷 → 🗣 바로 말하기</b><span>하고 싶은 말(한국어)을 보고 영어로 바로. 한국식 사고 ✗ vs 영어식 사고 ✓ 비교</span></button>
    <button class="modebtn" data-sp="situ" aria-pressed="${SP.mode==="situ"}"><b>🌎 영어 상황 퀴즈</b><span>한국어 없이 영어 상황 설명만 보고 떠올리기</span></button>
    <button class="modebtn" data-sp="rep" aria-pressed="${SP.mode==="rep"}"><b>🔁 다른 반복</b><span>한 표현을 문장 → 대화 → 짧은 글 → 상황 퀴즈로 4번 만나기</span></button>
+   <button class="modebtn" data-sp="al" aria-pressed="${SP.mode==="al"}"><b>🏆 AL 답변 훈련</b><span>오픽 주제별 질문에 2분 답변 → AI가 AL 기준으로 채점 → 모범 답변 따라 말하기</span></button>
   </div>
-  ${SP.mode==="ko"?`<div class="chips">${chips.map(([k,n])=>`<button class="chip" data-cat="${k}" aria-pressed="${SP.cat===k}">${n}<small>${cnt(k)}</small></button>`).join("")}</div>
+  ${SP.mode==="al"?alList():""}
+  ${SP.mode==="ko"?`<span class="lbl">생활 표현</span><div class="chips">${chips.map(([k,n])=>`<button class="chip" data-cat="${k}" aria-pressed="${SP.cat===k}">${n}<small>${cnt(k)}</small></button>`).join("")}</div>
+   <span class="lbl b">오픽 주제</span><div class="chips">${TOPICS.map(([k,n])=>`<button class="chip" data-cat="${k}" aria-pressed="${SP.cat===k}">${n}<small>${cnt(k)}</small></button>`).join("")}</div>
    <label class="toggle"><input type="checkbox" id="flash" ${SP.flash?"checked":""}> ⏱ 5초 순발력 모드 (5초 안에 입 밖으로!)</label>`:""}
-  <button class="btn pri" data-act="spstart">시작하기</button>
+  ${SP.mode==="al"?"":`<button class="btn pri" data-act="spstart">시작하기</button>`}
   <p class="note" style="margin:0">카드 평가에 따라 다시 나오는 날이 정해져요: 못함 → 오늘 또, 생각함 → 내일, 바로 나옴 → 3일·7일·16일 뒤.</p></section>`};
 function buildQueue(){const all=allCards();let pool;
  if(SP.mode==="situ"){pool=shuffle(all.filter(c=>c.situ)).concat(shuffle(QUIZ.filter(q=>q.t==="situ").map((q,i)=>({id:"qs"+i,situ:q.q,en:q.o[0],think:q.x,tag:q.u}))))}
@@ -188,7 +193,7 @@ function buildQueue(){const all=allCards();let pool;
  SP.queue=pool.slice(0,SP.mode==="rep"?5:10);SP.i=0;SP.shown=false;SP.step=0}
 let flashT=null;
 function spCard(){clearInterval(flashT);const c=SP.queue[SP.i];if(!c){spDone();return}
- const head=`<div class="prog"><span>${SP.i+1} / ${SP.queue.length}</span><span>${c.tag?esc(unitOf(c.tag)?.ko||""):c.cat==="mine"?"내 문장":""}</span></div><div class="meter"><i style="width:${SP.i/SP.queue.length*100}%"></i></div>`;
+ const head=`<div class="prog"><span>${SP.i+1} / ${SP.queue.length}</span><span>${[tpName(c.cat),c.tag?unitOf(c.tag)?.ko:"",c.cat==="mine"?"내 문장":""].filter(Boolean).map(esc).join(" · ")}</span></div><div class="meter"><i style="width:${SP.i/SP.queue.length*100}%"></i></div>`;
  if(SP.mode==="rep"){spRep(c,head);return}
  const q=SP.mode==="situ"?`<div class="situ">${esc(c.situ)} ${sayBtn(c.situ,false)}</div>`:`<div class="row" style="justify-content:space-between;flex-wrap:nowrap;gap:12px"><div class="prompt-ko">${esc(c.ko)}</div>${SP.flash&&!SP.shown?`<svg class="ring" viewBox="0 0 54 54"><circle class="bg" cx="27" cy="27" r="22"/><circle class="fg" id="ringfg" cx="27" cy="27" r="22" stroke-dasharray="138.2" stroke-dashoffset="0" transform="rotate(-90 27 27)"/><text id="ringt" x="27" y="33" text-anchor="middle">5</text></svg>`:""}</div>`;
  $("#stage").innerHTML=`<section class="card flash">${head}${q}
@@ -220,25 +225,57 @@ async function spRep(c,head){const st=SP.step;const steps=["① 문장 통째로
  $("#stage").innerHTML=`<section class="card flash">${head}<div class="stepper">${steps.map((s,i)=>`<i class="${i<=st?"on":""}"></i>`).join("")}</div><span class="lbl b">${steps[st]}</span>${body}
   <div class="row">${st>0?`<button class="btn ghost" data-act="repprev">← 이전</button>`:""}${(c.dlg||st===0)?`<button class="btn pri grow" data-act="repnext">${nextLbl}</button>`:""}<button class="btn ghost" data-act="repskip">건너뛰기</button></div></section>`}
 
+/* AL 답변 훈련 */
+function alList(){return `<div class="unitlist">${AL.map(a=>`<button class="utile" data-al="${a.tp}"><span class="num">${(S.al||{})[a.tp]?"✓":"Q"}</span><b>${esc(tpName(a.tp))}</b><span class="en">${esc(a.q)}</span></button>`).join("")}</div>`}
+let alT=null;
+function alTimer(b){clearInterval(alT);let l=120;b.textContent="2:00";alT=setInterval(()=>{l--;if(!document.body.contains(b)){clearInterval(alT);return}b.textContent=`${Math.floor(l/60)}:${String(l%60).padStart(2,"0")}`;if(l<=0){clearInterval(alT);b.textContent="⏱ 끝! 다시 시작";pop("TIME!","r")}},1000)}
+function alCard(tp){const a=AL.find(x=>x.tp===tp);const chunks=[...a.a.matchAll(/\[\[(.+?)\]\]/g)].map(m=>m[1]);
+ $("#stage").innerHTML=`<section class="card"><div class="prog"><span>AL 답변 훈련 · ${esc(tpName(tp))}</span><button class="btn sm ghost" data-sp="al">← 주제 목록</button></div>
+  <div class="situ oq">${esc(a.q)} ${sayBtn(a.q)}</div>
+  <span class="lbl b">답변 뼈대 · 이 순서로 말해 보세요</span><div class="chunk">${a.flow.map((f,i)=>`<span><b>${i+1}</b> ${esc(f)}</span>`).join("")}</div>
+  <div class="opic"><b>AL TIP</b>Aim for 1.5–2 minutes. Mix past (a story), present (your life now), and have p.p. (from then until now). Connect ideas with because, so, which, and when. If you get stuck, use a filler: "Hmm, how should I put it…"</div>
+  <div class="row"><button class="btn sm" data-act="altimer">⏱ 2분 타이머</button><span class="note">먼저 소리 내서 2분 동안 말해 보세요.</span></div>
+  ${recBox(a.q)}
+  <textarea id="almine" rows="6" placeholder="말한 내용을 영어로 적어 주세요 (틀려도 괜찮아요). AI가 AL 기준으로 등급을 추정하고 고쳐 줘요."></textarea>
+  <div class="row"><button class="btn blue grow" data-act="alfb" data-tp="${tp}">AI로 AL 기준 피드백</button><button class="btn pri grow" data-act="alshow" data-tp="${tp}">모범 답변 보기 +30 XP</button></div>
+  <div id="alout" class="res"></div></section>
+  <section class="card" id="almodel" hidden><div class="sec-h"><span class="lbl g">AL 모범 답변</span><div class="row">${sayBtn(a.a)}</div></div>
+   <p class="para" style="margin:0">${hl(a.a)}</p>
+   ${recBox(a.a)}
+   <span class="lbl b">그대로 가져다 쓸 덩어리 · ${chunks.length}개</span>
+   <ul class="exs">${chunks.map(c=>`<li><span class="en">${esc(c)}</span>${sayBtn(c,false)}</li>`).join("")}</ul>
+   <p class="note" style="margin:0">덩어리를 드래그하면 영영 풀이가 나와요. 내 이야기로 바꿔 말하는 게 진짜 연습이에요.</p></section>`;window.scrollTo({top:0})}
+function renderAL(r,el){if(!r)return;const lv=["IL","IM1","IM2","IM3","IH","AL"];const i=Math.max(0,lv.indexOf(r.level));
+ el.innerHTML=`<span class="k">Estimated level (from text only)</span><div class="rungs" style="grid-template-columns:repeat(6,1fr)">${lv.map((l,k)=>`<div class="rung ${k<i?"got":""} ${k===i?"cur":""}">${l}</div>`).join("")}</div>
+  <p class="en" style="margin:0;font-size:16px">${esc(r.why||"")}</p>
+  ${(r.strengths||[]).length?`<span class="k">Good</span><ul>${r.strengths.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
+  ${(r.fixes||[]).length?`<span class="k">Fix</span><ul>${r.fixes.map(f=>`<li><s class="muted">${esc(f.from)}</s> → <b>${esc(f.to)}</b> · ${esc(f.why)}</li>`).join("")}</ul>`:""}
+  ${r.upgrade?`<span class="k">Your answer at AL level</span><p class="para" style="margin:0">${esc(r.upgrade)}</p><div class="row">${sayBtn(r.upgrade)}</div>`:""}
+  ${r.next?`<div class="opic"><b>NEXT</b>${esc(r.next)}</div>`:""}
+  <p class="note" style="margin:0">글로 적은 답만 보고 추정한 등급이에요. 실제 시험은 발음·속도·자연스러움도 함께 봐요.</p>`}
+
 /* ───────── 퀴즈 ───────── */
 let QZ={u:"all",kind:"normal",list:[],i:0,ans:null,right:0,hp:100,hearts:3,combo:0,wrongs:[]};
 const TL={pick:"빈칸",mean:"무슨 뜻?",fix:"자연스러운 문장",situ:"영어 상황"};
-VIEWS.quiz=arg=>{if(arg&&arg!=="wrong")QZ.u=arg;const cnt=u=>u==="all"?QUIZ.length:QUIZ.filter(q=>q.u===u).length;
+VIEWS.quiz=arg=>{if(arg&&arg!=="wrong")QZ.u=arg;const cnt=u=>u==="all"?QUIZ.length:QUIZ.filter(q=>qMatch(q,u)).length;
  $("#stage").innerHTML=`<section class="card"><div class="sec-h"><h2>문법 퀴즈</h2><span class="note">뜻에 집중한 문제예요</span></div>
-  <div class="chips"><button class="chip" data-qu="all" aria-pressed="${QZ.u==="all"}">전체 섞기<small>${cnt("all")}</small></button>${UNITS.map(u=>`<button class="chip" data-qu="${u.id}" aria-pressed="${QZ.u===u.id}">${u.no}. ${esc(u.ko)}<small>${cnt(u.id)}</small></button>`).join("")}</div>
+  <span class="lbl">문법 단원</span><div class="chips"><button class="chip" data-qu="all" aria-pressed="${QZ.u==="all"}">전체 섞기<small>${cnt("all")}</small></button>${UNITS.map(u=>`<button class="chip" data-qu="${u.id}" aria-pressed="${QZ.u===u.id}">${u.no}. ${esc(u.ko)}<small>${cnt(u.id)}</small></button>`).join("")}</div>
+  <span class="lbl b">오픽 주제</span><div class="chips">${TOPICS.map(([k,n])=>`<button class="chip" data-qu="tp:${k}" aria-pressed="${QZ.u==="tp:"+k}">${n}<small>${cnt("tp:"+k)}</small></button>`).join("")}</div>
   <div class="deck">
    <button class="modebtn" data-qk="normal" aria-pressed="${QZ.kind==="normal"}"><b>📝 10문제</b><span>천천히 풀고 영어 해설 읽기</span></button>
    <button class="modebtn" data-qk="boss" aria-pressed="${QZ.kind==="boss"}"><b>👾 보스전</b><span>원어민 보스의 HP를 깎아라. 하트 3개, 연속 정답 콤보</span></button>
    <button class="modebtn" data-qk="wrong" aria-pressed="${QZ.kind==="wrong"}"><b>📕 오답노트</b><span>틀린 문제만 다시 · ${S.wrong.length}문제</span></button>
   </div><button class="btn pri" data-act="qstart">시작하기</button></section>
   ${S.wrong.length?`<section class="card"><span class="lbl">오답노트 미리보기</span><div class="wlist">${S.wrong.slice(-4).reverse().map(i=>`<div class="wli">${esc(QUIZ[i].q)}\n<span class="a">→ ${esc(QUIZ[i].o[0])}</span></div>`).join("")}</div></section>`:""}`};
-function qStart(){let pool=QUIZ.map((q,i)=>i);if(QZ.kind==="wrong"){pool=S.wrong.slice();if(!pool.length){toast("오답노트가 비어 있어요. 멋져요!");return}}else if(QZ.u!=="all")pool=pool.filter(i=>QUIZ[i].u===QZ.u);
+const qMatch=(q,u)=>u.startsWith("tp:")?q.tp===u.slice(3):q.u===u;
+const tpName=k=>(TOPICS.find(t=>t[0]===k)||[,""])[1];
+function qStart(){let pool=QUIZ.map((q,i)=>i);if(QZ.kind==="wrong"){pool=S.wrong.slice();if(!pool.length){toast("오답노트가 비어 있어요. 멋져요!");return}}else if(QZ.u!=="all")pool=pool.filter(i=>qMatch(QUIZ[i],QZ.u));
  pool=shuffle(pool);QZ.list=QZ.kind==="boss"?pool.concat(shuffle(pool)):pool.slice(0,10);Object.assign(QZ,{i:0,ans:null,right:0,hp:100,hearts:3,combo:0,wrongs:[],opts:null});qCard()}
 function qCard(){const qi=QZ.list[QZ.i];if(qi===undefined||(QZ.kind==="boss"&&(QZ.hp<=0||QZ.hearts<=0))){qDone();return}
  const q=QUIZ[qi];if(!QZ.opts)QZ.opts=shuffle(q.o.map((t,k)=>({t,k})));const a=QZ.ans;
  const boss=QZ.kind==="boss"?`<div class="boss" id="boss"><div class="bossface ${QZ.hp<=0?"dead":""}">N</div><div class="bossinfo"><span class="nm">The Native Speaker</span><div class="bhp"><i style="width:${QZ.hp}%"></i></div><div class="row" style="justify-content:space-between"><span class="hearts">${"♥".repeat(QZ.hearts)}<s>${"♥".repeat(3-QZ.hearts)}</s></span><span class="combo">${QZ.combo>1?QZ.combo+" COMBO!":""}</span></div></div></div>`:"";
  const quote=q.t==="mean";
- $("#stage").innerHTML=`${boss}<section class="card qcard"><div class="prog"><span>${QZ.kind==="boss"?"보스전":QZ.kind==="wrong"?"오답노트":"퀴즈"} · ${QZ.i+1}${QZ.kind==="boss"?"":" / "+QZ.list.length}</span><span><span class="qtype">${TL[q.t]}</span> ${esc(unitOf(q.u).ko)}</span></div>
+ $("#stage").innerHTML=`${boss}<section class="card qcard"><div class="prog"><span>${QZ.kind==="boss"?"보스전":QZ.kind==="wrong"?"오답노트":"퀴즈"} · ${QZ.i+1}${QZ.kind==="boss"?"":" / "+QZ.list.length}</span><span><span class="qtype">${TL[q.t]}</span> ${q.tp?esc(tpName(q.tp))+" · ":""}${esc(unitOf(q.u).ko)}</span></div>
   ${QZ.kind!=="boss"?`<div class="meter"><i style="width:${QZ.i/QZ.list.length*100}%"></i></div>`:""}
   ${quote?`<p class="note" style="margin:0">What does this mean?</p>`:""}<div class="qtxt ${quote?"quote":""}">${esc(q.q)}</div>
   <div class="opts">${QZ.opts.map((o,n)=>`<button class="opt ${a!==null?(o.k===0?"right":n===a?"wrong":""):""}" data-opt="${n}" ${a!==null?"disabled":""}><span class="dot">${"ABCD"[n]}</span><span>${esc(o.t)}</span></button>`).join("")}</div>
@@ -304,6 +341,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("button,[data-act
  if(d.goal){S.goal=+d.goal;save();render();return}
  if(d.sp){SP.mode=d.sp;VIEWS.speak();return}
  if(d.cat){SP.cat=d.cat;VIEWS.speak();return}
+ if(d.al){alCard(d.al);return}
  if(d.qu){QZ.u=d.qu;VIEWS.quiz();return}
  if(d.qk){QZ.kind=d.qk;VIEWS.quiz();return}
  if(d.opt!==undefined){qAnswer(+d.opt);return}
@@ -329,6 +367,10 @@ document.addEventListener("click",e=>{const b=e.target.closest("button,[data-act
  if(A==="repprev"){SP.step=Math.max(0,SP.step-1);SP.shown=false;spCard();return}
  if(A==="mkreps"){const c=SP.queue[SP.i];aiJSON(P.reps(c.en,c.think),$("#repout")).then(r=>{if(r&&Array.isArray(r.dlg)&&r.para&&r.situ){Object.assign(c,{dlg:r.dlg,para:r.para,situ:r.situ,more:r.more||[],_ai:true});spCard()}});return}
  if(A==="qstart"){qStart();return}
+ if(A==="alfb"){const t=$("#almine").value.trim();if(t.split(/\s+/).length<15){toast("15단어 이상 적어 주세요. 말한 내용을 그대로 적으면 돼요.");return}const a=AL.find(x=>x.tp===d.tp);aiJSON(P.al(a.q,t),$("#alout")).then(r=>renderAL(r,$("#alout")));return}
+ if(A==="gotoal"){SP.mode="al";go("speak");return}
+ if(A==="alshow"){$("#almodel").hidden=false;if(!S.al)S.al={};if(!S.al[d.tp]){S.al[d.tp]=today();gain(30,true)}$("#almodel").scrollIntoView({behavior:"smooth",block:"start"});return}
+ if(A==="altimer"){alTimer(b);return}
  if(A==="qnext"){QZ.i++;QZ.ans=null;QZ.opts=null;qCard();return}
  if(A==="coachgo"){const t=$("#cin").value.trim(),el=$("#cout");if(!t){$("#cin").focus();return}
   if(CM==="say")aiJSON(P.say(t),el).then(r=>renderSay(r,t,el));

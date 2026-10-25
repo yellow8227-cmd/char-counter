@@ -98,7 +98,7 @@ textarea:focus,input[type=text]:focus{border-color:var(--blue);outline:none}
 .rung.got{background:var(--blue-soft);color:var(--blue)}
 .rung.cur{background:var(--blue);color:var(--sheet);box-shadow:0 0 0 2px var(--sheet),0 0 0 4px var(--blue)}
 .lvname{font-family:var(--en);font-weight:800;font-size:30px;line-height:1;color:var(--blue)}
-.mission{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.mission{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 @media (max-width:640px){.mission{grid-template-columns:1fr}}
 .mis{text-align:left;border:1.5px solid var(--line);background:var(--sheet);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px;min-height:112px}
 .mis:hover{border-color:var(--ink)}
@@ -194,7 +194,7 @@ textarea:focus,input[type=text]:focus{border-color:var(--blue);outline:none}
 .verdict.unnatural,.verdict.wrong-meaning{background:var(--red-soft);color:var(--red)}
 
 /* speak */
-.deck{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.deck{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 @media (max-width:640px){.deck{grid-template-columns:1fr}}
 .modebtn{text-align:left;border:1.5px solid var(--line);background:var(--sheet);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px}
 .modebtn[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
@@ -228,6 +228,7 @@ textarea:focus,input[type=text]:focus{border-color:var(--blue);outline:none}
 .para{font-family:var(--en);font-size:17px;line-height:1.75;background:var(--bub);border-radius:12px;padding:14px 16px}
 .situ{font-family:var(--en);font-size:18px;line-height:1.6;border:1.5px solid var(--ink);border-radius:12px;padding:14px 16px;position:relative}
 .situ::before{content:"Imagine…";display:block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:2px}
+.situ.oq::before{content:"OPIc question"}
 .more{display:flex;flex-direction:column;gap:6px}
 
 /* quiz */
