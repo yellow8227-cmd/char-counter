@@ -302,7 +302,7 @@ footer{font-size:12px;color:var(--muted);line-height:1.6}
   </header>
   <nav class="tabs" id="tabs" aria-label="학습 메뉴"></nav>
   <main id="stage" class="wrap" style="gap:14px;max-width:none"></main>
-  <footer>설명은 영영사전처럼 쉬운 영어로 씁니다. 🔊는 기기의 영어 음성으로 읽어 주고, 사전 링크(Cambridge · Oxford · Longman · YouGlish)에서 실제 원어민 녹음을 들을 수 있어요. 진도는 계정에 저장돼 휴대폰과 PC에서 이어집니다.</footer>
+  <footer>설명은 영영사전처럼 쉬운 영어로 씁니다. 🔊는 기기의 영어 음성으로 읽어 주고, 사전 링크(Oxford 영영 · 네이버 영영 · YouGlish)에서 실제 원어민 녹음을 들을 수 있어요. 진도는 계정에 저장돼 휴대폰과 PC에서 이어집니다.</footer>
 </div>
 <script>
 /* ───────── 문법 단원 ─────────
@@ -797,7 +797,7 @@ const sayBtn=(t,slow=true)=>`<button class="say" data-say="${esc(plain(t))}" ari
 
 /* 영영사전 · 실제 발음 링크 */
 function dictLinks(t){const p=plain(t).trim();const w=p.split(/\s+/).length;const q=encodeURIComponent(p.toLowerCase().replace(/[.?!,]+$/,""));
-  const L=[];if(w<=3){L.push(["Cambridge",`https://dictionary.cambridge.org/dictionary/english/${q.replace(/%20/g,"-")}`],["Oxford",`https://www.oxfordlearnersdictionaries.com/search/english/?q=${q}`],["Longman",`https://www.ldoceonline.com/search/english/direct/?q=${q}`])}
+  const L=[];if(w<=3){L.push(["Oxford 영영",`https://www.oxfordlearnersdictionaries.com/search/english/?q=${q}`],["네이버 영영",`https://dict.naver.com/enendict/#/search?query=${q}`])}
   L.push(["YouGlish 원어민 영상",`https://youglish.com/pronounce/${encodeURIComponent(p.replace(/[.?!]+$/,""))}/english/us`]);
   return `<div class="row">${L.map(([n,u])=>`<a class="btn sm ghost" href="${u}" target="_blank" rel="noopener">${n} ↗</a>`).join("")}</div>`}
 

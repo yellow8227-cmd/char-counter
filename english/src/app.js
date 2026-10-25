@@ -46,7 +46,7 @@ const sayBtn=(t,slow=true)=>`<button class="say" data-say="${esc(plain(t))}" ari
 
 /* 영영사전 · 실제 발음 링크 */
 function dictLinks(t){const p=plain(t).trim();const w=p.split(/\s+/).length;const q=encodeURIComponent(p.toLowerCase().replace(/[.?!,]+$/,""));
-  const L=[];if(w<=3){L.push(["Cambridge",`https://dictionary.cambridge.org/dictionary/english/${q.replace(/%20/g,"-")}`],["Oxford",`https://www.oxfordlearnersdictionaries.com/search/english/?q=${q}`],["Longman",`https://www.ldoceonline.com/search/english/direct/?q=${q}`])}
+  const L=[];if(w<=3){L.push(["Oxford 영영",`https://www.oxfordlearnersdictionaries.com/search/english/?q=${q}`],["네이버 영영",`https://dict.naver.com/enendict/#/search?query=${q}`])}
   L.push(["YouGlish 원어민 영상",`https://youglish.com/pronounce/${encodeURIComponent(p.replace(/[.?!]+$/,""))}/english/us`]);
   return `<div class="row">${L.map(([n,u])=>`<a class="btn sm ghost" href="${u}" target="_blank" rel="noopener">${n} ↗</a>`).join("")}</div>`}
 
