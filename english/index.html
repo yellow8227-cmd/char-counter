@@ -235,6 +235,11 @@ textarea:focus,input[type=text]:focus{border-color:var(--blue);outline:none}
 .situ{font-family:var(--en);font-size:18px;line-height:1.6;border:1.5px solid var(--ink);border-radius:12px;padding:14px 16px;position:relative}
 .situ::before{content:"Imagine…";display:block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:2px}
 .situ.oq::before{content:"OPIc question"}
+.dictw{display:flex;flex-direction:column;gap:6px}
+.dw{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--sheet)}
+.dw a{font-family:var(--en);font-size:14.5px;color:var(--ink);text-decoration:none;padding:6px 11px;min-height:36px;display:inline-flex;align-items:center}
+.dw a.n{background:#03c75a;color:#fff;font-weight:800;font-size:12px;padding:6px 9px}
+.dw a:hover{background:var(--blue-soft)}
 .more{display:flex;flex-direction:column;gap:6px}
 
 /* quiz */
@@ -303,7 +308,7 @@ footer{font-size:12px;color:var(--muted);line-height:1.6}
   </header>
   <nav class="tabs" id="tabs" aria-label="학습 메뉴"></nav>
   <main id="stage" class="wrap" style="gap:14px;max-width:none"></main>
-  <footer>설명은 영영사전처럼 쉬운 영어로 씁니다. 🔊는 기기의 영어 음성으로 읽어 주고, 사전 링크(Oxford 영영 · 네이버 영영 · YouGlish)에서 실제 원어민 녹음을 들을 수 있어요. 진도는 계정에 저장돼 휴대폰과 PC에서 이어집니다.</footer>
+  <footer>설명은 영영사전처럼 쉬운 영어로 씁니다. 🔊는 기기의 영어 음성으로 읽어 주고, 📖를 누르면 Oxford 영영 · 네이버 영영 · YouGlish 링크가 열려 실제 원어민 녹음을 들을 수 있어요. 진도는 계정에 저장돼 휴대폰과 PC에서 이어집니다.</footer>
 </div>
 <script>
 /* ───────── 문법 단원 ─────────
@@ -1131,13 +1136,19 @@ const hasTTS="speechSynthesis" in window;
 if(hasTTS){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
 function speak(t,slow){if(!hasTTS){toast("이 브라우저는 읽어주기를 지원하지 않아요. 사전 링크로 들어 보세요.");return}
   speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(clean(t));u.lang="en-US";if(VO)u.voice=VO;u.rate=slow?.72:.95;speechSynthesis.speak(u)}
-const sayBtn=(t,slow=true)=>`<button class="say" data-say="${esc(plain(t))}" aria-label="원어민 발음 듣기">🔊</button>`+(slow?`<button class="say" data-say="${esc(plain(t))}" data-slow="1" aria-label="천천히 듣기">🐢</button>`:"");
+const sayBtn=(t,slow=true,dict=true)=>`<button class="say" data-say="${esc(plain(t))}" aria-label="원어민 발음 듣기">🔊</button>`+(slow?`<button class="say" data-say="${esc(plain(t))}" data-slow="1" aria-label="천천히 듣기">🐢</button>`:"")+(dict?`<button class="say" data-act="dict" data-t="${esc(clean(t))}" aria-label="영영사전 열기">📖</button>`:"");
 
 /* 영영사전 · 실제 발음 링크 */
-function dictLinks(t){const p=plain(t).trim();const w=p.split(/\s+/).length;const q=encodeURIComponent(p.toLowerCase().replace(/[.?!,]+$/,""));
-  const L=[];if(w<=3){L.push(["Oxford 영영",`https://www.oxfordlearnersdictionaries.com/search/english/?q=${q}`],["네이버 영영",`https://dict.naver.com/enendict/#/search?query=${q}`])}
-  L.push(["YouGlish 원어민 영상",`https://youglish.com/pronounce/${encodeURIComponent(p.replace(/[.?!]+$/,""))}/english/us`]);
-  return `<div class="row">${L.map(([n,u])=>`<a class="btn sm ghost" href="${u}" target="_blank" rel="noopener">${n} ↗</a>`).join("")}</div>`}
+const STOP=new Set("a an the i you he she it we they me him her us them my your his its our their this that these those is am are was were be been being do does did have has had will would can could should to of in on at for with from by and or but so if as than then just not no very really too also about up down out over off into some any all every there here what who which when where how why".split(" "));
+const OXF=w=>`https://www.oxfordlearnersdictionaries.com/search/english/?q=${encodeURIComponent(w)}`;
+const NAV=w=>`https://dict.naver.com/enendict/#/search?query=${encodeURIComponent(w)}`;
+const YG=p=>`https://youglish.com/pronounce/${encodeURIComponent(p)}/english/us`;
+const lk=(n,u)=>`<a class="btn sm ghost" href="${u}" target="_blank" rel="noopener">${n} ↗</a>`;
+function dictLinks(t){const p=clean(t).replace(/\(.*?\)/g,"").replace(/[.?!,]+\s*$/,"").trim();const ws=p.toLowerCase().match(/[a-z][a-z'-]*/g)||[];
+  const keys=[...new Set(ws.map(w=>w.replace(/'(s|re|ve|ll|d|m|t)$/,"")).filter(w=>w.length>2&&!STOP.has(w)))].slice(0,8);
+  const out=[`<div class="row">${ws.length<=3?lk("Oxford 영영",OXF(p.toLowerCase()))+lk("네이버 영영",NAV(p.toLowerCase())):lk("네이버 영영 (문장)",NAV(p))}${lk("YouGlish 원어민 영상",YG(p))}</div>`];
+  if(ws.length>3&&keys.length)out.push(`<div class="dictw"><span class="note">단어별 영영사전 · 단어를 누르면 Oxford, 초록 N은 네이버</span><div class="chips">${keys.map(w=>`<span class="dw"><a href="${OXF(w)}" target="_blank" rel="noopener">${esc(w)}</a><a class="n" href="${NAV(w)}" target="_blank" rel="noopener" aria-label="${esc(w)} 네이버 영영">N</a></span>`).join("")}</div></div>`);
+  return out.join("")}
 
 /* 내 목소리 녹음 → 원어민과 비교 */
 function recBox(t){return `<div class="rec card" style="padding:12px 14px;gap:8px;background:var(--bub);border:0">
@@ -1402,11 +1413,11 @@ function renderSay(r,src,el){if(!r||!r.main){if(r)el.innerHTML=`<p class="note">
   ${(r.others||[]).length?`<span class="k">Other ways</span><ul>${r.others.map(o=>`<li><b>${esc(o.en)}</b> — ${esc(o.feel||"")} ${sayBtn(o.en,false)}</li>`).join("")}</ul>`:""}
   ${(r.examples||[]).length?`<span class="k">Same chunk, other situations</span><ul>${r.examples.map(e=>`<li>${esc(e)} ${sayBtn(e,false)}</li>`).join("")}</ul>`:""}
   ${r.idea?`<p class="note en" style="margin:0">💡 ${esc(r.idea)}</p>`:""}${recBox(r.main)}${dictLinks(r.main)}`}
-function renderExplain(r,el){if(!r)return;el.innerHTML=`<div class="main en">${esc(r.term||"")}</div><div class="row">${sayBtn(r.term||"")}<span class="tag blue">${esc(r.kind||"")}</span></div>
+function renderExplain(r,el,inSheet){if(!r)return;el.innerHTML=`${inSheet?"":`<div class="main en">${esc(r.term||"")}</div>`}<div class="row">${inSheet?"":sayBtn(r.term||"")}<span class="tag blue">${esc(r.kind||"")}</span></div>
   <div class="think"><span class="lbl b">Simple meaning</span>${esc(r.simple||"")}</div>${r.more?`<p class="en" style="margin:0;font-size:16px;line-height:1.65">${esc(r.more)}</p>`:""}
   ${(r.examples||[]).length?`<span class="k">Examples</span><ul>${r.examples.map(e=>`<li>${esc(e)} ${sayBtn(e,false)}</li>`).join("")}</ul>`:""}
   ${(r.similar||[]).length?`<span class="k">Similar</span><div class="chunk">${r.similar.map(s=>`<span>${esc(s)}</span>`).join("")}</div>`:""}
-  ${r.careful?`<div class="opic"><b>BE CAREFUL</b>${esc(r.careful)}</div>`:""}${dictLinks(r.term||"")}`}
+  ${r.careful?`<div class="opic"><b>BE CAREFUL</b>${esc(r.careful)}</div>`:""}${inSheet?"":dictLinks(r.term||"")}`}
 function renderCheck(r,el){if(!r)return;el.innerHTML=`<span class="verdict ${esc(r.verdict)}">${{natural:"Natural! 👍",ok:"Understandable",unnatural:"A bit unnatural","wrong-meaning":"Different meaning"}[r.verdict]||esc(r.verdict)}</span>
   <p class="en" style="margin:0;font-size:16px">${esc(r.comment||"")}</p>${r.better?`<span class="k">Try this</span><div class="main en" style="font-size:19px">${esc(r.better)}</div><div class="row">${sayBtn(r.better)}</div>`:""}
   ${(r.fixes||[]).length?`<ul>${r.fixes.map(f=>`<li><s class="muted">${esc(f.from)}</s> → <b>${esc(f.to)}</b> · ${esc(f.why)}</li>`).join("")}</ul>`:""}`}
@@ -1418,8 +1429,12 @@ document.addEventListener("selectionchange",()=>{clearTimeout(window._selT);wind
  if(!t||t.length>160||!/[a-z]/i.test(t)||/[가-힣]/.test(t)||s.anchorNode?.parentElement?.closest("textarea,input,.sheet")){selBtn?.remove();selBtn=null;return}
  const r=s.getRangeAt(0).getBoundingClientRect();if(!selBtn){selBtn=document.createElement("button");selBtn.className="selbtn";selBtn.textContent="📖 영영 풀이";selBtn.addEventListener("mousedown",e=>e.preventDefault());document.body.append(selBtn)}
  selBtn.dataset.t=t;selBtn.dataset.act="explain";selBtn.style.top=(window.scrollY+r.bottom+8)+"px";selBtn.style.left=Math.max(8,Math.min(window.scrollX+r.left,window.scrollX+innerWidth-150))+"px"},250)});
-function openSheet(t){closeSheet();const d=document.createElement("div");d.className="sheet";d.id="sheet";d.innerHTML=`<div class="in"><div class="row" style="justify-content:space-between"><span class="lbl b">Think in English · 영영 풀이</span><button class="btn sm ghost" data-act="closesheet">닫기 ✕</button></div><div id="sout" class="res"></div></div>`;document.body.append(d);
- aiJSON(P.explain(t),$("#sout")).then(r=>{if(r)renderExplain(r,$("#sout"));else $("#sout").insertAdjacentHTML("beforeend",`<div class="main en">${esc(t)}</div><div class="row">${sayBtn(t)}</div>${dictLinks(t)}`)})}
+function openSheet(t,auto=true){closeSheet();const d=document.createElement("div");d.className="sheet";d.id="sheet";
+ d.innerHTML=`<div class="in"><div class="row" style="justify-content:space-between"><span class="lbl b">영영사전 · Think in English</span><button class="btn sm ghost" data-act="closesheet">닫기 ✕</button></div>
+  <div class="main en" style="font-size:20px;font-weight:700">${esc(t)}</div><div class="row">${sayBtn(t,true,false)}</div>${dictLinks(t)}
+  <div class="ai" style="padding:12px"><div class="h"><span class="dot">C</span>AI 영영 풀이</div>${auto?"":`<button class="btn blue sm" data-act="aiexp">쉬운 영어로 설명 듣기</button>`}<div id="sout" class="res"></div></div></div>`;
+ d.dataset.t=t;document.body.append(d);if(auto)runExplain(t)}
+function runExplain(t){const el=$("#sout");aiJSON(P.explain(t),el).then(r=>{if(r)renderExplain(r,el,true)})}
 function closeSheet(){$("#sheet")?.remove()}
 
 /* ───────── 클릭 처리 ───────── */
@@ -1441,6 +1456,8 @@ document.addEventListener("click",e=>{const b=e.target.closest("button,[data-act
  const A=d.act;if(!A)return;
  if(A==="explain"){selBtn?.remove();selBtn=null;openSheet(d.t);return}
  if(A==="closesheet"){closeSheet();return}
+ if(A==="dict"){openSheet(d.t,false);return}
+ if(A==="aiexp"){b.remove();runExplain($("#sheet").dataset.t);return}
  if(A==="rec"){startRec(b);return}
  if(A==="read"){if(!S.read[d.u]){S.read[d.u]=today();gain(20,true)}VIEWS.unit(d.u);return}
  if(A==="playdlg"){const u=unitOf(d.u);if(!u||!hasTTS)return;speechSynthesis.cancel();u.dialog.forEach(([w,t],i)=>{const x=new SpeechSynthesisUtterance(clean(t));x.lang="en-US";const vs=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));x.voice=(w==="B"&&vs[1])?vs[1]:VO;x.rate=.95;speechSynthesis.speak(x)});return}
