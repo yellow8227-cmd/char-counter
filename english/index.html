@@ -1141,12 +1141,12 @@ const sayBtn=(t,slow=true,dict=true)=>`<button class="say" data-say="${esc(plain
 /* 영영사전 · 실제 발음 링크 */
 const STOP=new Set("a an the i you he she it we they me him her us them my your his its our their this that these those is am are was were be been being do does did have has had will would can could should to of in on at for with from by and or but so if as than then just not no very really too also about up down out over off into some any all every there here what who which when where how why".split(" "));
 const OXF=w=>`https://www.oxfordlearnersdictionaries.com/search/english/?q=${encodeURIComponent(w)}`;
-const NAV=w=>`https://dict.naver.com/enendict/#/search?query=${encodeURIComponent(w)}`;
+const NAV=(w,ex)=>`https://dict.naver.com/enendict/#/search?${ex?"range=example&":""}query=${encodeURIComponent(w)}`;
 const YG=p=>`https://youglish.com/pronounce/${encodeURIComponent(p)}/english/us`;
 const lk=(n,u)=>`<a class="btn sm ghost" href="${u}" target="_blank" rel="noopener">${n} ↗</a>`;
 function dictLinks(t){const p=clean(t).replace(/\(.*?\)/g,"").replace(/[.?!,]+\s*$/,"").trim();const ws=p.toLowerCase().match(/[a-z][a-z'-]*/g)||[];
   const keys=[...new Set(ws.map(w=>w.replace(/'(s|re|ve|ll|d|m|t)$/,"")).filter(w=>w.length>2&&!STOP.has(w)))].slice(0,8);
-  const out=[`<div class="row">${ws.length<=3?lk("Oxford 영영",OXF(p.toLowerCase()))+lk("네이버 영영",NAV(p.toLowerCase())):lk("네이버 영영 (문장)",NAV(p))}${lk("YouGlish 원어민 영상",YG(p))}</div>`];
+  const out=[`<div class="row">${ws.length<=3?lk("Oxford 영영",OXF(p.toLowerCase()))+lk("네이버 영영",NAV(p.toLowerCase())):lk("네이버 영영 예문",NAV(p,true))}${lk("YouGlish 원어민 영상",YG(p))}</div>`];
   if(ws.length>3&&keys.length)out.push(`<div class="dictw"><span class="note">단어별 영영사전 · 단어를 누르면 Oxford, 초록 N은 네이버</span><div class="chips">${keys.map(w=>`<span class="dw"><a href="${OXF(w)}" target="_blank" rel="noopener">${esc(w)}</a><a class="n" href="${NAV(w)}" target="_blank" rel="noopener" aria-label="${esc(w)} 네이버 영영">N</a></span>`).join("")}</div></div>`);
   return out.join("")}
 
