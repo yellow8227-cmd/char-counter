@@ -1,7 +1,32 @@
 /* ───────── 문법 단원 ─────────
    [[...]] = 형광펜으로 칠할 부분. 설명은 모두 쉬운 영어. */
 const UNITS=[
-{id:"u1",no:1,ko:"현재 vs 현재진행",en:"Simple vs -ing",pic:"now",
+{id:"u0",no:1,ko:"have p.p.라는 기계",en:"How have + p.p. is built",pic:"machine",
+ big:"have = you hold it now. p.p. = a finished thing. So have + p.p. = you are holding a finished thing right now. That is the whole machine.",
+ points:[
+  {h:"Step 1 — p.p. only means 'done'",p:"Every verb has a third form. It carries one feeling: finished, or received. break-broke-broken. eat-ate-eaten. go-went-gone. And be-was-been.",
+   ex:["break → [[broken]] (someone broke it)","close → [[closed]] (someone closed it)","be → [[been]] ← this is the one that surprises people"]},
+  {h:"Step 2 — have still means 'hold'",p:"The word have did not lose its meaning. You are holding that finished thing in your hand, right now.",
+   ex:["I [[have]] a car. (I hold a car)","I [[have lost]] my wallet. (I hold a losing → it is still lost)","I [[have finished]]. (I hold a finished job → I am free now)"]},
+  {h:"Step 3 — past tense stops back there. have p.p. reaches you",p:"Simple past: the story ended in the past. have p.p.: the line comes all the way to now.",
+   ex:["I [[lost]] my wallet. (back then. Maybe I found it later.)","I [[have lost]] my wallet. (and it is still gone now)","He [[went]] to Japan. (just a past event)","He [[has gone]] to Japan. (so he is not here now)"]},
+  {h:"Step 4 — been is simply be's p.p.",p:"Nothing special about it. When you put 'be' into this machine, be turns into been.",
+   ex:["I [[am]] sick. → I[['ve been]] sick. (sick up to now)","I [[am]] in Japan. → I[['ve been]] to Japan. (went and came back)","It [[is]] cold. → It[['s been]] cold all week."]},
+  {h:"Step 5 — have been -ing is the same machine wrapped around -ing",p:"am/is/are + -ing is the 'in progress' shape. Put that whole shape into the machine, and am becomes been. The -ing never moves.",
+   ex:["I [[am studying]]. (in progress now)","I[['ve been studying]]. (from before, up to now)","I [[was studying]]. (in progress then)","I[['d been studying]]. (up to that past moment)"]},
+  {h:"One verb, four frames",p:"Only the front part changes. Learn these four lines together, as a set.",
+   ex:["I [[am]] studying. — now","I [[was]] studying. — then","I [[have been]] studying. — up to now","I [[had been]] studying. — up to that past moment"]}
+ ],
+ dialog:[["A","You look exhausted."],["B","I[['ve been working]] since six this morning."],["A","Six?! [[Have]] you [[eaten]] anything?"],["B","No. I [[haven't eaten]] since last night."],["A","Wait, you [[said]] you [[had finished]] the report yesterday."],["B","I [[had]], but my boss [[asked]] for a new version."]],
+ mistakes:[
+  ["I have went to Japan.","I have been to Japan.","After have you need the p.p. (go-went-gone). And for 'visited and came back', the set phrase is have been to."],
+  ["I have see that movie.","I have seen that movie.","have + p.p., never the base verb."],
+  ["I am been sick.","I have been sick.","been never follows am. been goes after have / has / had."],
+  ["I have studying English.","I have been studying English.","You cannot jump from have straight to -ing. be must sit in between, as been."]
+ ],
+ opic:"Every other unit sits on this one machine. When a sentence confuses you, find the have / has / had first, then look at the word right after it."
+},
+{id:"u1",no:2,ko:"현재 vs 현재진행",en:"Simple vs -ing",pic:"now",
  big:"Simple present is the normal setting of your life. Present continuous is what's on the screen right now.",
  points:[
   {h:"Simple present = your profile",p:"Use it for habits, facts, and things that are generally true about you. It doesn't matter what you're doing at this second.",
@@ -26,7 +51,7 @@ const UNITS=[
  ],
  opic:"'Tell me about your typical day' → simple present (I wake up at 7, I usually…). Then add 'These days, I'm…' to sound current and real."
 },
-{id:"u2",no:2,ko:"have p.p. 계속 용법",en:"From then until now",pic:"line",
+{id:"u2",no:3,ko:"have p.p. 계속 용법",en:"From then until now",pic:"line",
  big:"have + p.p. connects the past to NOW. It started before, and it's still true today.",
  points:[
   {h:"Started in the past, still true now",p:"One line from a past point to now. The line is not finished.",
@@ -51,7 +76,7 @@ const UNITS=[
  ],
  opic:"Background answers sound stronger with a time line: 'I've lived in my apartment for about four years.' 'I've worked at my company since 2021.'"
 },
-{id:"u3",no:3,ko:"have been ~ing",en:"Been doing",pic:"zigzag",
+{id:"u3",no:4,ko:"have been ~ing",en:"Been doing",pic:"zigzag",
  big:"An activity started before and has been going on until now. The focus is on the doing, and on how long.",
  points:[
   {h:"Going on up to now",p:"The action started in the past and is probably still going.",
@@ -76,7 +101,32 @@ const UNITS=[
  ],
  opic:"'Recently, I've been getting into…' or 'I've been trying to…' is a great way to start answers about hobbies or changes in your life."
 },
-{id:"u4",no:4,ko:"수동태 be + p.p.",en:"The passive",pic:"spot",
+{id:"u9",no:5,ko:"had p.p. 그때 이미",en:"Already done, back then",pic:"before",
+ big:"have p.p. holds a finished thing NOW. had p.p. holds it at a past moment. You step back into the past first, and then look even further back.",
+ points:[
+  {h:"Two steps into the past",p:"First set a past moment. Then say what was already finished before it.",
+   ex:["When I [[got]] home, they [[had eaten]] everything. (the eating finished first)","The train [[had already left]] when I [[arrived]]."]},
+  {h:"have → had. That is the only change",p:"Same machine. You just move the holding hand back in time.",
+   ex:["I[['ve lost]] my keys. (I am holding it now)","I [[realized]] I[['d lost]] my keys. (I was holding it at that moment)"]},
+  {h:"You don't always need it",p:"If 'before' or 'after' already shows the order, or if you tell events in order, simple past is enough. Natives often skip had.",
+   ex:["I [[ate]] dinner and [[went]] to bed. (the order is clear)","After I [[finished]] work, I [[went]] home. (after does the job)"]},
+  {h:"Reporting what someone said",p:"When you repeat someone's past sentence, everything takes one step back.",
+   ex:["\"I finished it.\" → He [[said]] he [[had finished]] it.","\"I've never been there.\" → She [[said]] she [[had never been]] there."]},
+  {h:"had been -ing = it had been going on until then",p:"The -ing version works the same way, one step back.",
+   ex:["I[['d been waiting]] for an hour when she finally [[showed up]].","My eyes were red because I[['d been crying]]."]},
+  {h:"if + had p.p. = a past that did not happen",p:"This is how you imagine a different past. It pairs with would have p.p.",
+   ex:["If I [[had known]], I [[would have come]].","If you[['d told]] me earlier, I could have helped."]}
+ ],
+ dialog:[["A","Why were you so late yesterday?"],["B","I [[missed]] the bus. By the time I [[got]] to the stop, it [[had already left]]."],["A","Didn't you say you[['d set]] an alarm?"],["B","I [[had]], but I [[turned]] it off in my sleep."],["A","Ha. [[Had]] you [[been working]] late the night before?"],["B","Yeah. I[['d been editing]] until three."]],
+ mistakes:[
+  ["I had went home early.","I had gone home early.","had + p.p. (gone), not the past form (went)."],
+  ["When I arrived, the movie already started.","When I arrived, the movie had already started.","It started before you arrived → one step further back."],
+  ["Yesterday I had eaten lunch at noon.","Yesterday I ate lunch at noon.","Just one past event → simple past. had p.p. needs another past moment to stand in front of."],
+  ["If I would have known, I would have come.","If I had known, I would have come.","After if, use had p.p. — never would have."]
+ ],
+ opic:"Perfect for stories: 'By the time I got there, it had already closed.' One had p.p. makes your timeline sound controlled."
+},
+{id:"u4",no:6,ko:"수동태 be + p.p.",en:"The passive",pic:"spot",
  big:"Put the thing that receives the action in the spotlight. Who did it is unknown, not important, or obvious.",
  points:[
   {h:"Spotlight on the receiver",p:"Say what happened to it. The doer can stay hidden.",
@@ -101,7 +151,7 @@ const UNITS=[
  ],
  opic:"Use it for places and problems: 'My apartment was built about ten years ago.' 'The concert got canceled because of the rain.'"
 },
-{id:"u5",no:5,ko:"p.p.의 뜻",en:"What p.p. feels like",pic:"done",
+{id:"u5",no:7,ko:"p.p.의 뜻",en:"What p.p. feels like",pic:"done",
  big:"A p.p. word carries one feeling: done. The action is finished, or someone or something received it.",
  points:[
   {h:"p.p. = done / received",p:"broken = someone broke it, so now it's in a broken state. closed, finished, used, lost work the same way.",
@@ -126,7 +176,7 @@ const UNITS=[
  ],
  opic:"Feeling words make your stories vivid: 'I was so surprised.' 'It was a little disappointing.' 'I felt really relieved.'"
 },
-{id:"u6",no:6,ko:"would 다시 보기",en:"The feeling of would",pic:"would",
+{id:"u6",no:8,ko:"would 다시 보기",en:"The feeling of would",pic:"would",
  big:"would = will, but one step away: away from reality (imagining), away in time (the past), or a polite step back.",
  points:[
   {h:"Imagining (not real now)",p:"Use it for situations that aren't true right now. After 'if', use the past form.",
@@ -153,7 +203,7 @@ const UNITS=[
  ],
  opic:"Role-play questions: 'Would it be possible to…?', 'Would you mind…?'. Imagining questions: 'If you could…, what would you do?' → 'I would…'."
 },
-{id:"u7",no:7,ko:"문장의 절 구조",en:"Building with clauses",pic:"blocks",
+{id:"u7",no:9,ko:"문장의 절 구조",en:"Building with clauses",pic:"blocks",
  big:"A clause is one 'someone + does/is something' unit. A long sentence is just small clauses connected. Say one, then add the next.",
  points:[
   {h:"One clause = subject + verb",p:"Count the subject-verb pairs.",
@@ -178,7 +228,7 @@ const UNITS=[
  ],
  opic:"OPIc raters listen for connected speech (paragraphs = IH/AL). Practice: one clause → add because → add so → add which."
 },
-{id:"u8",no:8,ko:"관계사",en:"Name tags for nouns",pic:"tag",
+{id:"u8",no:10,ko:"관계사",en:"Name tags for nouns",pic:"tag",
  big:"A relative clause is a name tag on a noun. It tells you WHICH one, or adds extra information about it.",
  points:[
   {h:"who / that → people",p:"The clause tells you which person.",
@@ -206,6 +256,34 @@ const UNITS=[
   ["He was late, that was annoying.","He was late, which was annoying.","Commenting on a whole sentence → , which"]
  ],
  opic:"Describing places and people: 'It's a small café that has big windows, which makes it really bright.'"
+},
+{id:"u10",no:11,ko:"-ed의 두 얼굴",en:"Did it, or had it done to you",pic:"faces",
+ big:"The same -ed word has two completely different jobs. Alone, it means the subject DID it. With was/were/is in front, it means the subject RECEIVED it. The little word in front is the only signal.",
+ points:[
+  {h:"Face 1 — -ed alone = the subject did it",p:"No helper word in front. The subject is the one acting. This is just the simple past.",
+   ex:["I [[closed]] the door.","He [[broke]] my cup.","She [[finished]] the report."]},
+  {h:"Face 2 — was/were + -ed = the subject received it",p:"Same -ed word. But now the subject is not acting. Something happened TO it.",
+   ex:["The door [[was closed]]. (someone closed it)","My cup [[was broken]]. (someone broke it)","The report [[was finished]]. (someone finished it)"]},
+  {h:"So: look at the word in FRONT, not the -ed",p:"The -ed tells you nothing by itself. Train your eyes to check what sits before it. Three possible fronts, three meanings.",
+   ex:["[[nothing]] + closed → I closed it. (I did it)","[[was / is / were]] + closed → It was closed. (it got closed)","[[have / has / had]] + closed → I have closed it. (done, and it still counts now)"]},
+  {h:"Feelings are almost always Face 2",p:"This is the number one Korean-speaker mistake. Things interest YOU, bore YOU, tire YOU. So you are the receiver. You always need be + p.p.",
+   ex:["I [[was interested]] in it. (✗ I interested)","I[['m bored]]. (✗ I bore)","I [[was surprised]].","I[['m tired]].","I[['m worried]] about it."]},
+  {h:"A few verbs can stand on both sides",p:"open, close, break, change, start, stop, move. With no object after them, they look like they moved by themselves. With was, someone did it.",
+   ex:["The door [[opened]]. (it just opened — maybe wind)","The door [[was opened]]. (a person opened it)","The glass [[broke]]. (it fell and broke)","The glass [[was broken]]. (someone broke it)"]},
+  {h:"Some verbs can NEVER take Face 2",p:"happen, occur, appear, arrive, die, go, come, fall. Nobody does these to you, so was + p.p. is impossible. Koreans say 'was happened' all the time — never say it.",
+   ex:["It [[happened]] last night. (✗ It was happened)","He [[arrived]] late. (✗ He was arrived)","My grandfather [[died]] in 2019. (✗ was died)"]},
+  {h:"Line the three frames up and say them out loud",p:"Take one verb and run it through all three. Do this with five verbs and the confusion disappears.",
+   ex:["I [[finished]] it. — I did it, back then","It [[is finished]]. — it is in a finished state now","I[['ve finished]] it. — I did it, and it still counts","It [[was finished]] yesterday. — someone finished it then"]}
+ ],
+ dialog:[["A","What happened to your phone?"],["B","The screen [[was cracked]] when I got it back from repair."],["A","Wait, so they [[cracked]] it?"],["B","Probably. It [[wasn't broken]] when I [[dropped]] it off."],["A","Weren't you [[annoyed]]?"],["B","I [[was]]. But they [[fixed]] it for free, so I[['m satisfied]] now."]],
+ mistakes:[
+  ["I interested in movies.","I'm interested in movies.","Movies interest you → you are the receiver → be + p.p. Never drop the be."],
+  ["It was happened yesterday.","It happened yesterday.","Nobody does 'happen' to it. happen can never take was + p.p."],
+  ["The window broke by my brother.","The window was broken by my brother.","Once you name who did it (by ~), you need the passive: was + p.p."],
+  ["I was finished my homework.","I finished my homework.","You did it → no was. 'I was finished' would mean someone finished YOU."],
+  ["My bike stole last night.","My bike was stolen last night.","The bike did not steal anything. It received the action → was + p.p."]
+ ],
+ opic:"When something bad happens to your things, this is the whole grammar: 'My wallet was stolen', 'The road was blocked', 'I was told to wait.' Practice those three shapes."
 }
 ];
 
@@ -301,7 +379,194 @@ Q("u8","pick","That's not ___ I meant.",["what","which","that","who"],"what = th
 Q("u8","fix","Which one sounds natural?",["This is the town I grew up in.","This is the town where I grew up in.","This is the town which I grew up.","This is the town what I grew up in."],"where already includes 'in'."),
 Q("u8","mean","The guy who called you is my boss.",["The man that phoned you is my boss.","My boss called the guy.","You called my boss.","The guy is calling my boss."],"who called you = the name tag on 'the guy'."),
 Q("u8","fix","Which one sounds natural?",["I need someone who can help me.","I need someone who he can help me.","I need someone which can help me.","I need someone can who help me."],"who takes the place of 'he'."),
-Q("u8","situ","You and your partner walk past the restaurant of your very first date. What do you say?",["This is the restaurant where we had our first date.","This is the restaurant which we had our first date.","This is the restaurant we had our first date in it.","This is where the restaurant we had our first date."],"A place + a full clause → where.")
+Q("u8","situ","You and your partner walk past the restaurant of your very first date. What do you say?",["This is the restaurant where we had our first date.","This is the restaurant which we had our first date.","This is the restaurant we had our first date in it.","This is where the restaurant we had our first date."],"A place + a full clause → where."),
+
+Q("u0","pick","What is the p.p. of \"be\"?\nI have ___ sick all week.",["been","was","am","being"],"be-was-been. After have you need the p.p., and be's p.p. is been."),
+Q("u0","mean","I have lost my wallet.",["I lost it, and it is still missing now.","I lost it, but I already found it.","I am going to lose it.","Someone lost my wallet for me."],"have + p.p. = you are holding the finished thing now. So the wallet is still gone."),
+Q("u0","mean","I lost my wallet.",["It happened back then. Maybe I found it later, maybe not.","It is definitely still missing.","I am losing it right now.","I never had a wallet."],"Simple past only reports a past event. It says nothing about now."),
+Q("u0","pick","I ___ English for two hours. I need a break.",["'ve been studying","have studying","am been studying","have study"],"have + been + -ing. You cannot jump from have straight to -ing."),
+Q("u0","fix","Which one sounds natural?",["I have seen that movie.","I have saw that movie.","I have see that movie.","I am seen that movie."],"have + p.p. (see-saw-seen)."),
+Q("u0","mean","He has gone to Japan.",["He is not here right now.","He is here, talking about Japan.","He went to Japan and came back.","He will go to Japan soon."],"has gone = he left and is still away. have been to = went and came back."),
+Q("u0","pick","Only the front changes. I am studying → I ___ studying (up to now).",["have been","am been","was been","have"],"am → have been. The -ing stays exactly where it is."),
+Q("u0","fix","Which one sounds natural?",["I've been to Japan twice.","I've went to Japan twice.","I have be to Japan twice.","I am been to Japan twice."],"have been to = visited and came back."),
+
+Q("u9","pick","When I got to the station, the train ___.",["had already left","already left","has already left","was already leaving"],"It left before you arrived → one step further back → had p.p."),
+Q("u9","mean","By the time I got home, they had eaten everything.",["They finished eating before I arrived.","They ate after I came home.","We ate together.","They were still eating when I walked in."],"had p.p. = already finished before that past moment."),
+Q("u9","pick","He said he ___ the report.",["had finished","has finished","have finished","finish"],"Reporting someone's past sentence → one step back → had p.p."),
+Q("u9","fix","Which one sounds natural?",["I had gone home early that day.","I had went home early that day.","I had go home early that day.","I have went home early that day."],"had + p.p. (gone), not went."),
+Q("u9","pick","If I ___ known, I would have come.",["had","have","would have","did"],"After if, imagining a past that did not happen → had p.p."),
+Q("u9","mean","I'd been waiting for an hour when she showed up.",["The waiting went on until she arrived.","I waited only after she arrived.","I waited an hour yesterday, that is all.","She waited for me."],"had been -ing = it had been going on up to that past moment."),
+Q("u9","pick","Yesterday I ___ lunch at noon.",["ate","had eaten","have eaten","had ate"],"Just one past event with no second past moment → simple past."),
+Q("u9","fix","Which one sounds natural?",["After I finished work, I went home.","After I had finished work, I had gone home.","After I finish work, I had went home.","After I had finish work, I went home."],"'After' already shows the order, so simple past is enough and sounds natural."),
+
+/* ── 헷갈리는 짝 · 까다로운 문제 ── */
+Q("u0","mean","She has been to Paris. / She has gone to Paris.",["First: she visited and came back. Second: she is there now.","Both mean she is in Paris.","Both mean she came back.","First: she lives there. Second: she visited once."],"been to = went and returned. gone to = left and is still away."),
+Q("u0","pick","Irregular check: I have ___ my keys again. (lose)",["lost","losed","lose","losing"],"lose-lost-lost. The p.p. is lost."),
+Q("u0","fix","Which one is correct?",["I've had this car for three years.","I've have this car for three years.","I've having this car for three years.","I have had this car since three years."],"have-had-had. The first 'have' is the machine, the second 'had' is the p.p. of 'own'."),
+Q("u0","mean","He's been quiet. / He's being quiet.",["First: quiet for a while up to now. Second: acting quiet right now, unlike usual.",'Both mean he is always quiet.',"First: he acts quiet. Second: he was quiet before.","Both describe his personality."],"have been = up to now. be being = acting that way at this moment."),
+Q("u0","pick","Which sentence needs 'been'? I have ___ working all day.",["been","be","was","am"],"have + be + -ing → be becomes been. have been working."),
+Q("u0","fix","Which one sounds natural?",["It's been a long day.","It has being a long day.","It is been a long day.","It been a long day."],"It has been = It's been. 'be' becomes 'been' after has."),
+
+Q("u1","mean","I have a car. / I'm having a car.",["First is correct. 'Have' as 'own' is a state, so no -ing.","Both are fine.","Second is more polite.","Second means I am buying one."],"have = own → a state. But 'have lunch / have fun' are actions and can take -ing."),
+Q("u1","pick","This soup ___ amazing. You have to try it.",["tastes","is tasting","taste","has tasted"],"taste as a sense = a state → simple present."),
+Q("u1","mean","You're always leaving your dishes in the sink.",["It happens too often and it annoys me.","You leave dishes only sometimes.","You left dishes once.","You will leave dishes."],"always + -ing = a complaint, not a neutral habit."),
+Q("u1","fix","Which one sounds natural?",["I see what you mean.","I'm seeing what you mean.","I am see what you mean.","I seeing what you mean."],"see = understand → a state. (But 'I'm seeing someone' = dating, an action.)"),
+Q("u1","pick","A: Where's Mom?\nB: She ___ the car. She'll be back soon.",["'s washing","washes","washed","has washed"],"In progress right now → -ing."),
+Q("u1","mean","What do you do? / What are you doing?",["First asks about your job. Second asks about this moment.","Both ask about your job.","First asks about now. Second asks about your job.","Both ask about your plans."],"The most common confusion for Korean learners."),
+
+Q("u2","pick","Careful: I ___ my phone yesterday, and I still haven't found it.",["lost","'ve lost","have been losing","lose"],"'yesterday' is a finished time, so the first verb is simple past. The second clause then uses have p.p."),
+Q("u2","fix","Which one sounds natural?",["Have you ever been to Jeju?","Have you ever gone to Jeju?","Did you ever been to Jeju?","Have you ever went to Jeju?"],"For life experience, the set phrase is have been to."),
+Q("u2","mean","I've worked here for three years. / I worked here for three years.",["First: I still work here. Second: I don't anymore.","Both mean I still work here.","Both mean I quit.","First: I quit. Second: I still work here."],"The line reaching now is the whole difference."),
+Q("u2","pick","We've known each other ___ we were in middle school.",["since","for","from","during"],"since + a starting point. A whole clause can be the starting point."),
+Q("u2","fix","Which one is wrong?",["I've met him last week.","I met him last week.","I've met him before.","I've already met him."],"A finished time word (last week, yesterday, in 2020) cannot sit with have p.p."),
+Q("u2","pick","A: Is Minji still at the office?\nB: No, she ___ home.",["has gone","has been","went to","has been to"],"has gone home = she left and is not here now."),
+
+Q("u3","mean","I've read that book. / I've been reading that book.",["First: I finished it. Second: I'm still in the middle.","Both mean I finished it.","Both mean I started it.","First: I started it. Second: I finished it."],"have p.p. = the finished result. have been -ing = the activity, maybe unfinished."),
+Q("u3","pick","How many emails ___ today?",["have you written","have you been writing","did you wrote","are you written"],"A number of finished things → have p.p., not -ing."),
+Q("u3","fix","Which one sounds natural?",["I've been having trouble sleeping.","I've been knowing him for years.","I've been owning this car since 2020.","I've been believing you."],"know, own, believe are states. But 'have trouble' means 'experience', which is an action, so -ing is fine."),
+Q("u3","mean","Your hands are dirty. Have you been gardening?",["I see a result now, so I guess you were gardening until just now.","Do you garden as a hobby?","Will you garden later?","Did you garden last year?"],"have been -ing + visible evidence right now."),
+Q("u3","pick","It ___ for three days. The roads are flooded.",["'s been raining","rains","rained","is rain"],"Started three days ago, still going, and there is a result now."),
+Q("u3","fix","Which one sounds natural?",["I've been working here since March.","I'm working here since March.","I work here since March.","I've been working here since 3 months."],"since + a point. for + a length."),
+
+Q("u9","mean","When I arrived, she left. / When I arrived, she had left.",["First: she left after I got there. Second: she was already gone.","Both mean she was already gone.","Both mean she left after I arrived.","First: she was gone. Second: she left later."],"had p.p. moves the event before the other past moment."),
+Q("u9","pick","I couldn't get in because I ___ my key at home.",["had left","have left","left had","was leaving"],"Leaving the key happened before 'couldn't get in' → had p.p."),
+Q("u9","fix","Which one sounds natural?",["I'd never seen anything like it.","I never had seen anything like it.","I'd never saw anything like it.","I never have saw anything like it."],"had + never + p.p. (seen)."),
+Q("u9","mean","If I had studied harder, I would have passed.",["I didn't study hard, and I didn't pass.","I studied hard and passed.","I will study hard and pass.","I'm studying hard now."],"if + had p.p. = imagining a past that did not happen."),
+Q("u9","pick","She told me she ___ the movie three times.",["had seen","has seen","have seen","did see"],"Reporting a past sentence → one step back."),
+Q("u9","fix","Which one sounds natural?",["I got up, had breakfast, and went to work.","I had got up, had had breakfast, and had gone to work.","I had get up, had breakfast, and went to work.","I got up, had had breakfast, and had went to work."],"Events told in order need no had p.p. Overusing it sounds unnatural."),
+
+Q("u4","mean","My bike was stolen. / My bike got stolen.",["Almost the same. 'got' sounds more casual and sudden.","First is casual, second is formal.","First means I stole it.","Second means the bike stole something."],"get + p.p. is the spoken version of be + p.p."),
+Q("u4","fix","Which one is wrong?",["The accident was happened last night.","The accident happened last night.","The window was broken last night.","My wallet got stolen last night."],"happen has no receiver, so it can never be passive."),
+Q("u4","pick","The road ___ right now, so take the other way.",["is being repaired","is repairing","repairs","has repairing"],"The road receives the action, and it is in progress → is being + p.p."),
+Q("u4","mean","I'm supposed to be there at seven.",["Someone expects me to be there at seven.","I want to be there at seven.","I was there at seven.","I will probably be late."],"be supposed to = it's the plan or the rule."),
+Q("u4","pick","I ___ to wait outside, so I did.",["was told","told","have told","was telling"],"Someone told me → I received the telling."),
+Q("u4","fix","Which one sounds natural?",["I was born in 1998.","I born in 1998.","I was borned in 1998.","I have born in 1998."],"born is already the p.p., and it always takes 'was'."),
+
+Q("u5","mean","I'm bored. / I'm boring.",["First: I feel bored. Second: I make other people bored.","Both mean I feel bored.","Both mean I am a fun person.","First: I make others bored. Second: I feel bored."],"-ed = your feeling. -ing = the effect you have on others."),
+Q("u5","pick","The instructions were really ___. I had no idea what to do.",["confusing","confused","confuse","to confuse"],"The instructions cause the feeling → -ing."),
+Q("u5","mean","I had my car fixed.",["Someone, like a mechanic, fixed it for me.","I fixed it myself.","My car fixed something.","I'm going to fix my car."],"have + thing + p.p. = someone did it for you."),
+Q("u5","pick","Do you know the woman ___ in the corner?",["sitting","sat","is sitting","seated by"],"She is doing the sitting → -ing, not p.p."),
+Q("u5","fix","Which one sounds natural?",["I was shocked by the news.","I was shocking by the news.","I shocked by the news.","I am shock by the news."],"You received the shock → -ed."),
+Q("u5","pick","This is a dish ___ with rice and vegetables.",["made","making","makes","is made"],"noun + p.p. = a dish that is made with…"),
+
+Q("u6","mean","I would go. / I used to go.",["First: I'm imagining it now. Second: it was my habit in the past.","Both mean a past habit.","Both are about the future.","First: a past habit. Second: imagining."],"would can also mean a past habit, but on its own it usually means imagining. used to is clearly the past."),
+Q("u6","fix","Which one is wrong?",["I would be shy when I was a kid.","I used to be shy when I was a kid.","I would cry a lot when I was a kid.","I used to cry a lot when I was a kid."],"would doesn't work for past states (be, have, like, live). Use used to."),
+Q("u6","pick","If I ___ you, I wouldn't say anything.",["were","am","was being","will be"],"'If I were you' is the fixed advice phrase."),
+Q("u6","mean","You should have told me.",["You didn't tell me, and I'm a bit upset.","You told me, and that was good.","You will tell me later.","I told you."],"should have p.p. = it didn't happen, and that was a mistake."),
+Q("u6","pick","The door ___ open, no matter how hard I pushed.",["wouldn't","won't","didn't would","doesn't"],"wouldn't = it refused to work."),
+Q("u6","fix","Which one sounds natural?",["Would you mind closing the window?","Would you mind to close the window?","Would you mind close the window?","Do you mind closing window?"],"would you mind + -ing."),
+
+Q("u7","fix","Which one is wrong?",["Can you tell me where is the exit?","Can you tell me where the exit is?","Do you know what time it starts?","I'm not sure if she's coming."],"Once the question goes inside a sentence, it takes normal order."),
+Q("u7","pick","I'll call you as soon as I ___ there.",["get","will get","am getting","would get"],"Future after as soon as / when / if → present."),
+Q("u7","mean","Although I was tired, I finished it.",["I was tired, but I still finished.","I finished because I was tired.","I didn't finish because I was tired.","I finished before I got tired."],"although = even so."),
+Q("u7","pick","___ surprised me was how quiet it was.",["What","That","Which","It"],"What = the thing that. It can start a sentence as a big noun."),
+Q("u7","fix","Which one sounds natural?",["I don't know why he's angry.","I don't know why is he angry.","I don't know why does he angry.","I don't know why he is angry?"],"Inside a sentence → he is, not is he."),
+Q("u7","pick","Let me know ___ you need anything.",["if","what","that","which"],"if = in the case that."),
+
+Q("u8","fix","Which one is wrong?",["The man which helped me was kind.","The man who helped me was kind.","The book that I read was great.","The book I read was great."],"which is for things. For people, use who or that."),
+Q("u8","pick","Where can I drop off the package ___ arrived this morning?",["that","what","where","whose"],"A thing + a name tag → that (or which)."),
+Q("u8","mean","I have a friend whose brother is a doctor.",["Her brother is a doctor.","She is a doctor.","Her friend is a doctor.","She has a brother who is sick."],"whose = his/her/their."),
+Q("u8","fix","Which one sounds natural?",["This is the apartment I grew up in.","This is the apartment where I grew up in.","This is the apartment which I grew up.","This is the apartment what I grew up in."],"where already includes 'in', so you use one or the other, never both."),
+Q("u8","pick","He showed up two hours late, ___ was really rude.",["which","that","what","who"],", which = a comment on the whole sentence. 'that' cannot do this job."),
+Q("u8","mean","Everything I said was true.",["All of what I said was true.","I said everything is true.","Someone else said it.","Nothing I said was true."],"The name tag 'I said' describes 'Everything'. 'that' is dropped."),
+
+/* ── 시제 고르기 · 과거형이냐 완료형이냐 ── */
+Q("u0","pick","I ___ to Busan last weekend.",["went","have gone","have been","had gone"],"last weekend = a finished time. A finished time can never sit with have p.p. → simple past."),
+Q("u0","pick","I ___ to Busan three times.",["have been","went","was","have gone"],"Counting your experience up to now → have been to."),
+Q("u0","pick","A: Where's your dad?\nB: He ___ to the store.",["has gone","has been","went","was"],"has gone = he left and is still away. has been to = went and came back."),
+Q("u0","pick","I ___ really tired yesterday.",["was","have been","had been","am"],"yesterday is finished → was."),
+Q("u0","pick","I ___ really tired all week.",["have been","was","am being","had been"],"all week reaches now → have been."),
+Q("u0","pick","Have you ever ___ to a jazz bar?",["been","gone","went","being"],"For life experience the set phrase is have been to."),
+Q("u0","pick","She ___ sick since Monday.",["has been","was","is","had been"],"since Monday + still now → has been."),
+Q("u0","pick","She ___ sick on Monday, but she's fine now.",["was","has been","had been","is"],"on Monday = a finished point → was."),
+Q("u0","pick","The movie ___ at seven and finished at nine.",["started","has started","had started","starts"],"A finished story told in order → simple past."),
+Q("u0","pick","Hurry — the movie ___ already.",["has started","started","had started","starts"],"The result matters right now (we're missing it) → has p.p."),
+Q("u0","pick","I ___ this song before. It's new to me.",["haven't heard","didn't hear","hadn't heard","don't hear"],"before = any time up to now → have p.p."),
+Q("u0","pick","I ___ that song at the concert last night.",["heard","have heard","had heard","hear"],"last night = finished → simple past."),
+
+Q("u1","pick","Water ___ at 100 degrees.",["boils","is boiling","boiled","has boiled"],"A general fact → simple present."),
+Q("u1","pick","Look! The water ___.",["is boiling","boils","boiled","has boiled"],"Look! = right this second → -ing."),
+Q("u1","pick","I ___ my grandmother every Sunday.",["call","am calling","called","have called"],"every Sunday = a routine → simple present."),
+Q("u1","pick","I can't talk now. I ___ my grandmother.",["'m calling","call","called","have called"],"Happening at this moment → -ing."),
+Q("u1","pick","This perfume ___ nice.",["smells","is smelling","smelled","has smelled"],"smell as a sense = a state → simple present."),
+Q("u1","pick","Why are you ___ my soup?",["smelling","smell","smelled","to smell"],"Here smell is an action you are doing → -ing is fine."),
+Q("u1","pick","I ___ my dentist tomorrow at three. It's already booked.",["'m seeing","see","will see","have seen"],"A plan already arranged → -ing for the future."),
+Q("u1","pick","The train ___ at 6:40 every morning.",["leaves","is leaving","left","has left"],"A timetable → simple present."),
+
+Q("u2","pick","I ___ this laptop for four years.",["have had","had","have","am having"],"for + still true now → have + p.p. of have, which is had."),
+Q("u2","pick","I ___ my old laptop four years ago.",["bought","have bought","had bought","buy"],"ago = a finished time → simple past."),
+Q("u2","pick","We ___ friends since 2015.",["have been","were","are","had been"],"since + still true → have been."),
+Q("u2","pick","We ___ in the same class in 2015.",["were","have been","had been","are"],"in 2015 = a finished year → were."),
+Q("u2","pick","A: Is Tom here?\nB: No, he ___ yet.",["hasn't arrived","didn't arrive","hadn't arrived","doesn't arrive"],"not … yet = nothing has happened up to now → have p.p."),
+Q("u2","pick","Have you finished the report ___?",["yet","already","since","for"],"yet lives in questions and negatives about up to now."),
+Q("u2","pick","He ___ here since March.",["has worked","worked","works","had worked"],"since March + still here → has worked."),
+Q("u2","pick","He ___ here from 2019 to 2021.",["worked","has worked","has been working","had worked"],"from … to … closes the time → simple past."),
+Q("u2","pick","I ___ my wallet! I can't pay.",["have lost","lost","had lost","was losing"],"It is still gone right now → have p.p."),
+Q("u2","pick","I ___ my wallet last year, but someone found it.",["lost","have lost","had lost","was lost"],"last year = finished, and the problem is over → simple past."),
+
+Q("u3","pick","I ___ emails all morning. I'm exhausted.",["have been writing","have written","wrote","write"],"The activity itself, up to now, with a result I can feel → have been -ing."),
+Q("u3","pick","I ___ twelve emails this morning.",["have written","have been writing","write","had written"],"A number of finished things → have p.p."),
+Q("u3","pick","She ___ that book twice.",["has read","has been reading","is reading","reads"],"twice = a count of finished readings → have p.p."),
+Q("u3","pick","She ___ that book for a month. She's on page 50.",["has been reading","has read","reads","read"],"Still in the middle → have been -ing."),
+Q("u3","pick","Your face is red. Have you ___ running?",["been","be","being","was"],"have + been + -ing. been is be's p.p."),
+Q("u3","pick","I ___ her for ten years.",["have known","have been knowing","am knowing","know"],"know is a state, so it cannot take -ing."),
+
+Q("u9","pick","When I got there, the shop ___ already closed.",["had","has","was","have"],"It closed before I got there → one step further back → had p.p."),
+Q("u9","pick","Yesterday I was late because I ___ the bus.",["had missed","have missed","miss","am missing"],"Missing the bus happened before 'was late' → had p.p."),
+Q("u9","pick","She said she ___ never been to Korea.",["had","has","have","was"],"Reporting a past sentence → one step back."),
+Q("u9","pick","I ___ waiting for an hour when she finally arrived.",["had been","have been","was been","am"],"The waiting went on up to that past moment → had been -ing."),
+Q("u9","pick","By the time we arrived, the game ___.",["had ended","has ended","ended","was ending"],"By the time + past → the other thing was already finished."),
+Q("u9","pick","I ___ dinner and then watched TV.",["ate","had eaten","have eaten","had ate"],"Events told in order need no had p.p."),
+Q("u9","pick","He ___ his keys, so he couldn't open the door.",["had lost","has lost","loses","was losing"],"Losing them came before 'couldn't open' → had p.p."),
+Q("u9","pick","I didn't recognize her. She ___ her hair.",["had dyed","has dyed","dyes","was dyeing"],"The dyeing happened before the moment I saw her."),
+
+Q("u6","pick","If I ___ more time, I would travel more.",["had","have","will have","would have"],"Imagining now → past form after if, would in the other half."),
+Q("u6","pick","If I ___ earlier, I would have caught the train.",["had left","left","have left","would leave"],"Imagining a past that did not happen → if + had p.p."),
+Q("u6","pick","I ___ have called you, but my phone died.",["would","will","am going to","did"],"would have p.p. = it did not happen."),
+Q("u6","pick","If it ___ tomorrow, we'll stay home.",["rains","will rain","rained","would rain"],"A real possibility → present after if, will in the other half."),
+Q("u6","pick","When I was a child, we ___ go camping every summer.",["would","will","have","are"],"would + a past time = a repeated habit."),
+Q("u6","pick","I wish I ___ more sleep last night.",["had gotten","got","have gotten","would get"],"Wishing about a past that did not happen → had p.p."),
+
+Q("u7","pick","Call me when you ___ home.",["get","will get","would get","are getting"],"Future after when → present."),
+Q("u7","pick","I'll wait here until she ___.",["comes","will come","came","would come"],"Future after until → present."),
+Q("u7","pick","As soon as I ___ the email, I'll let you know.",["get","will get","got","am getting"],"Future after as soon as → present."),
+Q("u7","pick","I don't know if he ___ tomorrow.",["will come","comes","came","would come"],"Here if means whether, so will is correct. This is the opposite of the next one."),
+Q("u7","pick","If he ___ tomorrow, I'll be surprised.",["comes","will come","came","would come"],"Here if sets a condition, so use the present. Compare with the whether sentence."),
+Q("u7","pick","Before I ___ to bed, I always read for a while.",["go","will go","went","am going"],"A routine with before → simple present."),
+
+Q("u4","pick","The bridge ___ in 1995.",["was built","is built","has built","had built"],"The bridge received the action, and 1995 is finished → was + p.p."),
+Q("u4","pick","Sorry, my car ___ right now.",["is being fixed","is fixing","fixes","was fixed"],"In progress now and the car receives it → is being + p.p."),
+Q("u4","pick","The meeting ___ to Friday. Check your email.",["has been moved","has moved","is moving","moved"],"Someone moved it and the result matters now → has been + p.p."),
+Q("u4","pick","Dinner ___ by the time we got home.",["had been cooked","has been cooked","was cooking","is cooked"],"Finished before that past moment, and dinner receives the action → had been + p.p."),
+
+Q("u10","pick","I ___ the door before I left.",["locked","was locked","am locked","been locked"],"I did it → -ed alone. 'I was locked' would mean someone locked ME in."),
+Q("u10","pick","When I came back, the door ___.",["was locked","locked","has locked","did lock"],"The door did not lock anything. It received the action → was + p.p."),
+Q("u10","pick","I ___ in Korean history.",["'m interested","interest","interested","am interesting"],"History interests YOU. You are the receiver → be + interested. 'I'm interesting' means other people find ME interesting."),
+Q("u10","pick","The movie ___. I almost fell asleep.",["was boring","was bored","bored me boring","is bored"],"The movie DOES the boring → -ing. You would be the one who is bored."),
+Q("u10","pick","A: How was the show?\nB: Honestly, I ___.",["was bored","was boring","bored","am boring"],"You received the boredom → be + bored. 'I was boring' means you bored everyone else."),
+Q("u10","pick","It ___ around midnight. Nobody saw it.",["happened","was happened","has happened by","was happening to"],"happen can never take was + p.p. Nobody does 'happen' to something."),
+Q("u10","pick","My wallet ___ on the subway.",["was stolen","stole","has stolen","was stealing"],"The wallet received the action → was + p.p. This exact sentence comes up constantly."),
+Q("u10","pick","He ___ at the station ten minutes late.",["arrived","was arrived","is arrived","had arrived by"],"arrive has no receiver → never was + p.p."),
+Q("u10","mean","I was finished.",["Someone or something finished me — I had nothing left.","I completed my work."],"'I finished' = I did it. 'I was finished' puts YOU in the receiver seat. Careful with this one."),
+Q("u10","pick","The glass ___ when I dropped it.",["broke","was broken","is broken","has broken"],"It fell and broke by itself → -ed alone. 'was broken' would suggest a person broke it."),
+Q("u10","pick","The window ___ by my little brother.",["was broken","broke","breaks","has broke"],"Once you name the doer with by ~, the passive is required."),
+Q("u10","pick","Don't sit there — the paint ___ yet.",["hasn't dried","isn't dried","wasn't dried","didn't dried"],"Paint dries by itself → dry is Face 1. Up to now → have p.p."),
+Q("u10","pick","I ___ to wait outside.",["was told","told","have told","am telling"],"Someone told you → you are the receiver. be told is one of the most useful passives in speech."),
+Q("u10","pick","She ___ me the whole story.",["told","was told","is told","been told"],"Here SHE is doing the telling → -ed alone."),
+Q("u10","mean","My grandfather died in 2019.",["He passed away in 2019.","Someone killed him in 2019."],"die never takes was + p.p. 'was died' does not exist in English."),
+Q("u10","pick","The road ___ because of the snow.",["was blocked","blocked","blocks","has blocked"],"The road received it → was + p.p."),
+Q("u10","pick","A: Why are you so quiet?\nB: I ___ about the interview.",["'m worried","worry","worried","'m worrying it"],"Something worries you → be + worried. This is a feeling, so Face 2."),
+Q("u10","pick","The meeting ___ at three and ___ at five.",["started … ended","was started … was ended","started … was ended","was starting … ended"],"Meetings start and end by themselves in normal speech. Adding was here sounds unnatural."),
+Q("u10","pick","This photo ___ in 1998.",["was taken","took","has taken","was taking"],"The photo received the taking → was + p.p. take-took-taken."),
+Q("u10","pick","I ___ so many photos that day.",["took","was taken","have taken by","was taking by"],"You did it → -ed alone (took)."),
+Q("u10","mean","I'm confused.",["I don't understand — something confused me.","I am making other people confused."],"-ed = how you feel. -ing = the effect you have on others. 'I'm confusing' means other people can't follow you."),
+Q("u10","pick","The rule ___ last year, so it's different now.",["was changed","changed it","has change","was changing"],"Someone changed it → passive. (The rule changed. is also fine, but with a doer in mind the passive is clearer.)"),
+Q("u10","pick","Nothing much ___ last weekend.",["happened","was happened","has happened to be","were happened"],"happen is Face 1 only. Say this one out loud three times."),
+Q("u10","pick","A: Did you fix it yourself?\nB: No, it ___ at the shop.",["was fixed","fixed","has fixed","was fixing"],"You did not do it → the thing received it → was + p.p."),
+Q("u10","pick","I ___ the email, but I haven't sent it yet.",["wrote","was written","have been written","was writing it"],"You did the writing → -ed alone."),
+Q("u10","pick","The email ___ to the wrong person.",["was sent","sent","sends","has sent"],"The email received it → was + p.p."),
+Q("u10","pick","I ___ really tired after work yesterday.",["was","was been","had been being","am"],"tired is already a p.p. acting like an adjective. You only need was in front — nothing else."),
+Q("u10","mean","The store was closed.",["It wasn't open — the doors were shut.","Someone shut the store down forever."],"Here closed describes a state. Context decides whether it is 'not open' or 'someone closed it' — both readings use the same shape.")
 ];
 
 /* ───────── 말하기 카드 ─────────

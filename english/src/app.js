@@ -2,7 +2,7 @@
 const LS="ttyEnglish.v1";
 const today=()=>new Date().toLocaleDateString("sv-SE");
 const addDays=(d,n)=>{const t=new Date(d+"T12:00:00");t.setDate(t.getDate()+n);return t.toLocaleDateString("sv-SE")};
-const blank=()=>({v:1,updatedAt:0,xp:0,goal:100,days:{},read:{},qs:{},wrong:[],srs:{},mine:[]});
+const blank=()=>({v:1,updatedAt:0,xp:0,goal:100,days:{},read:{},qs:{},wrong:[],srs:{},mine:[],cel:""});
 let S=blank();
 try{const raw=localStorage.getItem(LS);if(raw)S=Object.assign(blank(),JSON.parse(raw))}catch(e){}
 let remote=null,saveT=null,syncState="local";
@@ -30,6 +30,16 @@ const unitOf=id=>UNITS.find(u=>u.id===id);
 function toast(t){const d=document.createElement("div");d.className="toast";d.textContent=t;document.body.append(d);setTimeout(()=>d.remove(),2200)}
 function pop(t,c){const d=document.createElement("div");d.className="pop "+c;d.textContent=t;document.body.append(d);setTimeout(()=>d.remove(),950)}
 function gain(n,why){S.xp+=n;const d=today();S.days[d]=(S.days[d]||0)+n;save();refreshTop();if(why)pop("+"+n+" XP","b")}
+const MG={sp:10,unit:1,qz:10,al:1},MKEYS=["sp","unit","qz","al"];
+function actN(k){const d=today();
+ if(k==="unit")return UNITS.filter(u=>S.read[u.id]===d).length;
+ if(k==="al")return Object.values(S.al||{}).filter(x=>x===d).length;
+ if(k==="qz")return Object.values(S.qs||{}).filter(x=>x&&x.t===d).length;
+ return Object.values(S.srs||{}).filter(x=>x&&x.t===d).length}
+const misDone=k=>actN(k)>=MG[k];
+const misCount=()=>MKEYS.filter(misDone).length;
+function celebrate(){const d=today();if(S.cel===d)return;if(!MKEYS.every(misDone))return;
+ S.cel=d;save();pop("오늘 할 일 완료! 🎉","g");toast("오늘 할 일 네 개를 전부 끝냈어요.")}
 function streak(){let n=0,d=today();if(!S.days[d])d=addDays(d,-1);while(S.days[d]){n++;d=addDays(d,-1)}return n}
 const LEVELS=[["NL",0],["NM",100],["NH",300],["IL",600],["IM1",1000],["IM2",1600],["IM3",2400],["IH",3500],["AL",5000]];
 function level(){let i=0;LEVELS.forEach((l,k)=>{if(S.xp>=l[1])i=k});return i}
@@ -98,14 +108,14 @@ const P={
 let MODE="home";
 const TABS=[["home","오늘","Today"],["grammar","문법","Grammar"],["speak","말하기","Speak"],["quiz","퀴즈","Quiz"],["coach","AI 코치","Coach"]];
 function refreshTop(){const el=$("#statline");if(!el)return;const lv=LEVELS[level()][0];
-  el.innerHTML=`<span>🔥 연속 <b>${streak()}</b>일</span><span>오늘 <b>${S.days[today()]||0}</b>/${S.goal} XP</span><span>레벨 <b>${lv}</b></span><span>총 <b>${S.xp.toLocaleString()}</b> XP</span><span class="sync" id="sync"></span>`;setSync(syncState)}
+  el.innerHTML=`<span>🔥 연속 <b>${streak()}</b>일</span><span>오늘 <b>${S.days[today()]||0}</b>/${S.goal} XP</span><span>할 일 <b>${misCount()}</b>/4</span><span>레벨 <b>${lv}</b></span><span>총 <b>${S.xp.toLocaleString()}</b> XP</span><span class="sync" id="sync"></span>`;setSync(syncState)}
 function tabs(){$("#tabs").innerHTML=TABS.map(([k,a,b])=>`<button data-tab="${k}" aria-pressed="${MODE===k}">${a}<small>${b}</small></button>`).join("")}
 function go(m,arg){MODE=m;tabs();VIEWS[m](arg);window.scrollTo({top:0})}
 function render(){refreshTop();tabs();VIEWS[MODE]()}
 
 /* ───────── 오늘 ───────── */
 function dueCards(){const d=today();return allCards().filter(c=>S.srs[c.id]&&S.srs[c.id].d<=d)}
-function newCards(){return allCards().filter(c=>!S.srs[c.id])}
+function newCards(){return allCards().filter(c=>!(S.srs[c.id]&&S.srs[c.id].d))}
 function unitAcc(id){const ids=QUIZ.map((q,i)=>[q,i]).filter(([q])=>q.u===id).map(([,i])=>i);let c=0,t=0;ids.forEach(i=>{const s=S.qs[i];if(s){c+=s.c;t+=s.c+s.w}});return t?{p:Math.round(c/t*100),t}:null}
 function weakest(){let best=null;UNITS.forEach(u=>{const a=unitAcc(u.id);const v=a?a.p:-1;if(best===null||v<best.v)best={u,v}});return best.u}
 const VIEWS={};
@@ -124,12 +134,12 @@ VIEWS.home=()=>{const td=S.days[today()]||0,pct=Math.min(100,Math.round(td/S.goa
     <div class="rungs">${LEVELS.map((l,i)=>`<div class="rung ${i<li?"got":""} ${i===li?"cur":""}">${l[0]}</div>`).join("")}</div>
     <p class="note" style="margin:0">오픽 등급 이름을 빌린 게임 레벨이에요. 실제 점수는 아니에요.</p></section>
   </div>
-  <section class="card"><div class="sec-h"><h2>오늘 할 일</h2><span class="note">위에서부터 하나씩</span></div>
+  <section class="card"><div class="sec-h"><h2>오늘 할 일</h2><span class="doneN ${misCount()===4?"all":""}">${misCount()===4?"네 개 전부 완료 🎉":`${misCount()}/4 완료 · 위에서부터 하나씩`}</span></div>
    <div class="mission">
-    <button class="mis" data-go="speak" data-arg="due"><span class="n">${due||Math.min(10,newCards().length)}</span><b>말하기 ${due?"복습":"새 카드"}</b><span>${due?"오늘 다시 볼 차례인 문장":"한국말을 보고 바로 영어로"}</span></button>
-    <button class="mis blue" data-go="unit" data-arg="${wu.id}"><span class="n">${wu.no}</span><b>${esc(wu.ko)}</b><span>${unitAcc(wu.id)?`정답률 ${unitAcc(wu.id).p}%. 지금 가장 약한 단원`:"아직 안 풀어 본 단원"}</span></button>
-    <button class="mis green" data-go="quiz" data-arg="${wu.id}"><span class="n">10</span><b>퀴즈 10문제</b><span>방금 본 단원으로 확인하기</span></button>
-    <button class="mis" data-act="gotoal"><span class="n">${AL.filter(a=>!(S.al||{})[a.tp]).length}</span><b>AL 답변 1편</b><span>오픽 주제 하나를 2분 동안 말하고 AI 채점 받기</span></button>
+    <button class="mis ${misDone("sp")?"done":""}" data-go="speak" data-arg="due"><span class="n">${misDone("sp")?"✓":SP.size}</span><b>말하기 새 문장 + 복습</b><span>${misDone("sp")?`오늘 ${actN("sp")}장 했어요`:`안 본 문장 ${newCards().length}장 · 복습 ${due}장을 섞어서`}</span><div class="bar" title="${actN("sp")}/${MG.sp}"><i style="width:${Math.min(100,actN("sp")/MG.sp*100)}%"></i></div></button>
+    <button class="mis blue ${misDone("unit")?"done":""}" data-go="unit" data-arg="${wu.id}"><span class="n">${misDone("unit")?"✓":wu.no}</span><b>${esc(wu.ko)}</b><span>${misDone("unit")?"오늘 단원 하나 읽었어요":(unitAcc(wu.id)?`정답률 ${unitAcc(wu.id).p}%. 지금 가장 약한 단원`:"아직 안 풀어 본 단원")}</span><div class="bar"><i style="width:${Math.min(100,actN("unit")/MG.unit*100)}%"></i></div></button>
+    <button class="mis green ${misDone("qz")?"done":""}" data-go="quiz" data-arg="${wu.id}"><span class="n">${misDone("qz")?"✓":10}</span><b>퀴즈 10문제</b><span>${misDone("qz")?`오늘 ${actN("qz")}문제 풀었어요`:"방금 본 단원으로 확인하기"}</span><div class="bar" title="${actN("qz")}/${MG.qz}"><i style="width:${Math.min(100,actN("qz")/MG.qz*100)}%"></i></div></button>
+    <button class="mis ${misDone("al")?"done":""}" data-act="gotoal"><span class="n">${misDone("al")?"✓":AL.filter(a=>!(S.al||{})[a.tp]).length}</span><b>AL 답변 1편</b><span>${misDone("al")?"오늘 한 편 했어요":"오픽 주제 하나를 2분 동안 말하고 AI 채점 받기"}</span><div class="bar"><i style="width:${Math.min(100,actN("al")/MG.al*100)}%"></i></div></button>
    </div></section>
   <section class="card"><div class="sec-h"><h2>약한 곳 지도</h2><span class="note">퀴즈 정답률 · 60% 미만은 빨강</span></div>
    <div class="weak">${UNITS.map(u=>{const a=unitAcc(u.id);return `<button class="wk ${a&&a.p<60?"hot":""}" data-go="unit" data-arg="${u.id}"><span class="no">UNIT ${u.no}${S.read[u.id]?" · 읽음":""}</span><b>${esc(u.ko)}</b><div class="meter ${a&&a.p<60?"red":"ok"}"><i style="width:${a?a.p:0}%"></i></div><span class="pct">${a?a.p+"% · "+a.t+"문제":"아직 안 풂"}</span></button>`}).join("")}</div></section>
@@ -140,6 +150,8 @@ VIEWS.home=()=>{const td=S.days[today()]||0,pct=Math.min(100,Math.round(td/S.goa
 /* ───────── 문법 ───────── */
 function pic(k){const W=600,H=150;const ax=`<line class="sv-axis" x1="30" y1="96" x2="570" y2="96"/><text x="30" y="124" class="t-m">past</text><text x="540" y="124" class="t-m">future</text><line class="sv-now" x1="380" y1="30" x2="380" y2="110"/><text x="364" y="24" class="t-red">NOW</text>`;
  const svg=b=>`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="개념 그림">${b}</svg>`;
+ if(k==="machine")return svg(`<rect x="24" y="44" width="152" height="64" rx="12" class="sv-paper"/><text x="46" y="74" class="t-b">have</text><text x="46" y="96" class="t-m">= hold it now</text><text x="192" y="84" class="t-b">+</text><rect x="214" y="44" width="176" height="64" rx="12" class="sv-soft"/><text x="236" y="74" class="t-acc">p.p.</text><text x="236" y="96" class="t-m">= a finished thing</text><line class="sv-acc" x1="400" y1="76" x2="438" y2="76"/><polygon points="438,66 454,76 438,86" class="sv-accf"/><rect x="460" y="34" width="114" height="84" rx="12" class="sv-mark"/><text x="478" y="64" class="t-b">holding it</text><text x="478" y="86" class="t-b">right NOW</text><text x="478" y="106" class="t-m">→ still true</text>`);
+ if(k==="before")return svg(ax+`<circle cx="130" cy="96" r="8" class="sv-accf"/><text x="74" y="72" class="t-acc">had eaten</text><text x="70" y="140" class="t-m">finished first</text><circle cx="262" cy="96" r="8" class="sv-redf"/><text x="214" y="72" class="t-red">I got home</text><text x="206" y="140" class="t-m">the past moment</text><path class="sv-faint" d="M130 84 q66 -34 132 10"/><text x="410" y="78" class="t-m">now (telling the story)</text>`);
  if(k==="now")return svg(ax+[80,150,220,290,460,530].map(x=>`<circle cx="${x}" cy="96" r="7" class="sv-inkf"/>`).join("")+`<text x="80" y="70" class="t-b">I drink coffee every day.</text><text x="80" y="86" class="t-m">(dots all along the line = habit)</text><path class="sv-acc" d="M340 60 q10 -12 20 0 t20 0 t20 0 t20 0"/><text x="330" y="48" class="t-acc">I'm drinking it now.</text>`);
  if(k==="line")return svg(ax+`<circle cx="140" cy="96" r="8" class="sv-accf"/><line class="sv-acc" x1="140" y1="96" x2="380" y2="96"/><polygon points="380,86 396,96 380,106" class="sv-accf"/><text x="110" y="74" class="t-acc">since 2019</text><text x="210" y="74" class="t-b">I've lived here (and still do)</text><text x="200" y="140" class="t-m">for seven years ←——→</text>`);
  if(k==="zigzag")return svg(ax+`<polyline class="sv-acc" points="140,96 160,70 180,96 200,70 220,96 240,70 260,96 280,70 300,96 320,70 340,96 360,70 380,96"/><text x="140" y="50" class="t-acc">I've been running…</text><text x="396" y="70" class="t-b">→ I'm sweaty now</text><text x="140" y="140" class="t-m">the activity itself, up to now</text>`);
@@ -147,9 +159,10 @@ function pic(k){const W=600,H=150;const ax=`<line class="sv-axis" x1="30" y1="96
  if(k==="done")return svg(`<rect x="40" y="40" width="150" height="70" rx="12" class="sv-paper"/><text x="58" y="70" class="t-b">break</text><text x="58" y="92" class="t-m">(an action)</text><line class="sv-acc" x1="200" y1="75" x2="300" y2="75"/><polygon points="300,65 316,75 300,85" class="sv-accf"/><rect x="330" y="30" width="230" height="90" rx="12" class="sv-soft"/><text x="350" y="62" class="t-acc">broken ✓</text><text x="350" y="84" class="t-b">done / received</text><text x="350" y="104" class="t-m">a state that stays</text>`);
  if(k==="would")return svg(`<rect x="30" y="30" width="230" height="90" rx="14" class="sv-paper"/><text x="50" y="58" class="t-m">REAL</text><text x="50" y="84" class="t-b">will · can · is</text><text x="50" y="104" class="t-m">I will call you.</text><line class="sv-acc" x1="270" y1="75" x2="330" y2="75"/><polygon points="330,65 346,75 330,85" class="sv-accf"/><text x="262" y="60" class="t-m">one step away</text><rect x="352" y="22" width="220" height="106" rx="30" class="sv-soft" stroke-dasharray="6 5"/><text x="372" y="52" class="t-acc">WOULD</text><text x="372" y="76" class="t-b">imagined · past · polite</text><text x="372" y="100" class="t-m">I'd call you (if…)</text>`);
  if(k==="blocks")return svg(`<rect x="20" y="45" width="190" height="56" rx="10" class="sv-inkf"/><text x="36" y="79" style="fill:var(--sheet)" class="t-b">I stayed home</text><rect x="220" y="45" width="110" height="56" rx="10" class="sv-mark"/><text x="236" y="79" class="t-b">because</text><rect x="340" y="45" width="230" height="56" rx="10" class="sv-soft"/><text x="356" y="79" class="t-acc">it was raining.</text><text x="20" y="130" class="t-m">clause 1 (main idea)</text><text x="340" y="130" class="t-m">clause 2 (the reason)</text><text x="20" y="30" class="t-m">subject + verb = one block</text>`);
+ if(k==="faces")return svg(`<text x="30" y="34" class="t-m">same word, two jobs</text><rect x="24" y="46" width="250" height="72" rx="12" class="sv-paper"/><text x="44" y="76" class="t-b">I closed the door.</text><text x="44" y="100" class="t-acc">← I did it</text><line class="sv-faint" x1="296" y1="46" x2="296" y2="118"/><rect x="320" y="46" width="256" height="72" rx="12" class="sv-mark"/><text x="340" y="76" class="t-b">The door <tspan class="t-acc">was</tspan> closed.</text><text x="340" y="100" class="t-acc">← it got closed</text>`);
  if(k==="tag")return svg(`<rect x="30" y="50" width="170" height="54" rx="10" class="sv-inkf"/><text x="52" y="83" style="fill:var(--sheet)" class="t-b">the café</text><line class="sv-faint" x1="200" y1="77" x2="250" y2="77"/><path d="M250 50 h300 a10 10 0 0 1 10 10 v34 a10 10 0 0 1 -10 10 h-300 l-18 -27 z" class="sv-mark"/><circle cx="262" cy="77" r="5" class="sv-paper"/><text x="280" y="83" class="t-b">where we first met</text><text x="250" y="132" class="t-m">a name tag: WHICH café?</text>`);
  return ""}
-VIEWS.grammar=()=>{$("#stage").innerHTML=`<section class="card" style="gap:8px"><div class="sec-h"><h2>회화용 문법 8단원</h2><span class="note">약하다고 한 것만 골랐어요</span></div>
+VIEWS.grammar=()=>{$("#stage").innerHTML=`<section class="card" style="gap:8px"><div class="sec-h"><h2>회화용 문법 ${UNITS.length}단원</h2><span class="note">약하다고 한 것만 골랐어요</span></div>
   <p class="note" style="margin:0">설명은 모두 쉬운 영어예요. 모르는 단어는 드래그(길게 누르기)해서 <b>영영 풀이</b> 버튼을 누르세요.</p></section>
   <div class="unitlist">${UNITS.map(u=>{const a=unitAcc(u.id);return `<button class="utile" data-go="unit" data-arg="${u.id}"><span class="num">${u.no}</span><b>${esc(u.ko)}</b><span class="en">${esc(u.big)}</span><span class="meta">${S.read[u.id]?'<span class="tag ok">읽음</span>':'<span class="tag">안 읽음</span>'}${a?`<span class="tag ${a.p<60?"red":"blue"}">정답률 ${a.p}%</span>`:""}</span></button>`}).join("")}</div>`};
 VIEWS.unit=id=>{const u=unitOf(id)||UNITS[0];MODE="grammar";tabs();
@@ -171,13 +184,13 @@ VIEWS.unit=id=>{const u=unitOf(id)||UNITS[0];MODE="grammar";tabs();
   <section class="ai"><div class="h"><span class="dot">C</span>이 단원에 대해 질문하기</div>
    <textarea id="askq" rows="2" placeholder="예: I've lived랑 I've been living은 느낌이 얼마나 달라?"></textarea>
    <div class="row"><button class="btn blue sm" data-act="ask" data-u="${u.id}">영어로 설명 듣기</button></div><div id="askout" class="aiout"></div></section>
-  <div class="row"><button class="btn grow ${S.read[u.id]?"ghost":"pri"}" data-act="read" data-u="${u.id}">${S.read[u.id]?"✓ 읽음":"다 읽었어요 +20 XP"}</button><button class="btn grow blue" data-go="quiz" data-arg="${u.id}">이 단원 퀴즈</button>${u.no<8?`<button class="btn grow ghost" data-go="unit" data-arg="${UNITS[u.no].id}">다음 단원 →</button>`:""}</div>`};
+  <div class="row"><button class="btn grow ${S.read[u.id]?"ghost":"pri"}" data-act="read" data-u="${u.id}">${S.read[u.id]?"✓ 읽음":"다 읽었어요 +20 XP"}</button><button class="btn grow blue" data-go="quiz" data-arg="${u.id}">이 단원 퀴즈</button>${u.no<UNITS.length?`<button class="btn grow ghost" data-go="unit" data-arg="${UNITS[u.no].id}">다음 단원 →</button>`:""}</div>`};
 
 /* ───────── 말하기 ───────── */
 function allCards(){return CARDS.concat(S.mine.map(m=>Object.assign({cat:"mine",tag:null},m)))}
-let SP={mode:"ko",cat:"due",flash:false,queue:[],i:0,shown:false,step:0};
+let SP={mode:"ko",cat:"due",size:15,mix:.7,flash:false,queue:[],i:0,shown:false,step:0};
 VIEWS.speak=arg=>{if(arg)SP.cat=arg;const all=allCards();const cnt=c=>c==="due"?dueCards().length:c==="all"?all.length:c==="mine"?S.mine.length:c==="rep"?all.filter(x=>x.dlg).length:all.filter(x=>x.cat===c).length;
- const chips=[["due","오늘 복습"],["all","전체"],["mine","내 문장"],...CATS];
+ const chips=[["due","섞어서 (새 문장+복습)"],["all","전체"],["mine","내 문장"],...CATS];
  $("#stage").innerHTML=`<section class="card"><div class="sec-h"><h2>말하기 연습</h2><span class="note">소리 내서 먼저 말하고, 그다음 확인</span></div>
   <div class="deck">
    <button class="modebtn" data-sp="ko" aria-pressed="${SP.mode==="ko"}"><b>🇰🇷 → 🗣 바로 말하기</b><span>하고 싶은 말(한국어)을 보고 영어로 바로. 한국식 사고 ✗ vs 영어식 사고 ✓ 비교</span></button>
@@ -188,15 +201,24 @@ VIEWS.speak=arg=>{if(arg)SP.cat=arg;const all=allCards();const cnt=c=>c==="due"?
   ${SP.mode==="al"?alList():""}
   ${SP.mode==="ko"?`<span class="lbl">생활 표현</span><div class="chips">${chips.map(([k,n])=>`<button class="chip" data-cat="${k}" aria-pressed="${SP.cat===k}">${n}<small>${cnt(k)}</small></button>`).join("")}</div>
    <span class="lbl b">오픽 주제</span><div class="chips">${TOPICS.map(([k,n])=>`<button class="chip" data-cat="${k}" aria-pressed="${SP.cat===k}">${n}<small>${cnt(k)}</small></button>`).join("")}</div>
+   <span class="lbl g">한 번에 몇 장 · 새 문장 비율</span>
+   <div class="chips">${[10,15,20,30].map(n=>`<button class="chip" data-size="${n}" aria-pressed="${SP.size===n}">${n}장</button>`).join("")}</div>
+   <div class="chips">${[[.9,"새 문장만 거의"],[.7,"새 문장 많이"],[.5,"반반"],[.3,"복습 많이"]].map(([v,n])=>`<button class="chip" data-mix="${v}" aria-pressed="${SP.mix===v}">${n}</button>`).join("")}</div>
+   <p class="note" style="margin:0">아직 안 본 문장 <b>${newCards().length}</b>장 · 오늘 복습할 문장 <b>${dueCards().length}</b>장. 새 문장은 여러 주제에서 골고루 뽑아요.</p>
    <label class="toggle"><input type="checkbox" id="flash" ${SP.flash?"checked":""}> ⏱ 5초 순발력 모드 (5초 안에 입 밖으로!)</label>`:""}
   ${SP.mode==="al"?"":`<button class="btn pri" data-act="spstart">시작하기</button>`}
   <p class="note" style="margin:0">카드 평가에 따라 다시 나오는 날이 정해져요: 못함 → 오늘 또, 생각함 → 내일, 바로 나옴 → 3일·7일·16일 뒤.</p></section>`};
+/* 새 문장 + 복습을 비율대로 섞는다. 새 문장은 주제별로 돌아가며 뽑아 한쪽에 몰리지 않게 */
+function spread(cards){const by={};shuffle(cards).forEach(c=>(by[c.cat]=by[c.cat]||[]).push(c));const ks=shuffle(Object.keys(by));const out=[];let left=true;while(left){left=false;for(const k of ks){const c=by[k].shift();if(c){out.push(c);left=true}}}return out}
+const isSeen=c=>S.srs[c.id]&&S.srs[c.id].d;
+function mixDeck(src,n,ratio){const d=today();const fresh=spread(src.filter(c=>!isSeen(c)));const due=shuffle(src.filter(c=>isSeen(c)&&S.srs[c.id].d<=d)).sort((a,b)=>(S.srs[a.id].b||0)-(S.srs[b.id].b||0));const seen=shuffle(src.filter(c=>isSeen(c)&&S.srs[c.id].d>d));
+ let nNew=Math.round(n*ratio),nRev=n-nNew;if(due.length<nRev){nNew+=nRev-due.length;nRev=due.length}if(fresh.length<nNew){nRev=Math.min(due.length,nRev+nNew-fresh.length);nNew=fresh.length}
+ let pick=fresh.slice(0,nNew).concat(due.slice(0,nRev));if(pick.length<n)pick=pick.concat(seen.slice(0,n-pick.length));return shuffle(pick)}
 function buildQueue(){const all=allCards();let pool;
  if(SP.mode==="situ"){pool=shuffle(all.filter(c=>c.situ)).concat(shuffle(QUIZ.filter(q=>q.t==="situ").map((q,i)=>({id:"qs"+i,situ:q.q,en:q.o[0],think:q.x,tag:q.u}))))}
  else if(SP.mode==="rep"){pool=shuffle(all.filter(c=>c.dlg)).concat(shuffle(all.filter(c=>!c.dlg)).slice(0,6))}
- else if(SP.cat==="due"){pool=shuffle(dueCards());if(pool.length<10)pool=pool.concat(shuffle(newCards()).slice(0,10-pool.length))}
- else if(SP.cat==="all")pool=shuffle(all);else if(SP.cat==="mine")pool=shuffle(all.filter(c=>c.cat==="mine"));else pool=shuffle(all.filter(c=>c.cat===SP.cat));
- SP.queue=pool.slice(0,SP.mode==="rep"?5:10);SP.i=0;SP.shown=false;SP.step=0}
+ else{const src=SP.cat==="due"||SP.cat==="all"?all:all.filter(c=>c.cat===SP.cat);pool=mixDeck(src,SP.size,SP.mix)}
+ SP.queue=pool.slice(0,SP.mode==="rep"?5:SP.mode==="ko"?SP.size:10);SP.again=new Set();SP.i=0;SP.shown=false;SP.step=0}
 let flashT=null;
 function spCard(){clearInterval(flashT);const c=SP.queue[SP.i];if(!c){spDone();return}
  const head=`<div class="prog"><span>${SP.i+1} / ${SP.queue.length}</span><span>${[tpName(c.cat),c.tag?unitOf(c.tag)?.ko:"",c.cat==="mine"?"내 문장":""].filter(Boolean).map(esc).join(" · ")}</span></div><div class="meter"><i style="width:${SP.i/SP.queue.length*100}%"></i></div>`;
@@ -217,8 +239,8 @@ function spReveal(c){const mine=SP.mineTxt||"";
   ${SP.mode==="ko"||SP.mode==="situ"?`<div class="rate"><button class="r0" data-rate="0">못 했어요<small>오늘 또</small></button><button class="r1" data-rate="1">생각했어요<small>내일 다시</small></button><button class="r2" data-rate="2">바로 나왔어요<small>나중에</small></button></div>`:""}`}
 const BOX=[0,1,3,7,16,35];
 function rate(r){const c=SP.queue[SP.i];const cur=S.srs[c.id]||{b:0};let b=r===2?Math.min(5,(cur.b||0)+1):r===1?Math.max(1,cur.b||0):0;
- if(!String(c.id).startsWith("qs"))S.srs[c.id]={b,d:addDays(today(),r===0?0:r===1?1:BOX[b])};
- if(r===0)SP.queue.push(c);gain([2,5,8][r],true);SP.i++;SP.shown=false;SP.mineTxt="";spCard()}
+ S.srs[c.id]=String(c.id).startsWith("qs")?{t:today()}:{b,d:addDays(today(),r===0?0:r===1?1:BOX[b]),t:today()};
+ if(r===0&&!SP.again?.has(c.id)){SP.again?.add(c.id);SP.queue.push(c)}gain([2,5,8][r],true);celebrate();SP.i++;SP.shown=false;SP.mineTxt="";spCard()}
 function spDone(){$("#stage").innerHTML=`<section class="card" style="align-items:flex-start"><span class="lbl g">끝!</span><div class="score">${SP.queue.length}<small> 장 완료</small></div><p class="muted" style="margin:0">오늘 ${S.days[today()]||0} XP. 방금 본 문장 중 하나를 오늘 실제로 써 보세요.</p><div class="row"><button class="btn pri" data-act="spagain">한 번 더</button><button class="btn ghost" data-go="home">오늘 화면</button></div></section>`}
 async function spRep(c,head){const st=SP.step;const steps=["① 문장 통째로","② 대화 속에서","③ 짧은 글 속에서","④ 영어 상황 퀴즈"];
  let body="";
@@ -276,7 +298,8 @@ VIEWS.quiz=arg=>{if(arg&&arg!=="wrong")QZ.u=arg;const cnt=u=>u==="all"?QUIZ.leng
 const qMatch=(q,u)=>u.startsWith("tp:")?q.tp===u.slice(3):q.u===u;
 const tpName=k=>(TOPICS.find(t=>t[0]===k)||[,""])[1];
 function qStart(){let pool=QUIZ.map((q,i)=>i);if(QZ.kind==="wrong"){pool=S.wrong.slice();if(!pool.length){toast("오답노트가 비어 있어요. 멋져요!");return}}else if(QZ.u!=="all")pool=pool.filter(i=>qMatch(QUIZ[i],QZ.u));
- pool=shuffle(pool);QZ.list=QZ.kind==="boss"?pool.concat(shuffle(pool)):pool.slice(0,10);Object.assign(QZ,{i:0,ans:null,right:0,hp:100,hearts:3,combo:0,wrongs:[],opts:null});qCard()}
+ pool=shuffle(pool);if(QZ.kind==="normal"){const un=pool.filter(i=>!S.qs[i]),sn=pool.filter(i=>S.qs[i]);const k=Math.min(un.length,7);pool=shuffle(un.slice(0,k).concat(sn.slice(0,10-k),un.slice(k)))}
+ QZ.list=QZ.kind==="boss"?pool.concat(shuffle(pool)):pool.slice(0,10);Object.assign(QZ,{i:0,ans:null,right:0,hp:100,hearts:3,combo:0,wrongs:[],opts:null});qCard()}
 function qCard(){const qi=QZ.list[QZ.i];if(qi===undefined||(QZ.kind==="boss"&&(QZ.hp<=0||QZ.hearts<=0))){qDone();return}
  const q=QUIZ[qi];if(!QZ.opts)QZ.opts=shuffle(q.o.map((t,k)=>({t,k})));const a=QZ.ans;
  const boss=QZ.kind==="boss"?`<div class="boss" id="boss"><div class="bossface ${QZ.hp<=0?"dead":""}">N</div><div class="bossinfo"><span class="nm">The Native Speaker</span><div class="bhp"><i style="width:${QZ.hp}%"></i></div><div class="row" style="justify-content:space-between"><span class="hearts">${"♥".repeat(QZ.hearts)}<s>${"♥".repeat(3-QZ.hearts)}</s></span><span class="combo">${QZ.combo>1?QZ.combo+" COMBO!":""}</span></div></div></div>`:"";
@@ -291,7 +314,7 @@ function qCard(){const qi=QZ.list[QZ.i];if(qi===undefined||(QZ.kind==="boss"&&(Q
 function qAnswer(n){if(QZ.ans!==null)return;QZ.ans=n;const qi=QZ.list[QZ.i];const ok=QZ.opts[n].k===0;const s=S.qs[qi]||{c:0,w:0};
  if(ok){s.c++;QZ.right++;QZ.combo++;S.wrong=S.wrong.filter(x=>x!==qi);if(QZ.kind==="boss")QZ.hp=Math.max(0,QZ.hp-(8+Math.min(QZ.combo,5)*2));gain(10,true)}
  else{s.w++;QZ.combo=0;QZ.wrongs.push(qi);if(!S.wrong.includes(qi))S.wrong.push(qi);if(QZ.kind==="boss")QZ.hearts--;pop("✗","r")}
- S.qs[qi]=s;save();qCard();if(!ok)$(".qcard")?.classList.add("shake")}
+ s.t=today();S.qs[qi]=s;save();celebrate();qCard();if(!ok)$(".qcard")?.classList.add("shake")}
 function qDone(){const boss=QZ.kind==="boss",win=boss&&QZ.hp<=0;if(win)gain(50,true);
  $("#stage").innerHTML=`<section class="card" style="align-items:flex-start"><span class="lbl ${win||!boss?"g":""}">${boss?(win?"보스 격파!":"보스 승리… 다시 도전!"):"결과"}</span>
   <div class="score">${QZ.right}<small> / ${boss?QZ.i:QZ.list.length} 정답</small></div>${win?`<p class="muted" style="margin:0">보너스 +50 XP</p>`:""}
@@ -351,6 +374,8 @@ document.addEventListener("click",e=>{const b=e.target.closest("button,[data-act
  if(d.goal){S.goal=+d.goal;save();render();return}
  if(d.sp){SP.mode=d.sp;VIEWS.speak();return}
  if(d.cat){SP.cat=d.cat;VIEWS.speak();return}
+ if(d.size){SP.size=+d.size;VIEWS.speak();return}
+ if(d.mix){SP.mix=+d.mix;VIEWS.speak();return}
  if(d.al){alCard(d.al);return}
  if(d.qu){QZ.u=d.qu;VIEWS.quiz();return}
  if(d.qk){QZ.kind=d.qk;VIEWS.quiz();return}
@@ -365,7 +390,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("button,[data-act
  if(A==="dict"){openSheet(d.t,false);return}
  if(A==="aiexp"){b.remove();runExplain($("#sheet").dataset.t);return}
  if(A==="rec"){startRec(b);return}
- if(A==="read"){if(!S.read[d.u]){S.read[d.u]=today();gain(20,true)}VIEWS.unit(d.u);return}
+ if(A==="read"){if(!S.read[d.u]){S.read[d.u]=today();gain(20,true)}celebrate();VIEWS.unit(d.u);return}
  if(A==="playdlg"){const u=unitOf(d.u);if(!u||!hasTTS)return;speechSynthesis.cancel();u.dialog.forEach(([w,t],i)=>{const x=new SpeechSynthesisUtterance(clean(t));x.lang="en-US";const vs=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));x.voice=(w==="B"&&vs[1])?vs[1]:VO;x.rate=.95;speechSynthesis.speak(x)});return}
  if(A==="mkex"){const u=unitOf(d.u);aiJSON(P.examples(u,$("#extopic").value.trim()),$("#exout")).then(r=>renderExamples(r,$("#exout")));return}
  if(A==="ask"){const q=$("#askq").value.trim();if(!q){$("#askq").focus();return}aiText(P.ask(unitOf(d.u),q),$("#askout"));return}
@@ -381,7 +406,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("button,[data-act
  if(A==="qstart"){qStart();return}
  if(A==="alfb"){const t=$("#almine").value.trim();if(t.split(/\s+/).length<15){toast("15단어 이상 적어 주세요. 말한 내용을 그대로 적으면 돼요.");return}const a=AL.find(x=>x.tp===d.tp);aiJSON(P.al(a.q,t),$("#alout")).then(r=>renderAL(r,$("#alout")));return}
  if(A==="gotoal"){SP.mode="al";go("speak");return}
- if(A==="alshow"){$("#almodel").hidden=false;if(!S.al)S.al={};if(!S.al[d.tp]){S.al[d.tp]=today();gain(30,true)}$("#almodel").scrollIntoView({behavior:"smooth",block:"start"});return}
+ if(A==="alshow"){$("#almodel").hidden=false;if(!S.al)S.al={};if(!S.al[d.tp]){S.al[d.tp]=today();gain(30,true)}celebrate();$("#almodel").scrollIntoView({behavior:"smooth",block:"start"});return}
  if(A==="altimer"){alTimer(b);return}
  if(A==="qnext"){QZ.i++;QZ.ans=null;QZ.opts=null;qCard();return}
  if(A==="coachgo"){const t=$("#cin").value.trim(),el=$("#cout");if(!t){$("#cin").focus();return}

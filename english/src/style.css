@@ -106,6 +106,13 @@ textarea:focus,input[type=text]:focus{border-color:var(--blue);outline:none}
 .mis span{font-size:13px;color:var(--muted)}
 .mis .n{font-family:var(--kd);font-size:30px;line-height:1;color:var(--red)}
 .mis.blue .n{color:var(--blue)}.mis.green .n{color:var(--ok)}
+.mis .bar{height:5px;border-radius:9px;background:var(--line);overflow:hidden;margin-top:auto}
+.mis .bar i{display:block;height:100%;background:var(--blue);border-radius:9px;transition:width .4s}
+.mis.done{border-color:var(--ok);background:var(--ok-soft)}
+.mis.done .n{color:var(--ok)}
+.mis.done .bar i{background:var(--ok)}
+.doneN{font-family:var(--mono);font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.doneN.all{color:var(--ok);font-weight:600}
 .weak{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 @media (max-width:640px){.weak{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .wk{text-align:left;border:1px solid var(--line);background:var(--sheet);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:92px}
